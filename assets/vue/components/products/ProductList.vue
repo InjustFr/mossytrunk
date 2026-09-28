@@ -17,7 +17,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
 <template>
     <EmptyState v-if="products.length === 0">Aucun produit.</EmptyState>
-    <DataTable v-else class="product-list">
+    <DataTable v-else :items="products" class="product-list">
         <template #head>
             <tr>
                 <th class="product-list__check">
@@ -32,30 +32,32 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                 <th><span class="visually-hidden">Actions</span></th>
             </tr>
         </template>
-        <tr
-            v-for="product in products"
-            :key="product.id"
-            :class="['product-list__row', { 'product-list__row--selected': product.id === selectedId }]"
-        >
-            <td class="product-list__check">
-                <input v-model="checkedIds" type="checkbox" :value="product.id" :aria-label="`Sélectionner ${product.displayName}`">
-            </td>
-            <td class="product-list__reference">{{ product.reference }}</td>
-            <td class="product-list__type">{{ product.typeName ?? '—' }}</td>
-            <td>{{ product.displayName }}</td>
-            <td>
-                <span v-if="product.variants.length === 0" class="product-list__unique">Produit unique</span>
-                <span v-else class="product-list__variants">{{ product.variants.join(', ') }}</span>
-            </td>
-            <td class="data-table__cell--number">
-                <MoneyAmount :cents="product.buyingPrice" />
-                <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" :size="14" aria-label="Prix d'achat à renseigner" role="img" />
-            </td>
-            <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
-            <td>
-                <BaseButton variant="ghost" :aria-label="`Modifier ${product.displayName}`" @click="emit('edit', product)">Modifier</BaseButton>
-            </td>
-        </tr>
+        <template #default="{ rows }">
+            <tr
+                v-for="product in rows"
+                :key="product.id"
+                :class="['product-list__row', { 'product-list__row--selected': product.id === selectedId }]"
+            >
+                <td class="product-list__check">
+                    <input v-model="checkedIds" type="checkbox" :value="product.id" :aria-label="`Sélectionner ${product.displayName}`">
+                </td>
+                <td class="product-list__reference">{{ product.reference }}</td>
+                <td class="product-list__type">{{ product.typeName ?? '—' }}</td>
+                <td>{{ product.displayName }}</td>
+                <td>
+                    <span v-if="product.variants.length === 0" class="product-list__unique">Produit unique</span>
+                    <span v-else class="product-list__variants">{{ product.variants.join(', ') }}</span>
+                </td>
+                <td class="data-table__cell--number">
+                    <MoneyAmount :cents="product.buyingPrice" />
+                    <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" :size="14" aria-label="Prix d'achat à renseigner" role="img" />
+                </td>
+                <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
+                <td>
+                    <BaseButton variant="ghost" :aria-label="`Modifier ${product.displayName}`" @click="emit('edit', product)">Modifier</BaseButton>
+                </td>
+            </tr>
+        </template>
     </DataTable>
 </template>
 

@@ -16,6 +16,7 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await expect(problem).toHaveCount(1);
     await expect(problem).toContainText('2 commande(s) non importée(s)');
     await expect(problem).toContainText('21 mars 2030, 23 mars 2030');
+    await page.getByLabel('Événement').selectOption({ label: 'Salon de printemps 2030' });
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toContainText('Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('SumUp');
 
@@ -25,5 +26,6 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
 
     // Imported products have an unknown (0 €) buying price, editable later.
     await page.goto('/produits');
+    await page.getByLabel('Rechercher un produit').fill('Tote bag');
     await expect(page.getByRole('row').filter({ hasText: 'Tote bag' })).toContainText('0,00');
 });

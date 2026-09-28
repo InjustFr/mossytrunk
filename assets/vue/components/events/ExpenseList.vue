@@ -13,7 +13,7 @@ const emit = defineEmits(['edit', 'remove']);
 
 <template>
     <EmptyState v-if="expenses.length === 0">Aucune dépense enregistrée.</EmptyState>
-    <DataTable v-else class="expense-list">
+    <DataTable v-else :items="expenses" class="expense-list">
         <template #head>
             <tr>
                 <th>Libellé</th>
@@ -21,14 +21,16 @@ const emit = defineEmits(['edit', 'remove']);
                 <th><span class="visually-hidden">Actions</span></th>
             </tr>
         </template>
-        <tr v-for="expense in expenses" :key="expense.id">
-            <td>{{ expense.label }}</td>
-            <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
-            <td class="expense-list__actions">
-                <BaseButton variant="ghost" :aria-label="`Modifier ${expense.label}`" @click="emit('edit', expense)">Modifier</BaseButton>
-                <BaseButton variant="ghost" :aria-label="`Supprimer ${expense.label}`" @click="emit('remove', expense)">Supprimer</BaseButton>
-            </td>
-        </tr>
+        <template #default="{ rows }">
+            <tr v-for="expense in rows" :key="expense.id">
+                <td>{{ expense.label }}</td>
+                <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
+                <td class="expense-list__actions">
+                    <BaseButton variant="ghost" :aria-label="`Modifier ${expense.label}`" @click="emit('edit', expense)">Modifier</BaseButton>
+                    <BaseButton variant="ghost" :aria-label="`Supprimer ${expense.label}`" @click="emit('remove', expense)">Supprimer</BaseButton>
+                </td>
+            </tr>
+        </template>
         <template #foot>
             <tr>
                 <td>Total</td>

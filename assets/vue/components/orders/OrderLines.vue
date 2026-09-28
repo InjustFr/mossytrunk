@@ -8,7 +8,7 @@ defineProps({
 </script>
 
 <template>
-    <DataTable>
+    <DataTable :items="lines">
         <template #head>
             <tr>
                 <th>Produit</th>
@@ -17,11 +17,13 @@ defineProps({
                 <th class="data-table__cell--number">Total</th>
             </tr>
         </template>
-        <tr v-for="line in lines" :key="`${line.productId}-${line.label}`">
-            <td>{{ line.label }}</td>
-            <td class="data-table__cell--number">{{ line.quantity }}</td>
-            <td class="data-table__cell--number"><MoneyAmount :cents="line.unitPrice" /></td>
-            <td class="data-table__cell--number"><MoneyAmount :cents="line.total" /></td>
-        </tr>
+        <template #default="{ rows }">
+            <tr v-for="line in rows" :key="`${line.productId}-${line.label}`">
+                <td>{{ line.label }}</td>
+                <td class="data-table__cell--number">{{ line.quantity }}</td>
+                <td class="data-table__cell--number"><MoneyAmount :cents="line.unitPrice" /></td>
+                <td class="data-table__cell--number"><MoneyAmount :cents="line.total" /></td>
+            </tr>
+        </template>
     </DataTable>
 </template>

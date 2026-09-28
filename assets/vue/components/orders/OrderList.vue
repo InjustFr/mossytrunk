@@ -13,7 +13,7 @@ defineProps({
 
 <template>
     <EmptyState v-if="orders.length === 0">Aucune commande.</EmptyState>
-    <DataTable v-else class="order-list">
+    <DataTable v-else :items="orders" class="order-list">
         <template #head>
             <tr>
                 <th>Référence</th>
@@ -24,24 +24,26 @@ defineProps({
                 <th class="data-table__cell--number">Total</th>
             </tr>
         </template>
-        <tr
-            v-for="order in orders"
-            :key="order.id"
-            :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]"
-        >
-            <td>
-                <a class="order-list__reference" :href="`/commandes/${order.id}`">{{ order.reference }}</a>
-                <span v-if="order.source === 'sumup'" class="order-list__badge">SumUp</span>
-            </td>
-            <td>{{ formatDateTime(order.placedAt) }}</td>
-            <td>{{ order.eventName }}</td>
-            <td class="data-table__cell--number">{{ order.itemCount }}</td>
-            <td class="data-table__cell--number">
-                <MoneyAmount v-if="order.discountTotal > 0" :cents="-order.discountTotal" />
-                <span v-else class="order-list__none">—</span>
-            </td>
-            <td class="data-table__cell--number order-list__total"><MoneyAmount :cents="order.total" /></td>
-        </tr>
+        <template #default="{ rows }">
+            <tr
+                v-for="order in rows"
+                :key="order.id"
+                :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]"
+            >
+                <td>
+                    <a class="order-list__reference" :href="`/commandes/${order.id}`">{{ order.reference }}</a>
+                    <span v-if="order.source === 'sumup'" class="order-list__badge">SumUp</span>
+                </td>
+                <td>{{ formatDateTime(order.placedAt) }}</td>
+                <td>{{ order.eventName }}</td>
+                <td class="data-table__cell--number">{{ order.itemCount }}</td>
+                <td class="data-table__cell--number">
+                    <MoneyAmount v-if="order.discountTotal > 0" :cents="-order.discountTotal" />
+                    <span v-else class="order-list__none">—</span>
+                </td>
+                <td class="data-table__cell--number order-list__total"><MoneyAmount :cents="order.total" /></td>
+            </tr>
+        </template>
     </DataTable>
 </template>
 

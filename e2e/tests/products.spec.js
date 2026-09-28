@@ -16,6 +16,8 @@ test('create a product with variants, then set its buying price', async ({ page 
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${name} » ajouté.`);
+    // The list is paginated: search to keep the row on screen whatever the number of products.
+    await page.getByLabel('Rechercher un produit').fill(name);
     const row = page.getByRole('row').filter({ hasText: name });
     await expect(row).toContainText('Mousse, Fougère');
     await expect(row).toContainText('0,00');
@@ -59,6 +61,7 @@ test('create a type inline and display products as "Type Nom"', async ({ page })
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${typeName} Forêt » ajouté.`);
+    await page.getByLabel('Rechercher un produit').fill(`${typeName} Forêt`);
     await expect(page.getByRole('row').filter({ hasText: `${typeName} Forêt` })).toContainText(typeName);
 });
 
@@ -89,4 +92,27 @@ test('filter by type and edit the selection in batch', async ({ page, request })
         await expect(row).toContainText('5,00');
         await expect(row).toContainText('Brillant');
     }
+});
+
+test('long lists are paginated', async ({ page, request }) => {
+    const { createProduct, createType } = await import('./support/api.js');
+    const type = await createType(request, unique('Carte'));
+    for (let i = 1; i <= 25; i++) {
+        await createProduct(request, { name: `Modèle ${String(i).padStart(2, '0')}`, sellingPrice: 300, type });
+    }
+
+    await page.goto('/produits');
+    await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: type.name }).click();
+
+    const pagination = page.getByRole('navigation', { name: 'Pagination' });
+    await expect(pagination).toContainText('1–20 sur 25');
+    await expect(page.getByRole('row')).toHaveCount(21); // header + 20
+    await pagination.getByRole('button', { name: 'Page suivante' }).click();
+    await expect(pagination).toContainText('21–25 sur 25');
+    await expect(page.getByRole('row').filter({ hasText: `${type.name} Modèle 25` })).toBeVisible();
+    await expect(pagination.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
+
+    await pagination.getByLabel('Par page').selectOption('50');
+    await expect(page.getByRole('row')).toHaveCount(26);
+    await expect(pagination).toContainText('1–25 sur 25');
 });
