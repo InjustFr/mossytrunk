@@ -39,6 +39,17 @@ class Expense
      */
     public function __construct(Event $event, string $label, Money $amount)
     {
+        $this->id = new Ulid();
+        $this->event = $event;
+        $this->createdAt = new \DateTimeImmutable();
+        $this->revise($label, $amount);
+    }
+
+    /**
+     * @internal use Event::reviseExpense()
+     */
+    public function revise(string $label, Money $amount): void
+    {
         $label = trim($label);
         if ('' === $label) {
             throw InvalidEvent::emptyExpenseLabel();
@@ -47,11 +58,8 @@ class Expense
             throw InvalidMoney::mustBePositive('Le montant de la dépense');
         }
 
-        $this->id = new Ulid();
-        $this->event = $event;
         $this->label = $label;
         $this->amount = $amount;
-        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function id(): Ulid

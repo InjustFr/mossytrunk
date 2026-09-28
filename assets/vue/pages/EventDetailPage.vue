@@ -16,10 +16,18 @@ const props = defineProps({
     eventId: { type: String, required: true },
 });
 
-const { event, report, load, update, addExpense, removeExpense } = useEvent(props.eventId);
+const { event, report, load, update, addExpense, reviseExpense, removeExpense } = useEvent(props.eventId);
 const toast = useToast();
 const editOpen = ref(false);
 const expenseOpen = ref(false);
+const editingExpense = ref(null);
+
+const submitExpense = (payload) => (editingExpense.value ? reviseExpense(editingExpense.value.id, payload) : addExpense(payload));
+
+function openExpense(expense = null) {
+    editingExpense.value = expense;
+    expenseOpen.value = true;
+}
 
 async function onEventSaved(name) {
     editOpen.value = false;
@@ -29,7 +37,7 @@ async function onEventSaved(name) {
 
 async function onExpenseSaved(label) {
     expenseOpen.value = false;
-    toast.success(`Dépense « ${label} » ajoutée.`);
+    toast.success(editingExpense.value ? `Dépense « ${label} » modifiée.` : `Dépense « ${label} » ajoutée.`);
     await load();
 }
 
@@ -48,7 +56,7 @@ onMounted(load);
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
-                <BaseButton @click="expenseOpen = true">Ajouter une dépense</BaseButton>
+                <BaseButton @click="openExpense()">Ajouter une dépense</BaseButton>
             </template>
         </template>
 
@@ -61,7 +69,7 @@ onMounted(load);
                 </BaseCard>
 
                 <BaseCard title="Dépenses">
-                    <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @remove="onExpenseRemoved" />
+                    <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
                 </BaseCard>
             </div>
         </div>
@@ -69,8 +77,8 @@ onMounted(load);
         <BaseModal v-model:open="editOpen" title="Modifier l'événement">
             <EventForm v-if="event" :event="event" :submit="update" @saved="onEventSaved" @cancel="editOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="expenseOpen" title="Nouvelle dépense">
-            <ExpenseForm :submit="addExpense" @saved="onExpenseSaved" @cancel="expenseOpen = false" />
+        <BaseModal v-model:open="expenseOpen" :title="editingExpense ? 'Modifier la dépense' : 'Nouvelle dépense'">
+            <ExpenseForm :expense="editingExpense" :submit="submitExpense" @saved="onExpenseSaved" @cancel="expenseOpen = false" />
         </BaseModal>
     </AppLayout>
 </template>

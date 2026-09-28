@@ -42,6 +42,19 @@ final class EventTest extends TestCase
         self::assertCount(1, $event->expenses());
     }
 
+    public function testExpenseCanBeRevisedWithTheSameRules(): void
+    {
+        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $stand = $event->addExpense('Stand', Money::cents(30_000));
+
+        $event->reviseExpense($stand->id(), 'Stand (angle)', Money::cents(32_000));
+        self::assertSame('Stand (angle)', $event->expenses()[0]->label());
+        self::assertSame(32_000, $event->totalExpenses()->amount());
+
+        $this->expectException(InvalidMoney::class);
+        $event->reviseExpense($stand->id(), 'Stand', Money::zero());
+    }
+
     public function testRemovingUnknownExpenseFails(): void
     {
         $event = Event::schedule('Japan Expo', 'Villepinte', self::period());

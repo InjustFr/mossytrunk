@@ -10,6 +10,8 @@ use App\Application\Event\GetEvent\GetEventHandler;
 use App\Application\Event\GetEventReport\GetEventReportHandler;
 use App\Application\Event\ListEvents\ListEventsHandler;
 use App\Application\Event\RemoveExpense\RemoveExpense;
+use App\Application\Event\ReviseExpense\ReviseExpense;
+use App\Application\Event\ReviseExpense\ReviseExpenseHandler;
 use App\Application\Event\RemoveExpense\RemoveExpenseHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
@@ -65,6 +67,14 @@ final class EventController extends AbstractController
         $expenseId = $addExpense(new AddExpense($id, $payload->label, $payload->amount));
 
         return $this->json(['id' => (string) $expenseId], Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id}/expenses/{expenseId}', name: 'api_events_revise_expense', requirements: ['id' => Requirement::ULID, 'expenseId' => Requirement::ULID], methods: ['PUT'])]
+    public function reviseExpense(string $id, string $expenseId, #[MapRequestPayload] ExpensePayload $payload, ReviseExpenseHandler $reviseExpense): Response
+    {
+        $reviseExpense(new ReviseExpense($id, $expenseId, $payload->label, $payload->amount));
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/{id}/expenses/{expenseId}', name: 'api_events_remove_expense', requirements: ['id' => Requirement::ULID, 'expenseId' => Requirement::ULID], methods: ['DELETE'])]

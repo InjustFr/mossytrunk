@@ -30,8 +30,16 @@ test('schedule an event and track its expenses', async ({ page }) => {
 
     await expect(page.getByRole('row', { name: /Total/ })).toContainText('389,50');
 
+    await page.getByRole('button', { name: 'Modifier Stand' }).click();
+    const edit = page.getByRole('dialog', { name: 'Modifier la dépense' });
+    await expect(edit.getByLabel('Montant (€)')).toHaveValue('300,00');
+    await edit.getByLabel('Montant (€)').fill('320');
+    await edit.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Dépense « Stand » modifiée.');
+    await expect(page.getByRole('row', { name: /Total/ })).toContainText('409,50');
+
     await page.getByRole('button', { name: 'Supprimer Train' }).click();
-    await expect(page.getByRole('row', { name: /Total/ })).toContainText('300,00');
+    await expect(page.getByRole('row', { name: /Total/ })).toContainText('320,00');
 });
 
 test('refuses overlapping events', async ({ page }) => {

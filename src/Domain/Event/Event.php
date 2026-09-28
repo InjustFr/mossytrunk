@@ -87,13 +87,21 @@ class Event
         return $expense;
     }
 
+    public function reviseExpense(Ulid $expenseId, string $label, Money $amount): void
+    {
+        $this->expense($expenseId)->revise($label, $amount);
+    }
+
     public function removeExpense(Ulid $expenseId): void
+    {
+        $this->expenses->removeElement($this->expense($expenseId));
+    }
+
+    private function expense(Ulid $expenseId): Expense
     {
         foreach ($this->expenses as $expense) {
             if ($expense->id()->equals($expenseId)) {
-                $this->expenses->removeElement($expense);
-
-                return;
+                return $expense;
             }
         }
 

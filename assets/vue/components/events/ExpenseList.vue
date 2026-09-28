@@ -8,7 +8,7 @@ defineProps({
     expenses: { type: Array, required: true },
     total: { type: Number, required: true },
 });
-const emit = defineEmits(['remove']);
+const emit = defineEmits(['edit', 'remove']);
 </script>
 
 <template>
@@ -25,6 +25,7 @@ const emit = defineEmits(['remove']);
             <td>{{ expense.label }}</td>
             <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
             <td class="expense-list__actions">
+                <BaseButton variant="ghost" :aria-label="`Modifier ${expense.label}`" @click="emit('edit', expense)">Modifier</BaseButton>
                 <BaseButton variant="ghost" :aria-label="`Supprimer ${expense.label}`" @click="emit('remove', expense)">Supprimer</BaseButton>
             </td>
         </tr>
@@ -39,5 +40,5 @@ const emit = defineEmits(['remove']);
 </template>
 
 <style scoped>
-.expense-list__actions { text-align: right; }
+.expense-list__actions { text-align: right; white-space: nowrap; }
 </style>

@@ -1,10 +1,12 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
 import FormField from '../ui/FormField.vue';
-import { eurosToCents } from '../../composables/useMoney.js';
+import { centsToEuros, eurosToCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
+    // Expense being edited, or null to add one.
+    expense: { type: Object, default: null },
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
@@ -12,6 +14,11 @@ const emit = defineEmits(['saved', 'cancel']);
 const form = reactive({ label: '', amount: '' });
 const errors = ref({});
 const saving = ref(false);
+
+watch(() => props.expense, (expense) => {
+    Object.assign(form, expense ? { label: expense.label, amount: centsToEuros(expense.amount) } : { label: '', amount: '' });
+    errors.value = {};
+}, { immediate: true });
 
 async function onSubmit() {
     saving.value = true;
@@ -38,7 +45,7 @@ async function onSubmit() {
                 <input v-model="form.amount" type="text" inputmode="decimal">
             </FormField>
             <div class="expense-form__actions">
-                <BaseButton type="submit" :loading="saving">Ajouter la dépense</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ expense ? 'Enregistrer' : 'Ajouter la dépense' }}</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
             </div>
         </fieldset>

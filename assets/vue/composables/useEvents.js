@@ -28,7 +28,8 @@ export function useEvent(eventId) {
 
     const update = (payload) => api.put(`/api/events/${eventId}`, payload);
     const addExpense = (payload) => api.post(`/api/events/${eventId}/expenses`, payload);
+    const reviseExpense = (expenseId, payload) => api.put(`/api/events/${eventId}/expenses/${expenseId}`, payload);
     const removeExpense = (expenseId) => api.del(`/api/events/${eventId}/expenses/${expenseId}`);
 
-    return { event, report, load, update, addExpense, removeExpense };
+    return { event, report, load, update, addExpense, reviseExpense, removeExpense };
 }

@@ -19,7 +19,7 @@ Model: `src/Domain/Event/Event.php`, `Expense.php`, `EventScheduler.php`, `src/D
 | E3 | A moment belongs to an event when its **Paris local date** is within the period (both ends included) | `DateRange::covers()`, `Event::covers()`, `EventRepository::findCovering()` | `DateRangeTest`, `EventUseCasesTest` |
 | E4 | **Events never overlap.** Guarantees an order date maps to at most one event (needed by the SumUp auto-link) | `EventScheduler::ensureFree()` used by `ScheduleEventHandler`/`UpdateEventHandler` | `EventUseCasesTest` |
 | E5 | Rescheduling must keep every existing order of the event inside the new period | `UpdateEventHandler` (see [orders](orders.md)) | `OrderUseCasesTest` |
-| E6 | Expense label required, amount > 0; expenses can be removed | `Event::addExpense()`, `Expense::__construct()`, `Event::removeExpense()` | `EventTest` |
+| E6 | Expense label required, amount > 0 — on creation and when revised; expenses can be edited and removed | `Event::addExpense()`, `Event::reviseExpense()`, `Expense::revise()`, `Event::removeExpense()` | `EventTest`, `EventUseCasesTest` |
 
 The profitability of an event is described in [event-report.md](event-report.md).
 
@@ -32,6 +32,7 @@ The profitability of an event is described in [event-report.md](event-report.md)
 | `ListEvents` | `GET /api/events` (most recent first, with expenses total) |
 | `GetEvent` | `GET /api/events/{id}` (with expenses) |
 | `AddExpense` | `POST /api/events/{id}/expenses` `{label, amount}` |
+| `ReviseExpense` | `PUT /api/events/{id}/expenses/{expenseId}` `{label, amount}` |
 | `RemoveExpense` | `DELETE /api/events/{id}/expenses/{expenseId}` |
 
 UI: `/evenements` (list + creation form), `/evenements/{id}` (details, edit, expenses, report).

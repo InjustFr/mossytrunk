@@ -10,6 +10,8 @@ use App\Application\Event\GetEvent\GetEventHandler;
 use App\Application\Event\ListEvents\ListEventsHandler;
 use App\Application\Event\RemoveExpense\RemoveExpense;
 use App\Application\Event\RemoveExpense\RemoveExpenseHandler;
+use App\Application\Event\ReviseExpense\ReviseExpense;
+use App\Application\Event\ReviseExpense\ReviseExpenseHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Event\UpdateEvent\UpdateEvent;
@@ -73,6 +75,10 @@ final class EventUseCasesTest extends KernelTestCase
         $event = self::getContainer()->get(GetEventHandler::class)($id);
         self::assertSame(38_950, $event->expensesTotal);
         self::assertSame(['Stand', 'Train'], array_column($event->expenses, 'label'));
+
+        self::getContainer()->get(ReviseExpenseHandler::class)(new ReviseExpense($id, (string) $expenseId, 'Stand + électricité', 31_500));
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::assertSame(40_450, self::getContainer()->get(GetEventHandler::class)($id)->expensesTotal);
 
         self::getContainer()->get(RemoveExpenseHandler::class)(new RemoveExpense($id, (string) $expenseId));
         self::getContainer()->get('doctrine')->getManager()->clear();
