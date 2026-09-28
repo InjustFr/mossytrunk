@@ -1,9 +1,10 @@
 <script setup>
 import { TriangleAlert } from '@lucide/vue';
+import { Pencil } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
-import BaseButton from '../ui/BaseButton.vue';
 
 defineProps({
     products: { type: Array, required: true },
@@ -54,7 +55,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                 </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
                 <td>
-                    <BaseButton variant="ghost" :aria-label="`Modifier ${product.displayName}`" @click="emit('edit', product)">Modifier</BaseButton>
+                    <IconButton :icon="Pencil" :label="`Modifier ${product.displayName}`" @click="emit('edit', product)" />
                 </td>
             </tr>
         </template>

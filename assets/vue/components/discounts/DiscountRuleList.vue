@@ -1,7 +1,8 @@
 <script setup>
-import BaseButton from '../ui/BaseButton.vue';
+import { Pencil, Trash2 } from '@lucide/vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 defineProps({
@@ -36,8 +37,8 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
                 {{ rule.active ? 'Active' : 'Inactive' }}
             </label>
             <div class="discount-rule-list__actions">
-                <BaseButton variant="ghost" @click="emit('edit', rule)">Modifier</BaseButton>
-                <ConfirmButton label="Supprimer" @confirm="emit('remove', rule)" />
+                <IconButton :icon="Pencil" :label="`Modifier ${rule.name}`" @click="emit('edit', rule)" />
+                <ConfirmButton :icon="Trash2" :label="`Supprimer ${rule.name}`" @confirm="emit('remove', rule)" />
             </div>
         </li>
     </TransitionGroup>
@@ -69,7 +70,7 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
 .discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-1); font-size: 0.9rem; cursor: pointer; }
 .discount-rule-list__toggle input { accent-color: var(--color-accent); }
 
-.discount-rule-list__actions { display: flex; gap: var(--space-1); }
+.discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
 
 .discount-rule-list__item-enter-active,
 .discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
