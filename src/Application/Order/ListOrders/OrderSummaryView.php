@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Order\ListOrders;
+
+use App\Domain\Order\Order;
+use App\Domain\Shared\DateRange;
+
+final readonly class OrderSummaryView
+{
+    public function __construct(
+        public string $id,
+        public string $reference,
+        public string $placedAt,
+        public string $eventId,
+        public string $eventName,
+        public int $itemCount,
+        public int $subtotal,
+        public int $discountTotal,
+        public int $total,
+        public string $source,
+    ) {
+    }
+
+    public static function fromOrder(Order $order): self
+    {
+        return new self(
+            (string) $order->id(),
+            $order->reference(),
+            $order->placedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
+            (string) $order->event()->id(),
+            $order->event()->name(),
+            $order->itemCount(),
+            $order->subtotal()->amount(),
+            $order->discountTotal()->amount(),
+            $order->total()->amount(),
+            $order->source()->value,
+        );
+    }
+}

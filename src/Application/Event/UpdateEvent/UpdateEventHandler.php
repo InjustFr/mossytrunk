@@ -7,6 +7,8 @@ namespace App\Application\Event\UpdateEvent;
 use App\Application\Transaction;
 use App\Domain\Event\EventRepository;
 use App\Domain\Event\EventScheduler;
+use App\Domain\Event\InvalidEvent;
+use App\Domain\Order\OrderRepository;
 use App\Domain\Shared\DateRange;
 use Symfony\Component\Uid\Ulid;
 
@@ -15,6 +17,7 @@ final readonly class UpdateEventHandler
     public function __construct(
         private EventRepository $events,
         private EventScheduler $scheduler,
+        private OrderRepository $orders,
         private Transaction $transaction,
     ) {
     }
@@ -25,6 +28,11 @@ final readonly class UpdateEventHandler
         $period = DateRange::fromDates($command->startDate, $command->endDate);
 
         $this->scheduler->ensureFree($period, $event->id());
+
+        $ordersOutside = $this->orders->countOutside($event->id(), $period);
+        if ($ordersOutside > 0) {
+            throw InvalidEvent::ordersOutsidePeriod($ordersOutside);
+        }
 
         $event->describe($command->name, $command->location);
         $event->reschedule($period);

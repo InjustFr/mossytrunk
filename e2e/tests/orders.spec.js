@@ -1,0 +1,78 @@
+import { test, expect } from '@playwright/test';
+import { unique } from './support/unique.js';
+import { createDiscountRule, createEvent, createProduct } from './support/api.js';
+
+test('place an order with automatic bundle discount while seeing the list', async ({ page, request }) => {
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400, buyingPrice: 100 });
+    const tshirt = await createProduct(request, { name: unique('T-shirt'), sellingPrice: 2_000, variants: ['Mousse', 'Fougère'] });
+    const bundle = await createDiscountRule(request, { name: unique('3 stickers pour 10 €'), productIds: [sticker.id], bundleSize: 3, bundlePrice: 1_000 });
+
+    await page.goto('/commandes');
+    const form = page.locator('form.order-form');
+    await form.getByLabel('Date').fill(`${event.startDate}T14:30`);
+
+    // The variant is required for products that have variants.
+    await form.getByLabel('Produit').selectOption({ label: `${tshirt.name} — 20,00 €` });
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await expect(form.getByRole('alert')).toContainText('Choisissez une variante');
+    await form.getByLabel('Variante').selectOption('Fougère');
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+
+    await form.getByLabel('Produit').selectOption({ label: `${sticker.name} — 4,00 €` });
+    await expect(form.getByLabel('Variante')).toHaveCount(0);
+    await form.getByLabel('Quantité', { exact: true }).fill('3');
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+
+    await expect(form.getByText(`Rattachée à ${event.name}`)).toBeVisible();
+    await expect(form.getByText(bundle.name)).toBeVisible();
+    await expect(form.getByTestId('order-total')).toHaveText(/30,00/);
+
+    await form.getByRole('button', { name: 'Enregistrer la commande' }).click();
+
+    const toast = page.getByTestId('toast');
+    await expect(toast).toContainText(/Commande CMD-\d{8}-\w{6} enregistrée\./);
+    const reference = (await toast.textContent()).match(/CMD-\d{8}-\w{6}/)[0];
+
+    // The list refreshed without reloading the page, and the form is ready for the next order.
+    const row = page.getByRole('row').filter({ hasText: reference });
+    await expect(row).toContainText(event.name);
+    await expect(row).toContainText('30,00');
+    await expect(form.getByRole('button', { name: 'Enregistrer la commande' })).toBeDisabled();
+
+    await row.getByRole('link', { name: reference }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(`Commande ${reference}`);
+    await expect(page.getByRole('cell', { name: `${tshirt.name} — Fougère` })).toBeVisible();
+    await expect(page.getByText(bundle.name)).toBeVisible();
+    await expect(page.locator('.order-margin')).toContainText('27,00'); // 30 € - 3 × 1 € cost
+});
+
+test('warns when no event exists at the order date', async ({ page, request }) => {
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+
+    await page.goto('/commandes');
+    const form = page.locator('form.order-form');
+    await form.getByLabel('Date').fill('2099-12-31T10:00');
+    await form.getByLabel('Produit').selectOption({ label: `${sticker.name} — 4,00 €` });
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+
+    await expect(form.getByText('Aucun événement à cette date.')).toBeVisible();
+    await form.getByRole('button', { name: 'Enregistrer la commande' }).click();
+    await expect(form.locator('.order-form__error')).toContainText('Créez d\'abord l\'événement');
+});
+
+test('delete an order from its detail page', async ({ page, request }) => {
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+    const response = await request.post('/api/orders', {
+        data: { placedAt: `${event.startDate}T10:00`, lines: [{ productId: sticker.id, variant: null, quantity: 1 }] },
+    });
+    const order = await response.json();
+
+    await page.goto(`/commandes/${order.id}`);
+    await page.getByRole('button', { name: 'Supprimer la commande' }).click();
+    await page.getByRole('button', { name: 'Confirmer la suppression' }).click();
+
+    await expect(page).toHaveURL(/\/commandes$/);
+    await expect(page.getByRole('row').filter({ hasText: order.reference })).toHaveCount(0);
+});
