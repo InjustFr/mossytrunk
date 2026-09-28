@@ -17,7 +17,7 @@ final class SumUpPayloadMapperTest extends TestCase
             'amount' => 19.5,
             'tip_amount' => 0.5,
             'products' => [
-                ['name' => 'Forêt', 'price' => 15.0, 'price_with_vat' => 15.0, 'quantity' => 1, 'category' => ['name' => 'Print']],
+                ['name' => 'Forêt', 'price_label' => ' A4 ', 'price' => 15.0, 'price_with_vat' => 15.0, 'quantity' => 1, 'category' => ['name' => 'Print']],
                 ['name' => 'Mousse', 'price' => 4.0, 'quantity' => 1, 'category_name' => 'Sticker'],
                 ['name' => 'Libre', 'price' => 0.5],
             ],
@@ -25,6 +25,7 @@ final class SumUpPayloadMapperTest extends TestCase
 
         self::assertSame(1_900, $transaction->amountPaid->amount());
         self::assertSame(['Print', 'Sticker', null], array_map(static fn ($line) => $line->category, $transaction->lines));
+        self::assertSame(['A4', null, null], array_map(static fn ($line) => $line->variant, $transaction->lines));
         self::assertSame(50, $transaction->lines[2]->unitPrice->amount());
     }
 }

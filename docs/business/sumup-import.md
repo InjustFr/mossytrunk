@@ -11,7 +11,7 @@ port `Application/SumUp/SumUpGateway`; adapters `Infrastructure/SumUp/SumUpApiGa
 ## What is read from SumUp
 
 - `GET /v2.1/merchants/{code}/transactions/history?statuses[]=SUCCESSFUL&types[]=PAYMENT` (all pages, `links[rel=next]`)
-- `GET /v2.1/merchants/{code}/transactions?id=…` for each payment → `products[]` (`name`, `price_with_vat`, `quantity`, and `category` / `category_name` **when present** — not documented by SumUp, read defensively)
+- `GET /v2.1/merchants/{code}/transactions?id=…` for each payment → `products[]` (`name`, `price_label` = variant, `price_with_vat`, `quantity`, and `category` / `category_name` **when present** — not documented by SumUp, read defensively)
 - Amount paid = `amount − tip_amount`. Euros are converted to cents.
 
 ## Rules
@@ -29,4 +29,5 @@ port `Application/SumUp/SumUpGateway`; adapters `Infrastructure/SumUp/SumUpApiGa
 | S8 | SumUp's amount is the truth: if it is below the lines' subtotal, the gap becomes a « Remise SumUp » discount. Bundle rules are **not** applied to imports | `Order::importFromSumUp()` | `OrderTest` |
 | S9 | Existing products are never modified by an import (prices you edited are kept) | `SumUpProductResolver` | `ImportFromSumUpTest` |
 | S11 | SumUp spreads a basket discount over the lines, so a line can be cheaper than the product. An order line is sold at the **higher** of the product's price and SumUp's line price (the difference becomes the « Remise SumUp », S8), so the order total never drops below what SumUp charged because of a low catalogue price. A product **created by the import** takes the highest price SumUp charged for it during that import, not the (possibly discounted) first one | `SumUpProductResolver::sold()` | `ImportFromSumUpTest` |
+| S12 | A product's `price_label` is its **variant** (matched case-insensitively). A product with variants learns a new label as a new variant; a product created by the import gets every label it is sold with as variants. On an existing product without variants the label is ignored (it is sold as is) | `SumUpPayloadMapper::priceLabel()`, `SumUpProductResolver::soldAs()` | `SumUpPayloadMapperTest`, `ImportFromSumUpTest` |
 | S10 | A line **without a name** (an amount typed on the terminal) is sold as the « Montant libre » product (created once, no type), at the line's own SumUp price rather than the product's | `SumUpProductResolver::freeAmount()`, `SellableItem::at()` | `ImportFromSumUpTest` |

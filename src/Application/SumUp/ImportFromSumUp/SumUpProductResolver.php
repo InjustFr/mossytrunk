@@ -26,6 +26,8 @@ use App\Domain\Shared\Money;
  * SumUp spreads a basket discount over its lines, so a line may be cheaper than the product: it is sold at the higher of
  * the two (the difference becomes the order's "Remise SumUp"), and a product created by this import takes the highest
  * price SumUp charged for it.
+ * SumUp's price label is the variant: an existing product with variants learns a new label as a variant, a product
+ * created by the import gets the labels it is sold with. A label on an existing product without variants is ignored.
  * Returns null when the line names a product that has variants without a known variant.
  */
 final class SumUpProductResolver
@@ -61,7 +63,7 @@ final class SumUpProductResolver
 
         $product = $this->find($name);
         if (null !== $product) {
-            return $product->hasVariants() ? null : $this->sold($product, null, $line);
+            return $this->soldAs($product, $line);
         }
 
         foreach (self::splitVariant($name) as [$productName, $variant]) {
@@ -73,7 +75,37 @@ final class SumUpProductResolver
 
         $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
 
-        return $this->sold($this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type), null, $line);
+        return $this->soldAs($this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type), $line);
+    }
+
+    private function soldAs(Product $product, SumUpLine $line): ?SellableItem
+    {
+        if (null === $line->variant) {
+            return $product->hasVariants() ? null : $this->sold($product, null, $line);
+        }
+
+        $variant = self::matchingVariant($product, $line->variant);
+        if (null !== $variant) {
+            return $this->sold($product, $variant, $line);
+        }
+        if ($product->hasVariants() || isset($this->created[(string) $product->id()])) {
+            $product->addVariant($line->variant);
+
+            return $this->sold($product, $line->variant, $line);
+        }
+
+        return $this->sold($product, null, $line);
+    }
+
+    private static function matchingVariant(Product $product, string $label): ?string
+    {
+        foreach ($product->variants() as $variant) {
+            if (mb_strtolower($variant) === mb_strtolower($label)) {
+                return $variant;
+            }
+        }
+
+        return null;
     }
 
     private function sold(Product $product, ?string $variant, SumUpLine $line): SellableItem

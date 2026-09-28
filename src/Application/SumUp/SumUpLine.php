@@ -13,6 +13,7 @@ final readonly class SumUpLine
         public Money $unitPrice,
         public int $quantity,
         public ?string $category = null,
+        public ?string $variant = null,
     ) {
     }
 }
