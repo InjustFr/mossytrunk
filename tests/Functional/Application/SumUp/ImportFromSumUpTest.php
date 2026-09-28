@@ -153,6 +153,31 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertEqualsCanonicalizing([700, 2_500], array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'total'));
     }
 
+    public function testDiscountedLinesNeitherLowerTheProductPriceNorTheOrderTotal(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 283));
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-BUNDLE', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(800), [
+                new SumUpLine('Calcifer', Money::cents(267), 1),
+                new SumUpLine('Lichen', Money::cents(267), 1),
+                new SumUpLine('Fougère', Money::cents(266), 1),
+            ]),
+            new SumUpTransaction('TX-SINGLE', new \DateTimeImmutable('2030-03-14T13:00:00Z'), Money::cents(300), [new SumUpLine('Calcifer', Money::cents(300), 1)]),
+            new SumUpTransaction('TX-MOUSSE', new \DateTimeImmutable('2030-03-14T14:00:00Z'), Money::cents(300), [new SumUpLine('Mousse', Money::cents(300), 1)]),
+        ]);
+
+        $this->import();
+
+        $prices = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'sellingPrice', 'name');
+        self::assertSame(300, $prices['Calcifer'], 'highest price SumUp charged');
+        self::assertSame(283, $prices['Mousse'], 'existing products are not modified');
+        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), null, 'reference');
+        self::assertSame(300, $orders['TX-SINGLE']->total);
+        self::assertSame(300, $orders['TX-MOUSSE']->total, 'charged more than the catalogue price');
+        self::assertSame(800, $orders['TX-BUNDLE']->total);
+    }
+
     public function testTypedProductsAreMatchedByDisplayName(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');

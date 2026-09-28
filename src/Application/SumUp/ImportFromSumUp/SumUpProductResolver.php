@@ -23,6 +23,9 @@ use App\Domain\Shared\Money;
  *     When SumUp gives a category, it becomes the product type (created if needed) and a leading
  *     "<category> " is removed from the name, so "Print Forêt" in category Print becomes type Print + name Forêt.
  * A line without a name (an amount typed on the terminal) is sold as the "Montant libre" product, at the line's price.
+ * SumUp spreads a basket discount over its lines, so a line may be cheaper than the product: it is sold at the higher of
+ * the two (the difference becomes the order's "Remise SumUp"), and a product created by this import takes the highest
+ * price SumUp charged for it.
  * Returns null when the line names a product that has variants without a known variant.
  */
 final class SumUpProductResolver
@@ -32,7 +35,8 @@ final class SumUpProductResolver
     /** @var array<string, Product>|null products by lowercase display name */
     private ?array $byDisplayName = null;
 
-    private int $productsCreated = 0;
+    /** @var array<string, Product> products created by this import, by id */
+    private array $created = [];
 
     /** @var array<string, ProductType> types by lowercase name, including the ones created by this import */
     private array $types = [];
@@ -57,19 +61,29 @@ final class SumUpProductResolver
 
         $product = $this->find($name);
         if (null !== $product) {
-            return $product->hasVariants() ? null : $product->sellable(null);
+            return $product->hasVariants() ? null : $this->sold($product, null, $line);
         }
 
         foreach (self::splitVariant($name) as [$productName, $variant]) {
             $product = $this->find($productName);
             if (null !== $product && $product->hasVariant($variant)) {
-                return $product->sellable($variant);
+                return $this->sold($product, $variant, $line);
             }
         }
 
         $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
 
-        return $this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type)->sellable(null);
+        return $this->sold($this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type), null, $line);
+    }
+
+    private function sold(Product $product, ?string $variant, SumUpLine $line): SellableItem
+    {
+        if (isset($this->created[(string) $product->id()]) && $line->unitPrice->greaterThan($product->sellingPrice())) {
+            $product->reprice($line->unitPrice, $product->buyingPrice());
+        }
+        $item = $product->sellable($variant);
+
+        return $line->unitPrice->greaterThan($item->sellingPrice) ? $item->at($line->unitPrice) : $item;
     }
 
     private function freeAmount(SumUpLine $line): Product
@@ -84,14 +98,14 @@ final class SumUpProductResolver
         $product = Product::create($this->workspace->current(), $this->references->generate($type, $name), $name, $sellingPrice, Money::zero(), [], $type);
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
-        ++$this->productsCreated;
+        $this->created[(string) $product->id()] = $product;
 
         return $product;
     }
 
     public function createdCount(): int
     {
-        return $this->productsCreated;
+        return \count($this->created);
     }
 
     public function typesCreatedCount(): int
