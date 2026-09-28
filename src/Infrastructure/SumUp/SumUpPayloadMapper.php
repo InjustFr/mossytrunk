@@ -34,7 +34,7 @@ final class SumUpPayloadMapper
     private static function line(array $product): SumUpLine
     {
         return new SumUpLine(
-            (string) $product['name'],
+            (string) ($product['name'] ?? ''),
             Money::cents(self::cents($product['price_with_vat'] ?? $product['price'] ?? 0)),
             max(1, (int) ($product['quantity'] ?? 1)),
             self::category($product),
