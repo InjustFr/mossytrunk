@@ -60,36 +60,38 @@ async function onSubmit() {
 
 <template>
     <form class="product-form" novalidate @submit.prevent="onSubmit">
-        <h2 class="product-form__title">{{ isEditing ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+        <fieldset class="form-lock" :disabled="saving">
+            <h2 class="product-form__title">{{ isEditing ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
 
-        <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
+            <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-        <div class="product-form__row">
-            <FormField label="Référence" :error="errors.reference">
-                <input v-model="form.reference" type="text" required>
+            <div class="product-form__row">
+                <FormField label="Référence" :error="errors.reference">
+                    <input v-model="form.reference" type="text" required>
+                </FormField>
+                <FormField label="Nom" :error="errors.name">
+                    <input v-model="form.name" type="text" required>
+                </FormField>
+            </div>
+
+            <div class="product-form__row">
+                <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
+                    <input v-model="form.sellingPrice" type="text" inputmode="decimal" required>
+                </FormField>
+                <FormField label="Prix d'achat (€)" :error="errors.buyingPrice" hint="0 si inconnu">
+                    <input v-model="form.buyingPrice" type="text" inputmode="decimal">
+                </FormField>
+            </div>
+
+            <FormField label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
+                <VariantsInput v-model="form.variants" />
             </FormField>
-            <FormField label="Nom" :error="errors.name">
-                <input v-model="form.name" type="text" required>
-            </FormField>
-        </div>
 
-        <div class="product-form__row">
-            <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
-                <input v-model="form.sellingPrice" type="text" inputmode="decimal" required>
-            </FormField>
-            <FormField label="Prix d'achat (€)" :error="errors.buyingPrice" hint="0 si inconnu">
-                <input v-model="form.buyingPrice" type="text" inputmode="decimal">
-            </FormField>
-        </div>
-
-        <FormField label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
-            <VariantsInput v-model="form.variants" />
-        </FormField>
-
-        <div class="product-form__actions">
-            <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
-            <BaseButton v-if="isEditing" variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-        </div>
+            <div class="product-form__actions">
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
+                <BaseButton v-if="isEditing" variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+            </div>
+        </fieldset>
     </form>
 </template>
 

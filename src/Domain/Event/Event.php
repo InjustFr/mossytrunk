@@ -1,0 +1,140 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Event;
+
+use App\Domain\Shared\DateRange;
+use App\Domain\Shared\Money;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
+
+/**
+ * A real-world event (convention, market…) where products are sold.
+ *
+ * Rules (see docs/business/events.md):
+ * - name and location are required, the period is an inclusive range of days.
+ * - events never overlap (checked by the use cases), so any order date maps to at most one event.
+ * - expenses have a label and a strictly positive amount.
+ */
+#[ORM\Entity]
+#[ORM\Table(name: 'event')]
+class Event
+{
+    #[ORM\Id]
+    #[ORM\Column(type: UlidType::NAME, unique: true)]
+    private Ulid $id;
+
+    #[ORM\Column(length: 255)]
+    private string $name;
+
+    #[ORM\Column(length: 255)]
+    private string $location;
+
+    #[ORM\Embedded(class: DateRange::class, columnPrefix: 'period_')]
+    private DateRange $period;
+
+    /** @var Collection<int, Expense> */
+    #[ORM\OneToMany(targetEntity: Expense::class, mappedBy: 'event', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
+    private Collection $expenses;
+
+    private function __construct(Ulid $id, string $name, string $location, DateRange $period)
+    {
+        $this->id = $id;
+        $this->expenses = new ArrayCollection();
+        $this->describe($name, $location);
+        $this->period = $period;
+    }
+
+    public static function schedule(string $name, string $location, DateRange $period): self
+    {
+        return new self(new Ulid(), $name, $location, $period);
+    }
+
+    public function describe(string $name, string $location): void
+    {
+        $name = trim($name);
+        $location = trim($location);
+
+        if ('' === $name) {
+            throw InvalidEvent::emptyName();
+        }
+        if ('' === $location) {
+            throw InvalidEvent::emptyLocation();
+        }
+
+        $this->name = $name;
+        $this->location = $location;
+    }
+
+    /**
+     * The caller guarantees no other event overlaps and no order falls outside the new period.
+     */
+    public function reschedule(DateRange $period): void
+    {
+        $this->period = $period;
+    }
+
+    public function addExpense(string $label, Money $amount): Expense
+    {
+        $expense = new Expense($this, $label, $amount);
+        $this->expenses->add($expense);
+
+        return $expense;
+    }
+
+    public function removeExpense(Ulid $expenseId): void
+    {
+        foreach ($this->expenses as $expense) {
+            if ($expense->id()->equals($expenseId)) {
+                $this->expenses->removeElement($expense);
+
+                return;
+            }
+        }
+
+        throw InvalidEvent::unknownExpense((string) $expenseId);
+    }
+
+    public function covers(\DateTimeImmutable $moment): bool
+    {
+        return $this->period->covers($moment);
+    }
+
+    public function totalExpenses(): Money
+    {
+        return Money::sum($this->expenses->map(static fn (Expense $expense): Money => $expense->amount()));
+    }
+
+    public function id(): Ulid
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function location(): string
+    {
+        return $this->location;
+    }
+
+    public function period(): DateRange
+    {
+        return $this->period;
+    }
+
+    /**
+     * @return list<Expense>
+     */
+    public function expenses(): array
+    {
+        return array_values($this->expenses->toArray());
+    }
+}

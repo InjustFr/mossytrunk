@@ -26,3 +26,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
     position: absolute; width: 1px; height: 1px; overflow: hidden;
     clip: rect(0 0 0 0); white-space: nowrap;
 }
+
+/* Wraps a form's fields to disable them all while it is being submitted, without affecting layout. */
+.form-lock { display: contents; }

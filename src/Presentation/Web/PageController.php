@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 
 /**
  * Serves the Twig shells that mount Vue pages. Data is loaded by the pages through the JSON API.
@@ -30,6 +31,18 @@ final class PageController extends AbstractController
     public function products(): Response
     {
         return $this->page('ProductsPage', 'Produits');
+    }
+
+    #[Route('/evenements', name: 'events', methods: ['GET'])]
+    public function events(): Response
+    {
+        return $this->page('EventsPage', 'Événements');
+    }
+
+    #[Route('/evenements/{id}', name: 'event_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function event(string $id): Response
+    {
+        return $this->page('EventDetailPage', 'Événement', ['eventId' => $id]);
     }
 
     /**
