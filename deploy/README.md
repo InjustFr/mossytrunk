@@ -27,12 +27,11 @@ Fill `.env`:
 | `TRUSTED_PROXIES` | Who may set `X-Forwarded-*`: the proxy IP/CIDR (e.g. `203.0.113.10`), `private_ranges`, or `REMOTE_ADDR` (trust whoever connects — only when a firewall lets nothing but the proxy reach `APP_PORT`) |
 | `DEFAULT_URI` | Public URL, e.g. `https://mossytrunk.example.com` (used in email links) |
 | `APP_SECRET` | `openssl rand -hex 32` |
-| `APP_ENCRYPTION_KEY` | `openssl rand -base64 32` |
+| `APP_ENCRYPTION_KEY` | `openssl rand -base64 32` (encrypts the per-workspace API keys, e.g. SumUp, entered in the settings page) |
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` (`POSTGRES_DB` / `POSTGRES_USER` can stay `app`) |
 | `MAILER_DSN` / `MAILER_FROM` | SMTP DSN (`smtp://user:pass@smtp.example.com:587`) and sender address |
-| `SUMUP_API_KEY` / `SUMUP_MERCHANT_CODE` | Optional, enables the SumUp import |
 
-Never change `APP_SECRET` or `POSTGRES_PASSWORD` after the first start: sessions and the database depend on them.
+Never change `APP_SECRET`, `APP_ENCRYPTION_KEY` or `POSTGRES_PASSWORD` after the first start: sessions, stored API keys and the database depend on them. Keep a copy of `.env` with your backups.
 
 ## Start
 
