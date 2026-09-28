@@ -3,7 +3,7 @@
         "@babel/core": "^8.0.0",
         "@babel/preset-env": "^8.0.0",
         "@fontsource-variable/inter": "^5.3.0",
-        "@fontsource/dm-serif-display": "^5.3.0",
+        "@fontsource/patua-one": "^5.3.0",
         "@hotwired/stimulus": "^3.0.0",
         "@hotwired/turbo": "^7.1.0 || ^8.0",
         "@symfony/stimulus-bridge": "^4.0.1",

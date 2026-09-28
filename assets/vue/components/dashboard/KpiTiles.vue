@@ -49,6 +49,6 @@ defineProps({
 .kpi-tiles__tile--result { border-left: 0.1875rem solid var(--color-accent); }
 
 .kpi-tiles__label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.084rem; text-transform: uppercase; color: var(--color-muted); }
-.kpi-tiles__value { margin: var(--space-1) 0 0; font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; }
+.kpi-tiles__value { margin: var(--space-1) 0 0; font-family: var(--font-display); font-size: 1.65rem; line-height: 1.2; }
 .kpi-tiles__detail { margin: var(--space-1) 0 0; font-size: 0.85rem; color: var(--color-muted); }
 </style>

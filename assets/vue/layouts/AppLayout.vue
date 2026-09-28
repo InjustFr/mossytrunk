@@ -74,7 +74,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__brand {
     padding: 0 var(--space-3);
     font-family: var(--font-display);
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     line-height: 1;
     color: var(--color-ink);
     text-decoration: none;

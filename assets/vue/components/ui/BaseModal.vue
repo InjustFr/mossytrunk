@@ -92,7 +92,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
     border-bottom: 0.0625rem solid var(--color-border);
 }
 
-.modal__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.45rem; }
+.modal__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.35rem; }
 
 .modal__close {
     display: inline-flex;

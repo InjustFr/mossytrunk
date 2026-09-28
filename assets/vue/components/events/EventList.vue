@@ -59,7 +59,7 @@ defineProps({
 
 .event-list__link:hover { border-color: var(--color-ink); transform: translateX(0.125rem); }
 
-.event-list__name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; }
+.event-list__name { font-family: var(--font-display); font-size: 1.25rem; line-height: 1.2; }
 .event-list__badge {
     margin-left: var(--space-2);
     padding: 0.125rem var(--space-2);
