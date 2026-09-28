@@ -6,6 +6,7 @@ defineProps({
 });
 
 const links = [
+    { href: '/tableau-de-bord', label: 'Tableau de bord', icon: '📊' },
     { href: '/commandes', label: 'Commandes', icon: '🧾' },
     { href: '/evenements', label: 'Événements', icon: '📅' },
     { href: '/produits', label: 'Produits', icon: '🏷️' },

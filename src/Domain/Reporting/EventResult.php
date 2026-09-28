@@ -9,10 +9,7 @@ use App\Domain\Order\Order;
 use App\Domain\Shared\Money;
 
 /**
- * Profitability of an event:
- *   turnover      = Σ order totals (after discounts)
- *   URSSAF        = 12.8 % × turnover
- *   result        = turnover − cost of goods sold − expenses − URSSAF
+ * Profitability of an event: its orders and expenses through {@see SalesFigures}, plus sales per (product, variant).
  *
  * See docs/business/event-report.md.
  */
@@ -39,22 +36,17 @@ final readonly class EventResult
      */
     public static function of(Event $event, array $orders): self
     {
-        $grossSales = Money::sum(array_map(static fn (Order $order): Money => $order->subtotal(), $orders));
-        $discounts = Money::sum(array_map(static fn (Order $order): Money => $order->discountTotal(), $orders));
-        $turnover = $grossSales->subtract($discounts);
-        $costOfGoods = Money::sum(array_map(static fn (Order $order): Money => $order->costOfGoods(), $orders));
-        $expenses = $event->totalExpenses();
-        $urssaf = UrssafContribution::on($turnover);
+        $figures = SalesFigures::of($orders, $event->totalExpenses());
 
         return new self(
-            \count($orders),
-            $grossSales,
-            $discounts,
-            $turnover,
-            $costOfGoods,
-            $expenses,
-            $urssaf,
-            $turnover->subtract($costOfGoods)->subtract($expenses)->subtract($urssaf),
+            $figures->orderCount,
+            $figures->grossSales,
+            $figures->discounts,
+            $figures->turnover,
+            $figures->costOfGoods,
+            $figures->expenses,
+            $figures->urssaf,
+            $figures->result,
             self::productSales($orders),
         );
     }

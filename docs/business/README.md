@@ -13,6 +13,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [orders.md](orders.md) | Orders, auto-link to the event, lines & snapshots, totals, margin |
 | [discounts.md](discounts.md) | Bundle discounts and the automatic calculation |
 | [event-report.md](event-report.md) | Profitability of an event: Dépenses, Commandes, URSSAF 12.8 %, Total |
+| [dashboard.md](dashboard.md) | Results per month and per year |
 | [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
 
 ## Glossary (UI term → code)

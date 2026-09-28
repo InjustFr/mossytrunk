@@ -18,7 +18,13 @@ final class PageController extends AbstractController
     #[Route('/', name: 'home', methods: ['GET'])]
     public function home(): RedirectResponse
     {
-        return $this->redirectToRoute('orders');
+        return $this->redirectToRoute('dashboard');
+    }
+
+    #[Route('/tableau-de-bord', name: 'dashboard', methods: ['GET'])]
+    public function dashboard(): Response
+    {
+        return $this->page('DashboardPage', 'Tableau de bord');
     }
 
     #[Route('/commandes', name: 'orders', methods: ['GET'])]
