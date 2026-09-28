@@ -50,7 +50,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                 </td>
                 <td class="data-table__cell--number">
                     <MoneyAmount :cents="product.buyingPrice" />
-                    <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" :size="14" aria-label="Prix d'achat à renseigner" role="img" />
+                    <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" size="0.875rem" aria-label="Prix d'achat à renseigner" role="img" />
                 </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
                 <td>
@@ -65,9 +65,9 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 .product-list__row { transition: background var(--transition); }
 .product-list__row--selected { background: var(--color-accent-soft); }
 .product-list__reference { color: var(--color-muted); font-size: 0.9rem; }
-.product-list__check { width: 32px; }
+.product-list__check { width: 2rem; }
 .product-list__check input { accent-color: var(--color-accent); }
 .product-list__type { color: var(--color-muted); }
 .product-list__unique { color: var(--color-muted); font-style: italic; }
-.product-list__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -2px; }
+.product-list__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

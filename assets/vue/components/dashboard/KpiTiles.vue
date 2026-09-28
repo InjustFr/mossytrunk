@@ -34,7 +34,7 @@ defineProps({
 <style scoped>
 .kpi-tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
     gap: var(--space-4);
     margin: 0 0 var(--space-5);
 }
@@ -42,13 +42,13 @@ defineProps({
 .kpi-tiles__tile {
     padding: var(--space-4) var(--space-5);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
 }
 
-.kpi-tiles__tile--result { border-left: 3px solid var(--color-accent); }
+.kpi-tiles__tile--result { border-left: 0.1875rem solid var(--color-accent); }
 
-.kpi-tiles__label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+.kpi-tiles__label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.084rem; text-transform: uppercase; color: var(--color-muted); }
 .kpi-tiles__value { margin: var(--space-1) 0 0; font-family: var(--font-display); font-size: 1.8rem; line-height: 1.2; }
 .kpi-tiles__detail { margin: var(--space-1) 0 0; font-size: 0.85rem; color: var(--color-muted); }
 </style>

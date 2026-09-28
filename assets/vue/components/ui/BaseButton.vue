@@ -24,19 +24,19 @@ defineProps({
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    min-height: 38px;
+    min-height: 2.375rem;
     padding: var(--space-2) var(--space-4);
-    border: 1px solid transparent;
+    border: 0.0625rem solid transparent;
     border-radius: var(--radius);
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.009rem;
     transition: background var(--transition), border-color var(--transition), color var(--transition), opacity var(--transition);
 }
 
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
-.button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.button:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .button--primary { background: var(--color-accent); color: #fff; }
 .button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }
@@ -48,12 +48,12 @@ defineProps({
 .button--danger:hover:not(:disabled) { background: var(--color-danger-soft); }
 
 .button--ghost { min-height: auto; background: none; color: var(--color-muted); padding: var(--space-1) var(--space-2); font-weight: 500; }
-.button--ghost:hover:not(:disabled) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+.button--ghost:hover:not(:disabled) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
 
 .button__spinner {
-    width: 0.9em;
-    height: 0.9em;
-    border: 2px solid currentColor;
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 0.125rem solid currentColor;
     border-right-color: transparent;
     border-radius: 50%;
     animation: button-spin 0.7s linear infinite;

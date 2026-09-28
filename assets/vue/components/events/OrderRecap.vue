@@ -37,7 +37,7 @@ watch(visible, (value) => {
             <div v-if="visible && groups.length" class="order-recap__list" data-test="order-recap">
                 <details v-for="group in groups" :key="group.type" class="order-recap__group">
                     <summary class="order-recap__row order-recap__row--group">
-                        <ChevronRight class="order-recap__chevron" :size="14" aria-hidden="true" />
+                        <ChevronRight class="order-recap__chevron" size="0.875rem" aria-hidden="true" />
                         <span class="order-recap__label">{{ group.type }}</span>
                         <span class="order-recap__quantity">{{ group.quantity }} art.</span>
                         <MoneyAmount class="order-recap__amount" :cents="group.sales" />
@@ -46,7 +46,7 @@ watch(visible, (value) => {
                     <template v-for="product in group.products" :key="product.name">
                         <details v-if="product.variants.length" class="order-recap__product">
                             <summary class="order-recap__row order-recap__row--product">
-                                <ChevronRight class="order-recap__chevron" :size="14" aria-hidden="true" />
+                                <ChevronRight class="order-recap__chevron" size="0.875rem" aria-hidden="true" />
                                 <span class="order-recap__label">{{ product.name }}</span>
                                 <span class="order-recap__quantity">{{ product.quantity }}</span>
                                 <MoneyAmount class="order-recap__amount" :cents="product.sales" />
@@ -60,7 +60,7 @@ watch(visible, (value) => {
                         <div v-else class="order-recap__row order-recap__row--product order-recap__row--leaf">
                             <span class="order-recap__label">
                                 {{ product.name }}
-                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" :size="14" aria-label="Prix d'achat non renseigné (0 €)" role="img" />
+                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" size="0.875rem" aria-label="Prix d'achat non renseigné (0 €)" role="img" />
                             </span>
                             <span class="order-recap__quantity">{{ product.quantity }}</span>
                             <MoneyAmount class="order-recap__amount" :cents="product.sales" />
@@ -78,15 +78,15 @@ watch(visible, (value) => {
 .order-recap__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; color: var(--color-muted); cursor: pointer; }
 .order-recap__toggle input { accent-color: var(--color-accent); }
 
-.order-recap__list { border-top: 1px solid var(--color-border); }
+.order-recap__list { border-top: 0.0625rem solid var(--color-border); }
 
 .order-recap__row {
     display: grid;
-    grid-template-columns: 1em minmax(0, 1fr) 70px 100px;
+    grid-template-columns: 0.9375rem minmax(0, 1fr) 4.375rem 6.25rem;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) 0;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 0.0625rem solid var(--color-border);
     list-style: none;
 }
 
@@ -96,15 +96,15 @@ summary.order-recap__row:hover { background: #fafaf8; }
 
 .order-recap__row--group { font-weight: 600; }
 .order-recap__row--product { padding-left: var(--space-4); }
-.order-recap__row--leaf { grid-template-columns: minmax(0, 1fr) 70px 100px; padding-left: calc(var(--space-4) + 1em + var(--space-2)); }
-.order-recap__row--variant { grid-template-columns: minmax(0, 1fr) 70px 100px; padding-left: calc(var(--space-6) + 1em + var(--space-2)); color: var(--color-muted); }
+.order-recap__row--leaf { grid-template-columns: minmax(0, 1fr) 4.375rem 6.25rem; padding-left: calc(var(--space-4) + 0.9375rem + var(--space-2)); }
+.order-recap__row--variant { grid-template-columns: minmax(0, 1fr) 4.375rem 6.25rem; padding-left: calc(var(--space-6) + 0.9375rem + var(--space-2)); color: var(--color-muted); }
 
 .order-recap__chevron { color: var(--color-muted); transition: transform var(--transition); }
 details[open] > summary > .order-recap__chevron { transform: rotate(90deg); }
 
 .order-recap__quantity,
 .order-recap__amount { text-align: right; font-variant-numeric: tabular-nums; }
-.order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -2px; }
+.order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 
 .order-recap__list-enter-active,
 .order-recap__list-leave-active { transition: opacity var(--transition); }

@@ -31,7 +31,7 @@ function remove(variant) {
                     class="variants-input__remove"
                     :aria-label="`Retirer la variante ${variant}`"
                     @click="remove(variant)"
-                ><X :size="12" aria-hidden="true" /></button>
+                ><X size="0.75rem" aria-hidden="true" /></button>
             </li>
         </TransitionGroup>
         <input
@@ -62,8 +62,8 @@ function remove(variant) {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    padding: 2px var(--space-2);
-    border-radius: 999px;
+    padding: 0.125rem var(--space-2);
+    border-radius: 62.4375rem;
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
     font-size: 0.85rem;

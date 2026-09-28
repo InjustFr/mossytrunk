@@ -53,7 +53,7 @@ onMounted(load);
 
 <template>
     <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a class="back-link" href="/evenements"><ArrowLeft :size="14" aria-hidden="true" /> Événements</a></template>
+        <template #back><a class="back-link" href="/evenements"><ArrowLeft size="0.875rem" aria-hidden="true" /> Événements</a></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
@@ -86,9 +86,9 @@ onMounted(load);
 
 <style scoped>
 .event-detail-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.event-detail-page__grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); gap: var(--space-5); align-items: start; }
+.event-detail-page__grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(17.5rem, 2fr); gap: var(--space-5); align-items: start; }
 
-@media (max-width: 1100px) {
+@media (max-width: 68.75rem) {
     .event-detail-page__grid { grid-template-columns: 1fr; }
 }
 </style>

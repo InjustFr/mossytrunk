@@ -16,7 +16,7 @@ const { toasts, dismiss } = useToast();
                 data-test="toast"
             >
                 <span class="toast__message">{{ toast.message }}</span>
-                <button class="toast__close" type="button" aria-label="Fermer" @click="dismiss(toast.id)"><X :size="16" aria-hidden="true" /></button>
+                <button class="toast__close" type="button" aria-label="Fermer" @click="dismiss(toast.id)"><X size="1rem" aria-hidden="true" /></button>
             </div>
         </TransitionGroup>
     </div>
@@ -31,7 +31,7 @@ const { toasts, dismiss } = useToast();
     flex-direction: column;
     gap: var(--space-2);
     z-index: 100;
-    max-width: min(420px, calc(100vw - 2 * var(--space-4)));
+    max-width: min(26.25rem, calc(100vw - 2 * var(--space-4)));
 }
 
 .toast {
@@ -41,7 +41,7 @@ const { toasts, dismiss } = useToast();
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius);
     background: var(--color-surface);
-    border-left: 4px solid var(--color-accent);
+    border-left: 0.25rem solid var(--color-accent);
     box-shadow: var(--shadow);
 }
 
@@ -65,5 +65,5 @@ const { toasts, dismiss } = useToast();
 .toast-host__item-enter-active,
 .toast-host__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .toast-host__item-enter-from,
-.toast-host__item-leave-to { opacity: 0; transform: translateY(8px); }
+.toast-host__item-leave-to { opacity: 0; transform: translateY(0.5rem); }
 </style>

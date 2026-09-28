@@ -36,7 +36,7 @@ defineProps({
 .order-totals__row--total {
     margin-top: var(--space-1);
     padding-top: var(--space-2);
-    border-top: 1px solid var(--color-border);
+    border-top: 0.0625rem solid var(--color-border);
     font-size: 1.1rem;
     font-weight: 700;
 }
@@ -44,5 +44,5 @@ defineProps({
 .order-totals__discount-enter-active,
 .order-totals__discount-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .order-totals__discount-enter-from,
-.order-totals__discount-leave-to { opacity: 0; transform: translateY(-4px); }
+.order-totals__discount-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 </style>

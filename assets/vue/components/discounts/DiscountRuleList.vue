@@ -51,8 +51,8 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-left: 4px solid var(--color-accent);
+    border: 0.0625rem solid var(--color-border);
+    border-left: 0.25rem solid var(--color-accent);
     border-radius: var(--radius);
     background: var(--color-surface);
     transition: opacity var(--transition), border-color var(--transition), background var(--transition);
@@ -74,5 +74,5 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
 .discount-rule-list__item-enter-active,
 .discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .discount-rule-list__item-enter-from,
-.discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-4px); }
+.discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 </style>

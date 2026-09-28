@@ -15,7 +15,7 @@ defineProps({
 <template>
     <details class="report-section" :open="open">
         <summary class="report-section__summary">
-            <ChevronRight class="report-section__chevron" :size="16" aria-hidden="true" />
+            <ChevronRight class="report-section__chevron" size="1rem" aria-hidden="true" />
             <span class="report-section__title">{{ title }}</span>
             <span :class="['report-section__amount', `report-section__amount--${sign === '+' ? 'income' : 'cost'}`]">
                 {{ sign }} <MoneyAmount :cents="amount" />
@@ -26,7 +26,7 @@ defineProps({
 </template>
 
 <style scoped>
-.report-section { border-bottom: 1px solid var(--color-border); }
+.report-section { border-bottom: 0.0625rem solid var(--color-border); }
 
 .report-section__summary {
     display: flex;

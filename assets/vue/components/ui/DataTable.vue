@@ -50,7 +50,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 .data-table :deep(td) {
     padding: var(--space-2) var(--space-3);
     text-align: left;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 0.0625rem solid var(--color-border);
     vertical-align: middle;
 }
 
@@ -58,7 +58,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.084rem;
     color: var(--color-muted);
     border-bottom-color: var(--color-border-strong);
 }

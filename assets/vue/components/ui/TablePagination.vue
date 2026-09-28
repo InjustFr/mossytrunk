@@ -27,10 +27,10 @@ const pages = computed(() => {
 
         <div class="table-pagination__pages">
             <button type="button" class="table-pagination__button" :disabled="page === 1" aria-label="Première page" @click="emit('go', 1)">
-                <ChevronsLeft :size="16" aria-hidden="true" />
+                <ChevronsLeft size="1rem" aria-hidden="true" />
             </button>
             <button type="button" class="table-pagination__button" :disabled="page === 1" aria-label="Page précédente" @click="emit('go', page - 1)">
-                <ChevronLeft :size="16" aria-hidden="true" />
+                <ChevronLeft size="1rem" aria-hidden="true" />
             </button>
             <template v-for="(item, index) in pages" :key="`${item}-${index}`">
                 <span v-if="item === '…'" class="table-pagination__gap" aria-hidden="true">…</span>
@@ -44,10 +44,10 @@ const pages = computed(() => {
                 >{{ item }}</button>
             </template>
             <button type="button" class="table-pagination__button" :disabled="page === pageCount" aria-label="Page suivante" @click="emit('go', page + 1)">
-                <ChevronRight :size="16" aria-hidden="true" />
+                <ChevronRight size="1rem" aria-hidden="true" />
             </button>
             <button type="button" class="table-pagination__button" :disabled="page === pageCount" aria-label="Dernière page" @click="emit('go', pageCount)">
-                <ChevronsRight :size="16" aria-hidden="true" />
+                <ChevronsRight size="1rem" aria-hidden="true" />
             </button>
         </div>
 
@@ -78,10 +78,10 @@ const pages = computed(() => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    height: 32px;
+    min-width: 2rem;
+    height: 2rem;
     padding: 0 var(--space-2);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
     color: var(--color-text);
@@ -97,9 +97,9 @@ const pages = computed(() => {
 
 .table-pagination__size { display: flex; align-items: center; gap: var(--space-2); }
 .table-pagination__size select {
-    min-height: 32px;
+    min-height: 2rem;
     padding: 0 var(--space-2);
-    border: 1px solid var(--color-border-strong);
+    border: 0.0625rem solid var(--color-border-strong);
     border-radius: var(--radius);
     background: var(--color-surface);
 }

@@ -30,7 +30,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                     :class="['app-layout__link', 'eyebrow', { 'app-layout__link--active': isActive(link.href) }]"
                     :aria-current="isActive(link.href) ? 'page' : undefined"
                 >
-                    <component :is="link.icon" class="app-layout__icon" :size="18" :stroke-width="1.75" aria-hidden="true" />
+                    <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
                     {{ link.label }}
                 </a>
             </nav>
@@ -68,7 +68,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     gap: var(--space-6);
     padding: var(--space-6) var(--space-4);
     background: var(--color-sidebar);
-    border-right: 1px solid var(--color-border);
+    border-right: 0.0625rem solid var(--color-border);
 }
 
 .app-layout__brand {
@@ -87,7 +87,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-3);
-    border-left: 2px solid transparent;
+    border-left: 0.125rem solid transparent;
     color: var(--color-muted);
     text-decoration: none;
     transition: color var(--transition), background var(--transition), border-color var(--transition);
@@ -120,7 +120,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     flex-wrap: wrap;
     margin-bottom: var(--space-5);
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 0.0625rem solid var(--color-border);
 }
 
 .app-layout__back { margin-bottom: var(--space-2); font-size: 0.9rem; }
@@ -129,7 +129,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__title { margin: 0; }
 .app-layout__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
-@media (max-width: 860px) {
+@media (max-width: 53.75rem) {
     .app-layout { grid-template-columns: 1fr; }
 
     .app-layout__sidebar {
@@ -141,11 +141,11 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
         gap: var(--space-3);
         padding: var(--space-3) var(--space-4);
         border-right: none;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 0.0625rem solid var(--color-border);
     }
 
     .app-layout__nav { flex-direction: row; flex-wrap: wrap; }
-    .app-layout__link { border-left: none; border-bottom: 2px solid transparent; padding: var(--space-2); }
+    .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); }
     .app-layout__link--active { border-bottom-color: var(--color-accent); }
     .app-layout__footer { display: none; }
     .app-layout__main { padding: var(--space-4); }

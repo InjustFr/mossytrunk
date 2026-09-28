@@ -65,17 +65,17 @@ const barStyle = (result) => {
 
 <style scoped>
 .monthly-chart { margin: 0; }
-.monthly-chart__caption { margin-bottom: var(--space-3); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+.monthly-chart__caption { margin-bottom: var(--space-3); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.09rem; text-transform: uppercase; color: var(--color-muted); }
 
 .monthly-chart__plot {
     position: relative;
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: var(--space-2);
-    height: 200px;
+    height: 12.5rem;
 }
 
-.monthly-chart__zero { position: absolute; left: 0; right: 0; border-top: 1px solid var(--color-border-strong); }
+.monthly-chart__zero { position: absolute; left: 0; right: 0; border-top: 0.0625rem solid var(--color-border-strong); }
 
 .monthly-chart__slot { position: relative; outline: none; border-radius: var(--radius); }
 .monthly-chart__slot:hover,
@@ -88,8 +88,8 @@ const barStyle = (result) => {
     transition: top var(--transition), height var(--transition);
 }
 
-.monthly-chart__bar--gain { background: var(--color-accent); border-radius: 4px 4px 0 0; }
-.monthly-chart__bar--loss { background: var(--color-danger); border-radius: 0 0 4px 4px; }
+.monthly-chart__bar--gain { background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }
+.monthly-chart__bar--loss { background: var(--color-danger); border-radius: 0 0 0.25rem 0.25rem; }
 
 .monthly-chart__tooltip {
     position: absolute;

@@ -69,5 +69,5 @@ onMounted(() => Promise.all([load(), loadProducts(), loadEvents()]));
 .orders-page__problem-enter-active,
 .orders-page__problem-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .orders-page__problem-enter-from,
-.orders-page__problem-leave-to { opacity: 0; transform: translateY(-6px); }
+.orders-page__problem-leave-to { opacity: 0; transform: translateY(-0.375rem); }
 </style>

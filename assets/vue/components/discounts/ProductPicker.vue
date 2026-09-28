@@ -45,12 +45,12 @@ function toggle(id) {
 .product-picker { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .product-picker__list {
-    max-height: 220px;
+    max-height: 13.75rem;
     overflow-y: auto;
     margin: 0;
     padding: var(--space-1);
     list-style: none;
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
 }
 
@@ -59,7 +59,7 @@ function toggle(id) {
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-2);
-    border-radius: calc(var(--radius) - 2px);
+    border-radius: calc(var(--radius) - 0.125rem);
     cursor: pointer;
     transition: background var(--transition);
 }

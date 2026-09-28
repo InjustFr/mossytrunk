@@ -25,7 +25,7 @@ const label = (line) => {
                 <button type="button" class="order-draft-lines__step" :aria-label="`Ajouter un ${label(line)}`" @click="emit('quantity', line.key, line.quantity + 1)">+</button>
             </span>
             <MoneyAmount class="order-draft-lines__total" :cents="(productOf(line)?.sellingPrice ?? 0) * line.quantity" />
-            <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)"><X :size="16" aria-hidden="true" /></button>
+            <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)"><X size="1rem" aria-hidden="true" /></button>
         </li>
     </TransitionGroup>
 </template>
@@ -35,7 +35,7 @@ const label = (line) => {
 
 .order-draft-lines__line {
     display: grid;
-    grid-template-columns: 1fr auto 90px auto;
+    grid-template-columns: 1fr auto 5.625rem auto;
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-2) var(--space-3);
@@ -50,9 +50,9 @@ const label = (line) => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: 1px solid var(--color-border);
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 0.0625rem solid var(--color-border);
     border-radius: 50%;
     background: var(--color-surface);
     cursor: pointer;
@@ -69,5 +69,5 @@ const label = (line) => {
 .order-draft-lines__line-enter-active,
 .order-draft-lines__line-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .order-draft-lines__line-enter-from,
-.order-draft-lines__line-leave-to { opacity: 0; transform: translateX(-6px); }
+.order-draft-lines__line-leave-to { opacity: 0; transform: translateX(-0.375rem); }
 </style>

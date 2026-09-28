@@ -20,7 +20,7 @@ const selected = defineModel({ type: String, required: true });
 .event-filter__label { color: var(--color-muted); font-size: 0.9rem; }
 .event-filter__select {
     padding: var(--space-1) var(--space-2);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
 }

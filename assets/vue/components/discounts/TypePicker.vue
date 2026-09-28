@@ -30,8 +30,8 @@ function toggle(id) {
 
 .type-picker__chip {
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--color-border-strong);
-    border-radius: 999px;
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: 62.4375rem;
     background: var(--color-surface);
     cursor: pointer;
     transition: background var(--transition), color var(--transition), border-color var(--transition);

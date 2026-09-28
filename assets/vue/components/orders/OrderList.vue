@@ -53,10 +53,10 @@ defineProps({
 
 .order-list__badge {
     margin-left: var(--space-2);
-    padding: 1px var(--space-2);
-    border-radius: 999px;
+    padding: 0.0625rem var(--space-2);
+    border-radius: 62.4375rem;
     background: var(--color-bg);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     color: var(--color-muted);
     font-size: 0.75rem;
 }

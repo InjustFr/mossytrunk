@@ -40,5 +40,5 @@ const emit = defineEmits(['edit', 'clear']);
 .selection-bar-enter-active,
 .selection-bar-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .selection-bar-enter-from,
-.selection-bar-leave-to { opacity: 0; transform: translateY(8px); }
+.selection-bar-leave-to { opacity: 0; transform: translateY(0.5rem); }
 </style>

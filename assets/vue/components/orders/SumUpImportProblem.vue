@@ -19,7 +19,7 @@ const emit = defineEmits(['dismiss']);
                 Produits à préciser : <strong>{{ problem.products.join(', ') }}</strong>
             </p>
         </div>
-        <button type="button" class="sumup-import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')"><X :size="16" aria-hidden="true" /></button>
+        <button type="button" class="sumup-import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')"><X size="1rem" aria-hidden="true" /></button>
     </div>
 </template>
 
@@ -28,8 +28,8 @@ const emit = defineEmits(['dismiss']);
     display: flex;
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--color-danger);
-    border-left-width: 4px;
+    border: 0.0625rem solid var(--color-danger);
+    border-left-width: 0.25rem;
     border-radius: var(--radius);
     background: var(--color-danger-soft);
 }

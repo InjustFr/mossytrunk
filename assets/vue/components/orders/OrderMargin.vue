@@ -21,6 +21,6 @@ defineProps({
 .order-margin { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; }
 .order-margin__row { display: flex; justify-content: space-between; }
 .order-margin__row dd { margin: 0; }
-.order-margin__row--result { padding-top: var(--space-2); border-top: 1px solid var(--color-border); font-weight: 700; }
+.order-margin__row--result { padding-top: var(--space-2); border-top: 0.0625rem solid var(--color-border); font-weight: 700; }
 .order-margin__note { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 0.85rem; }
 </style>

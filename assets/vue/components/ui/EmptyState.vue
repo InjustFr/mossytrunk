@@ -8,7 +8,7 @@
     padding: var(--space-5);
     text-align: center;
     color: var(--color-muted);
-    border: 1px dashed var(--color-border);
+    border: 0.0625rem dashed var(--color-border);
     border-radius: var(--radius);
 }
 </style>

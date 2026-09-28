@@ -17,7 +17,7 @@ defineProps({
 <style scoped>
 .card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     padding: var(--space-5);
 }
@@ -34,7 +34,7 @@ defineProps({
     margin: 0;
     font-size: 0.75rem;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.09rem;
     text-transform: uppercase;
     color: var(--color-muted);
 }

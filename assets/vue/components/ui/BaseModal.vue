@@ -50,7 +50,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 >
                     <header class="modal__header">
                         <h2 class="modal__title">{{ title }}</h2>
-                        <button type="button" class="modal__close" aria-label="Fermer" @click="close"><X :size="16" aria-hidden="true" /></button>
+                        <button type="button" class="modal__close" aria-label="Fermer" @click="close"><X size="1rem" aria-hidden="true" /></button>
                     </header>
                     <div class="modal__body"><slot /></div>
                 </section>
@@ -74,14 +74,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 .modal__panel {
     display: flex;
     flex-direction: column;
-    width: min(560px, 100%);
+    width: min(35rem, 100%);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
 }
 
-.modal--drawer .modal__panel { width: min(520px, 100%); height: 100%; border-radius: 0; border-width: 0 0 0 1px; }
+.modal--drawer .modal__panel { width: min(32.5rem, 100%); height: 100%; border-radius: 0; border-width: 0 0 0 0.0625rem; }
 
 .modal__header {
     display: flex;
@@ -89,7 +89,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 0.0625rem solid var(--color-border);
 }
 
 .modal__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.45rem; }
@@ -126,8 +126,8 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 .modal--drawer-leave-to { opacity: 0; }
 
 .modal--dialog-enter-from .modal__panel,
-.modal--dialog-leave-to .modal__panel { transform: translateY(8px) scale(0.98); }
+.modal--dialog-leave-to .modal__panel { transform: translateY(0.5rem) scale(0.98); }
 
 .modal--drawer-enter-from .modal__panel,
-.modal--drawer-leave-to .modal__panel { transform: translateX(24px); }
+.modal--drawer-leave-to .modal__panel { transform: translateX(1.5rem); }
 </style>

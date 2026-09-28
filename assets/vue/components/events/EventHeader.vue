@@ -9,9 +9,9 @@ defineProps({
 
 <template>
     <p class="event-header">
-        <span class="event-header__item"><MapPin :size="16" aria-hidden="true" /> {{ event.location }}</span>
+        <span class="event-header__item"><MapPin size="1rem" aria-hidden="true" /> {{ event.location }}</span>
         <span class="event-header__item">
-            <CalendarDays :size="16" aria-hidden="true" /> {{ formatDate(event.startDate) }}
+            <CalendarDays size="1rem" aria-hidden="true" /> {{ formatDate(event.startDate) }}
             <template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>
         </span>
     </p>

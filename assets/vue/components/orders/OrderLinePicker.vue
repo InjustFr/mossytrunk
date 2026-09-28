@@ -66,7 +66,7 @@ function add() {
 <style scoped>
 .order-line-picker {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 90px auto;
+    grid-template-columns: minmax(0, 1fr) 5.625rem auto;
     grid-template-areas:
         "product product product"
         "variant quantity add";

@@ -32,8 +32,8 @@ const chips = (types) => [{ id: '', name: 'Tous' }, ...types, { id: UNTYPED, nam
 
 .product-filters__chip {
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--color-border-strong);
-    border-radius: 999px;
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: 62.4375rem;
     background: var(--color-surface);
     cursor: pointer;
     font-size: 0.85rem;
@@ -44,10 +44,10 @@ const chips = (types) => [{ id: '', name: 'Tous' }, ...types, { id: UNTYPED, nam
 .product-filters__chip--active { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 
 .product-filters__search {
-    min-height: 34px;
-    min-width: 220px;
+    min-height: 2.125rem;
+    min-width: 13.75rem;
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--color-border-strong);
+    border: 0.0625rem solid var(--color-border-strong);
     border-radius: var(--radius);
 }
 </style>

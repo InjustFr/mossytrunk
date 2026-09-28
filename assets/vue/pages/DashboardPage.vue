@@ -52,9 +52,9 @@ onMounted(() => load());
 <style scoped>
 .dashboard-page__year { display: flex; align-items: center; gap: var(--space-2); }
 .dashboard-page__year select {
-    min-height: 38px;
+    min-height: 2.375rem;
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--color-border-strong);
+    border: 0.0625rem solid var(--color-border-strong);
     border-radius: var(--radius);
     background: var(--color-surface);
 }
