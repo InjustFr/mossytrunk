@@ -19,6 +19,7 @@ Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [ev
 
 ## Display
 
+- A warning when products have no buying price (their cost counts as 0 €, so the result is overstated), linking to them on `/produits`.
 - Year selector; the year's result as a receipt: chiffre d'affaires − coût d'achat − dépenses − URSSAF = résultat, with the result as a share of the turnover and the number of orders and events.
 - Bar chart of the monthly result from a zero baseline (green gain, red loss, value on each bar, hover/focus for figures).
 - The year's events as bars of their result (B6), and the best sellers (B7).

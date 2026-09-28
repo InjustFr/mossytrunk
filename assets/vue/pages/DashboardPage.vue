@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue';
+import { TriangleAlert } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSelect from '../components/ui/BaseSelect.vue';
@@ -44,6 +45,13 @@ onMounted(() => load());
         </template>
 
         <div v-if="dashboard" class="dashboard-page">
+            <p v-if="dashboard.productsWithoutCost > 0" class="dashboard-page__check" role="status">
+                <TriangleAlert size="1rem" aria-hidden="true" />
+                <span>
+                    {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} pas de prix d'achat : leur coût compte pour 0 €, le résultat est donc surestimé.
+                    <a href="/produits?prix-achat=manquant">Renseigner les prix d'achat</a>
+                </span>
+            </p>
             <ResultReceipt :title="`Résultat ${dashboard.year}`" :turnover="dashboard.total.turnover" :lines="receiptLines" :result="dashboard.total.result" result-test="year-result">
                 <template #summary>
                     <p class="dashboard-page__summary">
@@ -88,6 +96,19 @@ onMounted(() => load());
 <style scoped>
 .dashboard-page { display: flex; flex-direction: column; gap: var(--space-5); }
 .dashboard-page__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: var(--space-5); align-items: start; }
+.dashboard-page__check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border: 0.0625rem solid var(--color-warning);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.dashboard-page__check svg { flex-shrink: 0; margin-top: 0.1875rem; color: var(--color-warning); }
 .dashboard-page__summary { color: var(--color-muted); }
 .dashboard-page__note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: 0.85rem; }
 </style>

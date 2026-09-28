@@ -51,4 +51,7 @@ can be edited together: selling price, buying price, type, variants to add (skip
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
 
-UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. Products with a buying price of 0 show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated.
+`ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
+
+UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with a colour mark, one colour per type in alphabetical order), margin (selling − buying price, and its share of the selling price), units sold and sales of the year.
+Products with a buying price of 0 show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N prix d'achat à renseigner » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).

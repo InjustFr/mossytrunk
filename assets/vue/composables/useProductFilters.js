@@ -1,11 +1,14 @@
 import { computed, ref } from 'vue';
 
 export const UNTYPED = '__untyped__';
+export const MISSING_COST_PARAM = 'prix-achat';
 
 /** Type + text filters over a product list, and a selection limited to what is visible. */
 export function useProductFilters(products) {
     const typeId = ref('');
     const search = ref('');
+    const missingCost = ref(new URLSearchParams(window.location.search).get(MISSING_COST_PARAM) === 'manquant');
+    const missingCostCount = computed(() => products.value.filter((product) => product.buyingPrice === 0).length);
     const selectedIds = ref([]);
 
     const filtered = computed(() => {
@@ -13,6 +16,7 @@ export function useProductFilters(products) {
         return products.value.filter((product) => {
             if (typeId.value === UNTYPED && product.typeId !== null) return false;
             if (typeId.value && typeId.value !== UNTYPED && product.typeId !== typeId.value) return false;
+            if (missingCost.value && product.buyingPrice !== 0) return false;
             return needle === '' || `${product.displayName} ${product.reference}`.toLowerCase().includes(needle);
         });
     });
@@ -28,5 +32,5 @@ export function useProductFilters(products) {
 
     const clearSelection = () => { selectedIds.value = []; };
 
-    return { typeId, search, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
+    return { typeId, search, missingCost, missingCostCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
 }

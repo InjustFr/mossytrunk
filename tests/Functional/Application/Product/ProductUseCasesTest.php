@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Product;
 
+use App\Application\Event\ScheduleEvent\ScheduleEvent;
+use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\PlaceOrder\PlaceOrder;
+use App\Application\Order\PlaceOrder\PlaceOrderHandler;
+use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
@@ -12,10 +17,12 @@ use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 final class ProductUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use ClockSensitiveTrait;
 
     protected function setUp(): void
     {
@@ -34,6 +41,27 @@ final class ProductUseCasesTest extends KernelTestCase
         self::assertSame('Aquarelle', $products[0]->name);
         self::assertSame(0, $products[0]->buyingPrice);
         self::assertSame(['S', 'M'], $products[1]->variants);
+    }
+
+    public function testProductsShowTheirSalesOfTheCurrentYear(): void
+    {
+        $container = self::getContainer();
+        $print = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Print', 1_500, 300, ['A4', 'A3']));
+        $container->get(CreateProductHandler::class)(new CreateProduct('Zine', 1_000));
+        $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2027', 'Lyon', new \DateTimeImmutable('2027-03-06'), new \DateTimeImmutable('2027-03-06')));
+        $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2028', 'Lyon', new \DateTimeImmutable('2028-03-04'), new \DateTimeImmutable('2028-03-04')));
+        $place = $container->get(PlaceOrderHandler::class);
+        $place(new PlaceOrder(new \DateTimeImmutable('2027-03-06 12:00'), [new RequestedLine($print, 'A4', 2), new RequestedLine($print, 'A3', 1)]));
+        $place(new PlaceOrder(new \DateTimeImmutable('2028-03-04 12:00'), [new RequestedLine($print, 'A4', 5)]));
+        $container->get('doctrine')->getManager()->clear();
+
+        self::mockTime('2027-06-01 10:00');
+        $products = array_column($container->get(ListProductsHandler::class)(), null, 'name');
+
+        self::assertSame(2027, $products['Print']->salesYear);
+        self::assertSame(3, $products['Print']->unitsSold);
+        self::assertSame(4_500, $products['Print']->sales);
+        self::assertSame(0, $products['Zine']->unitsSold);
     }
 
     public function testReferenceIsGeneratedFromTypeAndNameAndMadeUnique(): void

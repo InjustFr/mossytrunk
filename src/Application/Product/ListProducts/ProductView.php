@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Product\ListProducts;
 
 use App\Domain\Product\Product;
+use App\Domain\Reporting\ProductSales;
 
 final readonly class ProductView
 {
@@ -21,10 +22,13 @@ final readonly class ProductView
         public int $sellingPrice,
         public int $buyingPrice,
         public array $variants,
+        public int $salesYear,
+        public int $unitsSold,
+        public int $sales,
     ) {
     }
 
-    public static function fromProduct(Product $product): self
+    public static function fromProduct(Product $product, int $salesYear, ?ProductSales $sales): self
     {
         return new self(
             (string) $product->id(),
@@ -36,6 +40,9 @@ final readonly class ProductView
             $product->sellingPrice()->amount(),
             $product->buyingPrice()->amount(),
             $product->variants(),
+            $salesYear,
+            $sales?->quantity ?? 0,
+            $sales?->sales->amount() ?? 0,
         );
     }
 }

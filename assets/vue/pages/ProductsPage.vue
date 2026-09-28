@@ -14,12 +14,14 @@ import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useToast } from '../composables/useToast.js';
 import { plural } from '../composables/usePlural.js';
+import { typeColors } from '../composables/useTypeColor.js';
 
 const { products, load, create, update, batchUpdate } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
 
+const colors = computed(() => typeColors(types.value.map((type) => type.name)));
 const modalOpen = ref(false);
 const batchOpen = ref(false);
 const editing = ref(null);
@@ -61,11 +63,19 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         </template>
 
         <BaseCard>
-            <ProductFilters v-model:type-id="filters.typeId.value" v-model:search="filters.search.value" :types="types" />
+            <ProductFilters
+                v-model:type-id="filters.typeId.value"
+                v-model:search="filters.search.value"
+                v-model:missing-cost="filters.missingCost.value"
+                :types="types"
+                :missing-cost-count="filters.missingCostCount.value"
+                :type-colors="colors"
+            />
             <ProductList
                 v-model:checked-ids="filters.selectedIds.value"
                 :products="filters.filtered.value"
                 :all-selected="filters.allVisibleSelected.value"
+                :type-colors="colors"
                 :selected-id="modalOpen ? editing?.id ?? null : null"
                 @toggle-all="filters.toggleAllVisible"
                 @edit="openEdit"

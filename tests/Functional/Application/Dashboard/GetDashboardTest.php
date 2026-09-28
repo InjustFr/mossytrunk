@@ -75,6 +75,7 @@ final class GetDashboardTest extends KernelTestCase
         self::assertSame([$good, $bad], array_column($dashboard->events, 'id'));
         self::assertSame(['Print Forêt', 'Sticker'], array_column($dashboard->products, 'name'));
         self::assertSame([['name' => 'Print', 'quantity' => 2, 'sales' => 3_000], ['name' => null, 'quantity' => 1, 'sales' => 400]], $dashboard->types);
+        self::assertSame(1, $dashboard->productsWithoutCost);
     }
 
     public function testYearWithoutDataIsStillSelectable(): void

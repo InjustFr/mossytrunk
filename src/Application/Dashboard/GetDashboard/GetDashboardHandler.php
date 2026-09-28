@@ -8,6 +8,7 @@ use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
+use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\MonthlyResults;
@@ -66,6 +67,7 @@ final readonly class GetDashboardHandler
                 'sales' => $product->sales->amount(),
             ], \array_slice($sales, 0, self::TOP_PRODUCTS)),
             $this->salesByType($sales),
+            \count(array_filter($this->products->all(), static fn (Product $product): bool => $product->buyingPrice()->isZero())),
         );
     }
 

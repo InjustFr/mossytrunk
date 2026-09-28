@@ -27,6 +27,7 @@ final readonly class DashboardView
         public array $events,
         public array $products,
         public array $types,
+        public int $productsWithoutCost,
     ) {
     }
 }
