@@ -40,7 +40,7 @@ Enforced by `deptrac.yaml`. Rules:
 - Entities change state only through intention-revealing methods (`reprice()`, `addExpense()`…). Named constructors (`Product::create()`), private constructor if useful.
 - Invariants throw subclasses of `App\Domain\Shared\DomainException` → returned as HTTP 422 `{detail}` by `Presentation\Api\DomainExceptionListener`.
 - Money = `App\Domain\Shared\Money` (integer cents). The API exchanges **cents** as integers.
-- Handlers are plain invokable services (`__invoke(Command)`), called directly by controllers. They flush.
+- Handlers are plain invokable services (`__invoke(Command)`), called directly by controllers. They persist through repository interfaces and end with `App\Application\Transaction::commit()` (Doctrine flush).
 
 ## Frontend — `assets/vue/`
 

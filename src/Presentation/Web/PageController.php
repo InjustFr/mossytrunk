@@ -26,6 +26,12 @@ final class PageController extends AbstractController
         return $this->page('OrdersPage', 'Commandes');
     }
 
+    #[Route('/produits', name: 'products', methods: ['GET'])]
+    public function products(): Response
+    {
+        return $this->page('ProductsPage', 'Produits');
+    }
+
     /**
      * @param array<string, mixed> $props
      */

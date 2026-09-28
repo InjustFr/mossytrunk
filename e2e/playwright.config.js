@@ -7,6 +7,7 @@ export default defineConfig({
     reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
     use: {
         baseURL: process.env.BASE_URL ?? 'http://localhost:8080',
+        testIdAttribute: 'data-test',
         locale: 'fr-FR',
         timezoneId: 'Europe/Paris',
         trace: 'retain-on-failure',
