@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Reporting;
+
+use App\Domain\Shared\Money;
+
+/**
+ * Units sold of one (product, variant) during an event, before discounts.
+ */
+final readonly class ProductSales
+{
+    public function __construct(
+        public string $label,
+        public int $quantity,
+        public Money $sales,
+        public Money $cost,
+        public bool $unknownCost,
+    ) {
+    }
+
+    public function add(int $quantity, Money $sales, Money $cost, bool $unknownCost): self
+    {
+        return new self($this->label, $this->quantity + $quantity, $this->sales->add($sales), $this->cost->add($cost), $this->unknownCost || $unknownCost);
+    }
+}

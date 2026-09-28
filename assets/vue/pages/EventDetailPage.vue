@@ -5,6 +5,7 @@ import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import EventForm from '../components/events/EventForm.vue';
 import EventHeader from '../components/events/EventHeader.vue';
+import EventReport from '../components/events/EventReport.vue';
 import ExpenseList from '../components/events/ExpenseList.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useToast } from '../composables/useToast.js';
@@ -13,7 +14,7 @@ const props = defineProps({
     eventId: { type: String, required: true },
 });
 
-const { event, load, update, addExpense, removeExpense } = useEvent(props.eventId);
+const { event, report, load, update, addExpense, removeExpense } = useEvent(props.eventId);
 const toast = useToast();
 const editing = ref(false);
 
@@ -42,6 +43,10 @@ onMounted(load);
                 <EventForm :event="event" :submit="update" @saved="onEventSaved" @cancel="editing = false" />
             </BaseCard>
             <EventHeader v-else :event="event" />
+
+            <BaseCard v-if="report" title="Bilan de l'événement">
+                <EventReport :report="report" :event-id="event.id" />
+            </BaseCard>
 
             <BaseCard title="Dépenses">
                 <ExpenseList

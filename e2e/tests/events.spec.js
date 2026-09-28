@@ -47,3 +47,31 @@ test('refuses overlapping events', async ({ page }) => {
 
     await expect(form.getByRole('alert')).toContainText('chevauchent');
 });
+
+test('event report details expenses, orders, URSSAF and the result', async ({ page, request }) => {
+    const { createEvent, createProduct } = await import('./support/api.js');
+    const event = await createEvent(request);
+    const print = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500, buyingPrice: 500 });
+    const mystery = await createProduct(request, { name: unique('Mystère'), sellingPrice: 1_000, buyingPrice: 0 });
+    await request.post(`/api/events/${event.id}/expenses`, { data: { label: 'Stand', amount: 10_000 } });
+    for (const lines of [
+        [{ productId: print.id, variant: null, quantity: 10 }],
+        [{ productId: mystery.id, variant: null, quantity: 1 }],
+    ]) {
+        const response = await request.post('/api/orders', { data: { placedAt: `${event.startDate}T11:00`, lines } });
+        expect(response.status()).toBe(201);
+    }
+
+    await page.goto(`/evenements/${event.id}`);
+    const report = page.locator('.event-report');
+    const sections = report.locator('summary');
+    await expect(sections).toHaveText([/Dépenses\s*−\s*100,00/, /Commandes\s*\+\s*160,00/, /URSSAF\s*−\s*20,48/]);
+
+    // CA 160 − coût 50 − dépenses 100 − URSSAF 20,48 = −10,48
+    await expect(report.getByTestId('event-result')).toHaveText(/−10,48|-10,48/);
+    await expect(report.getByRole('row', { name: new RegExp(mystery.name) })).toContainText('⚠︎');
+
+    await report.getByRole('link', { name: 'Voir les commandes' }).click();
+    await expect(page.getByLabel('Événement')).toHaveValue(event.id);
+    await expect(page.getByRole('row')).toHaveCount(3); // header + 2 orders
+});

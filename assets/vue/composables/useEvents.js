@@ -17,14 +17,18 @@ export function useEvents() {
 export function useEvent(eventId) {
     const api = useApi();
     const event = ref(null);
+    const report = ref(null);
 
     async function load() {
-        event.value = await api.get(`/api/events/${eventId}`);
+        [event.value, report.value] = await Promise.all([
+            api.get(`/api/events/${eventId}`),
+            api.get(`/api/events/${eventId}/report`),
+        ]);
     }
 
     const update = (payload) => api.put(`/api/events/${eventId}`, payload);
     const addExpense = (payload) => api.post(`/api/events/${eventId}/expenses`, payload);
     const removeExpense = (expenseId) => api.del(`/api/events/${eventId}/expenses/${expenseId}`);
 
-    return { event, load, update, addExpense, removeExpense };
+    return { event, report, load, update, addExpense, removeExpense };
 }

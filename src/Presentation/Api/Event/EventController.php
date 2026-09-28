@@ -7,6 +7,7 @@ namespace App\Presentation\Api\Event;
 use App\Application\Event\AddExpense\AddExpense;
 use App\Application\Event\AddExpense\AddExpenseHandler;
 use App\Application\Event\GetEvent\GetEventHandler;
+use App\Application\Event\GetEventReport\GetEventReportHandler;
 use App\Application\Event\ListEvents\ListEventsHandler;
 use App\Application\Event\RemoveExpense\RemoveExpense;
 use App\Application\Event\RemoveExpense\RemoveExpenseHandler;
@@ -42,6 +43,12 @@ final class EventController extends AbstractController
     public function show(string $id, GetEventHandler $getEvent): JsonResponse
     {
         return $this->json($getEvent($id));
+    }
+
+    #[Route('/{id}/report', name: 'api_events_report', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function report(string $id, GetEventReportHandler $getReport): JsonResponse
+    {
+        return $this->json($getReport($id));
     }
 
     #[Route('/{id}', name: 'api_events_update', requirements: ['id' => Requirement::ULID], methods: ['PUT'])]
