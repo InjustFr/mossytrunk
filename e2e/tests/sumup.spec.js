@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { configureSumUp } from './support/api.js';
 
 // The e2e app runs in the test env: SumUp is replaced by tests/Fixtures/sumup/transactions.json
 // (payments on 14, 15, 21 and 23 March 2030, Paris time).
 test('import SumUp orders: one error for uncovered dates, no duplicates on re-import', async ({ page, request }) => {
+    await configureSumUp(request);
     const response = await request.post('/api/events', {
         data: { name: 'Salon de printemps 2030', location: 'Lyon', startDate: '2030-03-14', endDate: '2030-03-15' },
     });

@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Application\SumUp\ImportFromSumUp;
 
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
+use App\Application\SumUp\SumUpUnavailable;
 use App\Application\Transaction;
+use App\Application\Workspace\WorkspaceSecrets;
 use App\Application\WorkspaceContext;
 use App\Domain\Event\EventRepository;
+use App\Domain\Identity\SecretName;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
@@ -35,6 +39,7 @@ final readonly class ImportFromSumUpHandler
         private OrderRepository $orders,
         private Transaction $transaction,
         private WorkspaceContext $workspace,
+        private WorkspaceSecrets $secrets,
     ) {
     }
 
@@ -42,7 +47,7 @@ final readonly class ImportFromSumUpHandler
     {
         /** @var array<string, SumUpTransaction> $transactions */
         $transactions = [];
-        foreach ($this->sumUp->successfulPayments() as $transaction) {
+        foreach ($this->sumUp->successfulPayments($this->credentials()) as $transaction) {
             $transactions[$transaction->code] ??= $transaction;
         }
 
@@ -102,5 +107,18 @@ final readonly class ImportFromSumUpHandler
             $withUnresolved,
             array_keys($unresolved),
         );
+    }
+
+    private function credentials(): SumUpCredentials
+    {
+        $workspace = $this->workspace->current();
+        $apiKey = $this->secrets->reveal($workspace, SecretName::SumUpApiKey);
+        $merchantCode = $workspace->sumUpMerchantCode();
+
+        if (null === $apiKey || null === $merchantCode) {
+            throw SumUpUnavailable::notConfigured();
+        }
+
+        return new SumUpCredentials($apiKey, $merchantCode);
     }
 }

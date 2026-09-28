@@ -19,6 +19,9 @@ class Workspace
     #[ORM\Column(length: 100, unique: true)]
     private string $name;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $sumUpMerchantCode = null;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -44,6 +47,16 @@ class Workspace
         $this->name = $name;
     }
 
+    public function configureSumUp(string $merchantCode): void
+    {
+        $merchantCode = strtoupper(trim($merchantCode));
+        if (1 !== preg_match('/^[A-Z0-9]{1,32}$/', $merchantCode)) {
+            throw InvalidAccount::invalidSumUpMerchantCode($merchantCode);
+        }
+
+        $this->sumUpMerchantCode = $merchantCode;
+    }
+
     public function id(): Ulid
     {
         return $this->id;
@@ -52,5 +65,10 @@ class Workspace
     public function name(): string
     {
         return $this->name;
+    }
+
+    public function sumUpMerchantCode(): ?string
+    {
+        return $this->sumUpMerchantCode;
     }
 }

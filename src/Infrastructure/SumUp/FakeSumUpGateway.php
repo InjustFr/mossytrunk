@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\SumUp;
 
+use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -32,7 +33,7 @@ final class FakeSumUpGateway implements SumUpGateway
         $this->transactions = $transactions;
     }
 
-    public function successfulPayments(): iterable
+    public function successfulPayments(SumUpCredentials $credentials): iterable
     {
         if (null !== $this->transactions) {
             return $this->transactions;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;

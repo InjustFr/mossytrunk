@@ -6,11 +6,11 @@ namespace App\Domain\Order;
 
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
+use App\Domain\Identity\Workspace;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;

@@ -63,6 +63,12 @@ final class PageController extends AbstractController
         return $this->page('DiscountsPage', 'Remises');
     }
 
+    #[Route('/parametres', name: 'settings', methods: ['GET'])]
+    public function settings(): Response
+    {
+        return $this->page('SettingsPage', 'Paramètres');
+    }
+
     /**
      * @param array<string, mixed> $props
      */

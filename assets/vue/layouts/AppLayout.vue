@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Tag } from '@lucide/vue';
+import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Settings, Tag } from '@lucide/vue';
 import ToastHost from '../components/ui/ToastHost.vue';
 import { useSession } from '../composables/useSession.js';
 
@@ -13,6 +13,7 @@ const links = [
     { href: '/evenements', label: 'Événements', icon: CalendarDays },
     { href: '/produits', label: 'Produits', icon: Tag },
     { href: '/remises', label: 'Remises', icon: Percent },
+    { href: '/parametres', label: 'Paramètres', icon: Settings },
 ];
 
 const session = useSession();

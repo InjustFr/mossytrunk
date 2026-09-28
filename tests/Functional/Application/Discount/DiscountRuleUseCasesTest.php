@@ -10,13 +10,13 @@ use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
 use App\Application\Discount\ToggleDiscountRule\ToggleDiscountRuleHandler;
 use App\Application\Discount\UpdateDiscountRule\UpdateDiscountRuleHandler;
+use App\Application\Event\ScheduleEvent\ScheduleEvent;
+use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\PreviewOrder\PreviewOrderHandler;
+use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
-use App\Application\Order\PreviewOrder\PreviewOrderHandler;
-use App\Application\Order\RequestedLine;
-use App\Application\Event\ScheduleEvent\ScheduleEvent;
-use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -29,6 +29,7 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testDiscountRuleLifecycle(): void
     {
         $sticker = (string) $this->product('STK', 'Sticker', 400);

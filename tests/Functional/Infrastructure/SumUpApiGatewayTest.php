@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Infrastructure;
 
+use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpUnavailable;
 use App\Infrastructure\SumUp\SumUpApiGateway;
 use App\Infrastructure\SumUp\SumUpPayloadMapper;
@@ -28,7 +29,7 @@ final class SumUpApiGatewayTest extends TestCase
             return array_shift($responses);
         }, 'https://api.sumup.com');
 
-        $transactions = iterator_to_array((new SumUpApiGateway($client, new SumUpPayloadMapper(), 'sup_sk_test', 'MCODE'))->successfulPayments(), false);
+        $transactions = iterator_to_array((new SumUpApiGateway($client, new SumUpPayloadMapper()))->successfulPayments(new SumUpCredentials('sup_sk_test', 'MCODE')), false);
 
         self::assertCount(1, $transactions);
         self::assertSame('T1', $transactions[0]->code);
@@ -43,18 +44,11 @@ final class SumUpApiGatewayTest extends TestCase
         self::assertSame('Authorization: Bearer sup_sk_test', $requests[0][1]);
     }
 
-    public function testRequiresConfiguration(): void
-    {
-        $this->expectExceptionObject(SumUpUnavailable::notConfigured());
-
-        iterator_to_array((new SumUpApiGateway(new MockHttpClient(), new SumUpPayloadMapper(), '', ''))->successfulPayments());
-    }
-
     public function testHttpErrorsAreReported(): void
     {
         $client = new MockHttpClient(new MockResponse('{"message":"invalid token"}', ['http_code' => 401]), 'https://api.sumup.com');
 
         $this->expectException(SumUpUnavailable::class);
-        iterator_to_array((new SumUpApiGateway($client, new SumUpPayloadMapper(), 'bad', 'MCODE'))->successfulPayments());
+        iterator_to_array((new SumUpApiGateway($client, new SumUpPayloadMapper()))->successfulPayments(new SumUpCredentials('bad', 'MCODE')));
     }
 }

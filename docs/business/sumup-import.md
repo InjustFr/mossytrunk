@@ -2,7 +2,7 @@
 
 SumUp is the card terminal used at events. The import brings its **products** and **orders** into MossyTrunk.
 
-Configuration: `SUMUP_API_KEY` (dashboard → API keys, `sup_sk_…`) and `SUMUP_MERCHANT_CODE` in `.env.local` (never committed).
+Configuration: per workspace, on the « Paramètres » page (`/parametres`): merchant code and API key (SumUp dashboard → API keys, `sup_sk_…`). The key is stored encrypted and never shown again (see [accounts.md](accounts.md), A11). Without them the import answers « SumUp n'est pas configuré ».
 Trigger: button « Importer depuis SumUp » on `/commandes` → `POST /api/sumup/import`.
 
 Code: `src/Application/SumUp/ImportFromSumUp/ImportFromSumUpHandler.php`, `SumUpProductResolver.php`;

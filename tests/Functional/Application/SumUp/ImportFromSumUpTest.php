@@ -14,6 +14,9 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\SumUp\ImportFromSumUp\ImportFromSumUpHandler;
 use App\Application\SumUp\SumUpLine;
 use App\Application\SumUp\SumUpTransaction;
+use App\Application\SumUp\SumUpUnavailable;
+use App\Application\Workspace\UpdateSumUpSettings\UpdateSumUpSettings;
+use App\Application\Workspace\UpdateSumUpSettings\UpdateSumUpSettingsHandler;
 use App\Domain\Shared\Money;
 use App\Infrastructure\SumUp\FakeSumUpGateway;
 use App\Tests\Support\ActsAsUser;
@@ -26,7 +29,17 @@ final class ImportFromSumUpTest extends KernelTestCase
     protected function setUp(): void
     {
         self::actAsMemberOf();
+        self::getContainer()->get(UpdateSumUpSettingsHandler::class)(new UpdateSumUpSettings('MCODE', 'sup_sk_test'));
     }
+
+    public function testRequiresTheWorkspaceSumUpSettings(): void
+    {
+        self::actAsMemberOf('Sans SumUp');
+
+        $this->expectExceptionObject(SumUpUnavailable::notConfigured());
+        $this->import();
+    }
+
     public function testImportsProductsAndOrdersLinkedToEvents(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Event;
 
+use App\Domain\Identity\Workspace;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;

@@ -25,6 +25,7 @@ final class GetDashboardTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testMonthlyAndYearlyResults(): void
     {
         $container = self::getContainer();

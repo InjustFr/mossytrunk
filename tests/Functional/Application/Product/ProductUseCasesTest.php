@@ -21,6 +21,7 @@ final class ProductUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testCreateThenListProducts(): void
     {
         $create = self::getContainer()->get(CreateProductHandler::class);

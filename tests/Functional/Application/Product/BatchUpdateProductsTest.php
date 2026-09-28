@@ -23,6 +23,7 @@ final class BatchUpdateProductsTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testRepriceAllStickers(): void
     {
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();

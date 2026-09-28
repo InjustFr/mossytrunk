@@ -12,7 +12,9 @@ make install         # composer + npm (first run)
 make fixtures        # database + mock data
 ```
 
-SumUp import: put `SUMUP_API_KEY` and `SUMUP_MERCHANT_CODE` in `.env.local`.
+Sign in with `demo@mossytrunk.local` / `mossytrunk`. Other users: `docker compose exec php php bin/console app:user:create <email> --workspace=<name>` sends an invitation (emails: Mailpit on http://localhost:8025).
+
+SumUp import: set the merchant code and API key in « Paramètres » (stored encrypted with `APP_ENCRYPTION_KEY`; generate one with `php bin/console app:encryption:generate-key`).
 
 ## Quality
 

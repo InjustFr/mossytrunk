@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Product;
 
+use App\Domain\Identity\Workspace;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
-use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;

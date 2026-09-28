@@ -25,6 +25,7 @@ final class EventReportTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testReportOnlyCountsTheEventsOrders(): void
     {
         $container = self::getContainer();

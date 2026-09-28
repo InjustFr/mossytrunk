@@ -29,3 +29,8 @@ export async function createDiscountRule(request, { name = unique('Lot'), produc
     expect(response.status()).toBe(201);
     return { id: (await response.json()).id, name };
 }
+
+export async function configureSumUp(request, { merchantCode = 'MCODE', apiKey = 'sup_sk_e2e_key' } = {}) {
+    const response = await request.put('/api/workspace/settings/sumup', { data: { merchantCode, apiKey } });
+    expect(response.status()).toBe(204);
+}

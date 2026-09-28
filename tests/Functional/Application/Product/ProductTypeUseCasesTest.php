@@ -24,6 +24,7 @@ final class ProductTypeUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testCodesAreUnique(): void
     {
         $create = self::getContainer()->get(CreateProductTypeHandler::class);

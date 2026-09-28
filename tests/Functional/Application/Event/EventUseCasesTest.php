@@ -29,6 +29,7 @@ final class EventUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
     }
+
     public function testScheduleThenListEvents(): void
     {
         $this->schedule('Japan Expo', '2026-07-09', '2026-07-12');

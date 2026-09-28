@@ -17,5 +17,5 @@ interface SumUpGateway
      *
      * @throws SumUpUnavailable
      */
-    public function successfulPayments(): iterable;
+    public function successfulPayments(SumUpCredentials $credentials): iterable;
 }
