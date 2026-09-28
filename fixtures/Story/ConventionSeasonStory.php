@@ -62,8 +62,8 @@ final class ConventionSeasonStory extends Story
         $catalogue = [...$stickers, ...$prints, ...$others];
 
         $rules = [
-            DiscountRuleFactory::createOne(['name' => '3 stickers pour 10 €', 'eligibleProducts' => $stickers, 'bundleSize' => 3, 'bundlePrice' => Money::cents(1_000)]),
-            DiscountRuleFactory::createOne(['name' => '2 prints pour 25 €', 'eligibleProducts' => $prints, 'bundleSize' => 2, 'bundlePrice' => Money::cents(2_500)]),
+            DiscountRuleFactory::createOne(['name' => '3 stickers pour 10 €', 'eligibleTypes' => [$sticker], 'bundleSize' => 3, 'bundlePrice' => Money::cents(1_000)]),
+            DiscountRuleFactory::createOne(['name' => '2 prints pour 25 €', 'eligibleTypes' => [$print], 'bundleSize' => 2, 'bundlePrice' => Money::cents(2_500)]),
         ];
 
         $events = [
@@ -119,7 +119,7 @@ final class ConventionSeasonStory extends Story
                 $items[] = new OrderedItem($product->sellable($variant), $quantity);
             }
 
-            $basket = array_map(static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity), $items);
+            $basket = array_map(static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId), $items);
             $this->entityManager->persist(Order::place($event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules)));
         }
     }

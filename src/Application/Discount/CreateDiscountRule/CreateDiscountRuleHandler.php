@@ -28,6 +28,7 @@ final readonly class CreateDiscountRuleHandler
             $this->eligibleProducts->resolve($definition->productIds),
             $definition->bundleSize,
             Money::cents($definition->bundlePriceCents),
+            $this->eligibleProducts->resolveTypes($definition->typeIds),
         );
 
         $this->rules->add($rule);

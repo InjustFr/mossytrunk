@@ -74,10 +74,10 @@ async function onSubmit() {
                 </FormField>
             </div>
 
-            <FormField label="Variantes à ajouter" :error="errors.addVariants" hint="Ignorées si le produit les a déjà.">
+            <FormField as="group" label="Variantes à ajouter" :error="errors.addVariants" hint="Ignorées si le produit les a déjà.">
                 <VariantsInput v-model="form.addVariants" input-label="Variante à ajouter" />
             </FormField>
-            <FormField label="Variantes à retirer">
+            <FormField as="group" label="Variantes à retirer">
                 <VariantsInput v-model="form.removeVariants" input-label="Variante à retirer" />
             </FormField>
 

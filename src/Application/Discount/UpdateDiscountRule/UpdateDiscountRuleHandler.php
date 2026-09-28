@@ -30,6 +30,7 @@ final readonly class UpdateDiscountRuleHandler
             $this->eligibleProducts->resolve($definition->productIds),
             $definition->bundleSize,
             Money::cents($definition->bundlePriceCents),
+            $this->eligibleProducts->resolveTypes($definition->typeIds),
         );
 
         $this->transaction->commit();

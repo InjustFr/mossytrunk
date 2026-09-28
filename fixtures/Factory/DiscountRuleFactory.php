@@ -24,6 +24,7 @@ final class DiscountRuleFactory extends PersistentObjectFactory
         return [
             'name' => 'Lot',
             'eligibleProducts' => [],
+            'eligibleTypes' => [],
             'bundleSize' => 3,
             'bundlePrice' => Money::cents(1_000),
         ];

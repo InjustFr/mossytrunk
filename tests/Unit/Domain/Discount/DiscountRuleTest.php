@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Domain\Discount;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\InvalidDiscountRule;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductType;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use PHPUnit\Framework\TestCase;
@@ -25,7 +26,17 @@ final class DiscountRuleTest extends TestCase
         self::assertTrue($rule->isActive());
     }
 
-    public function testNeedsAtLeastOneProduct(): void
+    public function testTypeMakesItsProductsEligible(): void
+    {
+        $print = ProductType::create('Print', 'PRI');
+        $rule = DiscountRule::create('2 prints', [], 2, Money::cents(2_500), [$print]);
+
+        self::assertTrue($rule->isEligible(new Ulid(), $print->id()));
+        self::assertFalse($rule->isEligible(new Ulid(), new Ulid()));
+        self::assertFalse($rule->isEligible(new Ulid()));
+    }
+
+    public function testNeedsAtLeastOneProductOrType(): void
     {
         $this->expectException(InvalidDiscountRule::class);
 

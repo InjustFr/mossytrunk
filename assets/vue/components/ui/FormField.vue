@@ -3,16 +3,26 @@ defineProps({
     label: { type: String, required: true },
     error: { type: String, default: null },
     hint: { type: String, default: null },
+    // 'label' wraps a single input; 'group' for composite controls containing buttons (chips, pickers).
+    as: { type: String, default: 'label' },
 });
+
+const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
 </script>
 
 <template>
-    <label :class="['form-field', { 'form-field--invalid': error }]">
+    <label v-if="as === 'label'" :class="['form-field', { 'form-field--invalid': error }]">
         <span class="form-field__label">{{ label }}</span>
         <slot />
         <span v-if="error" class="form-field__error" role="alert">{{ error }}</span>
         <span v-else-if="hint" class="form-field__hint">{{ hint }}</span>
     </label>
+    <div v-else :class="['form-field', { 'form-field--invalid': error }]" role="group" :aria-labelledby="id">
+        <span :id="id" class="form-field__label">{{ label }}</span>
+        <slot />
+        <span v-if="error" class="form-field__error" role="alert">{{ error }}</span>
+        <span v-else-if="hint" class="form-field__hint">{{ hint }}</span>
+    </div>
 </template>
 
 <style scoped>
@@ -31,6 +41,8 @@ defineProps({
     background: var(--color-surface);
     transition: border-color var(--transition), box-shadow var(--transition);
 }
+
+.form-field :deep(input[type="checkbox"]) { width: auto; min-height: auto; }
 
 .form-field :deep(input:focus),
 .form-field :deep(select:focus),

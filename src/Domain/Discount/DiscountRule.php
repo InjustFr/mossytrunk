@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Discount;
 
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductType;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,9 +15,10 @@ use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Bundle discount: any `bundleSize` units among the eligible products cost `bundlePrice` together.
+ * Bundle discount: any `bundleSize` eligible units cost `bundlePrice` together.
  * Example: stickers cost 4 € each, "3 stickers for 10 €" → bundleSize 3, bundlePrice 10 €.
- * Units of different eligible products (and any of their variants) can be mixed in a bundle.
+ * Eligible = one of the listed products, or any product of one of the listed types (e.g. all Prints
+ * and Stickers). Units of different eligible products (and any of their variants) can be mixed.
  *
  * See docs/business/discounts.md and {@see DiscountCalculator}.
  */
@@ -38,6 +40,13 @@ class DiscountRule
     #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
     private Collection $eligibleProducts;
 
+    /** @var Collection<int, ProductType> */
+    #[ORM\ManyToMany(targetEntity: ProductType::class)]
+    #[ORM\JoinTable(name: 'discount_rule_product_type')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
+    private Collection $eligibleTypes;
+
     #[ORM\Column]
     private int $bundleSize;
 
@@ -48,33 +57,37 @@ class DiscountRule
     private bool $active = true;
 
     /**
-     * @param list<Product> $eligibleProducts
+     * @param list<Product>     $eligibleProducts
+     * @param list<ProductType> $eligibleTypes
      */
-    private function __construct(Ulid $id, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice)
+    private function __construct(Ulid $id, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes)
     {
         $this->id = $id;
         $this->eligibleProducts = new ArrayCollection();
-        $this->redefine($name, $eligibleProducts, $bundleSize, $bundlePrice);
+        $this->eligibleTypes = new ArrayCollection();
+        $this->redefine($name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
     }
 
     /**
-     * @param list<Product> $eligibleProducts
+     * @param list<Product>     $eligibleProducts
+     * @param list<ProductType> $eligibleTypes
      */
-    public static function create(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice): self
+    public static function create(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): self
     {
-        return new self(new Ulid(), $name, $eligibleProducts, $bundleSize, $bundlePrice);
+        return new self(new Ulid(), $name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
     }
 
     /**
-     * @param list<Product> $eligibleProducts
+     * @param list<Product>     $eligibleProducts
+     * @param list<ProductType> $eligibleTypes
      */
-    public function redefine(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice): void
+    public function redefine(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): void
     {
         $name = trim($name);
         if ('' === $name) {
             throw InvalidDiscountRule::emptyName();
         }
-        if ([] === $eligibleProducts) {
+        if ([] === $eligibleProducts && [] === $eligibleTypes) {
             throw InvalidDiscountRule::noEligibleProduct();
         }
         if ($bundleSize < 2) {
@@ -93,6 +106,12 @@ class DiscountRule
                 $this->eligibleProducts->add($product);
             }
         }
+        $this->eligibleTypes->clear();
+        foreach ($eligibleTypes as $type) {
+            if (!$this->eligibleTypes->contains($type)) {
+                $this->eligibleTypes->add($type);
+            }
+        }
     }
 
     public function activate(): void
@@ -105,9 +124,18 @@ class DiscountRule
         $this->active = false;
     }
 
-    public function isEligible(Ulid $productId): bool
+    public function isEligible(Ulid $productId, ?Ulid $typeId = null): bool
     {
-        return $this->eligibleProducts->exists(static fn (int $key, Product $product): bool => $product->id()->equals($productId));
+        return $this->eligibleProducts->exists(static fn (int $key, Product $product): bool => $product->id()->equals($productId))
+            || (null !== $typeId && $this->eligibleTypes->exists(static fn (int $key, ProductType $type): bool => $type->id()->equals($typeId)));
+    }
+
+    /**
+     * @return list<ProductType>
+     */
+    public function eligibleTypes(): array
+    {
+        return array_values($this->eligibleTypes->toArray());
     }
 
     public function id(): Ulid

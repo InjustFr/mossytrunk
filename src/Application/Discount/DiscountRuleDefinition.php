@@ -11,12 +11,14 @@ final readonly class DiscountRuleDefinition
 {
     /**
      * @param list<string> $productIds
+     * @param list<string> $typeIds
      */
     public function __construct(
         public string $name,
         public array $productIds,
         public int $bundleSize,
         public int $bundlePriceCents,
+        public array $typeIds = [],
     ) {
     }
 }

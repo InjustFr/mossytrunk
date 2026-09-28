@@ -74,7 +74,7 @@ async function onSubmit() {
 
             <p v-if="isEditing" class="product-form__reference">Référence <strong>{{ product.reference }}</strong></p>
 
-            <FormField label="Type" :error="errors.typeId">
+            <FormField as="group" label="Type" :error="errors.typeId">
                 <TypeSelect v-model="form.typeId" />
             </FormField>
 
@@ -91,7 +91,7 @@ async function onSubmit() {
                 </FormField>
             </div>
 
-            <FormField label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
+            <FormField as="group" label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
                 <VariantsInput v-model="form.variants" />
             </FormField>
 

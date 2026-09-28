@@ -4,7 +4,10 @@ import { formatCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
+    // Products already covered through a selected type: shown ticked and disabled.
+    coveredTypeIds: { type: Array, default: () => [] },
 });
+const isCovered = (product) => product.typeId !== null && props.coveredTypeIds.includes(product.typeId);
 const selected = defineModel({ type: Array, required: true });
 const filter = ref('');
 
@@ -27,14 +30,14 @@ function toggle(id) {
         <input v-model="filter" class="product-picker__filter" type="search" placeholder="Filtrer les produits" aria-label="Filtrer les produits">
         <ul class="product-picker__list">
             <li v-for="product in visible" :key="product.id">
-                <label :class="['product-picker__option', { 'product-picker__option--checked': selected.includes(product.id) }]">
-                    <input type="checkbox" :checked="selected.includes(product.id)" @change="toggle(product.id)">
+                <label :class="['product-picker__option', { 'product-picker__option--checked': selected.includes(product.id) || isCovered(product) }]">
+                    <input type="checkbox" :checked="selected.includes(product.id) || isCovered(product)" :disabled="isCovered(product)" @change="toggle(product.id)">
                     <span class="product-picker__name">{{ product.displayName }}</span>
                     <span class="product-picker__price">{{ formatCents(product.sellingPrice) }}</span>
                 </label>
             </li>
         </ul>
-        <p class="product-picker__count">{{ selected.length }} produit(s) sélectionné(s)</p>
+        <p class="product-picker__count">{{ selected.length }} produit(s) choisi(s) en plus des types</p>
     </div>
 </template>
 

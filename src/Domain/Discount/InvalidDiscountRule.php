@@ -15,7 +15,7 @@ final class InvalidDiscountRule extends DomainException
 
     public static function noEligibleProduct(): self
     {
-        return new self('Choisissez au moins un produit concerné par la remise.');
+        return new self('Choisissez au moins un type ou un produit concerné par la remise.');
     }
 
     public static function bundleTooSmall(): self

@@ -58,14 +58,14 @@ final class DiscountCalculator
     /**
      * @param list<BasketLine> $basket
      *
-     * @return array<int, array{productId: \Symfony\Component\Uid\Ulid, price: Money}> sorted by price, most expensive first
+     * @return array<int, array{productId: \Symfony\Component\Uid\Ulid, typeId: ?\Symfony\Component\Uid\Ulid, price: Money}> sorted by price, most expensive first
      */
     private function expand(array $basket): array
     {
         $units = [];
         foreach ($basket as $line) {
             for ($i = 0; $i < $line->quantity; ++$i) {
-                $units[] = ['productId' => $line->productId, 'price' => $line->unitPrice];
+                $units[] = ['productId' => $line->productId, 'typeId' => $line->typeId, 'price' => $line->unitPrice];
             }
         }
 
@@ -75,7 +75,7 @@ final class DiscountCalculator
     }
 
     /**
-     * @param array<int, array{productId: \Symfony\Component\Uid\Ulid, price: Money}> $units
+     * @param array<int, array{productId: \Symfony\Component\Uid\Ulid, typeId: ?\Symfony\Component\Uid\Ulid, price: Money}> $units
      * @param list<DiscountRule>                                                      $rules
      *
      * @return array{DiscountRule, list<int>, Money}|null
@@ -85,7 +85,7 @@ final class DiscountCalculator
         $best = null;
 
         foreach ($rules as $rule) {
-            $eligible = array_filter($units, static fn (array $unit): bool => $rule->isEligible($unit['productId']));
+            $eligible = array_filter($units, static fn (array $unit): bool => $rule->isEligible($unit['productId'], $unit['typeId']));
             if (\count($eligible) < $rule->bundleSize()) {
                 continue;
             }

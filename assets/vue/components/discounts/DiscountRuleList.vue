@@ -28,7 +28,8 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
                 <span class="discount-rule-list__deal">
                     {{ rule.bundleSize }} articles pour <MoneyAmount :cents="rule.bundlePrice" />
                 </span>
-                <span class="discount-rule-list__products">{{ rule.products.map((p) => p.name).join(', ') }}</span>
+                <span v-if="rule.types.length" class="discount-rule-list__products">Types : {{ rule.types.map((t) => t.name).join(', ') }}</span>
+                <span v-if="rule.products.length" class="discount-rule-list__products">Produits : {{ rule.products.map((p) => p.name).join(', ') }}</span>
             </div>
             <label class="discount-rule-list__toggle">
                 <input type="checkbox" role="switch" :checked="rule.active" @change="emit('toggle', rule, $event.target.checked)">

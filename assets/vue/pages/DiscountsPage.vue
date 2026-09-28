@@ -7,10 +7,12 @@ import DiscountRuleForm from '../components/discounts/DiscountRuleForm.vue';
 import DiscountRuleList from '../components/discounts/DiscountRuleList.vue';
 import { useDiscountRules } from '../composables/useDiscountRules.js';
 import { useProducts } from '../composables/useProducts.js';
+import { useProductTypes } from '../composables/useProductTypes.js';
 import { useToast } from '../composables/useToast.js';
 
 const { rules, load, create, update, setActive, remove } = useDiscountRules();
 const { products, load: loadProducts } = useProducts();
+const { types, load: loadTypes } = useProductTypes();
 const toast = useToast();
 const modalOpen = ref(false);
 const editing = ref(null);
@@ -46,7 +48,7 @@ async function onRemove(rule) {
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadProducts()]));
+onMounted(() => Promise.all([load(), loadProducts(), loadTypes()]));
 </script>
 
 <template>
@@ -57,6 +59,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
 
         <p class="discounts-page__intro">
             Les remises par lot s'appliquent automatiquement aux nouvelles commandes, en choisissant la combinaison la plus avantageuse pour le client.
+            Une remise peut viser des types entiers (ex. Print + Sticker : « 3 articles pour 30 € ») et/ou des produits précis.
         </p>
         <DiscountRuleList
             :rules="rules"
@@ -67,7 +70,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
         />
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
-            <DiscountRuleForm :rule="editing" :products="products" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
+            <DiscountRuleForm :rule="editing" :products="products" :types="types" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
     </AppLayout>
 </template>

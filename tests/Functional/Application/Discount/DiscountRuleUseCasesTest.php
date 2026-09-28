@@ -12,6 +12,11 @@ use App\Application\Discount\ToggleDiscountRule\ToggleDiscountRuleHandler;
 use App\Application\Discount\UpdateDiscountRule\UpdateDiscountRuleHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Order\PreviewOrder\PreviewOrderHandler;
+use App\Application\Order\RequestedLine;
+use App\Application\Event\ScheduleEvent\ScheduleEvent;
+use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Domain\Shared\NotFound;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -35,6 +40,23 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
 
         self::getContainer()->get(DeleteDiscountRuleHandler::class)($id);
         self::assertSame([], self::getContainer()->get(ListDiscountRulesHandler::class)());
+    }
+
+    public function testRuleOnTypesAppliesToOrders(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
+        $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
+        $create = self::getContainer()->get(CreateProductHandler::class);
+        $foret = (string) $create(new CreateProduct('Forêt', 1_500, typeId: $print));
+        $mousse = (string) $create(new CreateProduct('Mousse', 400, typeId: $sticker));
+        self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('3 articles pour 30 €', [], 3, 3_000, [$print, $sticker]));
+        self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-09')));
+
+        $rule = self::getContainer()->get(ListDiscountRulesHandler::class)()[0];
+        self::assertEqualsCanonicalizing(['Print', 'Sticker'], array_column($rule->types, 'name'));
+
+        $preview = self::getContainer()->get(PreviewOrderHandler::class)(new \DateTimeImmutable('2026-07-09 12:00'), [new RequestedLine($foret, null, 2), new RequestedLine($mousse, null, 1)]);
+        self::assertSame(3_000, $preview->total);
     }
 
     public function testUnknownProductIsRejected(): void

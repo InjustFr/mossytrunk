@@ -6,11 +6,13 @@ namespace App\Application\Discount\ListDiscountRules;
 
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductType;
 
 final readonly class DiscountRuleView
 {
     /**
      * @param list<array{id: string, name: string}> $products
+     * @param list<array{id: string, name: string}> $types
      */
     public function __construct(
         public string $id,
@@ -19,6 +21,7 @@ final readonly class DiscountRuleView
         public int $bundleSize,
         public int $bundlePrice,
         public bool $active,
+        public array $types = [],
     ) {
     }
 
@@ -31,6 +34,7 @@ final readonly class DiscountRuleView
             $rule->bundleSize(),
             $rule->bundlePrice()->amount(),
             $rule->isActive(),
+            array_map(static fn (ProductType $type): array => ['id' => (string) $type->id(), 'name' => $type->name()], $rule->eligibleTypes()),
         );
     }
 }

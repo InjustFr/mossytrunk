@@ -167,7 +167,7 @@ class Product
             throw InvalidProduct::hasNoVariants($this->displayName());
         }
 
-        return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice);
+        return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice, $this->type?->id());
     }
 
     public function hasVariants(): bool

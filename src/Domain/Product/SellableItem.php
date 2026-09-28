@@ -23,6 +23,7 @@ final readonly class SellableItem
         public string $productName,
         public Money $sellingPrice,
         public Money $buyingPrice,
+        public ?Ulid $typeId = null,
     ) {
     }
 
