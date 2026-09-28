@@ -10,11 +10,12 @@ use App\Application\SumUp\SumUpUnavailable;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * Reads successful payments through the SumUp REST API:
  *  - GET /v2.1/merchants/{code}/transactions/history (paginated with `links[rel=next]`)
- *  - GET /v2.1/merchants/{code}/transactions?id={id} for each payment, to get its `products`.
+ *  - GET /v2.1/merchants/{code}/transactions?id={id} for each payment of a page, all sent at once, to get its `products`.
  */
 final readonly class SumUpApiGateway implements SumUpGateway
 {
@@ -35,10 +36,13 @@ final readonly class SumUpApiGateway implements SumUpGateway
             while (null !== $query) {
                 $page = $this->get($credentials, \sprintf('/v2.1/merchants/%s/transactions/history?%s', rawurlencode($credentials->merchantCode), $query));
 
+                $details = [];
                 foreach ($page['items'] ?? [] as $item) {
-                    $details = $this->get($credentials, \sprintf('/v2.1/merchants/%s/transactions?%s', rawurlencode($credentials->merchantCode), http_build_query(['id' => $item['id']])));
+                    $details[] = [$item, $this->request($credentials, \sprintf('/v2.1/merchants/%s/transactions?%s', rawurlencode($credentials->merchantCode), http_build_query(['id' => $item['id']])))];
+                }
 
-                    yield $this->mapper->transaction($details + $item);
+                foreach ($details as [$item, $response]) {
+                    yield $this->mapper->transaction($response->toArray() + $item);
                 }
 
                 $query = self::nextPageQuery($page);
@@ -53,7 +57,12 @@ final readonly class SumUpApiGateway implements SumUpGateway
      */
     private function get(SumUpCredentials $credentials, string $url): array
     {
-        return $this->client->request('GET', $url, ['auth_bearer' => $credentials->apiKey])->toArray();
+        return $this->request($credentials, $url)->toArray();
+    }
+
+    private function request(SumUpCredentials $credentials, string $url): ResponseInterface
+    {
+        return $this->client->request('GET', $url, ['auth_bearer' => $credentials->apiKey]);
     }
 
     /**
