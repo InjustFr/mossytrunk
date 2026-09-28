@@ -45,6 +45,12 @@ final class PageController extends AbstractController
         return $this->page('EventDetailPage', 'Événement', ['eventId' => $id]);
     }
 
+    #[Route('/remises', name: 'discounts', methods: ['GET'])]
+    public function discounts(): Response
+    {
+        return $this->page('DiscountsPage', 'Remises');
+    }
+
     /**
      * @param array<string, mixed> $props
      */

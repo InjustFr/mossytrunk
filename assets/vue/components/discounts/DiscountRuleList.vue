@@ -1,0 +1,77 @@
+<script setup>
+import BaseButton from '../ui/BaseButton.vue';
+import ConfirmButton from '../ui/ConfirmButton.vue';
+import EmptyState from '../ui/EmptyState.vue';
+import MoneyAmount from '../ui/MoneyAmount.vue';
+
+defineProps({
+    rules: { type: Array, required: true },
+    selectedId: { type: String, default: null },
+});
+const emit = defineEmits(['edit', 'toggle', 'remove']);
+</script>
+
+<template>
+    <EmptyState v-if="rules.length === 0">Aucune remise. Créez un lot, ex. « 3 stickers pour 10 € ».</EmptyState>
+    <TransitionGroup v-else name="discount-rule-list__item" tag="ul" class="discount-rule-list">
+        <li
+            v-for="rule in rules"
+            :key="rule.id"
+            :class="['discount-rule-list__item', {
+                'discount-rule-list__item--inactive': !rule.active,
+                'discount-rule-list__item--selected': rule.id === selectedId,
+            }]"
+            :data-test="`discount-rule-${rule.name}`"
+        >
+            <div class="discount-rule-list__main">
+                <span class="discount-rule-list__name">{{ rule.name }}</span>
+                <span class="discount-rule-list__deal">
+                    {{ rule.bundleSize }} articles pour <MoneyAmount :cents="rule.bundlePrice" />
+                </span>
+                <span class="discount-rule-list__products">{{ rule.products.map((p) => p.name).join(', ') }}</span>
+            </div>
+            <label class="discount-rule-list__toggle">
+                <input type="checkbox" role="switch" :checked="rule.active" @change="emit('toggle', rule, $event.target.checked)">
+                {{ rule.active ? 'Active' : 'Inactive' }}
+            </label>
+            <div class="discount-rule-list__actions">
+                <BaseButton variant="ghost" @click="emit('edit', rule)">Modifier</BaseButton>
+                <ConfirmButton label="Supprimer" @confirm="emit('remove', rule)" />
+            </div>
+        </li>
+    </TransitionGroup>
+</template>
+
+<style scoped>
+.discount-rule-list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+
+.discount-rule-list__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-accent);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    transition: opacity var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.discount-rule-list__item--inactive { opacity: 0.6; border-left-color: var(--color-border); }
+.discount-rule-list__item--selected { background: var(--color-accent-soft); }
+
+.discount-rule-list__main { flex: 1; display: flex; flex-direction: column; }
+.discount-rule-list__name { font-weight: 600; }
+.discount-rule-list__deal { font-size: 0.9rem; }
+.discount-rule-list__products { color: var(--color-muted); font-size: 0.85rem; }
+
+.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-1); font-size: 0.9rem; cursor: pointer; }
+.discount-rule-list__toggle input { accent-color: var(--color-accent); }
+
+.discount-rule-list__actions { display: flex; gap: var(--space-1); }
+
+.discount-rule-list__item-enter-active,
+.discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
+.discount-rule-list__item-enter-from,
+.discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-4px); }
+</style>
