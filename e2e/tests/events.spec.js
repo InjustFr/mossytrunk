@@ -75,8 +75,13 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
 
     await page.goto(`/evenements/${event.id}`);
     const report = page.locator('.event-report');
-    const sections = report.locator('.report-section__summary');
-    await expect(sections).toHaveText([/Dépenses\s*−\s*100,00/, /Commandes\s*\+\s*160,00/, /URSSAF\s*−\s*20,48/]);
+    await expect(report.locator('.receipt__line')).toHaveText([
+        /Chiffre d'affaires\s*160,00/,
+        /Coût d'achat\s*−\s*50,00/,
+        /Dépenses\s*−\s*100,00/,
+        /URSSAF.*−\s*20,48/,
+        /Résultat\s*=\s*−10,48/,
+    ]);
 
     // CA 160 − coût 50 − dépenses 100 − URSSAF 20,48 = −10,48
     await expect(report.getByTestId('event-result')).toHaveText(/−10,48|-10,48/);

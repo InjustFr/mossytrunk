@@ -12,8 +12,9 @@ test('events list shows each event turnover and result', async ({ page, request 
     expect(response.status()).toBe(201);
 
     await page.goto('/evenements');
-    const item = page.getByRole('link', { name: new RegExp(event.name) });
-    await expect(item).toContainText('150,00');
+    const item = page.getByRole('listitem').filter({ hasText: event.name });
+    await expect(item).toContainText('Dépenses engagées');
+    await expect(item).toContainText('100,00');
     // CA 150 − coût 50 − dépenses 100 − URSSAF 19,20 = −19,20
     await expect(page.getByTestId(`event-result-${event.id}`)).toHaveText(/[−-]19,20/);
 });
@@ -30,4 +31,5 @@ test('events are split between upcoming and past ones', async ({ page, request }
     await expect(upcomingSection.getByRole('link', { name: new RegExp(past.name) })).toHaveCount(0);
     await expect(pastSection.getByRole('link', { name: new RegExp(past.name) })).toBeVisible();
     await expect(pastSection.getByRole('link', { name: new RegExp(upcoming.name) })).toHaveCount(0);
+    await expect(pastSection.getByRole('row').filter({ hasText: past.name })).toContainText('Lyon');
 });

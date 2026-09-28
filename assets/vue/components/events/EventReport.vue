@@ -1,83 +1,75 @@
 <script setup>
-import EmptyState from '../ui/EmptyState.vue';
+import { computed } from 'vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import ResultReceipt from '../reporting/ResultReceipt.vue';
 import OrderRecap from './OrderRecap.vue';
-import ReportSection from './ReportSection.vue';
+import { plural } from '../../composables/usePlural.js';
 
-// Event profitability, in the order Dépenses → Commandes → URSSAF → Total.
-defineProps({
+const props = defineProps({
     report: { type: Object, required: true },
     eventId: { type: String, required: true },
+    upcoming: { type: Boolean, default: false },
 });
 
 const rate = (value) => `${String(value).replace('.', ',')} %`;
+
+const lines = computed(() => [
+    { key: 'turnover', label: "Chiffre d'affaires", amount: props.report.total.turnover, open: props.report.orders.count > 0 },
+    { key: 'costOfGoods', label: "Coût d'achat", amount: props.report.total.costOfGoods, sign: '−' },
+    { key: 'expenses', label: 'Dépenses', amount: props.report.total.expenses, sign: '−' },
+    { key: 'urssaf', label: 'URSSAF', hint: rate(props.report.urssaf.rate), amount: props.report.total.urssaf, sign: '−' },
+]);
 </script>
 
 <template>
-    <div class="event-report">
-        <ReportSection title="Dépenses" :amount="report.expenses.total" sign="−">
-            <EmptyState v-if="report.expenses.items.length === 0">Aucune dépense.</EmptyState>
-            <ul v-else class="event-report__list">
-                <li v-for="(expense, index) in report.expenses.items" :key="index" class="event-report__line">
-                    <span>{{ expense.label }}</span><MoneyAmount :cents="expense.amount" />
-                </li>
-            </ul>
-        </ReportSection>
+    <section v-if="upcoming && report.orders.count === 0" class="event-report event-report--upcoming" aria-label="Dépenses engagées">
+        <h2 class="event-report__title">Dépenses engagées</h2>
+        <p class="event-report__committed"><MoneyAmount :cents="report.total.expenses" /></p>
+        <p class="event-report__summary">Pas encore de ventes. Le bilan se remplira avec les commandes de l'événement.</p>
+    </section>
+    <ResultReceipt
+        v-else
+        class="event-report"
+        title="Résultat"
+        :turnover="report.total.turnover"
+        :lines="lines"
+        :result="report.total.result"
+        result-test="event-result"
+    >
+        <template #summary>
+            <p class="event-report__summary">
+                <template v-if="report.orders.count > 0">{{ plural(report.orders.count, 'commande') }}</template>
+                <template v-else>Aucune commande.</template>
+            </p>
+        </template>
 
-        <ReportSection title="Commandes" :amount="report.orders.turnover" sign="+" open>
+        <template #detail-turnover>
             <dl class="event-report__figures">
-                <div class="event-report__line"><dt>{{ report.orders.count }} commande(s) — ventes brutes</dt><dd><MoneyAmount :cents="report.orders.grossSales" /></dd></div>
-                <div class="event-report__line"><dt>Remises accordées</dt><dd>− <MoneyAmount :cents="report.orders.discounts" /></dd></div>
-                <div class="event-report__line event-report__line--strong"><dt>Chiffre d'affaires</dt><dd><MoneyAmount :cents="report.orders.turnover" /></dd></div>
-                <div class="event-report__line"><dt>Coût d'achat des articles vendus</dt><dd><MoneyAmount :cents="report.orders.costOfGoods" /></dd></div>
+                <div class="event-report__line"><dt>Ventes brutes</dt><dd><MoneyAmount :cents="report.orders.grossSales" /></dd></div>
+                <div class="event-report__line"><dt>Remises accordées</dt><dd><MoneyAmount :cents="report.orders.discounts ? -report.orders.discounts : 0" /></dd></div>
             </dl>
-
             <OrderRecap :groups="report.orders.groups" />
             <p class="event-report__more"><a :href="`/commandes?event=${eventId}`">Voir les commandes</a></p>
-        </ReportSection>
-
-        <ReportSection title="URSSAF" :amount="report.urssaf.amount" sign="−">
-            <p class="event-report__note">
-                {{ rate(report.urssaf.rate) }} du chiffre d'affaires (<MoneyAmount :cents="report.urssaf.base" />).
-            </p>
-        </ReportSection>
-
-        <div class="event-report__total">
-            <dl class="event-report__figures">
-                <div class="event-report__line"><dt>Chiffre d'affaires</dt><dd><MoneyAmount :cents="report.total.turnover" /></dd></div>
-                <div class="event-report__line"><dt>Coût d'achat</dt><dd>− <MoneyAmount :cents="report.total.costOfGoods" /></dd></div>
-                <div class="event-report__line"><dt>Dépenses</dt><dd>− <MoneyAmount :cents="report.total.expenses" /></dd></div>
-                <div class="event-report__line"><dt>URSSAF</dt><dd>− <MoneyAmount :cents="report.total.urssaf" /></dd></div>
-                <div class="event-report__line event-report__line--result">
-                    <dt>Résultat</dt>
-                    <dd><MoneyAmount :cents="report.total.result" signed data-test="event-result" /></dd>
-                </div>
-            </dl>
-        </div>
-    </div>
+        </template>
+    </ResultReceipt>
 </template>
 
 <style scoped>
-.event-report { display: flex; flex-direction: column; }
+.event-report__summary { margin: 0; color: var(--color-muted); }
 
-.event-report__list,
-.event-report__figures { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
-
-.event-report__line { display: flex; justify-content: space-between; gap: var(--space-3); }
-.event-report__line dd { margin: 0; }
-.event-report__line--strong { font-weight: 600; }
-
-.event-report__note { margin: 0; color: var(--color-muted); }
-.event-report__more { margin: var(--space-2) 0 0; font-size: 0.9rem; }
-
-.event-report__total { padding-top: var(--space-4); }
-
-.event-report__line--result {
-    margin-top: var(--space-2);
-    padding: var(--space-3);
+.event-report--upcoming {
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
-    background: var(--color-accent-soft);
-    font-size: 1.2rem;
-    font-weight: 700;
 }
+
+.event-report__title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-muted); }
+.event-report__committed { margin: var(--space-1) 0; font-family: var(--font-display); font-size: 2.5rem; line-height: 1.1; }
+
+.event-report__figures { display: flex; flex-direction: column; gap: var(--space-1); margin: 0 0 var(--space-2); padding: 0; }
+.event-report__line { display: flex; justify-content: space-between; gap: var(--space-3); font-size: 0.9rem; }
+.event-report__line dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+.event-report__more { margin: var(--space-2) 0 0; font-size: 0.9rem; }
 </style>

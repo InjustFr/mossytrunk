@@ -9,6 +9,16 @@ export function formatDateTime(iso) {
     return iso ? dateTimeFormatter.format(new Date(iso)) : '';
 }
 
+const relativeFormatter = new Intl.RelativeTimeFormat('fr-FR', { numeric: 'auto' });
+
+export function fromToday(isoDate) {
+    const today = new Date();
+    const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    const [year, month, day] = isoDate.split('-').map(Number);
+    const days = Math.round((Date.UTC(year, month - 1, day) - todayUtc) / 86_400_000);
+    return relativeFormatter.format(days, 'day');
+}
+
 export function nowForInput() {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());

@@ -26,12 +26,12 @@ result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 
 ## Display (visual grouping only — not domain concepts)
 
-Sections, in this order, each collapsible with its amount in the header:
+The report is a **receipt**: the result in large type (with its share of the turnover and the number of orders), next to the ledger
+chiffre d'affaires − coût d'achat − dépenses − URSSAF (rate shown) = **Résultat**.
 
-1. **Dépenses** — every expense + total.
-2. **Commandes** — number of orders, gross sales, discounts, turnover, cost of goods, and the **orders recap**: an accordion
-   grouped by **type → product → variants** (quantity and sales before discounts at each level; warning icon when a buying price is unknown).
-   Types and names are the products' current ones (untyped or deleted products under « Sans type »), see `GetEventReport/OrderRecap.php` (`OrderRecapTest`).
-   The article list can be hidden with « Afficher le détail des articles » (remembered in the browser). Link to the orders list filtered on the event.
-3. **URSSAF** — rate and base.
-4. **Total** — turnover − cost of goods − expenses − URSSAF = **Résultat**.
+- **Chiffre d'affaires** unfolds (open when there are orders) into gross sales, discounts and the **orders recap**: an accordion
+  grouped by **type → product → variants** (quantity and sales before discounts at each level; warning icon when a buying price is unknown).
+  Types and names are the products' current ones (untyped or deleted products under « Sans type »), see `GetEventReport/OrderRecap.php` (`OrderRecapTest`).
+  The article list can be hidden with « Afficher le détail des articles » (remembered in the browser). Link to the orders list filtered on the event.
+- Expenses are listed (and edited) in their own card below the receipt.
+- An **upcoming** event without orders shows its **committed expenses** instead of a (negative) result.

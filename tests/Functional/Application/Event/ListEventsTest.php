@@ -43,6 +43,10 @@ final class ListEventsTest extends KernelTestCase
         self::assertSame(1, $events['Japan Expo']->orderCount);
         self::assertSame(15_000, $events['Japan Expo']->turnover);
         self::assertSame(15_000 - 5_000 - 10_000 - 1_920, $events['Japan Expo']->result);
+        self::assertSame(5_000, $events['Japan Expo']->costOfGoods);
+        self::assertSame(1_920, $events['Japan Expo']->urssaf);
+        self::assertSame(4, $events['Japan Expo']->days);
+        self::assertSame(1, $events['Marché']->days);
         self::assertSame(0, $events['Marché']->turnover);
         self::assertSame(0, $events['Marché']->result);
     }

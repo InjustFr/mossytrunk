@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Event\GetEvent;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\EventTiming;
 use App\Domain\Event\Expense;
 
 final readonly class EventView
@@ -20,10 +21,11 @@ final readonly class EventView
         public string $endDate,
         public array $expenses,
         public int $expensesTotal,
+        public string $timing,
     ) {
     }
 
-    public static function fromEvent(Event $event): self
+    public static function fromEvent(Event $event, EventTiming $timing): self
     {
         return new self(
             (string) $event->id(),
@@ -37,6 +39,7 @@ final readonly class EventView
                 'amount' => $expense->amount()->amount(),
             ], $event->expenses()),
             $event->totalExpenses()->amount(),
+            $timing->value,
         );
     }
 }

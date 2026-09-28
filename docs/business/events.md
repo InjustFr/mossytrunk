@@ -36,4 +36,6 @@ The profitability of an event is described in [event-report.md](event-report.md)
 | `ReviseExpense` | `PUT /api/events/{id}/expenses/{expenseId}` `{label, amount}` |
 | `RemoveExpense` | `DELETE /api/events/{id}/expenses/{expenseId}` |
 
-UI: `/evenements` — two sections: **À venir** (ongoing ones included with an « En cours » badge, soonest first) and **Passés** (most recent first); each event shows CA, dépenses and **résultat**; creation modal, `/evenements/{id}` (details, edit, expenses, report).
+`ListEvents` also gives each event its number of `days`, `costOfGoods` and `urssaf`; `GetEvent` gives its `timing`.
+
+UI: `/evenements` — **À venir** (ongoing ones included, « En cours », otherwise « dans N jours »; soonest first) with the **committed expenses** (and the result once it has orders), then **Passés**: bars of each event's result, best first, and a comparison table sortable on every column (days, orders, CA, dépenses, résultat, marge = résultat / CA, résultat par jour); creation modal, `/evenements/{id}` (details, edit, expenses, report).

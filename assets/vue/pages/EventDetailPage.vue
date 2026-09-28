@@ -64,15 +64,11 @@ onMounted(load);
         <div v-if="event" class="event-detail-page">
             <EventHeader :event="event" />
 
-            <div class="event-detail-page__grid">
-                <BaseCard v-if="report" title="Bilan de l'événement" class="event-detail-page__report">
-                    <EventReport :report="report" :event-id="event.id" />
-                </BaseCard>
+            <EventReport v-if="report" :report="report" :event-id="event.id" :upcoming="event.timing === 'upcoming'" />
 
-                <BaseCard title="Dépenses">
-                    <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
-                </BaseCard>
-            </div>
+            <BaseCard title="Dépenses" class="event-detail-page__expenses">
+                <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
+            </BaseCard>
         </div>
 
         <BaseModal v-model:open="editOpen" title="Modifier l'événement">
@@ -86,9 +82,5 @@ onMounted(load);
 
 <style scoped>
 .event-detail-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.event-detail-page__grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(17.5rem, 2fr); gap: var(--space-5); align-items: start; }
-
-@media (max-width: 68.75rem) {
-    .event-detail-page__grid { grid-template-columns: 1fr; }
-}
+.event-detail-page__expenses { max-width: 40rem; }
 </style>

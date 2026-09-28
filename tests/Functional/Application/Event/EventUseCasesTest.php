@@ -20,10 +20,12 @@ use App\Domain\Event\EventRepository;
 use App\Domain\Event\InvalidEvent;
 use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 final class EventUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use ClockSensitiveTrait;
 
     protected function setUp(): void
     {
@@ -39,6 +41,17 @@ final class EventUseCasesTest extends KernelTestCase
 
         self::assertSame(['Marché de Noël', 'Japan Expo'], array_column($events, 'name'));
         self::assertSame('2026-07-09', $events[1]->startDate);
+    }
+
+    public function testEventDetailsTellWhetherItIsUpcoming(): void
+    {
+        $id = (string) $this->schedule('Japan Expo', '2026-07-09', '2026-07-12');
+        $getEvent = self::getContainer()->get(GetEventHandler::class);
+
+        self::mockTime('2026-07-01 10:00');
+        self::assertSame('upcoming', $getEvent($id)->timing);
+        self::mockTime('2026-07-13 10:00');
+        self::assertSame('past', $getEvent($id)->timing);
     }
 
     public function testEventsCannotOverlap(): void
