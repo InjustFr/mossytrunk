@@ -22,10 +22,13 @@ use App\Domain\Shared\Money;
  *  3. otherwise a new product without variants is created (selling price from SumUp, buying price 0).
  *     When SumUp gives a category, it becomes the product type (created if needed) and a leading
  *     "<category> " is removed from the name, so "Print Forêt" in category Print becomes type Print + name Forêt.
+ * A line without a name (an amount typed on the terminal) is sold as the "Montant libre" product, at the line's price.
  * Returns null when the line names a product that has variants without a known variant.
  */
 final class SumUpProductResolver
 {
+    public const string FREE_AMOUNT = 'Montant libre';
+
     /** @var array<string, Product>|null products by lowercase display name */
     private ?array $byDisplayName = null;
 
@@ -48,6 +51,9 @@ final class SumUpProductResolver
     public function resolve(SumUpLine $line): ?SellableItem
     {
         $name = trim($line->name);
+        if ('' === $name) {
+            return $this->freeAmount($line)->sellable(null)->at($line->unitPrice);
+        }
 
         $product = $this->find($name);
         if (null !== $product) {
@@ -62,14 +68,25 @@ final class SumUpProductResolver
         }
 
         $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
-        $ownName = null === $type ? $name : self::withoutPrefix($name, $type->name());
 
-        $product = Product::create($this->workspace->current(), $this->references->generate($type, $ownName), $ownName, $line->unitPrice, Money::zero(), [], $type);
+        return $this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type)->sellable(null);
+    }
+
+    private function freeAmount(SumUpLine $line): Product
+    {
+        $product = $this->find(self::FREE_AMOUNT);
+
+        return null !== $product && !$product->hasVariants() ? $product : $this->create(self::FREE_AMOUNT, $line->unitPrice, null);
+    }
+
+    private function create(string $name, Money $sellingPrice, ?ProductType $type): Product
+    {
+        $product = Product::create($this->workspace->current(), $this->references->generate($type, $name), $name, $sellingPrice, Money::zero(), [], $type);
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         ++$this->productsCreated;
 
-        return $product->sellable(null);
+        return $product;
     }
 
     public function createdCount(): int

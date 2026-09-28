@@ -27,6 +27,11 @@ final readonly class SellableItem
     ) {
     }
 
+    public function at(Money $sellingPrice): self
+    {
+        return new self($this->productId, $this->variant, $this->productName, $sellingPrice, $this->buyingPrice, $this->typeId);
+    }
+
     public function label(): string
     {
         return null === $this->variant ? $this->productName : \sprintf('%s — %s', $this->productName, $this->variant);

@@ -137,6 +137,22 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(['PRI-FORET', 'PRI-RIVIERE'], array_column($products, 'reference'));
     }
 
+    public function testLinesWithoutNameAreSoldAsAFreeAmountAtTheirOwnPrice(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-FREE1', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(700), [new SumUpLine('', Money::cents(700), 1)]),
+            new SumUpTransaction('TX-FREE2', new \DateTimeImmutable('2030-03-14T13:00:00Z'), Money::cents(2_500), [new SumUpLine(' ', Money::cents(2_500), 1, 'Print')]),
+        ]);
+
+        $report = $this->import();
+
+        self::assertSame(2, $report->ordersImported);
+        self::assertSame(1, $report->productsCreated);
+        self::assertSame(['Montant libre'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'name'));
+        self::assertEqualsCanonicalizing([700, 2_500], array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'total'));
+    }
+
     public function testTypedProductsAreMatchedByDisplayName(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
