@@ -28,8 +28,11 @@ make test            # PHPUnit (migrates test DB first); make test-unit / test-f
 make deptrac         # onion layer rules
 make e2e             # builds assets, boots php-e2e (APP_ENV=test, fake SumUp), runs Playwright
 docker compose exec php php bin/console …
+make push / make deploy DEPLOY_HOST=user@server   # prod image to Docker Hub, restart on server
 ```
 Host port overridable with `HTTP_PORT`. Postgres exposed on `5433` (compose.override.yaml).
+
+Production: `Dockerfile` stages `base` → `vendor`/`assets` → `prod` (the last stage `dev` is what `compose.yaml` builds). `docker/php/docker-entrypoint.sh` waits for the DB, migrates, warms the cache. Server files live in `deploy/` (see `deploy/README.md`); the port is `APP_PORT`, reverse-proxy trust via `SYMFONY_TRUSTED_PROXIES`/`SYMFONY_TRUSTED_HEADERS` env. A new env var must be added to `deploy/.env.dist`.
 
 ## Backend architecture (Onion) — `src/`
 

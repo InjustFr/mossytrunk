@@ -29,3 +29,5 @@ yarn-error.log
 ###< e2e ###
 /.phpunit.cache/
 /.deptrac.cache
+
+/deploy/.env
