@@ -32,11 +32,9 @@ defineProps({
 
 .card__title {
     margin: 0;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
-    letter-spacing: 0.09rem;
-    text-transform: uppercase;
-    color: var(--color-muted);
+    color: var(--color-ink);
 }
 
 .card__actions { display: flex; gap: var(--space-2); align-items: center; }

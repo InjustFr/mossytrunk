@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { Check } from '@lucide/vue';
 import { ListboxContent, ListboxFilter, ListboxItem, ListboxItemIndicator, ListboxRoot } from 'reka-ui';
 import { formatCents } from '../../composables/useMoney.js';
+import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -39,7 +40,7 @@ const visible = computed(() => {
                 <span class="product-picker__price">{{ formatCents(product.sellingPrice) }}</span>
             </ListboxItem>
         </ListboxContent>
-        <p class="product-picker__count">{{ selected.length }} produit(s) choisi(s) en plus des types</p>
+        <p class="product-picker__count">{{ plural(selected.length, 'produit choisi', 'produits choisis') }} en plus des types</p>
     </ListboxRoot>
 </template>
 

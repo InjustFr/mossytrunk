@@ -35,7 +35,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                                 <NavigationMenuLink
                                     :href="link.href"
                                     :active="isActive(link.href)"
-                                    :class="['app-layout__link', 'eyebrow', { 'app-layout__link--active': isActive(link.href) }]"
+                                    :class="['app-layout__link', { 'app-layout__link--active': isActive(link.href) }]"
                                 >
                                     <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
                                     {{ link.label }}
@@ -107,8 +107,9 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border-left: 0.125rem solid transparent;
+    font-weight: 500;
     color: var(--color-muted);
     text-decoration: none;
     transition: color var(--transition), background var(--transition), border-color var(--transition);

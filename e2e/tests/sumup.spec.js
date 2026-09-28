@@ -14,17 +14,17 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await page.goto('/commandes');
     await page.getByRole('button', { name: 'Importer depuis SumUp' }).click();
 
-    await expect(page.getByTestId('toast')).toContainText('2 commande(s) importée(s), 3 produit(s) créé(s)');
+    await expect(page.getByTestId('toast')).toContainText('2 commandes importées, 3 produits créés');
     const problem = page.getByTestId('sumup-import-problem');
     await expect(problem).toHaveCount(1);
-    await expect(problem).toContainText('2 commande(s) non importée(s)');
+    await expect(problem).toContainText('2 commandes non importées');
     await expect(problem).toContainText('21 mars 2030, 23 mars 2030');
     await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toContainText('Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('SumUp');
 
     await page.getByRole('button', { name: 'Importer depuis SumUp' }).click();
-    await expect(page.getByTestId('toast').last()).toContainText('0 commande(s) importée(s), 0 produit(s) créé(s), 2 déjà importée(s)');
+    await expect(page.getByTestId('toast').last()).toContainText('0 commande importée, 0 produit créé, 2 déjà importées');
     await expect(page.getByRole('row').filter({ hasText: /TFAKE000[12]/ })).toHaveCount(2);
 
     // Imported products have an unknown (0 €) buying price, editable later.

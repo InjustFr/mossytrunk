@@ -13,6 +13,7 @@ import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useToast } from '../composables/useToast.js';
+import { plural } from '../composables/usePlural.js';
 
 const { products, load, create, update, batchUpdate } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
@@ -44,7 +45,7 @@ async function onSaved(name) {
 }
 
 async function onBatchSaved(count) {
-    toast.success(`${count} produit(s) mis à jour.`);
+    toast.success(`${plural(count, 'produit mis à jour', 'produits mis à jour')}.`);
     batchOpen.value = false;
     filters.clearSelection();
     await load();

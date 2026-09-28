@@ -7,6 +7,7 @@ import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
 import VariantsInput from './VariantsInput.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
+import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     count: { type: Number, required: true },
@@ -49,7 +50,7 @@ async function onSubmit() {
 <template>
     <form class="product-batch-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p class="product-batch-form__intro">Les changements cochés s'appliquent aux {{ count }} produit(s) sélectionné(s).</p>
+            <p class="product-batch-form__intro">Les changements cochés s'appliquent aux {{ plural(count, 'produit sélectionné', 'produits sélectionnés') }}.</p>
             <p v-if="errors.form" class="product-batch-form__error" role="alert">{{ errors.form }}</p>
 
             <div class="product-batch-form__option">
@@ -82,7 +83,7 @@ async function onSubmit() {
 
             <div class="product-batch-form__actions">
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">Appliquer à {{ count }} produit(s)</BaseButton>
+                <BaseButton type="submit" :loading="saving">Appliquer à {{ plural(count, 'produit') }}</BaseButton>
             </div>
         </fieldset>
     </form>

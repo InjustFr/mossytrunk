@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import { useApi } from './useApi.js';
 import { useToast } from './useToast.js';
 import { formatDate } from './useDate.js';
+import { plural } from './usePlural.js';
 
 /**
  * Runs the SumUp import. Success goes to a toast; orders that could not be imported are summed up
@@ -19,9 +20,9 @@ export function useSumUpImport() {
         try {
             const report = await api.post('/api/sumup/import');
             toast.success(
-                `Import SumUp terminé : ${report.ordersImported} commande(s) importée(s), `
-                + `${report.productsCreated} produit(s) créé(s), ${report.ordersAlreadyImported} déjà importée(s)`
-                + (report.typesCreated > 0 ? `, ${report.typesCreated} type(s) créé(s).` : '.'),
+                `Import SumUp terminé : ${plural(report.ordersImported, 'commande importée', 'commandes importées')}, `
+                + `${plural(report.productsCreated, 'produit créé', 'produits créés')}, ${plural(report.ordersAlreadyImported, 'déjà importée', 'déjà importées')}`
+                + (report.typesCreated > 0 ? `, ${plural(report.typesCreated, 'type créé', 'types créés')}.` : '.'),
             );
             problem.value = describeProblem(report);
             return report;
@@ -39,10 +40,10 @@ export function useSumUpImport() {
 function describeProblem(report) {
     const parts = [];
     if (report.ordersWithoutEvent > 0) {
-        parts.push(`${report.ordersWithoutEvent} commande(s) non importée(s) : aucun événement ne couvre leur date. Créez l'événement correspondant puis relancez l'import.`);
+        parts.push(`${plural(report.ordersWithoutEvent, 'commande non importée', 'commandes non importées')} : aucun événement ne couvre leur date. Créez l'événement correspondant puis relancez l'import.`);
     }
     if (report.ordersWithUnresolvedProducts > 0) {
-        parts.push(`${report.ordersWithUnresolvedProducts} commande(s) non importée(s) : variante inconnue pour certains produits.`);
+        parts.push(`${plural(report.ordersWithUnresolvedProducts, 'commande non importée', 'commandes non importées')} : variante inconnue pour certains produits.`);
     }
     if (parts.length === 0) {
         return null;

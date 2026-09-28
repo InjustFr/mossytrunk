@@ -77,7 +77,7 @@ test('filter by type and edit the selection in batch', async ({ page, request })
     await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: sticker.name }).click();
     await expect(page.getByRole('row').filter({ hasText: other.displayName })).toHaveCount(0);
     await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
-    await expect(page.getByRole('region', { name: 'Sélection' })).toContainText('2 produit(s) sélectionné(s)');
+    await expect(page.getByRole('region', { name: 'Sélection' })).toContainText('2 produits sélectionnés');
 
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();
     const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
@@ -85,9 +85,9 @@ test('filter by type and edit the selection in batch', async ({ page, request })
     await batch.getByLabel('Nouveau prix de vente (€)').fill('5');
     await batch.getByRole('textbox', { name: 'Variante à ajouter' }).fill('Brillant');
     await batch.getByRole('textbox', { name: 'Variante à ajouter' }).press('Enter');
-    await batch.getByRole('button', { name: 'Appliquer à 2 produit(s)' }).click();
+    await batch.getByRole('button', { name: 'Appliquer à 2 produits' }).click();
 
-    await expect(page.getByTestId('toast')).toContainText('2 produit(s) mis à jour.');
+    await expect(page.getByTestId('toast')).toContainText('2 produits mis à jour.');
     for (const product of [mousse, fougere]) {
         const row = page.getByRole('row').filter({ hasText: product.displayName });
         await expect(row).toContainText('5,00');

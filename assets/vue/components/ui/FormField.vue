@@ -29,7 +29,7 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
 <style scoped>
 .form-field { display: flex; flex-direction: column; gap: var(--space-1); }
 
-.form-field__label { font-weight: 600; font-size: 0.72rem; letter-spacing: 0.072rem; text-transform: uppercase; color: var(--color-muted); }
+.form-field__label { font-weight: 500; font-size: 0.875rem; color: var(--color-text); }
 
 .form-field :deep(input),
 .form-field :deep(select),
