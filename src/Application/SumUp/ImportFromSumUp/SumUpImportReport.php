@@ -12,6 +12,7 @@ final readonly class SumUpImportReport
      */
     public function __construct(
         public int $productsCreated,
+        public int $typesCreated,
         public int $ordersImported,
         public int $ordersAlreadyImported,
         public int $ordersWithoutEvent,

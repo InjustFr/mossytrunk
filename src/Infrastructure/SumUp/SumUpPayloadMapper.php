@@ -37,7 +37,23 @@ final class SumUpPayloadMapper
             (string) $product['name'],
             Money::cents(self::cents($product['price_with_vat'] ?? $product['price'] ?? 0)),
             max(1, (int) ($product['quantity'] ?? 1)),
+            self::category($product),
         );
+    }
+
+    /**
+     * Not documented on transaction products: read defensively when SumUp sends it.
+     *
+     * @param array<string, mixed> $product
+     */
+    private static function category(array $product): ?string
+    {
+        $category = $product['category'] ?? $product['category_name'] ?? null;
+        if (\is_array($category)) {
+            $category = $category['name'] ?? null;
+        }
+
+        return \is_string($category) && '' !== trim($category) ? trim($category) : null;
     }
 
     private static function cents(int|float|string $euros): int

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\SumUp\ImportFromSumUp;
 
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
 use App\Application\Transaction;
@@ -13,6 +14,7 @@ use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\DateRange;
 
 /**
@@ -26,6 +28,8 @@ final readonly class ImportFromSumUpHandler
         private SumUpGateway $sumUp,
         private ProductRepository $products,
         private ProductReferenceGenerator $references,
+        private ProductTypeRepository $types,
+        private CreateProductTypeHandler $createType,
         private EventRepository $events,
         private OrderRepository $orders,
         private Transaction $transaction,
@@ -41,7 +45,7 @@ final readonly class ImportFromSumUpHandler
         }
 
         $alreadyImported = array_flip($this->orders->importedSumUpTransactionCodes(array_keys($transactions)));
-        $resolver = new SumUpProductResolver($this->products, $this->references);
+        $resolver = new SumUpProductResolver($this->products, $this->references, $this->types, $this->createType);
         $imported = $withoutEvent = $withUnresolved = 0;
         $datesWithoutEvent = $unresolved = [];
 
@@ -88,6 +92,7 @@ final readonly class ImportFromSumUpHandler
 
         return new SumUpImportReport(
             $resolver->createdCount(),
+            $resolver->typesCreatedCount(),
             $imported,
             \count($alreadyImported),
             $withoutEvent,

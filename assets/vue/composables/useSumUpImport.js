@@ -20,7 +20,8 @@ export function useSumUpImport() {
             const report = await api.post('/api/sumup/import');
             toast.success(
                 `Import SumUp terminé : ${report.ordersImported} commande(s) importée(s), `
-                + `${report.productsCreated} produit(s) créé(s), ${report.ordersAlreadyImported} déjà importée(s).`,
+                + `${report.productsCreated} produit(s) créé(s), ${report.ordersAlreadyImported} déjà importée(s)`
+                + (report.typesCreated > 0 ? `, ${report.typesCreated} type(s) créé(s).` : '.'),
             );
             problem.value = describeProblem(report);
             return report;

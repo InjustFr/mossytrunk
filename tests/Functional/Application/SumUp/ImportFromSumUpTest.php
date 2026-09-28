@@ -9,6 +9,7 @@ use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\SumUp\ImportFromSumUp\ImportFromSumUpHandler;
 use App\Application\SumUp\SumUpLine;
@@ -95,6 +96,36 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(0, $report->ordersImported);
         self::assertSame(1, $report->ordersWithUnresolvedProducts);
         self::assertSame(['T-shirt'], $report->unresolvedProducts);
+    }
+
+    public function testCategoryBecomesTheProductType(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-CAT', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(3_000), [
+                new SumUpLine('Print Forêt', Money::cents(1_500), 1, 'Print'),
+                new SumUpLine('Rivière', Money::cents(1_500), 1, 'print'),
+            ]),
+        ]);
+
+        $report = $this->import();
+
+        self::assertSame(1, $report->typesCreated);
+        $products = self::getContainer()->get(ListProductsHandler::class)();
+        self::assertSame(['Print Forêt', 'Print Rivière'], array_column($products, 'displayName'));
+        self::assertSame(['Forêt', 'Rivière'], array_column($products, 'name'));
+        self::assertSame(['PRI-FORET', 'PRI-RIVIERE'], array_column($products, 'reference'));
+    }
+
+    public function testTypedProductsAreMatchedByDisplayName(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 400, 60, typeId: $sticker));
+
+        $report = $this->import();
+
+        self::assertSame(2, $report->productsCreated, '"Sticker Mousse" is the existing typed product');
     }
 
     private function import(): \App\Application\SumUp\ImportFromSumUp\SumUpImportReport
