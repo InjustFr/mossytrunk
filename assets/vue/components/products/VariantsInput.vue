@@ -1,61 +1,42 @@
 <script setup>
-import { ref } from 'vue';
 import { X } from '@lucide/vue';
+import { TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot } from 'reka-ui';
 
 defineProps({
     inputLabel: { type: String, default: 'Nouvelle variante' },
 });
 const variants = defineModel({ type: Array, required: true });
-const draft = ref('');
-
-function add() {
-    const value = draft.value.trim();
-    if (value !== '' && !variants.value.includes(value)) {
-        variants.value = [...variants.value, value];
-    }
-    draft.value = '';
-}
-
-function remove(variant) {
-    variants.value = variants.value.filter((existing) => existing !== variant);
-}
 </script>
 
 <template>
-    <div class="variants-input">
-        <TransitionGroup name="variants-input__chip" tag="ul" class="variants-input__chips">
-            <li v-for="variant in variants" :key="variant" class="variants-input__chip">
-                {{ variant }}
-                <button
-                    type="button"
-                    class="variants-input__remove"
-                    :aria-label="`Retirer la variante ${variant}`"
-                    @click="remove(variant)"
-                ><X size="0.75rem" aria-hidden="true" /></button>
-            </li>
-        </TransitionGroup>
-        <input
-            v-model="draft"
-            class="variants-input__field"
-            type="text"
-            placeholder="Ajouter une variante puis Entrée"
-            :aria-label="inputLabel"
-            @keydown.enter.prevent="add"
-            @blur="add"
-        >
-    </div>
+    <TagsInputRoot v-model="variants" add-on-blur add-on-paste class="variants-input">
+        <TagsInputItem v-for="variant in variants" :key="variant" :value="variant" class="variants-input__chip">
+            <TagsInputItemText />
+            <TagsInputItemDelete class="variants-input__remove" :aria-label="`Retirer la variante ${variant}`">
+                <X size="0.75rem" aria-hidden="true" />
+            </TagsInputItemDelete>
+        </TagsInputItem>
+        <TagsInputInput class="variants-input__field" placeholder="Ajouter une variante puis Entrée" :aria-label="inputLabel" @keypress.enter.prevent />
+    </TagsInputRoot>
 </template>
 
 <style scoped>
-.variants-input { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.variants-input__chips {
+.variants-input {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--space-1);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    min-height: 2.375rem;
+    padding: var(--space-1) var(--space-2);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.variants-input:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
 }
 
 .variants-input__chip {
@@ -67,7 +48,10 @@ function remove(variant) {
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
     font-size: 0.85rem;
+    animation: variants-input-chip-in var(--transition);
 }
+
+.variants-input__chip[data-state="active"] { outline: 0.125rem solid var(--color-accent); }
 
 .variants-input__remove {
     display: inline-flex;
@@ -81,8 +65,18 @@ function remove(variant) {
     line-height: 1;
 }
 
-.variants-input__chip-enter-active,
-.variants-input__chip-leave-active { transition: opacity var(--transition), transform var(--transition); }
-.variants-input__chip-enter-from,
-.variants-input__chip-leave-to { opacity: 0; transform: scale(0.9); }
+.variants-input .variants-input__field {
+    flex: 1;
+    min-width: 10rem;
+    min-height: auto;
+    padding: var(--space-1);
+    border: none;
+    background: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.variants-input .variants-input__field:focus { border: none; box-shadow: none; }
+
+@keyframes variants-input-chip-in { from { opacity: 0; transform: scale(0.9); } }
 </style>

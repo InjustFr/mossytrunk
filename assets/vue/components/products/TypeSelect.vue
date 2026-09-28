@@ -1,9 +1,9 @@
 <script setup>
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseSelect from '../ui/BaseSelect.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
-// Picks a product type, or creates a new one inline without leaving the product form.
 const typeId = defineModel({ type: String, default: '' });
 const { types, create } = useProductTypes();
 
@@ -14,6 +14,12 @@ const newName = ref('');
 const error = ref(null);
 const saving = ref(false);
 const input = ref(null);
+
+const options = computed(() => [
+    { value: '', label: 'Sans type' },
+    ...types.value.map((type) => ({ value: type.id, label: type.name })),
+    { value: CREATE, label: '＋ Créer un type…' },
+]);
 
 watch(typeId, (value) => { selected.value = value; });
 
@@ -57,11 +63,7 @@ function cancel() {
 
 <template>
     <div class="type-select">
-        <select v-if="!creating" v-model="selected" class="type-select__select" aria-label="Type">
-            <option value="">Sans type</option>
-            <option v-for="type in types" :key="type.id" :value="type.id">{{ type.name }}</option>
-            <option :value="CREATE">＋ Créer un type…</option>
-        </select>
+        <BaseSelect v-if="!creating" v-model="selected" :options="options" aria-label="Type" />
         <div v-else class="type-select__create">
             <input
                 ref="input"

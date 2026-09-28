@@ -31,11 +31,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
     text-transform: uppercase;
 }
 
-.visually-hidden {
-    position: absolute; width: 0.0625rem; height: 0.0625rem; overflow: hidden;
-    clip: rect(0 0 0 0); white-space: nowrap;
-}
-
 /* Wraps a form's fields to disable them all while it is being submitted, without affecting layout. */
 .form-lock { display: contents; }
 

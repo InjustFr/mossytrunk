@@ -1,0 +1,130 @@
+.date-picker__field {
+    display: flex;
+    align-items: center;
+    gap: 0.0625rem;
+    width: 100%;
+    min-height: 2.375rem;
+    padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    font-variant-numeric: tabular-nums;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.date-picker__field:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+}
+
+.date-picker__field[data-invalid] { border-color: var(--color-danger); }
+
+.date-picker__segment {
+    padding: 0 0.0625rem;
+    border-radius: 0.25rem;
+    outline: none;
+}
+
+.date-picker__segment:focus { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.date-picker__segment[data-placeholder] { color: var(--color-subtle); }
+.date-picker__literal { padding: 0 0.125rem; color: var(--color-subtle); }
+
+.date-picker__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    margin-left: auto;
+    border: none;
+    border-radius: calc(var(--radius) - 0.125rem);
+    background: none;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color var(--transition), background var(--transition);
+}
+
+.date-picker__trigger:hover { color: var(--color-ink); background: var(--color-bg); }
+.date-picker__trigger:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
+
+.date-picker__content {
+    z-index: 60;
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: date-picker-in var(--transition);
+}
+
+.date-picker__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+.date-picker__heading { font-weight: 600; text-transform: capitalize; }
+
+.date-picker__nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+.date-picker__nav:hover { border-color: var(--color-ink); }
+
+.date-picker__grid { border-collapse: collapse; }
+
+.date-picker__head-cell {
+    width: 2.25rem;
+    padding-bottom: var(--space-1);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.date-picker__cell { padding: 0.0625rem; text-align: center; }
+
+.date-picker__day {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.125rem;
+    height: 2.125rem;
+    border-radius: calc(var(--radius) - 0.125rem);
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    outline: none;
+    transition: background var(--transition), color var(--transition);
+}
+
+.date-picker__day:hover { background: var(--color-bg); }
+.date-picker__day:focus-visible { box-shadow: 0 0 0 0.125rem var(--color-accent); }
+.date-picker__day[data-today] { font-weight: 700; color: var(--color-accent-strong); }
+.date-picker__day[data-outside-view] { color: var(--color-subtle); }
+.date-picker__day[data-disabled],
+.date-picker__day[data-unavailable] { color: var(--color-subtle); cursor: not-allowed; text-decoration: line-through; }
+.date-picker__day[data-highlighted] { background: var(--color-accent-soft); border-radius: 0; }
+.date-picker__day[data-selected] { background: var(--color-accent-soft); color: var(--color-accent-strong); border-radius: 0; }
+
+.date-picker__day[data-selection-start],
+.date-picker__day[data-selection-end],
+.date-picker__day[data-highlighted-start],
+.date-picker__day[data-highlighted-end],
+.date-picker__day--single[data-selected] {
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: calc(var(--radius) - 0.125rem);
+}
+
+@keyframes date-picker-in { from { opacity: 0; transform: translateY(-0.25rem); } }

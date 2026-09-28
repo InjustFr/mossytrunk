@@ -1,5 +1,6 @@
 <script setup>
 import { X } from '@lucide/vue';
+import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 const props = defineProps({
@@ -19,11 +20,13 @@ const label = (line) => {
     <TransitionGroup name="order-draft-lines__line" tag="ul" class="order-draft-lines">
         <li v-for="line in lines" :key="line.key" class="order-draft-lines__line">
             <span class="order-draft-lines__label">{{ label(line) }}</span>
-            <span class="order-draft-lines__stepper">
-                <button type="button" class="order-draft-lines__step" :aria-label="`Retirer un ${label(line)}`" @click="emit('quantity', line.key, line.quantity - 1)">−</button>
-                <span class="order-draft-lines__quantity tabular" :aria-label="`Quantité ${label(line)}`">{{ line.quantity }}</span>
-                <button type="button" class="order-draft-lines__step" :aria-label="`Ajouter un ${label(line)}`" @click="emit('quantity', line.key, line.quantity + 1)">+</button>
-            </span>
+            <BaseNumberField
+                class="order-draft-lines__quantity"
+                :model-value="line.quantity"
+                :min="0"
+                :label="`Quantité ${label(line)}`"
+                @update:model-value="emit('quantity', line.key, $event ?? 0)"
+            />
             <MoneyAmount class="order-draft-lines__total" :cents="(productOf(line)?.sellingPrice ?? 0) * line.quantity" />
             <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)"><X size="1rem" aria-hidden="true" /></button>
         </li>
@@ -43,27 +46,21 @@ const label = (line) => {
     background: var(--color-bg);
 }
 
-.order-draft-lines__stepper { display: inline-flex; align-items: center; gap: var(--space-2); }
-
-.order-draft-lines__step,
 .order-draft-lines__remove {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
-    border: 0.0625rem solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-surface);
+    border: none;
+    background: none;
+    color: var(--color-muted);
     cursor: pointer;
-    line-height: 1;
-    transition: border-color var(--transition);
+    transition: color var(--transition);
 }
 
-.order-draft-lines__step:hover { border-color: var(--color-accent); }
-.order-draft-lines__remove { border: none; background: none; color: var(--color-muted); font-size: 1.2rem; }
 .order-draft-lines__remove:hover { color: var(--color-danger); }
-.order-draft-lines__quantity { min-width: 2ch; text-align: center; font-weight: 600; }
+.order-draft-lines__quantity { width: 7.5rem; }
 .order-draft-lines__total { text-align: right; }
 
 .order-draft-lines__line-enter-active,

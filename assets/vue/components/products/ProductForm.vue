@@ -1,11 +1,11 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import FormField from '../ui/FormField.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantsInput from './VariantsInput.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
-import { centsToEuros, eurosToCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
     // Product being edited, or null to create one.
@@ -14,7 +14,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ typeId: '', name: '', sellingPrice: '', buyingPrice: '0,00', variants: [] });
+const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, buyingPrice: 0, variants: [] });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -33,8 +33,8 @@ watch(() => props.product, (product) => {
         ? {
             typeId: product.typeId ?? '',
             name: product.name,
-            sellingPrice: centsToEuros(product.sellingPrice),
-            buyingPrice: centsToEuros(product.buyingPrice),
+            sellingPrice: product.sellingPrice,
+            buyingPrice: product.buyingPrice,
             variants: [...product.variants],
         }
         : emptyForm());
@@ -48,8 +48,8 @@ async function onSubmit() {
         await props.submit({
             typeId: form.typeId || null,
             name: form.name,
-            sellingPrice: eurosToCents(form.sellingPrice) ?? -1,
-            buyingPrice: eurosToCents(form.buyingPrice) ?? 0,
+            sellingPrice: form.sellingPrice ?? -1,
+            buyingPrice: form.buyingPrice ?? 0,
             variants: form.variants,
         });
         emit('saved', displayName.value);
@@ -84,10 +84,10 @@ async function onSubmit() {
 
             <div class="product-form__row">
                 <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
-                    <input v-model="form.sellingPrice" type="text" inputmode="decimal" required>
+                    <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
                 <FormField label="Prix d'achat (€)" :error="errors.buyingPrice" hint="0 si inconnu">
-                    <input v-model="form.buyingPrice" type="text" inputmode="decimal">
+                    <BaseMoneyField v-model="form.buyingPrice" />
                 </FormField>
             </div>
 
@@ -96,8 +96,8 @@ async function onSubmit() {
             </FormField>
 
             <div class="product-form__actions">
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -107,7 +107,7 @@ async function onSubmit() {
 .product-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .product-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .product-form__reference { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.product-form__actions { display: flex; gap: var(--space-2); }
+.product-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .product-form__error {
     margin: 0;
     padding: var(--space-2) var(--space-3);

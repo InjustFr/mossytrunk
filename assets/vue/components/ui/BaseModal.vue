@@ -1,65 +1,42 @@
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { X } from '@lucide/vue';
+import { DialogClose, DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui';
 
-// Accessible modal: centred dialog, or a right-hand drawer that leaves the page visible (e.g. order entry next to the list).
 const props = defineProps({
     title: { type: String, required: true },
-    variant: { type: String, default: 'dialog' }, // dialog | drawer
+    variant: { type: String, default: 'dialog' },
 });
 const open = defineModel('open', { type: Boolean, required: true });
 
-const panel = ref(null);
-let previousFocus = null;
+const modal = computed(() => props.variant === 'dialog');
 
-function close() {
-    open.value = false;
-}
-
-function onKeydown(event) {
-    if (event.key === 'Escape') {
-        close();
+function focusFirstField(event) {
+    const field = event.target.querySelector('.modal__body :is(input, textarea, button, [role="combobox"])');
+    if (field) {
+        event.preventDefault();
+        field.focus();
     }
 }
-
-watch(open, async (isOpen) => {
-    if (isOpen) {
-        previousFocus = document.activeElement;
-        document.addEventListener('keydown', onKeydown);
-        await nextTick();
-        panel.value?.querySelector('input, select, textarea, button:not(.modal__close)')?.focus();
-    } else {
-        document.removeEventListener('keydown', onKeydown);
-        previousFocus?.focus?.();
-    }
-});
-
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <Teleport to="body">
-        <Transition :name="`modal--${props.variant}`">
-            <div v-if="open" :class="['modal', `modal--${props.variant}`]" @mousedown.self="close">
-                <section
-                    ref="panel"
-                    class="modal__panel"
-                    role="dialog"
-                    aria-modal="true"
-                    :aria-label="title"
-                >
+    <DialogRoot v-model:open="open" :modal="modal">
+        <DialogPortal>
+            <component :is="modal ? DialogOverlay : 'div'" :class="['modal', `modal--${props.variant}`]">
+                <DialogContent class="modal__panel" :aria-describedby="undefined" @open-auto-focus="focusFirstField">
                     <header class="modal__header">
-                        <h2 class="modal__title">{{ title }}</h2>
-                        <button type="button" class="modal__close" aria-label="Fermer" @click="close"><X size="1rem" aria-hidden="true" /></button>
+                        <DialogTitle class="modal__title">{{ title }}</DialogTitle>
+                        <DialogClose class="modal__close" aria-label="Fermer"><X size="1rem" aria-hidden="true" /></DialogClose>
                     </header>
                     <div class="modal__body"><slot /></div>
-                </section>
-            </div>
-        </Transition>
-    </Teleport>
+                </DialogContent>
+            </component>
+        </DialogPortal>
+    </DialogRoot>
 </template>
 
-<style scoped>
+<style>
 .modal {
     position: fixed;
     inset: 0;
@@ -69,7 +46,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 }
 
 .modal--dialog { align-items: flex-start; justify-content: center; padding: 8vh var(--space-4) var(--space-4); overflow-y: auto; }
-.modal--drawer { justify-content: flex-end; background: rgb(17 17 17 / 12%); }
+.modal--drawer { justify-content: flex-end; background: none; pointer-events: none; }
 
 .modal__panel {
     display: flex;
@@ -81,7 +58,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
     box-shadow: var(--shadow);
 }
 
-.modal--drawer .modal__panel { width: min(32.5rem, 100%); height: 100%; border-radius: 0; border-width: 0 0 0 0.0625rem; }
+.modal__panel:focus { outline: none; }
+
+.modal--drawer .modal__panel { width: min(32.5rem, 100%); height: 100%; border-radius: 0; border-width: 0 0 0 0.0625rem; pointer-events: auto; }
 
 .modal__header {
     display: flex;
@@ -102,7 +81,6 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
     background: none;
     cursor: pointer;
     color: var(--color-muted);
-    font-size: 1.6rem;
     line-height: 1;
 }
 
@@ -110,24 +88,17 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 
 .modal__body { padding: var(--space-5); overflow-y: auto; }
 
-.modal--dialog-enter-active,
-.modal--dialog-leave-active,
-.modal--drawer-enter-active,
-.modal--drawer-leave-active { transition: opacity var(--transition); }
+.modal[data-state="open"] { animation: modal-fade-in var(--transition); }
+.modal[data-state="closed"] { animation: modal-fade-out var(--transition); }
+.modal--dialog .modal__panel[data-state="open"] { animation: modal-rise-in var(--transition); }
+.modal--dialog .modal__panel[data-state="closed"] { animation: modal-rise-out var(--transition); }
+.modal--drawer .modal__panel[data-state="open"] { animation: modal-slide-in var(--transition); }
+.modal--drawer .modal__panel[data-state="closed"] { animation: modal-slide-out var(--transition); }
 
-.modal--dialog-enter-active .modal__panel,
-.modal--dialog-leave-active .modal__panel,
-.modal--drawer-enter-active .modal__panel,
-.modal--drawer-leave-active .modal__panel { transition: transform var(--transition); }
-
-.modal--dialog-enter-from,
-.modal--dialog-leave-to,
-.modal--drawer-enter-from,
-.modal--drawer-leave-to { opacity: 0; }
-
-.modal--dialog-enter-from .modal__panel,
-.modal--dialog-leave-to .modal__panel { transform: translateY(0.5rem) scale(0.98); }
-
-.modal--drawer-enter-from .modal__panel,
-.modal--drawer-leave-to .modal__panel { transform: translateX(1.5rem); }
+@keyframes modal-fade-in { from { opacity: 0; } }
+@keyframes modal-fade-out { to { opacity: 0; } }
+@keyframes modal-rise-in { from { transform: translateY(0.5rem) scale(0.98); } }
+@keyframes modal-rise-out { to { transform: translateY(0.5rem) scale(0.98); } }
+@keyframes modal-slide-in { from { transform: translateX(1.5rem); } }
+@keyframes modal-slide-out { to { transform: translateX(1.5rem); } }
 </style>

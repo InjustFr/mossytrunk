@@ -1,10 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseCombobox from '../ui/BaseCombobox.vue';
+import BaseNumberField from '../ui/BaseNumberField.vue';
+import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
 import { formatCents } from '../../composables/useMoney.js';
 
-// Picks a (product, variant) tuple and a quantity. The variant is required only when the product has variants.
 const props = defineProps({
     products: { type: Array, required: true },
 });
@@ -17,6 +19,8 @@ const error = ref(null);
 
 const product = computed(() => props.products.find((p) => p.id === productId.value) ?? null);
 const needsVariant = computed(() => (product.value?.variants.length ?? 0) > 0);
+const productOptions = computed(() => props.products.map((p) => ({ value: p.id, label: `${p.displayName} — ${formatCents(p.sellingPrice)}` })));
+const variantOptions = computed(() => (product.value?.variants ?? []).map((v) => ({ value: v, label: v })));
 
 watch(productId, () => {
     variant.value = '';
@@ -32,7 +36,7 @@ function add() {
         error.value = `Choisissez une variante pour « ${product.value.displayName} ».`;
         return;
     }
-    emit('add', { productId: product.value.id, variant: needsVariant.value ? variant.value : null, quantity: Math.max(1, Number(quantity.value) || 1) });
+    emit('add', { productId: product.value.id, variant: needsVariant.value ? variant.value : null, quantity: Math.max(1, quantity.value ?? 1) });
     productId.value = '';
     quantity.value = 1;
     error.value = null;
@@ -42,21 +46,15 @@ function add() {
 <template>
     <div class="order-line-picker">
         <FormField label="Produit" class="order-line-picker__product">
-            <select v-model="productId">
-                <option value="" disabled>Choisir…</option>
-                <option v-for="p in products" :key="p.id" :value="p.id">{{ p.displayName }} — {{ formatCents(p.sellingPrice) }}</option>
-            </select>
+            <BaseCombobox v-model="productId" :options="productOptions" placeholder="Rechercher un produit…" />
         </FormField>
         <Transition name="order-line-picker__slide">
             <FormField v-if="needsVariant" label="Variante" class="order-line-picker__variant">
-                <select v-model="variant">
-                    <option value="" disabled>Choisir…</option>
-                    <option v-for="v in product.variants" :key="v" :value="v">{{ v }}</option>
-                </select>
+                <BaseSelect v-model="variant" :options="variantOptions" />
             </FormField>
         </Transition>
         <FormField label="Quantité" class="order-line-picker__quantity">
-            <input v-model.number="quantity" type="number" min="1" step="1" @keydown.enter.prevent="add">
+            <BaseNumberField v-model="quantity" :min="1" @keydown.enter.prevent="add" />
         </FormField>
         <BaseButton variant="secondary" class="order-line-picker__add" @click="add">Ajouter</BaseButton>
         <p v-if="error" class="order-line-picker__error" role="alert">{{ error }}</p>

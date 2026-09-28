@@ -13,7 +13,7 @@ test('create, deactivate and delete a bundle discount', async ({ page, request }
     await form.getByLabel('Articles par lot').fill('3');
     await form.getByLabel('Prix du lot (€)').fill('10');
     await form.getByLabel('Filtrer les produits').fill(sticker.name);
-    await form.getByRole('checkbox', { name: sticker.name }).check();
+    await form.getByRole('option', { name: sticker.name }).click();
     await expect(form.getByText('Prix normal de 3 articles')).toContainText('12,00');
     await form.getByRole('button', { name: 'Créer la remise' }).click();
 
@@ -26,7 +26,7 @@ test('create, deactivate and delete a bundle discount', async ({ page, request }
     await expect(item).toContainText('Inactive');
 
     await item.getByRole('button', { name: 'Supprimer' }).click();
-    await item.getByRole('button', { name: 'Confirmer ?' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer ?' }).click();
     await expect(item).toHaveCount(0);
 });
 

@@ -18,7 +18,7 @@ test('save the SumUp credentials: the API key is never shown again', async ({ pa
     await expect(page.getByText('sup_sk_settings_4321')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Supprimer la clé' }).click();
-    await page.getByRole('button', { name: 'Confirmer ?' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer ?' }).click();
     await expect(page.getByTestId('toast')).toContainText('Clé API SumUp supprimée.');
     await expect(page.getByText('Clé enregistrée')).toHaveCount(0);
 });

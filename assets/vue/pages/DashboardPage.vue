@@ -1,13 +1,15 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
+import BaseSelect from '../components/ui/BaseSelect.vue';
 import KpiTiles from '../components/dashboard/KpiTiles.vue';
 import MonthlyResultChart from '../components/dashboard/MonthlyResultChart.vue';
 import ResultsTable from '../components/dashboard/ResultsTable.vue';
 import { MONTHS, useDashboard } from '../composables/useDashboard.js';
 
 const { dashboard, load } = useDashboard();
+const yearOptions = computed(() => (dashboard.value?.years ?? []).map((year) => ({ value: year, label: String(year) })));
 
 onMounted(() => load());
 </script>
@@ -15,12 +17,10 @@ onMounted(() => load());
 <template>
     <AppLayout title="Tableau de bord">
         <template #actions>
-            <label v-if="dashboard" class="dashboard-page__year">
+            <div v-if="dashboard" class="dashboard-page__year">
                 <span class="eyebrow">Année</span>
-                <select :value="dashboard.year" aria-label="Année" @change="load($event.target.value)">
-                    <option v-for="year in dashboard.years" :key="year" :value="year">{{ year }}</option>
-                </select>
-            </label>
+                <BaseSelect :model-value="dashboard.year" :options="yearOptions" size="small" aria-label="Année" @update:model-value="load" />
+            </div>
         </template>
 
         <template v-if="dashboard">
@@ -51,13 +51,6 @@ onMounted(() => load());
 
 <style scoped>
 .dashboard-page__year { display: flex; align-items: center; gap: var(--space-2); }
-.dashboard-page__year select {
-    min-height: 2.375rem;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-}
 
 .dashboard-page__grid { display: flex; flex-direction: column; gap: var(--space-5); }
 .dashboard-page__note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: 0.85rem; }

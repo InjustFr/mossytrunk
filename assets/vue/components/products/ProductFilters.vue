@@ -1,27 +1,32 @@
 <script setup>
+import { computed } from 'vue';
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { UNTYPED } from '../../composables/useProductFilters.js';
 
-defineProps({
+const props = defineProps({
     types: { type: Array, required: true },
 });
 const typeId = defineModel('typeId', { type: String, required: true });
 const search = defineModel('search', { type: String, required: true });
 
-const chips = (types) => [{ id: '', name: 'Tous' }, ...types, { id: UNTYPED, name: 'Sans type' }];
+const ALL = '__all__';
+const chips = computed(() => [{ id: ALL, name: 'Tous' }, ...props.types, { id: UNTYPED, name: 'Sans type' }]);
+
+const selectedChip = computed({
+    get: () => typeId.value || ALL,
+    set: (chip) => {
+        if (chip) {
+            typeId.value = chip === ALL ? '' : chip;
+        }
+    },
+});
 </script>
 
 <template>
     <div class="product-filters">
-        <div class="product-filters__chips" role="group" aria-label="Filtrer par type">
-            <button
-                v-for="chip in chips(types)"
-                :key="chip.id"
-                type="button"
-                :class="['product-filters__chip', { 'product-filters__chip--active': typeId === chip.id }]"
-                :aria-pressed="typeId === chip.id"
-                @click="typeId = chip.id"
-            >{{ chip.name }}</button>
-        </div>
+        <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" aria-label="Filtrer par type">
+            <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="product-filters__chip">{{ chip.name }}</ToggleGroupItem>
+        </ToggleGroupRoot>
         <input v-model="search" class="product-filters__search" type="search" placeholder="Rechercher…" aria-label="Rechercher un produit">
     </div>
 </template>
@@ -41,7 +46,8 @@ const chips = (types) => [{ id: '', name: 'Tous' }, ...types, { id: UNTYPED, nam
 }
 
 .product-filters__chip:hover { border-color: var(--color-ink); }
-.product-filters__chip--active { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+.product-filters__chip:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
+.product-filters__chip[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 
 .product-filters__search {
     min-height: 2.125rem;

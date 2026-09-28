@@ -1,10 +1,12 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormField from '../ui/FormField.vue';
 import ProductPicker from './ProductPicker.vue';
 import TypePicker from './TypePicker.vue';
-import { centsToEuros, eurosToCents, formatCents } from '../../composables/useMoney.js';
+import { formatCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
     rule: { type: Object, default: null },
@@ -14,7 +16,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ name: '', bundleSize: 3, bundlePrice: '', typeIds: [], productIds: [] });
+const emptyForm = () => ({ name: '', bundleSize: 3, bundlePrice: null, typeIds: [], productIds: [] });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -22,12 +24,11 @@ const isEditing = computed(() => props.rule !== null);
 
 watch(() => props.rule, (rule) => {
     Object.assign(form, rule
-        ? { name: rule.name, bundleSize: rule.bundleSize, bundlePrice: centsToEuros(rule.bundlePrice), typeIds: rule.types.map((t) => t.id), productIds: rule.products.map((p) => p.id) }
+        ? { name: rule.name, bundleSize: rule.bundleSize, bundlePrice: rule.bundlePrice, typeIds: rule.types.map((t) => t.id), productIds: rule.products.map((p) => p.id) }
         : emptyForm());
     errors.value = {};
 }, { immediate: true });
 
-// Helps the user check the bundle is actually cheaper: price of N units bought separately.
 const regularPrice = computed(() => {
     const prices = props.products
         .filter((p) => form.productIds.includes(p.id) || (p.typeId !== null && form.typeIds.includes(p.typeId)))
@@ -47,7 +48,7 @@ async function onSubmit() {
             productIds: form.productIds,
             typeIds: form.typeIds,
             bundleSize: Number(form.bundleSize) || 0,
-            bundlePrice: eurosToCents(form.bundlePrice) ?? 0,
+            bundlePrice: form.bundlePrice ?? 0,
         });
         emit('saved', form.name);
         if (!isEditing.value) {
@@ -72,10 +73,10 @@ async function onSubmit() {
 
             <div class="discount-rule-form__row">
                 <FormField label="Articles par lot" :error="errors.bundleSize">
-                    <input v-model.number="form.bundleSize" type="number" min="2" step="1">
+                    <BaseNumberField v-model="form.bundleSize" :min="2" />
                 </FormField>
                 <FormField label="Prix du lot (€)" :error="errors.bundlePrice">
-                    <input v-model="form.bundlePrice" type="text" inputmode="decimal">
+                    <BaseMoneyField v-model="form.bundlePrice" />
                 </FormField>
             </div>
 
@@ -94,8 +95,8 @@ async function onSubmit() {
             </FormField>
 
             <div class="discount-rule-form__actions">
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer la remise' }}</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer la remise' }}</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -104,7 +105,7 @@ async function onSubmit() {
 <style scoped>
 .discount-rule-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .discount-rule-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.discount-rule-form__actions { display: flex; gap: var(--space-2); }
+.discount-rule-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .discount-rule-form__hint { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .discount-rule-form__error {
     margin: 0;

@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { fillDate } from './support/date.js';
+import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
 import { createDiscountRule, createEvent, createProduct } from './support/api.js';
 
@@ -11,17 +13,17 @@ test('place an order with automatic bundle discount while seeing the list', asyn
     await page.goto('/commandes');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
-    await form.getByLabel('Date').fill(`${event.startDate}T14:30`);
+    await fillDate(form.getByRole('group', { name: 'Date', exact: true }), `${event.startDate}T14:30`);
 
     // The variant is required for products that have variants.
-    await form.getByLabel('Produit').selectOption({ label: `${tshirt.name} — 20,00 €` });
+    await choose(page, form.getByRole('combobox', { name: 'Produit' }), `${tshirt.name} — 20,00 €`);
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
     await expect(form.getByRole('alert')).toContainText('Choisissez une variante');
-    await form.getByLabel('Variante').selectOption('Fougère');
+    await choose(page, form.getByRole('combobox', { name: 'Variante' }), 'Fougère');
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
 
-    await form.getByLabel('Produit').selectOption({ label: `${sticker.name} — 4,00 €` });
-    await expect(form.getByLabel('Variante')).toHaveCount(0);
+    await choose(page, form.getByRole('combobox', { name: 'Produit' }), `${sticker.name} — 4,00 €`);
+    await expect(form.getByRole('combobox', { name: 'Variante' })).toHaveCount(0);
     await form.getByLabel('Quantité', { exact: true }).fill('3');
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
 
@@ -55,8 +57,8 @@ test('warns when no event exists at the order date', async ({ page, request }) =
     await page.goto('/commandes');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
-    await form.getByLabel('Date').fill('2099-12-31T10:00');
-    await form.getByLabel('Produit').selectOption({ label: `${sticker.name} — 4,00 €` });
+    await fillDate(form.getByRole('group', { name: 'Date', exact: true }), '2099-12-31T10:00');
+    await choose(page, form.getByRole('combobox', { name: 'Produit' }), `${sticker.name} — 4,00 €`);
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
 
     await expect(form.getByText('Aucun événement à cette date.')).toBeVisible();
@@ -74,7 +76,7 @@ test('delete an order from its detail page', async ({ page, request }) => {
 
     await page.goto(`/commandes/${order.id}`);
     await page.getByRole('button', { name: 'Supprimer la commande' }).click();
-    await page.getByRole('button', { name: 'Confirmer la suppression' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer la suppression' }).click();
 
     await expect(page).toHaveURL(/\/commandes$/);
     await expect(page.getByRole('row').filter({ hasText: order.reference })).toHaveCount(0);

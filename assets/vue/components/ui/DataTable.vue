@@ -1,10 +1,9 @@
 <script setup>
 import { computed } from 'vue';
+import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui';
 import TablePagination from './TablePagination.vue';
 import { PAGE_SIZES, usePagination } from '../../composables/usePagination.js';
 
-// Consistent table styling. Give `items` to paginate: the default slot then receives `{ rows }`, the current page.
-// Without `items`, rows come straight from the default slot (short, unpaginated tables).
 const props = defineProps({
     items: { type: Array, default: null },
     pageSize: { type: Number, default: 20 },
@@ -12,22 +11,26 @@ const props = defineProps({
 
 const pagination = usePagination(computed(() => props.items ?? []), props.pageSize);
 const paginated = computed(() => props.items !== null);
-// Shown once there is more than the smallest page size, so a larger page size can always be switched back.
 const showPagination = computed(() => paginated.value && pagination.total.value > PAGE_SIZES[0]);
 </script>
 
 <template>
     <div class="data-table">
-        <div class="data-table__scroll">
-            <table class="data-table__table">
-                <thead class="data-table__head"><slot name="head" /></thead>
-                <tbody class="data-table__body">
-                    <slot v-if="paginated" :rows="pagination.pageItems.value" />
-                    <slot v-else />
-                </tbody>
-                <tfoot v-if="$slots.foot" class="data-table__foot"><slot name="foot" /></tfoot>
-            </table>
-        </div>
+        <ScrollAreaRoot class="data-table__scroll" type="hover">
+            <ScrollAreaViewport class="data-table__viewport">
+                <table class="data-table__table">
+                    <thead class="data-table__head"><slot name="head" /></thead>
+                    <tbody class="data-table__body">
+                        <slot v-if="paginated" :rows="pagination.pageItems.value" />
+                        <slot v-else />
+                    </tbody>
+                    <tfoot v-if="$slots.foot" class="data-table__foot"><slot name="foot" /></tfoot>
+                </table>
+            </ScrollAreaViewport>
+            <ScrollAreaScrollbar class="data-table__scrollbar" orientation="horizontal">
+                <ScrollAreaThumb class="data-table__thumb" />
+            </ScrollAreaScrollbar>
+        </ScrollAreaRoot>
         <TablePagination
             v-if="showPagination"
             v-model:page-size="pagination.pageSize.value"
@@ -42,7 +45,23 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 </template>
 
 <style scoped>
-.data-table__scroll { overflow-x: auto; }
+.data-table__scroll { position: relative; overflow: hidden; }
+.data-table__viewport { width: 100%; }
+
+.data-table__scrollbar {
+    display: flex;
+    height: 0.5rem;
+    padding: 0.0625rem;
+    user-select: none;
+    touch-action: none;
+}
+
+.data-table__thumb {
+    position: relative;
+    flex: 1;
+    border-radius: 62.4375rem;
+    background: var(--color-border-strong);
+}
 
 .data-table__table { width: 100%; border-collapse: collapse; }
 
@@ -67,6 +86,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 .data-table__body :deep(tr:hover) { background: #fafaf8; }
 
 .data-table :deep(.data-table__cell--number) { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table :deep(.data-table__cell--actions) { text-align: right; white-space: nowrap; }
 
 .data-table__foot :deep(td) { font-weight: 700; border-bottom: none; }
 </style>

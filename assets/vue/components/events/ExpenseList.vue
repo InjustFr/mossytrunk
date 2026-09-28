@@ -1,4 +1,5 @@
 <script setup>
+import { VisuallyHidden } from 'reka-ui';
 import { Pencil, Trash2 } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
@@ -19,14 +20,14 @@ const emit = defineEmits(['edit', 'remove']);
             <tr>
                 <th>Libellé</th>
                 <th class="data-table__cell--number">Montant</th>
-                <th><span class="visually-hidden">Actions</span></th>
+                <th class="data-table__cell--actions"><VisuallyHidden>Actions</VisuallyHidden></th>
             </tr>
         </template>
         <template #default="{ rows }">
             <tr v-for="expense in rows" :key="expense.id">
                 <td>{{ expense.label }}</td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
-                <td class="expense-list__actions">
+                <td class="data-table__cell--actions">
                     <IconButton :icon="Pencil" :label="`Modifier ${expense.label}`" @click="emit('edit', expense)" />
                     <IconButton :icon="Trash2" :label="`Supprimer ${expense.label}`" variant="danger" @click="emit('remove', expense)" />
                 </td>
@@ -41,7 +42,3 @@ const emit = defineEmits(['edit', 'remove']);
         </template>
     </DataTable>
 </template>
-
-<style scoped>
-.expense-list__actions { text-align: right; white-space: nowrap; }
-</style>

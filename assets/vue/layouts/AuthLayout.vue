@@ -1,20 +1,24 @@
 <script setup>
+import { ConfigProvider } from 'reka-ui';
+
 defineProps({
     title: { type: String, required: true },
 });
 </script>
 
 <template>
-    <main class="auth-layout">
-        <div class="auth-layout__panel">
-            <p class="auth-layout__brand">mossytrunk</p>
-            <section class="auth-layout__card">
-                <h1 class="auth-layout__title">{{ title }}</h1>
-                <slot />
-            </section>
-            <p v-if="$slots.footer" class="auth-layout__footer"><slot name="footer" /></p>
-        </div>
-    </main>
+    <ConfigProvider locale="fr-FR">
+        <main class="auth-layout">
+            <div class="auth-layout__panel">
+                <p class="auth-layout__brand">mossytrunk</p>
+                <section class="auth-layout__card">
+                    <h1 class="auth-layout__title">{{ title }}</h1>
+                    <slot />
+                </section>
+                <p v-if="$slots.footer" class="auth-layout__footer"><slot name="footer" /></p>
+            </div>
+        </main>
+    </ConfigProvider>
 </template>
 
 <style scoped>

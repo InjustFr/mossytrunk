@@ -1,27 +1,17 @@
 <script setup>
-// Toggle chips: a rule on a type covers all its products, including ones created later.
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+
 defineProps({
     types: { type: Array, required: true },
 });
 const selected = defineModel({ type: Array, required: true });
-
-function toggle(id) {
-    selected.value = selected.value.includes(id) ? selected.value.filter((t) => t !== id) : [...selected.value, id];
-}
 </script>
 
 <template>
-    <div class="type-picker" role="group" aria-label="Types concernés">
-        <p v-if="types.length === 0" class="type-picker__empty">Aucun type de produit défini.</p>
-        <button
-            v-for="type in types"
-            :key="type.id"
-            type="button"
-            :class="['type-picker__chip', { 'type-picker__chip--active': selected.includes(type.id) }]"
-            :aria-pressed="selected.includes(type.id)"
-            @click="toggle(type.id)"
-        >{{ type.name }}</button>
-    </div>
+    <p v-if="types.length === 0" class="type-picker__empty">Aucun type de produit défini.</p>
+    <ToggleGroupRoot v-else v-model="selected" type="multiple" class="type-picker" aria-label="Types concernés">
+        <ToggleGroupItem v-for="type in types" :key="type.id" :value="type.id" class="type-picker__chip">{{ type.name }}</ToggleGroupItem>
+    </ToggleGroupRoot>
 </template>
 
 <style scoped>
@@ -37,5 +27,7 @@ function toggle(id) {
     transition: background var(--transition), color var(--transition), border-color var(--transition);
 }
 
-.type-picker__chip--active { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
+.type-picker__chip:hover { border-color: var(--color-accent); }
+.type-picker__chip:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
+.type-picker__chip[data-state="on"] { background: var(--color-accent); border-color: var(--color-accent); color: #fff; }
 </style>

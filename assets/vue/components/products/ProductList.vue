@@ -1,8 +1,10 @@
 <script setup>
+import { VisuallyHidden } from 'reka-ui';
 import { TriangleAlert } from '@lucide/vue';
 import { Pencil } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import BaseCheckbox from '../ui/BaseCheckbox.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
@@ -12,8 +14,11 @@ defineProps({
     allSelected: { type: Boolean, default: false },
 });
 const emit = defineEmits(['edit', 'toggle-all']);
-// Ids of the products ticked for a batch edit.
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
+
+function setChecked(id, checked) {
+    checkedIds.value = checked ? [...checkedIds.value, id] : checkedIds.value.filter((existing) => existing !== id);
+}
 </script>
 
 <template>
@@ -22,7 +27,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
         <template #head>
             <tr>
                 <th class="product-list__check">
-                    <input type="checkbox" :checked="allSelected" aria-label="Tout sélectionner" @change="emit('toggle-all')">
+                    <BaseCheckbox :model-value="allSelected" aria-label="Tout sélectionner" @update:model-value="emit('toggle-all')" />
                 </th>
                 <th>Référence</th>
                 <th>Type</th>
@@ -30,7 +35,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                 <th>Variantes</th>
                 <th class="data-table__cell--number">Achat</th>
                 <th class="data-table__cell--number">Vente</th>
-                <th><span class="visually-hidden">Actions</span></th>
+                <th class="data-table__cell--actions"><VisuallyHidden>Actions</VisuallyHidden></th>
             </tr>
         </template>
         <template #default="{ rows }">
@@ -40,7 +45,11 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                 :class="['product-list__row', { 'product-list__row--selected': product.id === selectedId }]"
             >
                 <td class="product-list__check">
-                    <input v-model="checkedIds" type="checkbox" :value="product.id" :aria-label="`Sélectionner ${product.displayName}`">
+                    <BaseCheckbox
+                        :model-value="checkedIds.includes(product.id)"
+                        :aria-label="`Sélectionner ${product.displayName}`"
+                        @update:model-value="setChecked(product.id, $event)"
+                    />
                 </td>
                 <td class="product-list__reference">{{ product.reference }}</td>
                 <td class="product-list__type">{{ product.typeName ?? '—' }}</td>
@@ -54,7 +63,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
                     <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" size="0.875rem" aria-label="Prix d'achat à renseigner" role="img" />
                 </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
-                <td>
+                <td class="data-table__cell--actions">
                     <IconButton :icon="Pencil" :label="`Modifier ${product.displayName}`" @click="emit('edit', product)" />
                 </td>
             </tr>
@@ -67,7 +76,6 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 .product-list__row--selected { background: var(--color-accent-soft); }
 .product-list__reference { color: var(--color-muted); font-size: 0.9rem; }
 .product-list__check { width: 2rem; }
-.product-list__check input { accent-color: var(--color-accent); }
 .product-list__type { color: var(--color-muted); }
 .product-list__unique { color: var(--color-muted); font-style: italic; }
 .product-list__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }

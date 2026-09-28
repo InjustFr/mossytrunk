@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fillDate, fillDateRange } from './support/date.js';
 import { unique, uniqueDay } from './support/unique.js';
 
 test('schedule an event and track its expenses', async ({ page }) => {
@@ -11,8 +12,7 @@ test('schedule an event and track its expenses', async ({ page }) => {
     const form = page.getByRole('dialog', { name: 'Nouvel événement' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Lieu').fill('Villepinte');
-    await form.getByLabel('Début').fill(start);
-    await form.getByLabel('Fin').fill(end);
+    await fillDateRange(form.getByRole('group', { name: 'Dates', exact: true }), start, end);
     await form.getByRole('button', { name: "Créer l'événement" }).click();
 
     await expect(page.getByTestId('toast')).toContainText(`Événement « ${name} » créé.`);
@@ -32,7 +32,7 @@ test('schedule an event and track its expenses', async ({ page }) => {
 
     await page.getByRole('button', { name: 'Modifier Stand' }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier la dépense' });
-    await expect(edit.getByLabel('Montant (€)')).toHaveValue('300,00');
+    await expect(edit.getByLabel('Montant (€)')).toHaveValue(/^300,00/);
     await edit.getByLabel('Montant (€)').fill('320');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('Dépense « Stand » modifiée.');
@@ -51,8 +51,7 @@ test('refuses overlapping events', async ({ page }) => {
         await page.getByRole('button', { name: 'Nouvel événement' }).click();
         await form.getByLabel('Nom').fill(name);
         await form.getByLabel('Lieu').fill('Lyon');
-        await form.getByLabel('Début').fill(day);
-        await form.getByLabel('Fin').fill(day);
+        await fillDateRange(form.getByRole('group', { name: 'Dates', exact: true }), day, day);
         await form.getByRole('button', { name: "Créer l'événement" }).click();
         await expect(page.getByTestId('toast').or(form.getByRole('alert'))).toBeVisible();
     }
@@ -76,7 +75,7 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
 
     await page.goto(`/evenements/${event.id}`);
     const report = page.locator('.event-report');
-    const sections = report.locator('summary.report-section__summary');
+    const sections = report.locator('.report-section__summary');
     await expect(sections).toHaveText([/Dépenses\s*−\s*100,00/, /Commandes\s*\+\s*160,00/, /URSSAF\s*−\s*20,48/]);
 
     // CA 160 − coût 50 − dépenses 100 − URSSAF 20,48 = −10,48
@@ -94,7 +93,7 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
     await report.getByLabel('Afficher le détail des articles').check();
 
     await report.getByRole('link', { name: 'Voir les commandes' }).click();
-    await expect(page.getByLabel('Événement')).toHaveValue(event.id);
+    await expect(page.getByRole('combobox', { name: 'Événement' })).toHaveText(event.name);
     await expect(page.getByRole('row')).toHaveCount(3); // header + 2 orders
 });
 
@@ -116,11 +115,35 @@ test('order recap groups sales by type, product and variant', async ({ page, req
 
     await page.goto(`/evenements/${event.id}`);
     const recap = page.getByTestId('order-recap');
-    const group = recap.locator('details.order-recap__group', { hasText: printType.name });
-    await expect(group.locator('summary').first()).toContainText('3 art.');
-    await group.locator('summary').first().click();
-    const product = group.locator('details.order-recap__product', { hasText: foret.displayName });
-    await product.locator('summary').click();
+    const group = recap.locator('.order-recap__group', { hasText: printType.name });
+    await expect(group.locator('.order-recap__row--group')).toContainText('3 art.');
+    await group.locator('.order-recap__row--group').click();
+    const product = group.locator('.order-recap__product', { hasText: foret.displayName });
+    await product.locator('.order-recap__row--product').click();
     await expect(product.locator('.order-recap__row--variant', { hasText: 'A4' })).toContainText('30,00');
     await expect(product.locator('.order-recap__row--variant', { hasText: 'A3' })).toContainText('15,00');
+});
+
+test('pick a multi-day range from the calendar', async ({ page }) => {
+    let start = uniqueDay();
+    while (Number(start.slice(8)) > 25) {
+        start = uniqueDay();
+    }
+    const end = uniqueDay(2);
+    const name = unique('Festival');
+
+    await page.goto('/evenements');
+    await page.getByRole('button', { name: 'Nouvel événement' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvel événement' }).locator('form');
+    await form.getByLabel('Nom').fill(name);
+    await form.getByLabel('Lieu').fill('Nantes');
+    const dates = form.getByRole('group', { name: 'Dates', exact: true });
+    await fillDate(dates, start);
+    await dates.getByRole('button', { name: 'Ouvrir le calendrier' }).click();
+    await page.locator(`.date-picker__content [data-value="${end}"]`).click();
+    await page.keyboard.press('Escape');
+    await form.getByRole('button', { name: "Créer l'événement" }).click();
+
+    await expect(page.getByTestId('toast')).toContainText(`Événement « ${name} » créé.`);
+    await expect(page.getByRole('link', { name: new RegExp(name) })).toContainText('→');
 });

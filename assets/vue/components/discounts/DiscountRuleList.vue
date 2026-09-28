@@ -1,5 +1,6 @@
 <script setup>
 import { Pencil, Trash2 } from '@lucide/vue';
+import BaseSwitch from '../ui/BaseSwitch.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
@@ -33,7 +34,7 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
                 <span v-if="rule.products.length" class="discount-rule-list__products">Produits : {{ rule.products.map((p) => p.name).join(', ') }}</span>
             </div>
             <label class="discount-rule-list__toggle">
-                <input type="checkbox" role="switch" :checked="rule.active" @change="emit('toggle', rule, $event.target.checked)">
+                <BaseSwitch :default-value="rule.active" @update:model-value="emit('toggle', rule, $event)" />
                 {{ rule.active ? 'Active' : 'Inactive' }}
             </label>
             <div class="discount-rule-list__actions">
@@ -67,8 +68,7 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
 .discount-rule-list__deal { font-size: 0.9rem; }
 .discount-rule-list__products { color: var(--color-muted); font-size: 0.85rem; }
 
-.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-1); font-size: 0.9rem; cursor: pointer; }
-.discount-rule-list__toggle input { accent-color: var(--color-accent); }
+.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
 
 .discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
 

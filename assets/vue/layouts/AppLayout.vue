@@ -1,5 +1,6 @@
 <script setup>
 import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Settings, Tag } from '@lucide/vue';
+import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
 import ToastHost from '../components/ui/ToastHost.vue';
 import { useSession } from '../composables/useSession.js';
 
@@ -23,47 +24,53 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 </script>
 
 <template>
-    <div class="app-layout">
-        <aside class="app-layout__sidebar">
-            <a class="app-layout__brand" href="/">mossytrunk</a>
-            <nav class="app-layout__nav" aria-label="Navigation principale">
-                <a
-                    v-for="link in links"
-                    :key="link.href"
-                    :href="link.href"
-                    :class="['app-layout__link', 'eyebrow', { 'app-layout__link--active': isActive(link.href) }]"
-                    :aria-current="isActive(link.href) ? 'page' : undefined"
-                >
-                    <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
-                    {{ link.label }}
-                </a>
-            </nav>
-            <div v-if="session" class="app-layout__account">
-                <p class="app-layout__workspace">{{ session.workspace }}</p>
-                <p class="app-layout__email">{{ session.email }}</p>
-                <form method="post" action="/deconnexion" data-turbo="false">
-                    <input type="hidden" name="_csrf_token" :value="session.logoutToken">
-                    <button type="submit" class="app-layout__logout">
-                        <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
-                        Se déconnecter
-                    </button>
-                </form>
+    <ConfigProvider locale="fr-FR">
+        <TooltipProvider :delay-duration="400">
+            <div class="app-layout">
+                <aside class="app-layout__sidebar">
+                    <a class="app-layout__brand" href="/">mossytrunk</a>
+                    <NavigationMenuRoot orientation="vertical" aria-label="Navigation principale">
+                        <NavigationMenuList class="app-layout__nav">
+                            <NavigationMenuItem v-for="link in links" :key="link.href">
+                                <NavigationMenuLink
+                                    :href="link.href"
+                                    :active="isActive(link.href)"
+                                    :class="['app-layout__link', 'eyebrow', { 'app-layout__link--active': isActive(link.href) }]"
+                                >
+                                    <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
+                                    {{ link.label }}
+                                </NavigationMenuLink>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenuRoot>
+                    <div v-if="session" class="app-layout__account">
+                        <p class="app-layout__workspace">{{ session.workspace }}</p>
+                        <p class="app-layout__email">{{ session.email }}</p>
+                        <form method="post" action="/deconnexion" data-turbo="false">
+                            <input type="hidden" name="_csrf_token" :value="session.logoutToken">
+                            <button type="submit" class="app-layout__logout">
+                                <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
+                                Se déconnecter
+                            </button>
+                        </form>
+                    </div>
+                </aside>
+
+                <main class="app-layout__main">
+                    <header class="app-layout__heading">
+                        <div class="app-layout__titles">
+                            <div v-if="$slots.back" class="app-layout__back"><slot name="back" /></div>
+                            <h1 class="app-layout__title">{{ title }}</h1>
+                        </div>
+                        <div class="app-layout__actions"><slot name="actions" /></div>
+                    </header>
+                    <slot />
+                </main>
+
+                <ToastHost />
             </div>
-        </aside>
-
-        <main class="app-layout__main">
-            <header class="app-layout__heading">
-                <div class="app-layout__titles">
-                    <div v-if="$slots.back" class="app-layout__back"><slot name="back" /></div>
-                    <h1 class="app-layout__title">{{ title }}</h1>
-                </div>
-                <div class="app-layout__actions"><slot name="actions" /></div>
-            </header>
-            <slot />
-        </main>
-
-        <ToastHost />
-    </div>
+        </TooltipProvider>
+    </ConfigProvider>
 </template>
 
 <style scoped>
@@ -94,7 +101,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     text-decoration: none;
 }
 
-.app-layout__nav { display: flex; flex-direction: column; gap: var(--space-1); }
+.app-layout__sidebar :deep(.app-layout__nav) { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 
 .app-layout__link {
     display: flex;
@@ -180,7 +187,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
         border-bottom: 0.0625rem solid var(--color-border);
     }
 
-    .app-layout__nav { flex-direction: row; flex-wrap: wrap; }
+    .app-layout__sidebar :deep(.app-layout__nav) { flex-direction: row; flex-wrap: wrap; }
     .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); }
     .app-layout__link--active { border-bottom-color: var(--color-accent); }
     .app-layout__account { margin-top: 0; margin-left: auto; padding: 0; border-top: none; }

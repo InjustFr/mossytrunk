@@ -2,6 +2,7 @@
 import AuthLayout from '../layouts/AuthLayout.vue';
 import AuthMessage from '../components/auth/AuthMessage.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
+import BaseCheckbox from '../components/ui/BaseCheckbox.vue';
 import FormField from '../components/ui/FormField.vue';
 
 defineProps({
@@ -26,7 +27,7 @@ defineProps({
                 <input type="password" name="password" autocomplete="current-password" required>
             </FormField>
             <label class="login-form__remember">
-                <input type="checkbox" name="_remember_me">
+                <BaseCheckbox name="_remember_me" />
                 Se souvenir de moi
             </label>
             <BaseButton type="submit">Se connecter</BaseButton>

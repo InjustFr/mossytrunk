@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createEvent, createProduct } from './support/api.js';
+import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
 
 test('dashboard shows the results of a year, month by month', async ({ page, request }) => {
@@ -14,7 +15,7 @@ test('dashboard shows the results of a year, month by month', async ({ page, req
 
     await page.goto('/');
     await expect(page).toHaveURL(/\/tableau-de-bord$/);
-    await page.getByRole('combobox', { name: 'Année' }).selectOption('2035');
+    await choose(page, page.getByRole('combobox', { name: 'Année' }), '2035');
 
     // CA 100 − achats 25 − dépenses 20 − URSSAF 12,80 = 42,20
     await expect(page.getByTestId('year-result')).toHaveText(/42,20/);

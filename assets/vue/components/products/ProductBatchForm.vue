@@ -1,22 +1,24 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseCheckbox from '../ui/BaseCheckbox.vue';
+import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
 import VariantsInput from './VariantsInput.vue';
-import { eurosToCents } from '../../composables/useMoney.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
-// Only the ticked changes are applied to the selected products.
 const props = defineProps({
     count: { type: Number, required: true },
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
 const { types } = useProductTypes();
+const typeOptions = computed(() => [{ value: '', label: 'Sans type' }, ...types.value.map((type) => ({ value: type.id, label: type.name }))]);
 
 const form = reactive({
-    changeSellingPrice: false, sellingPrice: '',
-    changeBuyingPrice: false, buyingPrice: '',
+    changeSellingPrice: false, sellingPrice: null,
+    changeBuyingPrice: false, buyingPrice: null,
     changeType: false, typeId: '',
     addVariants: [], removeVariants: [],
 });
@@ -28,8 +30,8 @@ async function onSubmit() {
     errors.value = {};
     try {
         const result = await props.submit({
-            sellingPrice: form.changeSellingPrice ? eurosToCents(form.sellingPrice) ?? -1 : null,
-            buyingPrice: form.changeBuyingPrice ? eurosToCents(form.buyingPrice) ?? -1 : null,
+            sellingPrice: form.changeSellingPrice ? form.sellingPrice ?? -1 : null,
+            buyingPrice: form.changeBuyingPrice ? form.buyingPrice ?? -1 : null,
             changeType: form.changeType,
             typeId: form.changeType && form.typeId ? form.typeId : null,
             addVariants: form.addVariants,
@@ -51,26 +53,23 @@ async function onSubmit() {
             <p v-if="errors.form" class="product-batch-form__error" role="alert">{{ errors.form }}</p>
 
             <div class="product-batch-form__option">
-                <label class="product-batch-form__toggle"><input v-model="form.changeSellingPrice" type="checkbox"> Changer le prix de vente</label>
+                <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeSellingPrice" /> Changer le prix de vente</label>
                 <FormField v-if="form.changeSellingPrice" label="Nouveau prix de vente (€)" :error="errors.sellingPrice">
-                    <input v-model="form.sellingPrice" type="text" inputmode="decimal">
+                    <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
             </div>
 
             <div class="product-batch-form__option">
-                <label class="product-batch-form__toggle"><input v-model="form.changeBuyingPrice" type="checkbox"> Changer le prix d'achat</label>
+                <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeBuyingPrice" /> Changer le prix d'achat</label>
                 <FormField v-if="form.changeBuyingPrice" label="Nouveau prix d'achat (€)" :error="errors.buyingPrice">
-                    <input v-model="form.buyingPrice" type="text" inputmode="decimal">
+                    <BaseMoneyField v-model="form.buyingPrice" />
                 </FormField>
             </div>
 
             <div class="product-batch-form__option">
-                <label class="product-batch-form__toggle"><input v-model="form.changeType" type="checkbox"> Changer le type</label>
+                <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeType" /> Changer le type</label>
                 <FormField v-if="form.changeType" label="Nouveau type">
-                    <select v-model="form.typeId">
-                        <option value="">Sans type</option>
-                        <option v-for="type in types" :key="type.id" :value="type.id">{{ type.name }}</option>
-                    </select>
+                    <BaseSelect v-model="form.typeId" :options="typeOptions" />
                 </FormField>
             </div>
 
@@ -82,8 +81,8 @@ async function onSubmit() {
             </FormField>
 
             <div class="product-batch-form__actions">
-                <BaseButton type="submit" :loading="saving">Appliquer à {{ count }} produit(s)</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton type="submit" :loading="saving">Appliquer à {{ count }} produit(s)</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -94,7 +93,6 @@ async function onSubmit() {
 .product-batch-form__intro { margin: 0; color: var(--color-muted); }
 .product-batch-form__option { display: flex; flex-direction: column; gap: var(--space-2); }
 .product-batch-form__toggle { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; cursor: pointer; }
-.product-batch-form__toggle input { accent-color: var(--color-accent); }
-.product-batch-form__actions { display: flex; gap: var(--space-2); }
+.product-batch-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .product-batch-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

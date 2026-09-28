@@ -1,28 +1,27 @@
 <script setup>
 import { ChevronRight } from '@lucide/vue';
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
-// One collapsible section of the event report: title + signed amount, details in the slot.
 defineProps({
     title: { type: String, required: true },
     amount: { type: Number, required: true },
-    // Effect on the result: '+' income, '−' cost.
     sign: { type: String, default: '−' },
     open: { type: Boolean, default: false },
 });
 </script>
 
 <template>
-    <details class="report-section" :open="open">
-        <summary class="report-section__summary">
+    <CollapsibleRoot class="report-section" :default-open="open">
+        <CollapsibleTrigger class="report-section__summary">
             <ChevronRight class="report-section__chevron" size="1rem" aria-hidden="true" />
             <span class="report-section__title">{{ title }}</span>
             <span :class="['report-section__amount', `report-section__amount--${sign === '+' ? 'income' : 'cost'}`]">
                 {{ sign }} <MoneyAmount :cents="amount" />
             </span>
-        </summary>
-        <div class="report-section__body"><slot /></div>
-    </details>
+        </CollapsibleTrigger>
+        <CollapsibleContent class="report-section__body"><slot /></CollapsibleContent>
+    </CollapsibleRoot>
 </template>
 
 <style scoped>
@@ -32,13 +31,18 @@ defineProps({
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    width: 100%;
     padding: var(--space-3) 0;
-    cursor: pointer;
-    list-style: none;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
     font-weight: 600;
+    text-align: left;
+    cursor: pointer;
 }
 
-.report-section__summary::-webkit-details-marker { display: none; }
+.report-section__summary:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .report-section__chevron {
     flex-shrink: 0;
@@ -46,7 +50,7 @@ defineProps({
     transition: transform var(--transition);
 }
 
-.report-section[open] .report-section__chevron { transform: rotate(90deg); }
+.report-section__summary[data-state="open"] .report-section__chevron { transform: rotate(90deg); }
 
 .report-section__title { flex: 1; }
 .report-section__amount { font-variant-numeric: tabular-nums; }

@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { configureSumUp } from './support/api.js';
+import { choose } from './support/select.js';
 
 // The e2e app runs in the test env: SumUp is replaced by tests/Fixtures/sumup/transactions.json
 // (payments on 14, 15, 21 and 23 March 2030, Paris time).
@@ -18,7 +19,7 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await expect(problem).toHaveCount(1);
     await expect(problem).toContainText('2 commande(s) non importée(s)');
     await expect(problem).toContainText('21 mars 2030, 23 mars 2030');
-    await page.getByLabel('Événement').selectOption({ label: 'Salon de printemps 2030' });
+    await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toContainText('Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('SumUp');
 

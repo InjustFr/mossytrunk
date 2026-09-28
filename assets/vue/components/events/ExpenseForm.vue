@@ -1,8 +1,8 @@
 <script setup>
 import { reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import FormField from '../ui/FormField.vue';
-import { centsToEuros, eurosToCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
     // Expense being edited, or null to add one.
@@ -11,12 +11,12 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const form = reactive({ label: '', amount: '' });
+const form = reactive({ label: '', amount: null });
 const errors = ref({});
 const saving = ref(false);
 
 watch(() => props.expense, (expense) => {
-    Object.assign(form, expense ? { label: expense.label, amount: centsToEuros(expense.amount) } : { label: '', amount: '' });
+    Object.assign(form, expense ? { label: expense.label, amount: expense.amount } : { label: '', amount: null });
     errors.value = {};
 }, { immediate: true });
 
@@ -24,9 +24,9 @@ async function onSubmit() {
     saving.value = true;
     errors.value = {};
     try {
-        await props.submit({ label: form.label, amount: eurosToCents(form.amount) ?? 0 });
+        await props.submit({ label: form.label, amount: form.amount ?? 0 });
         emit('saved', form.label);
-        Object.assign(form, { label: '', amount: '' });
+        Object.assign(form, { label: '', amount: null });
     } catch (error) {
         errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { label: error.message };
     } finally {
@@ -42,11 +42,11 @@ async function onSubmit() {
                 <input v-model="form.label" type="text" placeholder="Stand, train, hôtel…">
             </FormField>
             <FormField label="Montant (€)" :error="errors.amount">
-                <input v-model="form.amount" type="text" inputmode="decimal">
+                <BaseMoneyField v-model="form.amount" />
             </FormField>
             <div class="expense-form__actions">
-                <BaseButton type="submit" :loading="saving">{{ expense ? 'Enregistrer' : 'Ajouter la dépense' }}</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ expense ? 'Enregistrer' : 'Ajouter la dépense' }}</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -54,5 +54,5 @@ async function onSubmit() {
 
 <style scoped>
 .expense-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.expense-form__actions { display: flex; gap: var(--space-2); }
+.expense-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

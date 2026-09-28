@@ -60,8 +60,8 @@ async function onRemove() {
             </FormField>
 
             <div class="sumup-settings__actions">
-                <BaseButton type="submit" :loading="saving">Enregistrer</BaseButton>
                 <ConfirmButton v-if="sumUp.apiKeyConfigured" label="Supprimer la clé" @confirm="onRemove" />
+                <BaseButton type="submit" :loading="saving">Enregistrer</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -70,7 +70,7 @@ async function onRemove() {
 <style scoped>
 .sumup-settings { display: flex; flex-direction: column; gap: var(--space-3); max-width: 32rem; }
 .sumup-settings__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.sumup-settings__actions { display: flex; gap: var(--space-2); align-items: center; }
+.sumup-settings__actions { display: flex; justify-content: flex-end; gap: var(--space-2); align-items: center; }
 .sumup-settings__error {
     margin: 0;
     padding: var(--space-2) var(--space-3);

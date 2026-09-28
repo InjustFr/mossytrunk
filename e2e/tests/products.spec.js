@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
 
 test('create a product with variants, then set its buying price', async ({ page }) => {
@@ -50,10 +51,10 @@ test('create a type inline and display products as "Type Nom"', async ({ page })
     await page.goto('/produits');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
-    await form.getByRole('combobox', { name: 'Type' }).selectOption({ label: '＋ Créer un type…' });
+    await choose(page, form.getByRole('combobox', { name: 'Type' }), '＋ Créer un type…');
     await form.getByLabel('Nom du nouveau type').fill(typeName);
     await form.getByRole('button', { name: 'Créer', exact: true }).click();
-    await expect(form.getByRole('combobox', { name: 'Type' })).toHaveValue(/.+/);
+    await expect(form.getByRole('combobox', { name: 'Type' })).toHaveText(typeName);
 
     await form.getByLabel('Nom').fill('Forêt');
     await expect(form.getByText(`Affiché « ${typeName} Forêt »`)).toBeVisible();
@@ -112,7 +113,7 @@ test('long lists are paginated', async ({ page, request }) => {
     await expect(page.getByRole('row').filter({ hasText: `${type.name} Modèle 25` })).toBeVisible();
     await expect(pagination.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
 
-    await pagination.getByLabel('Par page').selectOption('50');
+    await choose(page, pagination.getByRole('combobox', { name: 'Par page' }), '50');
     await expect(page.getByRole('row')).toHaveCount(26);
     await expect(pagination).toContainText('1–25 sur 25');
 });

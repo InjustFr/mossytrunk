@@ -1,15 +1,12 @@
 import { reactive } from 'vue';
 
-// Module-level state: shared by every component of the page.
 const state = reactive({ toasts: [] });
 let nextId = 1;
 
 const DURATION = { success: 3500, error: 7000, info: 4000 };
 
 function push(type, message) {
-    const id = nextId++;
-    state.toasts.push({ id, type, message });
-    setTimeout(() => dismiss(id), DURATION[type]);
+    state.toasts.push({ id: nextId++, type, message, duration: DURATION[type] });
 }
 
 function dismiss(id) {

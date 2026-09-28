@@ -1,10 +1,10 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
 import FormField from '../ui/FormField.vue';
 
 const props = defineProps({
-    // Event being edited, or null to schedule a new one.
     event: { type: Object, default: null },
     submit: { type: Function, required: true },
 });
@@ -22,13 +22,6 @@ watch(() => props.event, (event) => {
         : emptyForm());
     errors.value = {};
 }, { immediate: true });
-
-// Convenience: most events last a single weekend, pre-fill the end date.
-watch(() => form.startDate, (start) => {
-    if (start && (!form.endDate || form.endDate < start)) {
-        form.endDate = start;
-    }
-});
 
 async function onSubmit() {
     saving.value = true;
@@ -58,18 +51,13 @@ async function onSubmit() {
             <FormField label="Lieu" :error="errors.location">
                 <input v-model="form.location" type="text" required>
             </FormField>
-            <div class="event-form__row">
-                <FormField label="Début" :error="errors.startDate">
-                    <input v-model="form.startDate" type="date" required>
-                </FormField>
-                <FormField label="Fin" :error="errors.endDate">
-                    <input v-model="form.endDate" type="date" required>
-                </FormField>
-            </div>
+            <FormField as="group" label="Dates" :error="errors.startDate ?? errors.endDate">
+                <BaseDateRangePicker v-model:start="form.startDate" v-model:end="form.endDate" :invalid="Boolean(errors.startDate ?? errors.endDate)" />
+            </FormField>
 
             <div class="event-form__actions">
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer l\'événement' }}</BaseButton>
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer l\'événement' }}</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -77,8 +65,7 @@ async function onSubmit() {
 
 <style scoped>
 .event-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.event-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.event-form__actions { display: flex; gap: var(--space-2); }
+.event-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .event-form__error {
     margin: 0;
     padding: var(--space-2) var(--space-3);

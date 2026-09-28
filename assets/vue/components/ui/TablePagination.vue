@@ -1,6 +1,17 @@
 <script setup>
 import { computed } from 'vue';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from '@lucide/vue';
+import {
+    PaginationEllipsis,
+    PaginationFirst,
+    PaginationLast,
+    PaginationList,
+    PaginationListItem,
+    PaginationNext,
+    PaginationPrev,
+    PaginationRoot,
+} from 'reka-ui';
+import BaseSelect from './BaseSelect.vue';
 import { PAGE_SIZES } from '../../composables/usePagination.js';
 
 const props = defineProps({
@@ -13,11 +24,11 @@ const props = defineProps({
 const pageSize = defineModel('pageSize', { type: Number, required: true });
 const emit = defineEmits(['go']);
 
-// Current page ± 1, plus first and last; "…" marks the gaps.
-const pages = computed(() => {
-    const shown = new Set([1, props.pageCount, props.page - 1, props.page, props.page + 1]);
-    const list = [...shown].filter((p) => p >= 1 && p <= props.pageCount).sort((a, b) => a - b);
-    return list.flatMap((p, i) => (i > 0 && p - list[i - 1] > 1 ? ['…', p] : [p]));
+const sizeOptions = PAGE_SIZES.map((size) => ({ value: size, label: String(size) }));
+
+const current = computed({
+    get: () => props.page,
+    set: (page) => emit('go', page),
 });
 </script>
 
@@ -25,38 +36,42 @@ const pages = computed(() => {
     <nav class="table-pagination" aria-label="Pagination">
         <span class="table-pagination__range">{{ from }}–{{ to }} sur {{ total }}</span>
 
-        <div class="table-pagination__pages">
-            <button type="button" class="table-pagination__button" :disabled="page === 1" aria-label="Première page" @click="emit('go', 1)">
-                <ChevronsLeft size="1rem" aria-hidden="true" />
-            </button>
-            <button type="button" class="table-pagination__button" :disabled="page === 1" aria-label="Page précédente" @click="emit('go', page - 1)">
-                <ChevronLeft size="1rem" aria-hidden="true" />
-            </button>
-            <template v-for="(item, index) in pages" :key="`${item}-${index}`">
-                <span v-if="item === '…'" class="table-pagination__gap" aria-hidden="true">…</span>
-                <button
-                    v-else
-                    type="button"
-                    :class="['table-pagination__button', { 'table-pagination__button--current': item === page }]"
-                    :aria-current="item === page ? 'page' : undefined"
-                    :aria-label="`Page ${item}`"
-                    @click="emit('go', item)"
-                >{{ item }}</button>
-            </template>
-            <button type="button" class="table-pagination__button" :disabled="page === pageCount" aria-label="Page suivante" @click="emit('go', page + 1)">
-                <ChevronRight size="1rem" aria-hidden="true" />
-            </button>
-            <button type="button" class="table-pagination__button" :disabled="page === pageCount" aria-label="Dernière page" @click="emit('go', pageCount)">
-                <ChevronsRight size="1rem" aria-hidden="true" />
-            </button>
-        </div>
+        <PaginationRoot
+            v-model:page="current"
+            :total="total"
+            :items-per-page="pageSize"
+            :sibling-count="1"
+            show-edges
+            as="div"
+        >
+            <PaginationList v-slot="{ items }" class="table-pagination__pages">
+                <PaginationFirst class="table-pagination__button" aria-label="Première page">
+                    <ChevronsLeft size="1rem" aria-hidden="true" />
+                </PaginationFirst>
+                <PaginationPrev class="table-pagination__button" aria-label="Page précédente">
+                    <ChevronLeft size="1rem" aria-hidden="true" />
+                </PaginationPrev>
+                <template v-for="(item, index) in items" :key="`${item.type}-${index}`">
+                    <PaginationListItem
+                        v-if="item.type === 'page'"
+                        :value="item.value"
+                        class="table-pagination__button"
+                    >{{ item.value }}</PaginationListItem>
+                    <PaginationEllipsis v-else :index="index" class="table-pagination__gap">…</PaginationEllipsis>
+                </template>
+                <PaginationNext class="table-pagination__button" aria-label="Page suivante">
+                    <ChevronRight size="1rem" aria-hidden="true" />
+                </PaginationNext>
+                <PaginationLast class="table-pagination__button" aria-label="Dernière page">
+                    <ChevronsRight size="1rem" aria-hidden="true" />
+                </PaginationLast>
+            </PaginationList>
+        </PaginationRoot>
 
-        <label class="table-pagination__size">
+        <div class="table-pagination__size">
             Par page
-            <select v-model.number="pageSize">
-                <option v-for="size in PAGE_SIZES" :key="size" :value="size">{{ size }}</option>
-            </select>
-        </label>
+            <BaseSelect v-model="pageSize" :options="sizeOptions" size="small" aria-label="Par page" />
+        </div>
     </nav>
 </template>
 
@@ -92,15 +107,8 @@ const pages = computed(() => {
 
 .table-pagination__button:hover:not(:disabled) { border-color: var(--color-ink); }
 .table-pagination__button:disabled { opacity: 0.4; cursor: not-allowed; }
-.table-pagination__button--current { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+.table-pagination__button[data-selected] { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 .table-pagination__gap { padding: 0 var(--space-1); }
 
 .table-pagination__size { display: flex; align-items: center; gap: var(--space-2); }
-.table-pagination__size select {
-    min-height: 2rem;
-    padding: 0 var(--space-2);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-}
 </style>

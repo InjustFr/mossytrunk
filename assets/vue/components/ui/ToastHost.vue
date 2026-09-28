@@ -1,37 +1,49 @@
 <script setup>
 import { X } from '@lucide/vue';
+import { ToastClose, ToastDescription, ToastProvider, ToastRoot, ToastViewport } from 'reka-ui';
 import { useToast } from '../../composables/useToast.js';
 
 const { toasts, dismiss } = useToast();
+
+function onOpenChange(id, open) {
+    if (!open) {
+        dismiss(id);
+    }
+}
 </script>
 
 <template>
-    <div class="toast-host" aria-live="polite">
-        <TransitionGroup name="toast-host__item">
-            <div
-                v-for="toast in toasts"
-                :key="toast.id"
-                :class="['toast', `toast--${toast.type}`]"
-                role="status"
-                data-test="toast"
-            >
-                <span class="toast__message">{{ toast.message }}</span>
-                <button class="toast__close" type="button" aria-label="Fermer" @click="dismiss(toast.id)"><X size="1rem" aria-hidden="true" /></button>
-            </div>
-        </TransitionGroup>
-    </div>
+    <ToastProvider label="Notification" swipe-direction="right">
+        <ToastRoot
+            v-for="toast in toasts"
+            :key="toast.id"
+            :duration="toast.duration"
+            :type="toast.type === 'error' ? 'foreground' : 'background'"
+            :class="['toast', `toast--${toast.type}`]"
+            data-test="toast"
+            @update:open="onOpenChange(toast.id, $event)"
+        >
+            <ToastDescription class="toast__message">{{ toast.message }}</ToastDescription>
+            <ToastClose class="toast__close" aria-label="Fermer"><X size="1rem" aria-hidden="true" /></ToastClose>
+        </ToastRoot>
+        <ToastViewport class="toast-host" />
+    </ToastProvider>
 </template>
 
-<style scoped>
+<style>
 .toast-host {
     position: fixed;
     right: var(--space-4);
     bottom: var(--space-4);
+    z-index: 100;
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    z-index: 100;
-    max-width: min(26.25rem, calc(100vw - 2 * var(--space-4)));
+    width: min(26.25rem, calc(100vw - 2 * var(--space-4)));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    outline: none;
 }
 
 .toast {
@@ -58,12 +70,20 @@ const { toasts, dismiss } = useToast();
     background: none;
     cursor: pointer;
     color: var(--color-muted);
-    font-size: 1.2rem;
     line-height: 1;
 }
 
-.toast-host__item-enter-active,
-.toast-host__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
-.toast-host__item-enter-from,
-.toast-host__item-leave-to { opacity: 0; transform: translateY(0.5rem); }
+.toast__close:hover { color: var(--color-ink); }
+
+.toast[data-state="open"] { animation: toast-in var(--transition); }
+.toast[data-state="closed"] { animation: toast-out var(--transition); }
+.toast[data-swipe="move"] { transform: translateX(var(--reka-toast-swipe-move-x)); }
+.toast[data-swipe="end"] { animation: toast-swipe-out var(--transition); }
+
+@keyframes toast-in { from { opacity: 0; transform: translateY(0.5rem); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(0.5rem); } }
+@keyframes toast-swipe-out {
+    from { transform: translateX(var(--reka-toast-swipe-end-x)); }
+    to { opacity: 0; transform: translateX(100%); }
+}
 </style>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
+import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import FormField from '../ui/FormField.vue';
 import OrderDraftLines from './OrderDraftLines.vue';
 import OrderLinePicker from './OrderLinePicker.vue';
@@ -39,8 +40,8 @@ async function onSubmit() {
 <template>
     <form class="order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField label="Date">
-                <input v-model="draft.placedAt.value" type="datetime-local" required>
+            <FormField as="group" label="Date">
+                <BaseDatePicker v-model="draft.placedAt.value" with-time />
             </FormField>
 
             <p v-if="draft.preview.value?.event" class="order-form__event">
@@ -69,13 +70,16 @@ async function onSubmit() {
 
             <p v-if="error || draft.previewError.value" class="order-form__error" role="alert">{{ error ?? draft.previewError.value }}</p>
 
-            <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">Enregistrer la commande</BaseButton>
+            <div class="order-form__actions">
+                <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">Enregistrer la commande</BaseButton>
+            </div>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
 .order-form { display: flex; flex-direction: column; gap: var(--space-3); }
+.order-form__actions { display: flex; justify-content: flex-end; }
 
 .order-form__event {
     margin: 0;

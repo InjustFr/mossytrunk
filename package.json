@@ -27,6 +27,8 @@
     },
     "type": "module",
     "dependencies": {
-        "@lucide/vue": "^1.48.0"
+        "@internationalized/date": "^3.12.4",
+        "@lucide/vue": "^1.48.0",
+        "reka-ui": "^2.10.5"
     }
 }
