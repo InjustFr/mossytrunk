@@ -7,7 +7,7 @@ namespace App\Presentation\Api\Product;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Request body for creating or updating a product. Prices are integer cents.
+ * Request body for creating or updating a product. Prices are integer cents; the reference is generated.
  */
 final readonly class ProductPayload
 {
@@ -15,9 +15,6 @@ final readonly class ProductPayload
      * @param list<string> $variants
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'La référence est obligatoire.')]
-        #[Assert\Length(max: 64)]
-        public string $reference = '',
         #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
         #[Assert\Length(max: 255)]
         public string $name = '',

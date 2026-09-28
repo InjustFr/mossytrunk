@@ -13,7 +13,7 @@ final class OrderApiTest extends WebTestCase
     {
         $client = self::createClient();
         $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
-        $product = $this->post($client, '/api/products', ['reference' => 'TS', 'name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']])['id'];
+        $product = $this->post($client, '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']])['id'];
 
         $order = $this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'variant' => 'M', 'quantity' => 2]]]);
         self::assertStringStartsWith('CMD-20260710-', $order['reference']);

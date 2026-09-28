@@ -6,6 +6,7 @@ namespace App\Application\SumUp\ImportFromSumUp;
 
 use App\Application\SumUp\SumUpLine;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
@@ -22,8 +23,10 @@ final class SumUpProductResolver
     /** @var array<string, Product> products created during this import, by name */
     private array $created = [];
 
-    public function __construct(private readonly ProductRepository $products)
-    {
+    public function __construct(
+        private readonly ProductRepository $products,
+        private readonly ProductReferenceGenerator $references,
+    ) {
     }
 
     public function resolve(SumUpLine $line): ?SellableItem
@@ -42,7 +45,7 @@ final class SumUpProductResolver
             }
         }
 
-        $product = Product::create($this->referenceFor($name), $name, $line->unitPrice, Money::zero());
+        $product = Product::create($this->references->generate(null, $name), $name, $line->unitPrice, Money::zero());
         $this->products->add($product);
         $this->created[$name] = $product;
 
@@ -68,12 +71,5 @@ final class SumUpProductResolver
         }
 
         return $candidates;
-    }
-
-    private function referenceFor(string $name): string
-    {
-        $slug = strtoupper(trim((string) preg_replace('/[^A-Za-z0-9]+/', '-', (string) iconv('UTF-8', 'ASCII//TRANSLIT', $name)), '-'));
-
-        return \sprintf('SU-%s-%s', substr($slug, 0, 20), strtoupper(substr(hash('xxh3', $name), 0, 4)));
     }
 }

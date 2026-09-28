@@ -41,16 +41,16 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('S1', 'Mousse', 400, typeId: $sticker));
-        $forest = $create(new CreateProduct('P1', 'Forêt', 1_500, typeId: $print));
-        $create(new CreateProduct('X1', 'Aquarelle', 12_000));
+        $create(new CreateProduct('Mousse', 400, typeId: $sticker));
+        $forest = $create(new CreateProduct('Forêt', 1_500, typeId: $print));
+        $create(new CreateProduct('Aquarelle', 12_000));
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
         self::assertSame(['Print Forêt', 'Sticker Mousse', 'Aquarelle'], array_column($products, 'displayName'));
         self::assertSame('Print', $products[0]->typeName);
 
         self::getContainer()->get(RenameProductTypeHandler::class)($print, 'Affiche');
-        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'P1', 'Forêt', 1_500, 0, [], $sticker));
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'Forêt', 1_500, 0, [], $sticker));
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $products = self::getContainer()->get(ListProductsHandler::class)();

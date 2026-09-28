@@ -14,7 +14,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ reference: '', typeId: '', name: '', sellingPrice: '', buyingPrice: '0,00', variants: [] });
+const emptyForm = () => ({ typeId: '', name: '', sellingPrice: '', buyingPrice: '0,00', variants: [] });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -31,7 +31,6 @@ const displayName = computed(() => {
 watch(() => props.product, (product) => {
     Object.assign(form, product
         ? {
-            reference: product.reference,
             typeId: product.typeId ?? '',
             name: product.name,
             sellingPrice: centsToEuros(product.sellingPrice),
@@ -47,7 +46,6 @@ async function onSubmit() {
     errors.value = {};
     try {
         await props.submit({
-            reference: form.reference,
             typeId: form.typeId || null,
             name: form.name,
             sellingPrice: eurosToCents(form.sellingPrice) ?? -1,
@@ -74,16 +72,13 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-            <div class="product-form__row">
-                <FormField label="Référence" :error="errors.reference">
-                    <input v-model="form.reference" type="text" required>
-                </FormField>
-                <FormField label="Type" :error="errors.typeId">
-                    <TypeSelect v-model="form.typeId" />
-                </FormField>
-            </div>
+            <p v-if="isEditing" class="product-form__reference">Référence <strong>{{ product.reference }}</strong></p>
 
-            <FormField label="Nom" :error="errors.name" :hint="displayName ? `Affiché « ${displayName} »` : 'Ex. « Forêt » pour un Print Forêt'">
+            <FormField label="Type" :error="errors.typeId">
+                <TypeSelect v-model="form.typeId" />
+            </FormField>
+
+            <FormField label="Nom" :error="errors.name" :hint="displayName ? `Affiché « ${displayName} » — la référence est générée automatiquement` : 'Ex. « Forêt » pour un Print Forêt'">
                 <input v-model="form.name" type="text" required>
             </FormField>
 
@@ -111,6 +106,7 @@ async function onSubmit() {
 <style scoped>
 .product-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .product-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.product-form__reference { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .product-form__actions { display: flex; gap: var(--space-2); }
 .product-form__error {
     margin: 0;

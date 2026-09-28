@@ -14,7 +14,8 @@ use Symfony\Component\Uid\Ulid;
  * A real-world product sold at events.
  *
  * Rules (see docs/business/products.md):
- * - reference and name are required; the reference is unique (checked by the use cases).
+ * - reference and name are required; the reference is unique, generated at creation
+ *   ({@see ProductReferenceGenerator}) and never changes afterwards.
  * - prices are never negative; the buying price defaults to 0 (unknown, e.g. after a SumUp import).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
@@ -58,7 +59,12 @@ class Product
     {
         $this->id = $id;
         $this->createdAt = new \DateTimeImmutable();
-        $this->describe($reference, $name);
+        $reference = trim($reference);
+        if ('' === $reference) {
+            throw InvalidProduct::emptyReference();
+        }
+        $this->reference = $reference;
+        $this->rename($name);
         $this->type = $type;
         $this->reprice($sellingPrice, $buyingPrice);
         foreach ($variants as $variant) {
@@ -79,19 +85,13 @@ class Product
         $this->type = $type;
     }
 
-    public function describe(string $reference, string $name): void
+    public function rename(string $name): void
     {
-        $reference = trim($reference);
         $name = trim($name);
-
-        if ('' === $reference) {
-            throw InvalidProduct::emptyReference();
-        }
         if ('' === $name) {
             throw InvalidProduct::emptyName();
         }
 
-        $this->reference = $reference;
         $this->name = $name;
     }
 

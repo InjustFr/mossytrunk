@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Product\UpdateProduct;
 
+/**
+ * The reference is not part of it: it is fixed at creation.
+ */
 final readonly class UpdateProduct
 {
     /**
@@ -11,7 +14,6 @@ final readonly class UpdateProduct
      */
     public function __construct(
         public string $productId,
-        public string $reference,
         public string $name,
         public int $sellingPriceCents,
         public int $buyingPriceCents,

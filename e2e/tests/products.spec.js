@@ -3,12 +3,10 @@ import { unique } from './support/unique.js';
 
 test('create a product with variants, then set its buying price', async ({ page }) => {
     const name = unique('T-shirt');
-    const reference = unique('TS').replace(' ', '-');
 
     await page.goto('/produits');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
-    await form.getByLabel('Référence').fill(reference);
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Prix de vente (€)').fill('20');
     await form.getByLabel('Nouvelle variante').fill('Mousse');
@@ -27,6 +25,7 @@ test('create a product with variants, then set its buying price', async ({ page 
     await row.getByRole('button', { name: `Modifier ${name}` }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier le produit' });
     await expect(edit.getByLabel('Nom')).toHaveValue(name);
+    await expect(edit.getByText(/Référence PRD-T-SHIRT/)).toBeVisible();
     await edit.getByLabel("Prix d'achat (€)").fill('7,50');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
@@ -40,18 +39,15 @@ test('shows validation errors inline', async ({ page }) => {
     const form = page.getByRole('dialog').locator('form');
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
-    await expect(form.getByText('La référence est obligatoire.')).toBeVisible();
     await expect(form.getByText('Le nom est obligatoire.')).toBeVisible();
 });
 
 test('create a type inline and display products as "Type Nom"', async ({ page }) => {
     const typeName = unique('Print');
-    const reference = unique('PR').replace(' ', '-');
 
     await page.goto('/produits');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
-    await form.getByLabel('Référence').fill(reference);
     await form.getByRole('combobox', { name: 'Type' }).selectOption({ label: '＋ Créer un type…' });
     await form.getByLabel('Nom du nouveau type').fill(typeName);
     await form.getByRole('button', { name: 'Créer', exact: true }).click();

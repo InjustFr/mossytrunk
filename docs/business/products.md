@@ -4,7 +4,7 @@ A **product** is a real item sold at events: sticker, print, T-shirt, original a
 
 | Field | Meaning |
 |---|---|
-| `reference` | Unique business code (e.g. `TS-01`, `SU-…` for SumUp imports) |
+| `reference` | Unique business code **generated at creation** from type code + name (`PRI-FORET`, `PRD-…` when untyped, `-2` suffix if taken), then **fixed** |
 | `type` | Optional **product type** (Print, Sticker, T-shirt…) |
 | `name` | Specific name; the product is **displayed as « {type} {name} »** (type Print + name « Forêt » = « Print Forêt ») |
 | `sellingPrice` | Default price charged to customers (cents) |
@@ -22,8 +22,8 @@ Types are created from `/api/product-types` or **inline from the product form** 
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| P1 | Reference and name are required (trimmed) | `Product::describe()` | `ProductTest` |
-| P2 | Reference is unique across products | `CreateProductHandler`, `UpdateProductHandler` (+ DB unique index) | `ProductUseCasesTest` |
+| P1 | Reference and name are required (trimmed) | `Product::__construct()`, `Product::rename()` | `ProductTest` |
+| P2 | Reference is generated as `{TYPE CODE or PRD}-{NAME SLUG}` (accents removed, max 40 chars), suffixed `-2`, `-3`… when taken; it never changes afterwards (renaming or re-typing keeps it) | `ProductReferenceGenerator`, `CreateProductHandler`, SumUp import (+ DB unique index) | `ProductReferenceGeneratorTest`, `ProductUseCasesTest` |
 | P3 | Prices are never negative; buying price defaults to 0 | `Product::reprice()`, `Product::create()` | `ProductTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
@@ -36,7 +36,7 @@ Types are created from `/api/product-types` or **inline from the product form** 
 
 | Use case | Endpoint |
 |---|---|
-| `CreateProduct` | `POST /api/products` `{reference, typeId?, name, sellingPrice, buyingPrice?, variants[]}` |
+| `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, buyingPrice?, variants[]}` |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |

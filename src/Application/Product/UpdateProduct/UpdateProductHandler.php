@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Product\UpdateProduct;
 
 use App\Application\Transaction;
-use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
@@ -24,12 +23,7 @@ final readonly class UpdateProductHandler
     {
         $product = $this->products->get(Ulid::fromString($command->productId));
 
-        $sameReference = $this->products->findByReference(trim($command->reference));
-        if (null !== $sameReference && !$sameReference->id()->equals($product->id())) {
-            throw InvalidProduct::referenceAlreadyUsed(trim($command->reference));
-        }
-
-        $product->describe($command->reference, $command->name);
+        $product->rename($command->name);
         $product->reprice(Money::cents($command->sellingPriceCents), Money::cents($command->buyingPriceCents));
         $product->replaceVariants($command->variants);
         $product->classify(null === $command->typeId ? null : $this->types->get(Ulid::fromString($command->typeId)));

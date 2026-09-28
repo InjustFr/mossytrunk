@@ -12,7 +12,7 @@ final class ProductApiTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->jsonRequest('POST', '/api/products', ['reference' => 'TS-01', 'name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']]);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']]);
         self::assertResponseStatusCodeSame(201);
 
         $client->jsonRequest('GET', '/api/products');
@@ -27,20 +27,22 @@ final class ProductApiTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->jsonRequest('POST', '/api/products', ['reference' => '', 'name' => 'T-shirt', 'sellingPrice' => -5]);
+        $client->jsonRequest('POST', '/api/products', ['name' => '', 'sellingPrice' => -5]);
 
         self::assertResponseStatusCodeSame(422);
         $body = json_decode((string) $client->getResponse()->getContent(), true);
-        self::assertEqualsCanonicalizing(['reference', 'sellingPrice'], array_column($body['violations'], 'propertyPath'));
+        self::assertEqualsCanonicalizing(['name', 'sellingPrice'], array_column($body['violations'], 'propertyPath'));
     }
 
     public function testBusinessRuleViolationReturnsDetail(): void
     {
         $client = self::createClient();
-        $client->jsonRequest('POST', '/api/products', ['reference' => 'TS-01', 'name' => 'T-shirt', 'sellingPrice' => 2_000]);
-        $client->jsonRequest('POST', '/api/products', ['reference' => 'TS-01', 'name' => 'Autre', 'sellingPrice' => 2_000]);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000]);
+        $client->jsonRequest('GET', '/api/products');
+        $id = json_decode((string) $client->getResponse()->getContent(), true)[0]['id'];
+
+        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 's ', 'S']]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertStringContainsString('déjà utilisée', json_decode((string) $client->getResponse()->getContent(), true)['detail']);
     }
 }

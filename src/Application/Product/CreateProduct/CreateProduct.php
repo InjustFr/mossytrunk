@@ -10,7 +10,6 @@ final readonly class CreateProduct
      * @param list<string> $variants
      */
     public function __construct(
-        public string $reference,
         public string $name,
         public int $sellingPriceCents,
         public int $buyingPriceCents = 0,

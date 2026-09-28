@@ -39,7 +39,7 @@ final class ImportFromSumUpTest extends KernelTestCase
         $sticker = $products[array_search('Sticker Mousse', array_column($products, 'name'), true)];
         self::assertSame(400, $sticker->sellingPrice);
         self::assertSame(0, $sticker->buyingPrice);
-        self::assertStringStartsWith('SU-STICKER-MOUSSE-', $sticker->reference);
+        self::assertSame('PRD-STICKER-MOUSSE', $sticker->reference);
     }
 
     public function testOrdersWithoutEventAreNotImportedAndReportedOnce(): void
@@ -72,8 +72,8 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testLinesAreMatchedToExistingProductVariants(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('PRT', 'Print A4', 2_000, 600, ['Mousse', 'Fougère']));
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('TOTE', 'Tote bag', 1_500, 500));
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Print A4', 2_000, 600, ['Mousse', 'Fougère']));
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Tote bag', 1_500, 500));
 
         $report = $this->import();
 
@@ -85,7 +85,7 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testProductWithVariantsButNoVariantInSumUpBlocksTheOrder(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('TS', 'T-shirt', 2_000, 0, ['S', 'M']));
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('T-shirt', 2_000, 0, ['S', 'M']));
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             new SumUpTransaction('TX-TS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(2_000), [new SumUpLine('T-shirt', Money::cents(2_000), 1)]),
         ]);

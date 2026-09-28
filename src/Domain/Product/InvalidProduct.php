@@ -18,10 +18,6 @@ final class InvalidProduct extends DomainException
         return new self('La référence du produit est obligatoire.');
     }
 
-    public static function referenceAlreadyUsed(string $reference): self
-    {
-        return new self(\sprintf('La référence « %s » est déjà utilisée par un autre produit.', $reference));
-    }
 
     public static function emptyVariant(): self
     {

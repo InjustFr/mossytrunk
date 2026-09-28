@@ -4,10 +4,9 @@ import { unique, uniqueDay } from './unique.js';
 /** Arrange helpers: create data through the JSON API to keep UI tests focused. */
 
 export async function createProduct(request, { name = unique('Produit'), sellingPrice = 400, buyingPrice = 0, variants = [] } = {}) {
-    const reference = unique('REF').replace(' ', '-');
-    const response = await request.post('/api/products', { data: { reference, name, sellingPrice, buyingPrice, variants } });
+    const response = await request.post('/api/products', { data: { name, sellingPrice, buyingPrice, variants } });
     expect(response.status()).toBe(201);
-    return { id: (await response.json()).id, name, reference, sellingPrice, buyingPrice, variants };
+    return { id: (await response.json()).id, name, sellingPrice, buyingPrice, variants };
 }
 
 export async function createEvent(request, { name = unique('Convention'), startDate = uniqueDay(), endDate = null } = {}) {

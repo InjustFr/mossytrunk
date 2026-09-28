@@ -46,6 +46,6 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
 
     private function product(string $reference, string $name, int $price): \Symfony\Component\Uid\Ulid
     {
-        return self::getContainer()->get(CreateProductHandler::class)(new CreateProduct($reference, $name, $price));
+        return self::getContainer()->get(CreateProductHandler::class)(new CreateProduct($name, $price));
     }
 }

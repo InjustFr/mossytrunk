@@ -11,6 +11,7 @@ use App\Domain\Event\EventRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
+use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\DateRange;
 
@@ -24,6 +25,7 @@ final readonly class ImportFromSumUpHandler
     public function __construct(
         private SumUpGateway $sumUp,
         private ProductRepository $products,
+        private ProductReferenceGenerator $references,
         private EventRepository $events,
         private OrderRepository $orders,
         private Transaction $transaction,
@@ -39,7 +41,7 @@ final readonly class ImportFromSumUpHandler
         }
 
         $alreadyImported = array_flip($this->orders->importedSumUpTransactionCodes(array_keys($transactions)));
-        $resolver = new SumUpProductResolver($this->products);
+        $resolver = new SumUpProductResolver($this->products, $this->references);
         $imported = $withoutEvent = $withUnresolved = 0;
         $datesWithoutEvent = $unresolved = [];
 

@@ -37,8 +37,8 @@ final class OrderUseCasesTest extends KernelTestCase
             new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')),
         );
         $createProduct = self::getContainer()->get(CreateProductHandler::class);
-        $this->sticker = (string) $createProduct(new CreateProduct('STK', 'Sticker', 400, 80));
-        $this->tshirt = (string) $createProduct(new CreateProduct('TS', 'T-shirt', 2_000, 900, ['S', 'M']));
+        $this->sticker = (string) $createProduct(new CreateProduct('Sticker', 400, 80));
+        $this->tshirt = (string) $createProduct(new CreateProduct('T-shirt', 2_000, 900, ['S', 'M']));
         self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('3 stickers pour 10 €', [$this->sticker], 3, 1_000));
     }
 

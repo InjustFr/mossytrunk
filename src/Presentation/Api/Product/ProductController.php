@@ -29,7 +29,6 @@ final class ProductController extends AbstractController
     public function create(#[MapRequestPayload] ProductPayload $payload, CreateProductHandler $createProduct): JsonResponse
     {
         $id = $createProduct(new CreateProduct(
-            $payload->reference,
             $payload->name,
             $payload->sellingPrice,
             $payload->buyingPrice,
@@ -45,7 +44,6 @@ final class ProductController extends AbstractController
     {
         $updateProduct(new UpdateProduct(
             $id,
-            $payload->reference,
             $payload->name,
             $payload->sellingPrice,
             $payload->buyingPrice,
