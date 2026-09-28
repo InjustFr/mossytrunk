@@ -3,9 +3,11 @@ import { onMounted, ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
 import EventForm from '../components/events/EventForm.vue';
 import EventHeader from '../components/events/EventHeader.vue';
 import EventReport from '../components/events/EventReport.vue';
+import ExpenseForm from '../components/events/ExpenseForm.vue';
 import ExpenseList from '../components/events/ExpenseList.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useToast } from '../composables/useToast.js';
@@ -16,16 +18,25 @@ const props = defineProps({
 
 const { event, report, load, update, addExpense, removeExpense } = useEvent(props.eventId);
 const toast = useToast();
-const editing = ref(false);
+const editOpen = ref(false);
+const expenseOpen = ref(false);
 
-async function refresh(message) {
-    toast.success(message);
+async function onEventSaved(name) {
+    editOpen.value = false;
+    toast.success(`Événement « ${name} » mis à jour.`);
     await load();
 }
 
-async function onEventSaved(name) {
-    editing.value = false;
-    await refresh(`Événement « ${name} » mis à jour.`);
+async function onExpenseSaved(label) {
+    expenseOpen.value = false;
+    toast.success(`Dépense « ${label} » ajoutée.`);
+    await load();
+}
+
+async function onExpenseRemoved(expense) {
+    await removeExpense(expense.id);
+    toast.success(`Dépense « ${expense.label} » supprimée.`);
+    await load();
 }
 
 onMounted(load);
@@ -33,36 +44,42 @@ onMounted(load);
 
 <template>
     <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a class="event-detail-page__back" href="/evenements">← Événements</a></template>
+        <template #back><a href="/evenements">← Événements</a></template>
         <template #actions>
-            <BaseButton v-if="event && !editing" variant="secondary" @click="editing = true">Modifier</BaseButton>
+            <template v-if="event">
+                <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
+                <BaseButton @click="expenseOpen = true">Ajouter une dépense</BaseButton>
+            </template>
         </template>
 
         <div v-if="event" class="event-detail-page">
-            <BaseCard v-if="editing">
-                <EventForm :event="event" :submit="update" @saved="onEventSaved" @cancel="editing = false" />
-            </BaseCard>
-            <EventHeader v-else :event="event" />
+            <EventHeader :event="event" />
 
-            <BaseCard v-if="report" title="Bilan de l'événement">
-                <EventReport :report="report" :event-id="event.id" />
-            </BaseCard>
+            <div class="event-detail-page__grid">
+                <BaseCard v-if="report" title="Bilan de l'événement" class="event-detail-page__report">
+                    <EventReport :report="report" :event-id="event.id" />
+                </BaseCard>
 
-            <BaseCard title="Dépenses">
-                <ExpenseList
-                    :expenses="event.expenses"
-                    :total="event.expensesTotal"
-                    :add="addExpense"
-                    :remove="removeExpense"
-                    @changed="refresh"
-                />
-            </BaseCard>
+                <BaseCard title="Dépenses">
+                    <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @remove="onExpenseRemoved" />
+                </BaseCard>
+            </div>
         </div>
+
+        <BaseModal v-model:open="editOpen" title="Modifier l'événement">
+            <EventForm v-if="event" :event="event" :submit="update" @saved="onEventSaved" @cancel="editOpen = false" />
+        </BaseModal>
+        <BaseModal v-model:open="expenseOpen" title="Nouvelle dépense">
+            <ExpenseForm :submit="addExpense" @saved="onExpenseSaved" @cancel="expenseOpen = false" />
+        </BaseModal>
     </AppLayout>
 </template>
 
 <style scoped>
-.event-detail-page { display: flex; flex-direction: column; gap: var(--space-4); }
-.event-detail-page__back { color: var(--color-muted); text-decoration: none; }
-.event-detail-page__back:hover { color: var(--color-text); }
+.event-detail-page { display: flex; flex-direction: column; gap: var(--space-5); }
+.event-detail-page__grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); gap: var(--space-5); align-items: start; }
+
+@media (max-width: 1100px) {
+    .event-detail-page__grid { grid-template-columns: 1fr; }
+}
 </style>

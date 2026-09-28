@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
-import BaseCard from '../components/ui/BaseCard.vue';
+import BaseButton from '../components/ui/BaseButton.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
 import EventList from '../components/events/EventList.vue';
 import EventForm from '../components/events/EventForm.vue';
 import { useEvents } from '../composables/useEvents.js';
@@ -9,9 +10,11 @@ import { useToast } from '../composables/useToast.js';
 
 const { events, load, create } = useEvents();
 const toast = useToast();
+const modalOpen = ref(false);
 
 async function onSaved(name) {
     toast.success(`Événement « ${name} » créé.`);
+    modalOpen.value = false;
     await load();
 }
 
@@ -20,24 +23,14 @@ onMounted(load);
 
 <template>
     <AppLayout title="Événements">
-        <div class="events-page">
-            <EventList class="events-page__list" :events="events" />
-            <BaseCard class="events-page__form">
-                <EventForm :submit="create" @saved="onSaved" />
-            </BaseCard>
-        </div>
+        <template #actions>
+            <BaseButton @click="modalOpen = true">Nouvel événement</BaseButton>
+        </template>
+
+        <EventList :events="events" />
+
+        <BaseModal v-model:open="modalOpen" title="Nouvel événement">
+            <EventForm :submit="create" @saved="onSaved" @cancel="modalOpen = false" />
+        </BaseModal>
     </AppLayout>
 </template>
-
-<style scoped>
-.events-page {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
-    gap: var(--space-4);
-    align-items: start;
-}
-
-@media (max-width: 900px) {
-    .events-page { grid-template-columns: 1fr; }
-}
-</style>

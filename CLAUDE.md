@@ -45,10 +45,12 @@ Enforced by `deptrac.yaml`. Rules:
 ## Frontend — `assets/vue/`
 
 - `pages/` — one per route, mounted from `templates/page.html.twig` via `PageController`. **Thin orchestrators**: layout + components + composables, no business logic.
-- `layouts/AppLayout.vue` — header nav, title, toast host.
+- `layouts/AppLayout.vue` — vertical sidebar nav, page title + header actions, toast host.
 - `components/<context>/` — feature components; `components/ui/` — generic building blocks.
 - `composables/` — data fetching/state (`useOrders`, …), `useApi`, `useToast`, `useMoney`.
 - CSS: **BEM** class names (`block__element--modifier`), `<style scoped>`, design tokens in `assets/styles/tokens.css` (light mode, mossy green accent `--color-accent`). Small transitions only (`--transition`).
+- Creation/edition forms open in `components/ui/BaseModal.vue` from a header button (`variant="drawer"` for order entry so the list stays visible). Forms emit `saved`/`cancel`; the page closes the modal and reloads.
+- Look & feel: calm catalogue style (inspired by tikamoon.com) — white surfaces on light warm grey, near-black text, thin borders, 3px radius, serif display font (DM Serif Display) for brand/titles, Inter for text, small uppercase letter-spaced labels. Fonts are self-hosted via `@fontsource`.
 - Confirm user actions with `useToast().success/error`.
 - Add `data-test` attributes only when a role/label selector is not practical for Playwright.
 

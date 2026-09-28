@@ -31,7 +31,7 @@ defineProps({
     display: grid;
     grid-template-columns: 1fr auto;
     gap: var(--space-1) var(--space-4);
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-4) var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
@@ -40,9 +40,9 @@ defineProps({
     transition: border-color var(--transition), transform var(--transition);
 }
 
-.event-list__link:hover { border-color: var(--color-accent); transform: translateX(2px); }
+.event-list__link:hover { border-color: var(--color-ink); transform: translateX(2px); }
 
-.event-list__name { font-weight: 600; }
+.event-list__name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; }
 .event-list__meta { grid-column: 1; color: var(--color-muted); font-size: 0.9rem; }
 .event-list__expenses { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--color-muted); font-size: 0.9rem; }
 </style>

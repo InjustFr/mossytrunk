@@ -39,8 +39,6 @@ async function onSubmit() {
 <template>
     <form class="order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <h2 class="order-form__title">Nouvelle commande</h2>
-
             <FormField label="Date">
                 <input v-model="draft.placedAt.value" type="datetime-local" required>
             </FormField>
@@ -78,7 +76,6 @@ async function onSubmit() {
 
 <style scoped>
 .order-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.order-form__title { margin: 0; }
 
 .order-form__event {
     margin: 0;

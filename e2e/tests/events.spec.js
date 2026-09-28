@@ -7,7 +7,8 @@ test('schedule an event and track its expenses', async ({ page }) => {
     const end = uniqueDay(2);
 
     await page.goto('/evenements');
-    const form = page.locator('form.event-form');
+    await page.getByRole('button', { name: 'Nouvel événement' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvel événement' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Lieu').fill('Villepinte');
     await form.getByLabel('Début').fill(start);
@@ -18,13 +19,14 @@ test('schedule an event and track its expenses', async ({ page }) => {
     await page.getByRole('link', { name }).click();
 
     await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
-    const expenses = page.locator('form.expense-list__form');
-    await expenses.getByLabel('Libellé').fill('Stand');
-    await expenses.getByLabel('Montant (€)').fill('300');
-    await expenses.getByRole('button', { name: 'Ajouter la dépense' }).click();
-    await expenses.getByLabel('Libellé').fill('Train');
-    await expenses.getByLabel('Montant (€)').fill('89,50');
-    await expenses.getByRole('button', { name: 'Ajouter la dépense' }).click();
+    for (const [label, amount] of [['Stand', '300'], ['Train', '89,50']]) {
+        await page.getByRole('button', { name: 'Ajouter une dépense' }).click();
+        const expense = page.getByRole('dialog', { name: 'Nouvelle dépense' });
+        await expense.getByLabel('Libellé').fill(label);
+        await expense.getByLabel('Montant (€)').fill(amount);
+        await expense.getByRole('button', { name: 'Ajouter la dépense' }).click();
+        await expect(expense).toHaveCount(0);
+    }
 
     await expect(page.getByRole('row', { name: /Total/ })).toContainText('389,50');
 
@@ -35,14 +37,16 @@ test('schedule an event and track its expenses', async ({ page }) => {
 test('refuses overlapping events', async ({ page }) => {
     const day = uniqueDay();
     await page.goto('/evenements');
-    const form = page.locator('form.event-form');
+    const form = page.getByRole('dialog').locator('form');
 
     for (const name of [unique('Premier'), unique('Second')]) {
+        await page.getByRole('button', { name: 'Nouvel événement' }).click();
         await form.getByLabel('Nom').fill(name);
         await form.getByLabel('Lieu').fill('Lyon');
         await form.getByLabel('Début').fill(day);
         await form.getByLabel('Fin').fill(day);
         await form.getByRole('button', { name: "Créer l'événement" }).click();
+        await expect(page.getByTestId('toast').or(form.getByRole('alert'))).toBeVisible();
     }
 
     await expect(form.getByRole('alert')).toContainText('chevauchent');

@@ -50,8 +50,6 @@ async function onSubmit() {
 <template>
     <form class="event-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <h2 class="event-form__title">{{ isEditing ? 'Modifier l\'événement' : 'Nouvel événement' }}</h2>
-
             <p v-if="errors.form" class="event-form__error" role="alert">{{ errors.form }}</p>
 
             <FormField label="Nom" :error="errors.name">
@@ -71,7 +69,7 @@ async function onSubmit() {
 
             <div class="event-form__actions">
                 <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer l\'événement' }}</BaseButton>
-                <BaseButton v-if="isEditing" variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -79,7 +77,6 @@ async function onSubmit() {
 
 <style scoped>
 .event-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.event-form__title { margin: 0; }
 .event-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .event-form__actions { display: flex; gap: var(--space-2); }
 .event-form__error {

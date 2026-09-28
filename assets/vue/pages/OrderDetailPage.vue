@@ -25,7 +25,7 @@ onMounted(load);
 
 <template>
     <AppLayout :title="order ? `Commande ${order.reference}` : 'Commande'">
-        <template #back><a class="order-detail-page__back" href="/commandes">← Commandes</a></template>
+        <template #back><a href="/commandes">← Commandes</a></template>
         <template #actions>
             <ConfirmButton v-if="order" label="Supprimer la commande" confirm-label="Confirmer la suppression" @confirm="onDelete" />
         </template>
@@ -55,7 +55,6 @@ onMounted(load);
 
 <style scoped>
 .order-detail-page { display: flex; flex-direction: column; gap: var(--space-4); }
-.order-detail-page__back { color: var(--color-muted); text-decoration: none; }
 .order-detail-page__meta { margin: 0; color: var(--color-muted); }
 .order-detail-page__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: var(--space-4); align-items: start; }
 .order-detail-page__side { display: flex; flex-direction: column; gap: var(--space-4); }

@@ -9,7 +9,8 @@ test('place an order with automatic bundle discount while seeing the list', asyn
     const bundle = await createDiscountRule(request, { name: unique('3 stickers pour 10 €'), productIds: [sticker.id], bundleSize: 3, bundlePrice: 1_000 });
 
     await page.goto('/commandes');
-    const form = page.locator('form.order-form');
+    await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
     await form.getByLabel('Date').fill(`${event.startDate}T14:30`);
 
     // The variant is required for products that have variants.
@@ -40,6 +41,7 @@ test('place an order with automatic bundle discount while seeing the list', asyn
     await expect(row).toContainText('30,00');
     await expect(form.getByRole('button', { name: 'Enregistrer la commande' })).toBeDisabled();
 
+    await page.getByRole('dialog').getByRole('button', { name: 'Fermer' }).click();
     await row.getByRole('link', { name: reference }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(`Commande ${reference}`);
     await expect(page.getByRole('cell', { name: `${tshirt.name} — Fougère` })).toBeVisible();
@@ -51,7 +53,8 @@ test('warns when no event exists at the order date', async ({ page, request }) =
     const sticker = await createProduct(request, { name: unique('Sticker') });
 
     await page.goto('/commandes');
-    const form = page.locator('form.order-form');
+    await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
     await form.getByLabel('Date').fill('2099-12-31T10:00');
     await form.getByLabel('Produit').selectOption({ label: `${sticker.name} — 4,00 €` });
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();

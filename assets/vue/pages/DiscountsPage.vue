@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
-import BaseCard from '../components/ui/BaseCard.vue';
+import BaseButton from '../components/ui/BaseButton.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
 import DiscountRuleForm from '../components/discounts/DiscountRuleForm.vue';
 import DiscountRuleList from '../components/discounts/DiscountRuleList.vue';
 import { useDiscountRules } from '../composables/useDiscountRules.js';
@@ -11,13 +12,25 @@ import { useToast } from '../composables/useToast.js';
 const { rules, load, create, update, setActive, remove } = useDiscountRules();
 const { products, load: loadProducts } = useProducts();
 const toast = useToast();
+const modalOpen = ref(false);
 const editing = ref(null);
 
+const modalTitle = computed(() => (editing.value ? 'Modifier la remise' : 'Nouvelle remise'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
+
+function openCreate() {
+    editing.value = null;
+    modalOpen.value = true;
+}
+
+function openEdit(rule) {
+    editing.value = rule;
+    modalOpen.value = true;
+}
 
 async function onSaved(name) {
     toast.success(editing.value ? `Remise « ${name} » mise à jour.` : `Remise « ${name} » créée.`);
-    editing.value = null;
+    modalOpen.value = false;
     await load();
 }
 
@@ -30,9 +43,6 @@ async function onToggle(rule, active) {
 async function onRemove(rule) {
     await remove(rule.id);
     toast.success(`Remise « ${rule.name} » supprimée.`);
-    if (editing.value?.id === rule.id) {
-        editing.value = null;
-    }
     await load();
 }
 
@@ -41,38 +51,27 @@ onMounted(() => Promise.all([load(), loadProducts()]));
 
 <template>
     <AppLayout title="Remises">
-        <div class="discounts-page">
-            <div class="discounts-page__list">
-                <p class="discounts-page__intro">
-                    Les remises par lot s'appliquent automatiquement aux nouvelles commandes, en choisissant la combinaison la plus avantageuse pour le client.
-                </p>
-                <DiscountRuleList
-                    :rules="rules"
-                    :selected-id="editing?.id ?? null"
-                    @edit="editing = $event"
-                    @toggle="onToggle"
-                    @remove="onRemove"
-                />
-            </div>
-            <BaseCard class="discounts-page__form">
-                <DiscountRuleForm :rule="editing" :products="products" :submit="submit" @saved="onSaved" @cancel="editing = null" />
-            </BaseCard>
-        </div>
+        <template #actions>
+            <BaseButton @click="openCreate">Nouvelle remise</BaseButton>
+        </template>
+
+        <p class="discounts-page__intro">
+            Les remises par lot s'appliquent automatiquement aux nouvelles commandes, en choisissant la combinaison la plus avantageuse pour le client.
+        </p>
+        <DiscountRuleList
+            :rules="rules"
+            :selected-id="modalOpen ? editing?.id ?? null : null"
+            @edit="openEdit"
+            @toggle="onToggle"
+            @remove="onRemove"
+        />
+
+        <BaseModal v-model:open="modalOpen" :title="modalTitle">
+            <DiscountRuleForm :rule="editing" :products="products" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
+        </BaseModal>
     </AppLayout>
 </template>
 
 <style scoped>
-.discounts-page {
-    display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(320px, 2fr);
-    gap: var(--space-4);
-    align-items: start;
-}
-
-.discounts-page__list { display: flex; flex-direction: column; gap: var(--space-3); }
-.discounts-page__intro { margin: 0; color: var(--color-muted); }
-
-@media (max-width: 900px) {
-    .discounts-page { grid-template-columns: 1fr; }
-}
+.discounts-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); max-width: 70ch; }
 </style>

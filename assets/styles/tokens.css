@@ -1,26 +1,42 @@
+/*
+ * Design tokens. Light, calm and readable: white surfaces on a light warm grey, near-black text,
+ * thin borders and almost square corners (furniture-catalogue feel, cf. tikamoon.com),
+ * with a mossy green accent for actions and positive figures.
+ */
 :root {
     --color-accent: #5b7f3a;
     --color-accent-strong: #46652b;
-    --color-accent-soft: #e8efe0;
-    --color-bg: #f6f7f3;
-    --color-surface: #ffffff;
-    --color-text: #1f2a1b;
-    --color-muted: #5e6b57;
-    --color-border: #dde3d6;
-    --color-danger: #b3261e;
-    --color-danger-soft: #fbeceb;
-    --color-success: #3f7d2c;
+    --color-accent-soft: #eef3e8;
 
-    --radius: 8px;
+    --color-bg: #f5f5f3;
+    --color-surface: #ffffff;
+    --color-sidebar: #ffffff;
+    --color-text: #1b1b1b;
+    --color-muted: #6f6f6b;
+    --color-subtle: #9a9a95;
+    --color-border: #e4e4e0;
+    --color-border-strong: #cfcfca;
+    --color-ink: #111111;
+    --color-danger: #a8321f;
+    --color-danger-soft: #fbefec;
+    --color-success: #3f7d2c;
+    --color-warning: #a86b12;
+    --color-backdrop: rgb(17 17 17 / 35%);
+
+    --radius: 3px;
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
     --space-4: 16px;
     --space-5: 24px;
     --space-6: 32px;
+    --space-7: 48px;
 
-    --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-body: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
     --font-size: 15px;
-    --shadow: 0 1px 2px rgb(31 42 27 / 8%), 0 2px 8px rgb(31 42 27 / 6%);
+
+    --sidebar-width: 232px;
+    --shadow: 0 1px 2px rgb(17 17 17 / 6%), 0 8px 24px rgb(17 17 17 / 8%);
     --transition: 180ms ease;
 }

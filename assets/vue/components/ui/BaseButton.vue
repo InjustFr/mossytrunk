@@ -22,28 +22,33 @@ defineProps({
 .button {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--space-2);
+    min-height: 38px;
     padding: var(--space-2) var(--space-4);
     border: 1px solid transparent;
     border-radius: var(--radius);
     cursor: pointer;
     font-weight: 600;
-    transition: background var(--transition), border-color var(--transition), opacity var(--transition);
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+    transition: background var(--transition), border-color var(--transition), color var(--transition), opacity var(--transition);
 }
 
-.button:disabled { opacity: 0.6; cursor: not-allowed; }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+.button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 .button--primary { background: var(--color-accent); color: #fff; }
 .button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }
 
-.button--secondary { background: var(--color-surface); border-color: var(--color-border); }
-.button--secondary:hover:not(:disabled) { border-color: var(--color-accent); }
+.button--secondary { background: var(--color-surface); border-color: var(--color-ink); color: var(--color-ink); }
+.button--secondary:hover:not(:disabled) { background: var(--color-ink); color: #fff; }
 
 .button--danger { background: var(--color-surface); border-color: var(--color-danger); color: var(--color-danger); }
 .button--danger:hover:not(:disabled) { background: var(--color-danger-soft); }
 
-.button--ghost { background: none; color: var(--color-muted); padding-inline: var(--space-2); }
-.button--ghost:hover:not(:disabled) { color: var(--color-text); }
+.button--ghost { min-height: auto; background: none; color: var(--color-muted); padding: var(--space-1) var(--space-2); font-weight: 500; }
+.button--ghost:hover:not(:disabled) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
 
 .button__spinner {
     width: 0.9em;

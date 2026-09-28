@@ -15,7 +15,7 @@ export function eurosToCents(value) {
 }
 
 export function centsToEuros(cents) {
-    return ((cents ?? 0) / 100).toFixed(2);
+    return ((cents ?? 0) / 100).toFixed(2).replace('.', ',');
 }
 
 export function useMoney() {

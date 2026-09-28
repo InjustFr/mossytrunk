@@ -66,8 +66,10 @@ function add() {
 <style scoped>
 .order-line-picker {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) 80px auto;
-    grid-template-areas: "product variant quantity add";
+    grid-template-columns: minmax(0, 1fr) 90px auto;
+    grid-template-areas:
+        "product product product"
+        "variant quantity add";
     gap: var(--space-2);
     align-items: end;
 }
@@ -83,10 +85,4 @@ function add() {
 .order-line-picker__slide-enter-from,
 .order-line-picker__slide-leave-to { opacity: 0; }
 
-@media (max-width: 520px) {
-    .order-line-picker {
-        grid-template-columns: 1fr 80px;
-        grid-template-areas: "product product" "variant variant" "quantity add";
-    }
-}
 </style>

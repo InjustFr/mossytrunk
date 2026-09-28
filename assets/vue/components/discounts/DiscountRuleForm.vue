@@ -59,8 +59,6 @@ async function onSubmit() {
 <template>
     <form class="discount-rule-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <h2 class="discount-rule-form__title">{{ isEditing ? 'Modifier la remise' : 'Nouvelle remise' }}</h2>
-
             <p v-if="errors.form" class="discount-rule-form__error" role="alert">{{ errors.form }}</p>
 
             <FormField label="Nom" :error="errors.name" hint="Affiché sur les commandes, ex. « 3 stickers pour 10 € »">
@@ -88,7 +86,7 @@ async function onSubmit() {
 
             <div class="discount-rule-form__actions">
                 <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer la remise' }}</BaseButton>
-                <BaseButton v-if="isEditing" variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -96,7 +94,6 @@ async function onSubmit() {
 
 <style scoped>
 .discount-rule-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.discount-rule-form__title { margin: 0; }
 .discount-rule-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .discount-rule-form__actions { display: flex; gap: var(--space-2); }
 .discount-rule-form__hint { margin: 0; color: var(--color-muted); font-size: 0.9rem; }

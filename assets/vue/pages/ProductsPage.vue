@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
+import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
 import ProductList from '../components/products/ProductList.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import { useProducts } from '../composables/useProducts.js';
@@ -9,13 +11,25 @@ import { useToast } from '../composables/useToast.js';
 
 const { products, load, create, update } = useProducts();
 const toast = useToast();
+const modalOpen = ref(false);
 const editing = ref(null);
 
+const modalTitle = computed(() => (editing.value ? 'Modifier le produit' : 'Nouveau produit'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
+
+function openCreate() {
+    editing.value = null;
+    modalOpen.value = true;
+}
+
+function openEdit(product) {
+    editing.value = product;
+    modalOpen.value = true;
+}
 
 async function onSaved(name) {
     toast.success(editing.value ? `Produit « ${name} » mis à jour.` : `Produit « ${name} » ajouté.`);
-    editing.value = null;
+    modalOpen.value = false;
     await load();
 }
 
@@ -24,29 +38,16 @@ onMounted(load);
 
 <template>
     <AppLayout title="Produits">
-        <div class="products-page">
-            <BaseCard class="products-page__list">
-                <ProductList :products="products" :selected-id="editing?.id ?? null" @edit="editing = $event" />
-            </BaseCard>
-            <BaseCard class="products-page__form">
-                <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="editing = null" />
-            </BaseCard>
-        </div>
+        <template #actions>
+            <BaseButton @click="openCreate">Nouveau produit</BaseButton>
+        </template>
+
+        <BaseCard>
+            <ProductList :products="products" :selected-id="modalOpen ? editing?.id ?? null : null" @edit="openEdit" />
+        </BaseCard>
+
+        <BaseModal v-model:open="modalOpen" :title="modalTitle">
+            <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
+        </BaseModal>
     </AppLayout>
 </template>
-
-<style scoped>
-.products-page {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
-    gap: var(--space-4);
-    align-items: start;
-}
-
-.products-page__form { position: sticky; top: var(--space-4); }
-
-@media (max-width: 900px) {
-    .products-page { grid-template-columns: 1fr; }
-    .products-page__form { position: static; }
-}
-</style>

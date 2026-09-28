@@ -7,7 +7,8 @@ test('create, deactivate and delete a bundle discount', async ({ page, request }
     const name = unique('3 stickers pour 10 €');
 
     await page.goto('/remises');
-    const form = page.locator('form.discount-rule-form');
+    await page.getByRole('button', { name: 'Nouvelle remise' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle remise' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Articles par lot').fill('3');
     await form.getByLabel('Prix du lot (€)').fill('10');

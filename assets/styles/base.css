@@ -9,18 +9,27 @@ body {
     line-height: 1.5;
     color: var(--color-text);
     background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-3); }
-h1 { font-size: 1.6rem; }
-h2 { font-size: 1.2rem; }
-h3 { font-size: 1rem; }
+h1, h2, h3 { line-height: 1.2; margin: 0 0 var(--space-3); font-weight: 600; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: 2.1rem; letter-spacing: 0.005em; }
+h2 { font-size: 1.05rem; }
+h3 { font-size: 0.95rem; }
 
-a { color: var(--color-accent-strong); }
+a { color: var(--color-accent-strong); text-underline-offset: 2px; }
 
 button, input, select, textarea { font: inherit; color: inherit; }
 
 .tabular { font-variant-numeric: tabular-nums; }
+
+/* Small uppercase label, used for navigation and table headers. */
+.eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
 
 .visually-hidden {
     position: absolute; width: 1px; height: 1px; overflow: hidden;

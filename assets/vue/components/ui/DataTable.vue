@@ -26,11 +26,16 @@
 }
 
 .data-table :deep(th) {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.12em;
     color: var(--color-muted);
+    border-bottom-color: var(--color-border-strong);
 }
+
+.data-table__body :deep(tr) { transition: background var(--transition); }
+.data-table__body :deep(tr:hover) { background: #fafaf8; }
 
 .data-table :deep(.data-table__cell--number) { text-align: right; font-variant-numeric: tabular-nums; }
 

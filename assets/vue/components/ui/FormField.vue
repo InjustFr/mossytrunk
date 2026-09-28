@@ -18,14 +18,15 @@ defineProps({
 <style scoped>
 .form-field { display: flex; flex-direction: column; gap: var(--space-1); }
 
-.form-field__label { font-weight: 600; font-size: 0.9rem; }
+.form-field__label { font-weight: 600; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-muted); }
 
 .form-field :deep(input),
 .form-field :deep(select),
 .form-field :deep(textarea) {
     width: 100%;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
+    min-height: 38px;
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius);
     background: var(--color-surface);
     transition: border-color var(--transition), box-shadow var(--transition);

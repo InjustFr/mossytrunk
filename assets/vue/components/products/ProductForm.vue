@@ -12,7 +12,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ reference: '', name: '', sellingPrice: '', buyingPrice: '0.00', variants: [] });
+const emptyForm = () => ({ reference: '', name: '', sellingPrice: '', buyingPrice: '0,00', variants: [] });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -61,9 +61,7 @@ async function onSubmit() {
 <template>
     <form class="product-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <h2 class="product-form__title">{{ isEditing ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
-
-            <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
+                <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
             <div class="product-form__row">
                 <FormField label="Référence" :error="errors.reference">
@@ -89,7 +87,7 @@ async function onSubmit() {
 
             <div class="product-form__actions">
                 <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
-                <BaseButton v-if="isEditing" variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
             </div>
         </fieldset>
     </form>
@@ -97,7 +95,6 @@ async function onSubmit() {
 
 <style scoped>
 .product-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.product-form__title { margin: 0; }
 .product-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .product-form__actions { display: flex; gap: var(--space-2); }
 .product-form__error {
