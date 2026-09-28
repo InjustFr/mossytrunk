@@ -50,7 +50,7 @@ onMounted(() => Promise.all([load(), loadProducts(), loadEvents()]));
             <SumUpImportProblem v-if="sumUp.problem.value" class="orders-page__problem" :problem="sumUp.problem.value" @dismiss="sumUp.dismiss" />
         </Transition>
 
-        <BaseCard title="Historique">
+        <BaseCard>
             <template #actions>
                 <EventFilter v-model="eventFilter" :events="events" />
             </template>

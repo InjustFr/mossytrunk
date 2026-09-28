@@ -39,8 +39,8 @@ test('place an order with automatic bundle discount while seeing the list', asyn
 
     // The list refreshed without reloading the page, and the form is ready for the next order.
     const row = page.getByRole('row').filter({ hasText: reference });
-    await expect(row).toContainText(event.name);
     await expect(row).toContainText('30,00');
+    await expect(page.getByRole('row').filter({ hasText: event.name }).getByRole('link', { name: event.name })).toBeVisible();
     await expect(form.getByRole('button', { name: 'Enregistrer la commande' })).toBeDisabled();
 
     await page.getByRole('dialog').getByRole('button', { name: 'Fermer' }).click();

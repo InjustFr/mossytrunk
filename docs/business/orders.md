@@ -40,4 +40,4 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | `GetOrder` | `GET /api/orders/{id}` (lines, discounts, totals, cost of goods, margin) |
 | `DeleteOrder` | `DELETE /api/orders/{id}` |
 
-UI: `/commandes` — order history (filter by event) and, side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, discounts and total. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete.
+UI: `/commandes` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete.

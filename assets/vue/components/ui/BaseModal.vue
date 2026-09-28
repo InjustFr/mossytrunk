@@ -61,6 +61,7 @@ function focusFirstField(event) {
 .modal__panel:focus { outline: none; }
 
 .modal--drawer .modal__panel { width: min(32.5rem, 100%); height: 100%; border-radius: 0; border-width: 0 0 0 0.0625rem; pointer-events: auto; }
+.modal--drawer .modal__body { flex: 1; display: flex; flex-direction: column; }
 
 .modal__header {
     display: flex;

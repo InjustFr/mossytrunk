@@ -20,7 +20,8 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await expect(problem).toContainText('2 commandes non importées');
     await expect(problem).toContainText('21 mars 2030, 23 mars 2030');
     await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
-    await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toContainText('Salon de printemps 2030');
+    await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Salon de printemps 2030' }).first()).toBeVisible();
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('SumUp');
 
     await page.getByRole('button', { name: 'Importer depuis SumUp' }).click();

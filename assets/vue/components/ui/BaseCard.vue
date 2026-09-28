@@ -7,7 +7,7 @@ defineProps({
 <template>
     <section class="card">
         <header v-if="title || $slots.actions" class="card__header">
-            <h2 class="card__title">{{ title }}</h2>
+            <h2 v-if="title" class="card__title">{{ title }}</h2>
             <div class="card__actions"><slot name="actions" /></div>
         </header>
         <slot />
@@ -26,6 +26,7 @@ defineProps({
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: var(--space-3);
     margin-bottom: var(--space-4);
 }

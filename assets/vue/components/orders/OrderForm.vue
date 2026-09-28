@@ -61,25 +61,38 @@ async function onSubmit() {
                 @remove="draft.remove"
             />
 
-            <OrderTotals
-                v-if="draft.preview.value"
-                :subtotal="draft.preview.value.subtotal"
-                :discounts="draft.preview.value.discounts"
-                :total="draft.preview.value.total"
-            />
-
             <p v-if="error || draft.previewError.value" class="order-form__error" role="alert">{{ error ?? draft.previewError.value }}</p>
 
-            <div class="order-form__actions">
-                <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">Enregistrer la commande</BaseButton>
-            </div>
+            <footer class="order-form__footer">
+                <OrderTotals
+                    v-if="draft.preview.value"
+                    :subtotal="draft.preview.value.subtotal"
+                    :discounts="draft.preview.value.discounts"
+                    :total="draft.preview.value.total"
+                />
+                <div class="order-form__actions">
+                    <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">Enregistrer la commande</BaseButton>
+                </div>
+            </footer>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.order-form { display: flex; flex-direction: column; gap: var(--space-3); }
+.order-form { flex: 1; display: flex; flex-direction: column; gap: var(--space-3); }
 .order-form__actions { display: flex; justify-content: flex-end; }
+
+.order-form__footer {
+    position: sticky;
+    bottom: calc(-1 * var(--space-5));
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: auto calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
+    padding: var(--space-4) var(--space-5);
+    border-top: 0.0625rem solid var(--color-border);
+    background: var(--color-surface);
+}
 
 .order-form__event {
     margin: 0;

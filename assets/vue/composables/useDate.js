@@ -5,6 +5,18 @@ export function formatDate(iso) {
     return iso ? dateFormatter.format(new Date(iso)) : '';
 }
 
+const dayFormatter = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' });
+const timeFormatter = new Intl.DateTimeFormat('fr-FR', { timeStyle: 'short', timeZone: 'Europe/Paris' });
+
+export function formatDay(iso) {
+    const day = dayFormatter.format(new Date(iso));
+    return day.charAt(0).toUpperCase() + day.slice(1);
+}
+
+export function formatTime(iso) {
+    return timeFormatter.format(new Date(iso));
+}
+
 export function formatDateTime(iso) {
     return iso ? dateTimeFormatter.format(new Date(iso)) : '';
 }

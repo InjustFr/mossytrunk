@@ -99,7 +99,7 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
 
     await report.getByRole('link', { name: 'Voir les commandes' }).click();
     await expect(page.getByRole('combobox', { name: 'Événement' })).toHaveText(event.name);
-    await expect(page.getByRole('row')).toHaveCount(3); // header + 2 orders
+    await expect(page.getByRole('row')).toHaveCount(4); // header + day + 2 orders
 });
 
 test('order recap groups sales by type, product and variant', async ({ page, request }) => {
