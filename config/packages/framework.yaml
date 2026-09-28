@@ -5,6 +5,14 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    http_client:
+        scoped_clients:
+            sumup.client:
+                base_uri: 'https://api.sumup.com'
+                headers:
+                    Accept: 'application/json'
+                timeout: 20
+
     #esi: true
     #fragments: true
 
