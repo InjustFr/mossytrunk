@@ -1,6 +1,7 @@
 <script setup>
-import { CalendarDays, LayoutDashboard, Percent, Receipt, Tag } from '@lucide/vue';
+import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Tag } from '@lucide/vue';
 import ToastHost from '../components/ui/ToastHost.vue';
+import { useSession } from '../composables/useSession.js';
 
 defineProps({
     title: { type: String, required: true },
@@ -13,6 +14,8 @@ const links = [
     { href: '/produits', label: 'Produits', icon: Tag },
     { href: '/remises', label: 'Remises', icon: Percent },
 ];
+
+const session = useSession();
 
 const currentPath = window.location.pathname;
 const isActive = (href) => currentPath === href || currentPath.startsWith(`${href}/`);
@@ -34,7 +37,17 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                     {{ link.label }}
                 </a>
             </nav>
-            <p class="app-layout__footer">Gestion des ventes</p>
+            <div v-if="session" class="app-layout__account">
+                <p class="app-layout__workspace">{{ session.workspace }}</p>
+                <p class="app-layout__email">{{ session.email }}</p>
+                <form method="post" action="/deconnexion" data-turbo="false">
+                    <input type="hidden" name="_csrf_token" :value="session.logoutToken">
+                    <button type="submit" class="app-layout__logout">
+                        <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
+                        Se déconnecter
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <main class="app-layout__main">
@@ -105,7 +118,29 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__link:hover .app-layout__icon { color: var(--color-ink); }
 .app-layout__link--active .app-layout__icon { color: var(--color-accent); }
 
-.app-layout__footer { margin: auto 0 0; padding: 0 var(--space-3); color: var(--color-subtle); font-size: 0.8rem; }
+.app-layout__account {
+    margin-top: auto;
+    padding: var(--space-4) var(--space-3) 0;
+    border-top: 0.0625rem solid var(--color-border);
+    font-size: 0.8rem;
+}
+
+.app-layout__workspace { margin: 0; font-weight: 600; color: var(--color-ink); }
+.app-layout__email { margin: 0 0 var(--space-2); color: var(--color-subtle); overflow-wrap: anywhere; }
+
+.app-layout__logout {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color var(--transition);
+}
+
+.app-layout__logout:hover { color: var(--color-ink); }
 
 .app-layout__main {
     min-width: 0;
@@ -147,7 +182,8 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     .app-layout__nav { flex-direction: row; flex-wrap: wrap; }
     .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); }
     .app-layout__link--active { border-bottom-color: var(--color-accent); }
-    .app-layout__footer { display: none; }
+    .app-layout__account { margin-top: 0; margin-left: auto; padding: 0; border-top: none; }
+    .app-layout__email { display: none; }
     .app-layout__main { padding: var(--space-4); }
 }
 </style>

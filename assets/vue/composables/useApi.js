@@ -1,4 +1,5 @@
 import { begin, end } from '../../progress-bar.js';
+import { visit } from './useNavigation.js';
 
 export class ApiError extends Error {
     constructor(message, status, violations = []) {
@@ -31,6 +32,10 @@ async function send(method, url, body) {
 
     if (response.status === 204) {
         return null;
+    }
+
+    if (response.status === 401) {
+        visit('/connexion');
     }
 
     const payload = await response.json().catch(() => null);

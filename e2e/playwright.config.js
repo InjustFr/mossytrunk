@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { AUTH_STATE } from './tests/support/account.js';
 
 export default defineConfig({
     testDir: './tests',
@@ -12,5 +13,8 @@ export default defineConfig({
         timezoneId: 'Europe/Paris',
         trace: 'retain-on-failure',
     },
-    projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+    projects: [
+        { name: 'setup', testMatch: /auth\.setup\.js/ },
+        { name: 'chromium', use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE }, dependencies: ['setup'] },
+    ],
 });

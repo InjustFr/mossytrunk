@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class OrderApiTest extends WebTestCase
 {
+    use ActsAsUser;
+
     public function testPlaceListAndShowOrder(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
         $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
         $product = $this->post($client, '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']])['id'];
 
@@ -29,7 +32,7 @@ final class OrderApiTest extends WebTestCase
 
     public function testLineViolationsAreReported(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => 'nope', 'quantity' => 0]]]);
 

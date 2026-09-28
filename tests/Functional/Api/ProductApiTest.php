@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class ProductApiTest extends WebTestCase
 {
+    use ActsAsUser;
+
     public function testCreateAndListProducts(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']]);
         self::assertResponseStatusCodeSame(201);
@@ -25,7 +28,7 @@ final class ProductApiTest extends WebTestCase
 
     public function testInvalidPayloadReturnsViolations(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/products', ['name' => '', 'sellingPrice' => -5]);
 
@@ -36,7 +39,7 @@ final class ProductApiTest extends WebTestCase
 
     public function testBusinessRuleViolationReturnsDetail(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
         $client->jsonRequest('POST', '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000]);
         $client->jsonRequest('GET', '/api/products');
         $id = json_decode((string) $client->getResponse()->getContent(), true)[0]['id'];

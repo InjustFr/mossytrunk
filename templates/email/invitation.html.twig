@@ -1,0 +1,11 @@
+{% extends 'email/layout.html.twig' %}
+
+{% block content %}
+    <p>Bonjour,</p>
+    <p>Un compte a été créé pour vous sur MossyTrunk, dans l'espace de travail <strong>{{ workspace }}</strong>.</p>
+    <p>Choisissez votre mot de passe pour vous connecter :</p>
+    <p style="margin:1.5rem 0;">
+        <a href="{{ url }}" style="background:#5b7f3a;color:#ffffff;padding:0.75rem 1.25rem;border-radius:0.5rem;text-decoration:none;display:inline-block;">Choisir mon mot de passe</a>
+    </p>
+    <p style="font-size:0.9rem;color:#6f6f6b;">Ce lien est valable jusqu'au {{ expiresAt|date('d/m/Y à H:i', 'Europe/Paris') }}.</p>
+{% endblock %}

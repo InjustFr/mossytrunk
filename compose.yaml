@@ -6,8 +6,7 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/${POSTGRES_DB:-app}?serverVersion=18&charset=utf8
-      SUMUP_API_KEY: ${SUMUP_API_KEY:-}
-      SUMUP_MERCHANT_CODE: ${SUMUP_MERCHANT_CODE:-}
+      MAILER_DSN: smtp://mailpit:1025
     volumes:
       - ./:/app
     ports:
@@ -26,10 +25,12 @@ services:
     working_dir: /app/e2e
     environment:
       BASE_URL: http://php-e2e
+      MAILPIT_URL: http://mailpit:8025
     volumes:
       - ./:/app
     depends_on:
       - php-e2e
+      - mailpit
 
   php-e2e:
     build: .
@@ -41,8 +42,14 @@ services:
       APP_ENV: test
       APP_DEBUG: 1
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
+      MAILER_DSN: smtp://mailpit:1025
     volumes:
       - ./:/app
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
 
   database:
     image: postgres:18-alpine

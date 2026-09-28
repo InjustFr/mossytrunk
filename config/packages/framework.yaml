@@ -5,6 +5,14 @@ framework:
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
+    csrf_protection: true
+
+    rate_limiter:
+        forgot_password:
+            policy: sliding_window
+            limit: 3
+            interval: '15 minutes'
+
     http_client:
         scoped_clients:
             sumup.client:
@@ -19,5 +27,7 @@ framework:
 when@test:
     framework:
         test: true
+        cache:
+            app: cache.adapter.array
         session:
             storage_factory_id: session.storage.factory.mock_file

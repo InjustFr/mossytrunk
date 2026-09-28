@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class EventApiTest extends WebTestCase
 {
+    use ActsAsUser;
+
     public function testEventLifecycle(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
         self::assertResponseStatusCodeSame(201);
@@ -27,7 +30,7 @@ final class EventApiTest extends WebTestCase
 
     public function testEndBeforeStartIsRejected(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-12', 'endDate' => '2026-07-09']);
 
@@ -36,7 +39,7 @@ final class EventApiTest extends WebTestCase
 
     public function testUnknownEventIs404(): void
     {
-        $client = self::createClient();
+        $client = self::signedInClient();
 
         $client->jsonRequest('GET', '/api/events/01K00000000000000000000000');
 

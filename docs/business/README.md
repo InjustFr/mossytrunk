@@ -8,6 +8,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 
 | Page | Covers |
 |---|---|
+| [accounts.md](accounts.md) | Users, workspaces, sign-in, invitation and password reset links |
 | [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price 0 = unknown |
 | [events.md](events.md) | Events, periods in Europe/Paris, no overlap, expenses |
 | [orders.md](orders.md) | Orders, auto-link to the event, lines & snapshots, totals, margin |
@@ -20,6 +21,8 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 
 | UI (FR) | Code | Meaning |
 |---|---|---|
+| Espace de travail | `Domain\Identity\Workspace` | One business and all its data |
+| Utilisateur | `Domain\Identity\User` | Person signing in with an email and password |
 | Produit | `Domain\Product\Product` | Real item sold; unique reference |
 | Type de produit | `Domain\Product\ProductType` | Print, Sticker…; product shown as « {type} {nom} » |
 | Variante | `Product::$variants` (strings) | Colour, size, design…; none = *produit unique* |

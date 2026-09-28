@@ -4,5 +4,12 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block body %}
+    {% if app.user %}
+        <script type="application/json" id="app-session">{{ {
+            email: app.user.userIdentifier,
+            workspace: app.user.workspaceName,
+            logoutToken: csrf_token('logout'),
+        }|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }}</script>
+    {% endif %}
     <div {{ vue_component(component, props|default({})) }}></div>
 {% endblock %}

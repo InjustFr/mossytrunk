@@ -5,6 +5,10 @@ UI language: **French**. Code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.
 
+## Code style
+
+- **Never write comments** — no docblocks, no inline `//`/`#`, no `<!-- -->`, no `{# #}`. Clear code prevails: express intent through names, small methods and types. Only type-only PHPDoc the type system needs (generics/array shapes like `@return list<Product>`, `@implements`) is allowed.
+
 Generic Symfony conventions: see `AGENTS.md` (this file wins when they disagree — e.g. we run everything through Docker, not `symfony serve`).
 
 ## Stack
@@ -42,6 +46,14 @@ Enforced by `deptrac.yaml`. Rules:
 - Invariants throw subclasses of `App\Domain\Shared\DomainException` → returned as HTTP 422 `{detail}` by `Presentation\Api\DomainExceptionListener`.
 - Money = `App\Domain\Shared\Money` (integer cents). The API exchanges **cents** as integers.
 - Handlers are plain invokable services (`__invoke(Command)`), called directly by controllers. They persist through repository interfaces and end with `App\Application\Transaction::commit()` (Doctrine flush).
+
+## Accounts & security
+
+- Users (`Domain\Identity\User`) belong to one `Workspace`; no registration: `docker compose exec php php bin/console app:user:create <email> --workspace=<name>` emails an invitation link. Emails land in Mailpit: http://localhost:8025.
+- Symfony Security stays out of the Domain: `Infrastructure\Security\SecurityUser` wraps the domain user, `UserProvider` loads it. Session firewall with `form_login` on `/connexion`, CSRF-protected logout on `/deconnexion`, password pages under `/mot-de-passe`.
+- Auth pages are plain HTML POST forms (`data-turbo="false"`) rendered by Vue pages with `AuthLayout`; the signed-in user is exposed to `AppLayout` through `#app-session` (`composables/useSession.js`).
+- The JSON API uses the session cookie: `/api` answers 401 when signed out (`useApi` then goes to `/connexion`) and `SameOriginGuard` rejects cross-site writes.
+- Tests: `tests/Support/ActsAsUser` (`signedInClient()` for WebTestCase, `actAsMemberOf()` for KernelTestCase). E2E: `make e2e` creates `e2e@mossytrunk.local`, `auth.setup.js` sets its password from the Mailpit invitation and saves the session for all specs.
 
 ## Frontend — `assets/vue/`
 
