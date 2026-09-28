@@ -18,7 +18,20 @@ defineProps({
                     {{ event.location }} · {{ formatDate(event.startDate) }}
                     <template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>
                 </span>
-                <span class="event-list__expenses">Dépenses : <MoneyAmount :cents="event.expensesTotal" /></span>
+                <dl class="event-list__figures">
+                    <div class="event-list__figure">
+                        <dt>CA</dt>
+                        <dd><MoneyAmount :cents="event.turnover" /></dd>
+                    </div>
+                    <div class="event-list__figure">
+                        <dt>Dépenses</dt>
+                        <dd><MoneyAmount :cents="event.expensesTotal" /></dd>
+                    </div>
+                    <div class="event-list__figure event-list__figure--result">
+                        <dt>Résultat</dt>
+                        <dd><MoneyAmount :cents="event.result" signed :data-test="`event-result-${event.id}`" /></dd>
+                    </div>
+                </dl>
             </a>
         </li>
     </ul>
@@ -44,5 +57,14 @@ defineProps({
 
 .event-list__name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; }
 .event-list__meta { grid-column: 1; color: var(--color-muted); font-size: 0.9rem; }
-.event-list__expenses { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: var(--color-muted); font-size: 0.9rem; }
+.event-list__figures { grid-row: 1 / span 2; grid-column: 2; align-self: center; display: flex; gap: var(--space-5); margin: 0; }
+.event-list__figure { display: flex; flex-direction: column; align-items: flex-end; }
+.event-list__figure dt { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-muted); }
+.event-list__figure dd { margin: 0; }
+.event-list__figure--result dd { font-weight: 700; }
+
+@media (max-width: 700px) {
+    .event-list__link { grid-template-columns: 1fr; }
+    .event-list__figures { grid-row: auto; grid-column: 1; }
+}
 </style>

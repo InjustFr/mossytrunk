@@ -29,10 +29,10 @@ The profitability of an event is described in [event-report.md](event-report.md)
 |---|---|
 | `ScheduleEvent` | `POST /api/events` `{name, location, startDate, endDate}` (dates `YYYY-MM-DD`) |
 | `UpdateEvent` | `PUT /api/events/{id}` (same body) |
-| `ListEvents` | `GET /api/events` (most recent first, with expenses total) |
+| `ListEvents` | `GET /api/events` (most recent first, with expenses total, order count, **turnover and result** computed like the [event report](event-report.md)) |
 | `GetEvent` | `GET /api/events/{id}` (with expenses) |
 | `AddExpense` | `POST /api/events/{id}/expenses` `{label, amount}` |
 | `ReviseExpense` | `PUT /api/events/{id}/expenses/{expenseId}` `{label, amount}` |
 | `RemoveExpense` | `DELETE /api/events/{id}/expenses/{expenseId}` |
 
-UI: `/evenements` (list + creation form), `/evenements/{id}` (details, edit, expenses, report).
+UI: `/evenements` (list with CA, dépenses and **résultat** of each event + creation modal), `/evenements/{id}` (details, edit, expenses, report).
