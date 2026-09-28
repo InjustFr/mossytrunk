@@ -28,7 +28,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | O8 | Discounts never exceed the subtotal | `Order::applyDiscounts()` | `OrderTest` |
 | O9 | `total = subtotal − discounts`; `costOfGoods = Σ unit buying price × qty`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |
-| O11 | Imported orders keep the SumUp transaction code (unique) so re-importing never duplicates them | `Order::importFromSumUp()` | [sumup-import.md](sumup-import.md) |
+| O11 | Imported orders keep the SumUp transaction code (unique within the workspace) so re-importing never duplicates them | `Order::importFromSumUp()` | [sumup-import.md](sumup-import.md) |
 
 ## Use cases & API
 

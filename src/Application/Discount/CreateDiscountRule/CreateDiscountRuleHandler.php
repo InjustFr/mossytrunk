@@ -7,6 +7,7 @@ namespace App\Application\Discount\CreateDiscountRule;
 use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Discount\EligibleProducts;
 use App\Application\Transaction;
+use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountRuleRepository;
 use App\Domain\Shared\Money;
@@ -18,12 +19,14 @@ final readonly class CreateDiscountRuleHandler
         private DiscountRuleRepository $rules,
         private EligibleProducts $eligibleProducts,
         private Transaction $transaction,
+        private WorkspaceContext $workspace,
     ) {
     }
 
     public function __invoke(DiscountRuleDefinition $definition): Ulid
     {
         $rule = DiscountRule::create(
+            $this->workspace->current(),
             $definition->name,
             $this->eligibleProducts->resolve($definition->productIds),
             $definition->bundleSize,

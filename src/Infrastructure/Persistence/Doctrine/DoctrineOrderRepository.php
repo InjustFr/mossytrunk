@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
+use App\Application\WorkspaceContext;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Shared\DateRange;
@@ -16,8 +17,10 @@ use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineOrderRepository implements OrderRepository
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private WorkspaceContext $workspace,
+    ) {
     }
 
     public function add(Order $order): void
@@ -32,7 +35,8 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function get(Ulid $id): Order
     {
-        return $this->entityManager->find(Order::class, $id) ?? throw NotFound::entity('Commande', (string) $id);
+        return $this->entityManager->getRepository(Order::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
+            ?? throw NotFound::entity('Commande', (string) $id);
     }
 
     public function list(?Ulid $eventId = null): array
@@ -42,10 +46,12 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->from(Order::class, 'o')
             ->join('o.event', 'e')
             ->leftJoin('o.lines', 'l')
+            ->where('o.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('o.placedAt', 'DESC');
 
         if (null !== $eventId) {
-            $query->where('e.id = :event')->setParameter('event', $eventId, UlidType::NAME);
+            $query->andWhere('e.id = :event')->setParameter('event', $eventId, UlidType::NAME);
         }
 
         return $query->getQuery()->getResult();
@@ -61,6 +67,8 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->select('o.sumUpTransactionCode')
             ->from(Order::class, 'o')
             ->where('o.sumUpTransactionCode IN (:codes)')
+            ->andWhere('o.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('codes', $transactionCodes, ArrayParameterType::STRING)
             ->getQuery()
             ->getSingleColumnResult();
@@ -76,6 +84,8 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->select('COUNT(o.id)')
             ->from(Order::class, 'o')
             ->where('o.event = :event')
+            ->andWhere('o.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->andWhere('o.placedAt < :from OR o.placedAt >= :until')
             ->setParameter('event', $eventId, UlidType::NAME)
             ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)

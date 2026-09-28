@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Event\ScheduleEvent;
 
 use App\Application\Transaction;
+use App\Application\WorkspaceContext;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
 use App\Domain\Event\EventScheduler;
@@ -17,6 +18,7 @@ final readonly class ScheduleEventHandler
         private EventRepository $events,
         private EventScheduler $scheduler,
         private Transaction $transaction,
+        private WorkspaceContext $workspace,
     ) {
     }
 
@@ -25,7 +27,7 @@ final readonly class ScheduleEventHandler
         $period = DateRange::fromDates($command->startDate, $command->endDate);
         $this->scheduler->ensureFree($period);
 
-        $event = Event::schedule($command->name, $command->location, $period);
+        $event = Event::schedule($this->workspace->current(), $command->name, $command->location, $period);
         $this->events->add($event);
         $this->transaction->commit();
 

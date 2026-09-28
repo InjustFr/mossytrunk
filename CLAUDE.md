@@ -53,7 +53,9 @@ Enforced by `deptrac.yaml`. Rules:
 - Symfony Security stays out of the Domain: `Infrastructure\Security\SecurityUser` wraps the domain user, `UserProvider` loads it. Session firewall with `form_login` on `/connexion`, CSRF-protected logout on `/deconnexion`, password pages under `/mot-de-passe`.
 - Auth pages are plain HTML POST forms (`data-turbo="false"`) rendered by Vue pages with `AuthLayout`; the signed-in user is exposed to `AppLayout` through `#app-session` (`composables/useSession.js`).
 - The JSON API uses the session cookie: `/api` answers 401 when signed out (`useApi` then goes to `/connexion`) and `SameOriginGuard` rejects cross-site writes.
-- Tests: `tests/Support/ActsAsUser` (`signedInClient()` for WebTestCase, `actAsMemberOf()` for KernelTestCase). E2E: `make e2e` creates `e2e@mossytrunk.local`, `auth.setup.js` sets its password from the Mailpit invitation and saves the session for all specs.
+- **Workspace scoping**: every aggregate root (Product, ProductType, Event, DiscountRule) is created with a `Workspace` (`Order` takes its event's). Every Doctrine repository query filters on `WorkspaceContext::current()` (Application port, `SecurityWorkspaceContext` reads the signed-in user) — a new repository method must too. Unique constraints are per workspace.
+- Fixtures log in as `demo@mossytrunk.local` / `mossytrunk` (workspace « Atelier Mousse ») or `autre@mossytrunk.local` / `mossytrunk` (« Autre atelier »).
+- Tests: `tests/Support/ActsAsUser` (`signedInClient()` for WebTestCase, `actAsMemberOf()` in `setUp()` for KernelTestCase); unit tests build entities with `TestWorkspace::get()`. E2E: `make e2e` creates `e2e@mossytrunk.local`, `auth.setup.js` sets its password from the Mailpit invitation and saves the session for all specs.
 
 ## Frontend — `assets/vue/`
 
@@ -73,7 +75,8 @@ Enforced by `deptrac.yaml`. Rules:
 
 `fixtures/` (namespace `App\Fixtures`, dev/test only, outside the onion layers): Foundry factories build entities through their
 named constructors (`Instantiator::namedConstructor()`, hydration disabled — no setters). `ConventionSeasonStory` creates a
-catalogue with variants, bundle rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event.
+catalogue with variants, bundle rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
+`OtherWorkspaceStory` adds « Autre atelier » (user `autre@mossytrunk.local` / `mossytrunk`) with a few products, to check isolation.
 
 ## Testing expectations
 

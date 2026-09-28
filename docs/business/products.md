@@ -15,7 +15,7 @@ Model: `src/Domain/Product/Product.php` (Doctrine entity), `ProductType.php`, `S
 
 ## Product types
 
-A managed list (`ProductType`: unique `name`, unique short `code` such as `PRI`, derived from the name at creation and made unique `PRI2`…).
+A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, derived from the name at creation and made unique `PRI2`…).
 Types are created from `/api/product-types` or **inline from the product form** (« ＋ Créer un type… »). Renaming a type renames how its products are displayed; past orders keep their snapshot.
 
 ## Rules
@@ -23,11 +23,11 @@ Types are created from `/api/product-types` or **inline from the product form** 
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P1 | Reference and name are required (trimmed) | `Product::__construct()`, `Product::rename()` | `ProductTest` |
-| P2 | Reference is generated as `{TYPE CODE or PRD}-{NAME SLUG}` (accents removed, max 40 chars), suffixed `-2`, `-3`… when taken; it never changes afterwards (renaming or re-typing keeps it) | `ProductReferenceGenerator`, `CreateProductHandler`, SumUp import (+ DB unique index) | `ProductReferenceGeneratorTest`, `ProductUseCasesTest` |
+| P2 | Reference is generated as `{TYPE CODE or PRD}-{NAME SLUG}` (accents removed, max 40 chars), suffixed `-2`, `-3`… when taken; it never changes afterwards (renaming or re-typing keeps it) | `ProductReferenceGenerator`, `CreateProductHandler`, SumUp import (+ DB unique index on workspace + reference) | `ProductReferenceGeneratorTest`, `ProductUseCasesTest` |
 | P3 | Prices are never negative; buying price defaults to 0 | `Product::reprice()`, `Product::create()` | `ProductTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
-| P7 | Type names are unique (case-insensitive); type codes are unique, 1–8 uppercase letters/digits | `CreateProductTypeHandler`, `RenameProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
+| P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `CreateProductTypeHandler`, `RenameProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
 | P5 | **What is sold is a (product ULID, variant) tuple.** A product with variants requires one of *its* variants; a unique product accepts no variant | `Product::sellable(?variant)` → `SellableItem` | `ProductTest` |
 
 `SellableItem` is the only way to obtain a sellable tuple, so an order line can never reference an invalid product/variant pair. It also carries the selling and buying prices at the time of sale: orders **snapshot** them, so later price changes never alter past orders.

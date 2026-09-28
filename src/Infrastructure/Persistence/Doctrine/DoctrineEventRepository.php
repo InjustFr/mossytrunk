@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
+use App\Application\WorkspaceContext;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
 use App\Domain\Shared\DateRange;
@@ -15,8 +16,10 @@ use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineEventRepository implements EventRepository
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private WorkspaceContext $workspace,
+    ) {
     }
 
     public function add(Event $event): void
@@ -26,7 +29,8 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function get(Ulid $id): Event
     {
-        return $this->entityManager->find(Event::class, $id) ?? throw NotFound::entity('Événement', (string) $id);
+        return $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
+            ?? throw NotFound::entity('Événement', (string) $id);
     }
 
     public function findCovering(\DateTimeImmutable $moment): ?Event
@@ -38,6 +42,8 @@ final readonly class DoctrineEventRepository implements EventRepository
             ->from(Event::class, 'e')
             ->where('e.period.start <= :day')
             ->andWhere('e.period.end >= :day')
+            ->andWhere('e.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('day', $day)
             ->setMaxResults(1)
             ->getQuery()
@@ -51,6 +57,8 @@ final readonly class DoctrineEventRepository implements EventRepository
             ->from(Event::class, 'e')
             ->where('e.period.start <= :end')
             ->andWhere('e.period.end >= :start')
+            ->andWhere('e.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('start', $period->start(), Types::DATE_IMMUTABLE)
             ->setParameter('end', $period->end(), Types::DATE_IMMUTABLE)
             ->setMaxResults(1);
@@ -64,6 +72,6 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(Event::class)->findBy([], ['period.start' => 'DESC']);
+        return $this->entityManager->getRepository(Event::class)->findBy(['workspace' => $this->workspace->current()], ['period.start' => 'DESC']);
     }
 }

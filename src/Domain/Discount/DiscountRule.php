@@ -10,6 +10,7 @@ use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -29,6 +30,10 @@ class DiscountRule
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
+
+    #[ORM\ManyToOne(targetEntity: Workspace::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Workspace $workspace;
 
     #[ORM\Column(length: 255)]
     private string $name;
@@ -60,9 +65,10 @@ class DiscountRule
      * @param list<Product>     $eligibleProducts
      * @param list<ProductType> $eligibleTypes
      */
-    private function __construct(Ulid $id, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes)
+    private function __construct(Ulid $id, Workspace $workspace, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes)
     {
         $this->id = $id;
+        $this->workspace = $workspace;
         $this->eligibleProducts = new ArrayCollection();
         $this->eligibleTypes = new ArrayCollection();
         $this->redefine($name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
@@ -72,9 +78,9 @@ class DiscountRule
      * @param list<Product>     $eligibleProducts
      * @param list<ProductType> $eligibleTypes
      */
-    public static function create(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): self
+    public static function create(Workspace $workspace, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): self
     {
-        return new self(new Ulid(), $name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
+        return new self(new Ulid(), $workspace, $name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
     }
 
     /**
@@ -169,5 +175,10 @@ class DiscountRule
     public function eligibleProducts(): array
     {
         return array_values($this->eligibleProducts->toArray());
+    }
+
+    public function workspace(): Workspace
+    {
+        return $this->workspace;
     }
 }

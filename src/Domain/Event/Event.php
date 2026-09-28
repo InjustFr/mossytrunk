@@ -8,6 +8,7 @@ use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -28,6 +29,10 @@ class Event
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
 
+    #[ORM\ManyToOne(targetEntity: Workspace::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Workspace $workspace;
+
     #[ORM\Column(length: 255)]
     private string $name;
 
@@ -42,17 +47,18 @@ class Event
     #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $expenses;
 
-    private function __construct(Ulid $id, string $name, string $location, DateRange $period)
+    private function __construct(Ulid $id, Workspace $workspace, string $name, string $location, DateRange $period)
     {
         $this->id = $id;
+        $this->workspace = $workspace;
         $this->expenses = new ArrayCollection();
         $this->describe($name, $location);
         $this->period = $period;
     }
 
-    public static function schedule(string $name, string $location, DateRange $period): self
+    public static function schedule(Workspace $workspace, string $name, string $location, DateRange $period): self
     {
-        return new self(new Ulid(), $name, $location, $period);
+        return new self(new Ulid(), $workspace, $name, $location, $period);
     }
 
     public function describe(string $name, string $location): void
@@ -156,5 +162,10 @@ class Event
     public function expenses(): array
     {
         return array_values($this->expenses->toArray());
+    }
+
+    public function workspace(): Workspace
+    {
+        return $this->workspace;
     }
 }

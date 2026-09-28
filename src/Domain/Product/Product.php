@@ -6,6 +6,7 @@ namespace App\Domain\Product;
 
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -23,13 +24,18 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
+#[ORM\UniqueConstraint(name: 'product_workspace_reference', columns: ['workspace_id', 'reference'])]
 class Product
 {
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
 
-    #[ORM\Column(length: 64, unique: true)]
+    #[ORM\ManyToOne(targetEntity: Workspace::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Workspace $workspace;
+
+    #[ORM\Column(length: 64)]
     private string $reference;
 
     #[ORM\Column(length: 255)]
@@ -55,9 +61,10 @@ class Product
     /**
      * @param list<string> $variants
      */
-    private function __construct(Ulid $id, string $reference, string $name, Money $sellingPrice, Money $buyingPrice, array $variants, ?ProductType $type)
+    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, Money $buyingPrice, array $variants, ?ProductType $type)
     {
         $this->id = $id;
+        $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
         $reference = trim($reference);
         if ('' === $reference) {
@@ -75,9 +82,9 @@ class Product
     /**
      * @param list<string> $variants
      */
-    public static function create(string $reference, string $name, Money $sellingPrice, ?Money $buyingPrice = null, array $variants = [], ?ProductType $type = null): self
+    public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, ?Money $buyingPrice = null, array $variants = [], ?ProductType $type = null): self
     {
-        return new self(new Ulid(), $reference, $name, $sellingPrice, $buyingPrice ?? Money::zero(), $variants, $type);
+        return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $buyingPrice ?? Money::zero(), $variants, $type);
     }
 
     public function classify(?ProductType $type): void
@@ -224,5 +231,10 @@ class Product
     public function variants(): array
     {
         return $this->variants;
+    }
+
+    public function workspace(): Workspace
+    {
+        return $this->workspace;
     }
 }

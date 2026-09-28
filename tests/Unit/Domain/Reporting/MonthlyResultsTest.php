@@ -11,17 +11,18 @@ use App\Domain\Product\Product;
 use App\Domain\Reporting\MonthlyResults;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
 final class MonthlyResultsTest extends TestCase
 {
     public function testOrdersCountInTheirParisMonthAndExpensesInTheEventStartMonth(): void
     {
-        $print = Product::create('PRI', 'Print', Money::cents(1_000), Money::cents(200));
+        $print = Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_000), Money::cents(200));
         // Event across a month boundary: 30 April → 1 May 2026.
-        $event = Event::schedule('Salon', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-04-30'), new \DateTimeImmutable('2026-05-01')));
+        $event = Event::schedule(TestWorkspace::get(), 'Salon', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-04-30'), new \DateTimeImmutable('2026-05-01')));
         $event->addExpense('Stand', Money::cents(5_000));
-        $december = Event::schedule('Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2025-12-31'), new \DateTimeImmutable('2025-12-31')));
+        $december = Event::schedule(TestWorkspace::get(), 'Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2025-12-31'), new \DateTimeImmutable('2025-12-31')));
 
         $orders = [
             Order::place($event, new \DateTimeImmutable('2026-04-30 18:00', new \DateTimeZone('Europe/Paris')), [new OrderedItem($print->sellable(null), 2)], []),

@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
+use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineProductRepository implements ProductRepository
 {
-    public function __construct(private EntityManagerInterface $entityManager)
-    {
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private WorkspaceContext $workspace,
+    ) {
     }
 
     public function add(Product $product): void
@@ -23,17 +27,18 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function get(Ulid $id): Product
     {
-        return $this->entityManager->find(Product::class, $id) ?? throw NotFound::entity('Produit', (string) $id);
+        return $this->entityManager->getRepository(Product::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
+            ?? throw NotFound::entity('Produit', (string) $id);
     }
 
     public function findByReference(string $reference): ?Product
     {
-        return $this->entityManager->getRepository(Product::class)->findOneBy(['reference' => $reference]);
+        return $this->entityManager->getRepository(Product::class)->findOneBy(['reference' => $reference, 'workspace' => $this->workspace->current()]);
     }
 
     public function findByName(string $name): ?Product
     {
-        return $this->entityManager->getRepository(Product::class)->findOneBy(['name' => $name]);
+        return $this->entityManager->getRepository(Product::class)->findOneBy(['name' => $name, 'workspace' => $this->workspace->current()]);
     }
 
     public function findByIds(array $ids): array
@@ -47,6 +52,8 @@ final readonly class DoctrineProductRepository implements ProductRepository
             ->from(Product::class, 'p')
             ->leftJoin('p.type', 't')
             ->where('p.id IN (:ids)')
+            ->andWhere('p.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('ids', array_map(static fn (Ulid $id): string => $id->toRfc4122(), $ids), \Doctrine\DBAL\ArrayParameterType::STRING)
             ->getQuery()
             ->getResult();
@@ -58,6 +65,8 @@ final readonly class DoctrineProductRepository implements ProductRepository
             ->select('p', 't')
             ->from(Product::class, 'p')
             ->leftJoin('p.type', 't')
+            ->where('p.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('t.name', 'ASC')
             ->addOrderBy('p.name', 'ASC')
             ->getQuery()

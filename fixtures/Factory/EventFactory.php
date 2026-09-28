@@ -44,6 +44,7 @@ final class EventFactory extends PersistentObjectFactory
         $start = \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-1 year', '+3 months'));
 
         return [
+            'workspace' => WorkspaceFactory::new(),
             'name' => 'Convention '.self::faker()->city(),
             'location' => self::faker()->city(),
             'period' => DateRange::fromDates($start, $start->modify('+1 day')),

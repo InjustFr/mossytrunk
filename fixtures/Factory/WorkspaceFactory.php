@@ -4,25 +4,21 @@ declare(strict_types=1);
 
 namespace App\Fixtures\Factory;
 
-use App\Domain\Product\ProductType;
+use App\Domain\Identity\Workspace;
 use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
-/**
- * @extends PersistentObjectFactory<ProductType>
- */
-final class ProductTypeFactory extends PersistentObjectFactory
+/** @extends PersistentObjectFactory<Workspace> */
+final class WorkspaceFactory extends PersistentObjectFactory
 {
     public static function class(): string
     {
-        return ProductType::class;
+        return Workspace::class;
     }
 
     protected function defaults(): array
     {
-        $name = ucfirst(self::faker()->unique()->word());
-
-        return ['workspace' => WorkspaceFactory::new(), 'name' => $name, 'code' => ProductType::codeFor($name)];
+        return ['name' => 'Atelier '.self::faker()->unique()->lastName()];
     }
 
     protected function initialize(): static

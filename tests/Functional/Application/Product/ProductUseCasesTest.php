@@ -10,10 +10,17 @@ use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProductUseCasesTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testCreateThenListProducts(): void
     {
         $create = self::getContainer()->get(CreateProductHandler::class);

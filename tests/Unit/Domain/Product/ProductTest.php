@@ -8,13 +8,14 @@ use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
 final class ProductTest extends TestCase
 {
     public function testBuyingPriceDefaultsToZero(): void
     {
-        $product = Product::create('STK-01', 'Sticker', Money::cents(400));
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
 
         self::assertTrue($product->buyingPrice()->isZero());
         self::assertSame(400, $product->sellingPrice()->amount());
@@ -23,24 +24,24 @@ final class ProductTest extends TestCase
 
     public function testNameAndReferenceAreTrimmedAndRequired(): void
     {
-        $product = Product::create('  STK-01 ', ' Sticker ', Money::cents(400));
+        $product = Product::create(TestWorkspace::get(), '  STK-01 ', ' Sticker ', Money::cents(400));
         self::assertSame('STK-01', $product->reference());
         self::assertSame('Sticker', $product->name());
 
         $this->expectException(InvalidProduct::class);
-        Product::create('STK-01', '   ', Money::cents(400));
+        Product::create(TestWorkspace::get(), 'STK-01', '   ', Money::cents(400));
     }
 
     public function testReferenceIsRequired(): void
     {
         $this->expectException(InvalidProduct::class);
 
-        Product::create('', 'Sticker', Money::cents(400));
+        Product::create(TestWorkspace::get(), '', 'Sticker', Money::cents(400));
     }
 
     public function testPricesCannotBeNegative(): void
     {
-        $product = Product::create('STK-01', 'Sticker', Money::cents(400));
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
 
         $this->expectException(InvalidMoney::class);
         $product->reprice(Money::cents(400), Money::cents(-1));
@@ -48,7 +49,7 @@ final class ProductTest extends TestCase
 
     public function testVariantsAreUniqueAndNotEmpty(): void
     {
-        $product = Product::create('TS-01', 'T-shirt', Money::cents(2_000), variants: ['S', 'M']);
+        $product = Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), variants: ['S', 'M']);
 
         try {
             $product->addVariant('M');
@@ -62,7 +63,7 @@ final class ProductTest extends TestCase
 
     public function testReplaceVariantsIsAtomic(): void
     {
-        $product = Product::create('TS-01', 'T-shirt', Money::cents(2_000), variants: ['S', 'M']);
+        $product = Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), variants: ['S', 'M']);
 
         try {
             $product->replaceVariants(['L', 'L']);
@@ -78,7 +79,7 @@ final class ProductTest extends TestCase
 
     public function testProductWithVariantsRequiresOneOfThem(): void
     {
-        $product = Product::create('TS-01', 'T-shirt', Money::cents(2_000), Money::cents(800), ['Mousse', 'Fougère']);
+        $product = Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), Money::cents(800), ['Mousse', 'Fougère']);
 
         $item = $product->sellable('Mousse');
         self::assertTrue($item->productId->equals($product->id()));
@@ -93,7 +94,7 @@ final class ProductTest extends TestCase
 
     public function testUnknownVariantIsRejected(): void
     {
-        $product = Product::create('TS-01', 'T-shirt', Money::cents(2_000), variants: ['Mousse']);
+        $product = Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), variants: ['Mousse']);
 
         $this->expectException(InvalidProduct::class);
         $product->sellable('Lichen');
@@ -101,7 +102,7 @@ final class ProductTest extends TestCase
 
     public function testUniqueProductAcceptsNoVariant(): void
     {
-        $product = Product::create('ART-01', 'Original painting', Money::cents(15_000));
+        $product = Product::create(TestWorkspace::get(), 'ART-01', 'Original painting', Money::cents(15_000));
 
         self::assertNull($product->sellable(null)->variant);
         self::assertNull($product->sellable('  ')->variant);

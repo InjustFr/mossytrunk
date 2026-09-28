@@ -13,6 +13,7 @@ use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\UrssafContribution;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
 final class EventResultTest extends TestCase
@@ -24,13 +25,13 @@ final class EventResultTest extends TestCase
 
     public function testEventResult(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
         $event->addExpense('Stand', Money::cents(15_000));
         $event->addExpense('Train', Money::cents(5_000));
 
-        $sticker = Product::create('STK', 'Sticker', Money::cents(400), Money::cents(100));
-        $tshirt = Product::create('TS', 'T-shirt', Money::cents(2_000), Money::cents(800), ['S', 'M']);
-        $print = Product::create('PRT', 'Print', Money::cents(1_500)); // unknown buying price
+        $sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), Money::cents(100));
+        $tshirt = Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), Money::cents(800), ['S', 'M']);
+        $print = Product::create(TestWorkspace::get(), 'PRT', 'Print', Money::cents(1_500)); // unknown buying price
         $at = new \DateTimeImmutable('2026-07-10 14:00', new \DateTimeZone('Europe/Paris'));
 
         $orders = [
@@ -62,7 +63,7 @@ final class EventResultTest extends TestCase
 
     public function testEventWithoutOrdersOnlyHasExpenses(): void
     {
-        $event = Event::schedule('Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-12-05'), new \DateTimeImmutable('2026-12-05')));
+        $event = Event::schedule(TestWorkspace::get(), 'Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-12-05'), new \DateTimeImmutable('2026-12-05')));
         $event->addExpense('Stand', Money::cents(4_000));
 
         $result = EventResult::of($event, []);

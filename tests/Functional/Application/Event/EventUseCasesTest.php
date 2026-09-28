@@ -18,10 +18,17 @@ use App\Application\Event\UpdateEvent\UpdateEvent;
 use App\Application\Event\UpdateEvent\UpdateEventHandler;
 use App\Domain\Event\EventRepository;
 use App\Domain\Event\InvalidEvent;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class EventUseCasesTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testScheduleThenListEvents(): void
     {
         $this->schedule('Japan Expo', '2026-07-09', '2026-07-12');

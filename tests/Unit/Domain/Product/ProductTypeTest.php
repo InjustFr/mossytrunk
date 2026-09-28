@@ -8,6 +8,7 @@ use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -35,20 +36,20 @@ final class ProductTypeTest extends TestCase
     {
         $this->expectException(InvalidProduct::class);
 
-        ProductType::create('  ', 'PRI');
+        ProductType::create(TestWorkspace::get(), '  ', 'PRI');
     }
 
     public function testCodeFormat(): void
     {
         $this->expectException(InvalidProduct::class);
 
-        ProductType::create('Print', 'pri-1');
+        ProductType::create(TestWorkspace::get(), 'Print', 'pri-1');
     }
 
     public function testTypedProductIsDisplayedAsTypeThenName(): void
     {
-        $print = ProductType::create('Print', 'PRI');
-        $product = Product::create('PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4'], type: $print);
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $product = Product::create(TestWorkspace::get(), 'PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4'], type: $print);
 
         self::assertSame('Print Forêt', $product->displayName());
         self::assertSame('Print Forêt', $product->sellable('A4')->productName);

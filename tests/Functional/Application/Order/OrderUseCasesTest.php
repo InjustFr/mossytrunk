@@ -22,17 +22,20 @@ use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Domain\Event\InvalidEvent;
 use App\Domain\Order\InvalidOrder;
 use App\Domain\Product\InvalidProduct;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Uid\Ulid;
 
 final class OrderUseCasesTest extends KernelTestCase
 {
+    use ActsAsUser;
     private string $eventId;
     private string $sticker;
     private string $tshirt;
 
     protected function setUp(): void
     {
+        self::actAsMemberOf();
         $this->eventId = (string) self::getContainer()->get(ScheduleEventHandler::class)(
             new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')),
         );

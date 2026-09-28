@@ -8,11 +8,12 @@ use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Order\InvalidOrder;
 use App\Domain\Order\Order;
-use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderSource;
+use App\Domain\Order\OrderedItem;
 use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
 final class OrderTest extends TestCase
@@ -23,9 +24,9 @@ final class OrderTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->event = Event::schedule('Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
-        $this->sticker = Product::create('STK', 'Sticker', Money::cents(400), Money::cents(80));
-        $this->tshirt = Product::create('TS', 'T-shirt', Money::cents(2_000), Money::cents(900), ['S', 'M']);
+        $this->event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
+        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), Money::cents(80));
+        $this->tshirt = Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), Money::cents(900), ['S', 'M']);
     }
 
     public function testTotalsAndCostOfGoods(): void

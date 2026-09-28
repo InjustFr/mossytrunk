@@ -22,6 +22,7 @@ final class DiscountRuleFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
+            'workspace' => WorkspaceFactory::new(),
             'name' => 'Lot',
             'eligibleProducts' => [],
             'eligibleTypes' => [],

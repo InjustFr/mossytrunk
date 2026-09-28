@@ -6,6 +6,7 @@ namespace App\Application\SumUp\ImportFromSumUp;
 
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\SumUp\SumUpLine;
+use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
@@ -40,6 +41,7 @@ final class SumUpProductResolver
         private readonly ProductReferenceGenerator $references,
         private readonly ProductTypeRepository $typeRepository,
         private readonly CreateProductTypeHandler $createType,
+        private readonly WorkspaceContext $workspace,
     ) {
     }
 
@@ -62,7 +64,7 @@ final class SumUpProductResolver
         $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
         $ownName = null === $type ? $name : self::withoutPrefix($name, $type->name());
 
-        $product = Product::create($this->references->generate($type, $ownName), $ownName, $line->unitPrice, Money::zero(), [], $type);
+        $product = Product::create($this->workspace->current(), $this->references->generate($type, $ownName), $ownName, $line->unitPrice, Money::zero(), [], $type);
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         ++$this->productsCreated;

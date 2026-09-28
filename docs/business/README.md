@@ -41,6 +41,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 
 ## Cross-cutting conventions
 
+- **Workspaces**: every product, type, event, order and discount belongs to one workspace; users only ever see and change the data of their own workspace, and uniqueness rules apply within a workspace (see [accounts.md](accounts.md)).
 - **Money** is integer cents (`Domain\Shared\Money`); the API exchanges cents; the UI shows `12,50 €`.
 - **Dates**: business time zone is Europe/Paris (`DateRange::TIMEZONE`). Events are whole days; orders are stored with their time zone.
 - **Identifiers**: ULIDs everywhere (`symfony/uid`, stored as PostgreSQL `uuid`).

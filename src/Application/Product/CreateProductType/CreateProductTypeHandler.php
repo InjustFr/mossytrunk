@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Product\CreateProductType;
 
 use App\Application\Transaction;
+use App\Application\WorkspaceContext;
 use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
@@ -17,6 +18,7 @@ final readonly class CreateProductTypeHandler
     public function __construct(
         private ProductTypeRepository $types,
         private Transaction $transaction,
+        private WorkspaceContext $workspace,
     ) {
     }
 
@@ -43,7 +45,7 @@ final readonly class CreateProductTypeHandler
             $code = $base.$i;
         }
 
-        $type = ProductType::create($name, $code);
+        $type = ProductType::create($this->workspace->current(), $name, $code);
         $this->types->add($type);
 
         return $type;

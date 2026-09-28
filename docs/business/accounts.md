@@ -24,6 +24,7 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | A6 | Passwords have at least **12 characters** and must be typed twice | `SetPasswordHandler::MIN_LENGTH`, `SecurityController::setPassword()` | `AccountUseCasesTest` |
 | A7 | "Mot de passe oublié ?" always shows the same confirmation, whether the account exists or not; at most 3 requests per email and IP every 15 minutes | `RequestPasswordResetHandler`, `forgot_password` rate limiter | `AccountUseCasesTest`, `AuthenticationTest` |
 | A8 | Sign-in: 5 failed attempts per 15 minutes are throttled; "Se souvenir de moi" keeps the session 30 days; a password change signs out the other sessions | `security.yaml` (`login_throttling`, `remember_me`), `SecurityUser::__serialize()` | e2e `auth.spec.js` |
+| A10 | All business data is scoped to the user's workspace: lists only show it, an id from another workspace answers « introuvable » (404) | `WorkspaceContext` used by every Doctrine repository; aggregates are created with the current workspace (orders take their event's) | `WorkspaceIsolationTest`, `ProductApiTest` |
 | A9 | Every page requires signing in; the API answers 401 to anonymous calls and 403 to cross-site writes | `security.yaml` `access_control`, `AuthenticationEntryPoint`, `SameOriginGuard` | `AuthenticationTest` |
 
 ## Pages

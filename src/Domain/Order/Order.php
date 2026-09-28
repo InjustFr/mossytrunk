@@ -10,6 +10,7 @@ use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use App\Domain\Identity\Workspace;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -26,7 +27,8 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\Entity]
 #[ORM\Table(name: '`order`')]
-#[ORM\Index(name: 'order_placed_at_idx', columns: ['placed_at'])]
+#[ORM\Index(name: 'order_workspace_placed_at_idx', columns: ['workspace_id', 'placed_at'])]
+#[ORM\UniqueConstraint(name: 'order_workspace_sum_up_transaction_code', columns: ['workspace_id', 'sum_up_transaction_code'])]
 class Order
 {
     #[ORM\Id]
@@ -35,6 +37,10 @@ class Order
 
     #[ORM\Column(length: 64, unique: true)]
     private string $reference;
+
+    #[ORM\ManyToOne(targetEntity: Workspace::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Workspace $workspace;
 
     #[ORM\ManyToOne(targetEntity: Event::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -54,7 +60,7 @@ class Order
     #[ORM\Column(length: 16, enumType: OrderSource::class)]
     private OrderSource $source;
 
-    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    #[ORM\Column(length: 64, nullable: true)]
     private ?string $sumUpTransactionCode = null;
 
     /**
@@ -73,6 +79,7 @@ class Order
         $this->id = new Ulid();
         $this->reference = $reference;
         $this->event = $event;
+        $this->workspace = $event->workspace();
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
@@ -216,5 +223,10 @@ class Order
     private static function generateReference(\DateTimeImmutable $placedAt): string
     {
         return \sprintf('CMD-%s-%s', $placedAt->format('Ymd'), substr((string) new Ulid(), -6));
+    }
+
+    public function workspace(): Workspace
+    {
+        return $this->workspace;
     }
 }

@@ -14,10 +14,17 @@ use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class EventReportTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testReportOnlyCountsTheEventsOrders(): void
     {
         $container = self::getContainer();

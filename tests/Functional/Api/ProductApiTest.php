@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
+use App\Infrastructure\Security\SecurityUser;
 use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -47,5 +48,19 @@ final class ProductApiTest extends WebTestCase
         $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 's ', 'S']]);
 
         self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testProductsOfAnotherWorkspaceAreNotFound(): void
+    {
+        $client = self::signedInClient('Atelier A');
+        $client->jsonRequest('POST', '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000]);
+        $id = json_decode((string) $client->getResponse()->getContent(), true)['id'];
+
+        $client->loginUser(SecurityUser::fromUser(self::createMember('Atelier B')));
+        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'Volé', 'sellingPrice' => 1]);
+        self::assertResponseStatusCodeSame(404);
+
+        $client->jsonRequest('GET', '/api/products');
+        self::assertSame([], json_decode((string) $client->getResponse()->getContent(), true));
     }
 }

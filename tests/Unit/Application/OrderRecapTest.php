@@ -9,6 +9,7 @@ use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Reporting\ProductSales;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -16,11 +17,11 @@ final class OrderRecapTest extends TestCase
 {
     public function testGroupsByTypeThenProductThenVariant(): void
     {
-        $print = ProductType::create('Print', 'PRI');
-        $sticker = ProductType::create('Sticker', 'STI');
-        $foret = Product::create('PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4', 'A3'], type: $print);
-        $riviere = Product::create('PRI-RIVIERE', 'Rivière', Money::cents(1_500), variants: ['A4'], type: $print);
-        $mousse = Product::create('STI-MOUSSE', 'Mousse', Money::cents(400), type: $sticker);
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $sticker = ProductType::create(TestWorkspace::get(), 'Sticker', 'STI');
+        $foret = Product::create(TestWorkspace::get(), 'PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4', 'A3'], type: $print);
+        $riviere = Product::create(TestWorkspace::get(), 'PRI-RIVIERE', 'Rivière', Money::cents(1_500), variants: ['A4'], type: $print);
+        $mousse = Product::create(TestWorkspace::get(), 'STI-MOUSSE', 'Mousse', Money::cents(400), type: $sticker);
         $deletedId = new Ulid();
 
         $groups = OrderRecap::group([

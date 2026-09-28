@@ -16,10 +16,17 @@ use App\Application\SumUp\SumUpLine;
 use App\Application\SumUp\SumUpTransaction;
 use App\Domain\Shared\Money;
 use App\Infrastructure\SumUp\FakeSumUpGateway;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ImportFromSumUpTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testImportsProductsAndOrdersLinkedToEvents(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');

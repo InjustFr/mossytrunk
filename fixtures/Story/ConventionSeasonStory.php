@@ -16,6 +16,9 @@ use App\Fixtures\Factory\DiscountRuleFactory;
 use App\Fixtures\Factory\EventFactory;
 use App\Fixtures\Factory\ProductFactory;
 use App\Fixtures\Factory\ProductTypeFactory;
+use App\Fixtures\Factory\UserFactory;
+use App\Fixtures\Factory\WorkspaceFactory;
+use App\Domain\Identity\Workspace;
 use App\Domain\Product\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use Zenstruck\Foundry\Story;
@@ -28,6 +31,8 @@ use function Zenstruck\Foundry\faker;
  */
 final class ConventionSeasonStory extends Story
 {
+    private Workspace $workspace;
+
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly DiscountCalculator $discountCalculator,
@@ -38,7 +43,11 @@ final class ConventionSeasonStory extends Story
     {
         faker()->seed(2026);
 
-        $type = static fn (string $name, string $code): ProductType => ProductTypeFactory::createOne(['name' => $name, 'code' => $code]);
+        $workspace = WorkspaceFactory::createOne(['name' => 'Atelier Mousse']);
+        UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'demo@mossytrunk.local', 'workspace' => $workspace]);
+        $this->workspace = $workspace;
+
+        $type = static fn (string $name, string $code): ProductType => ProductTypeFactory::createOne(['workspace' => $workspace, 'name' => $name, 'code' => $code]);
         $sticker = $type('Sticker', 'STI');
         $print = $type('Print', 'PRI');
 
@@ -62,19 +71,19 @@ final class ConventionSeasonStory extends Story
         $catalogue = [...$stickers, ...$prints, ...$others];
 
         $rules = [
-            DiscountRuleFactory::createOne(['name' => '3 stickers pour 10 €', 'eligibleTypes' => [$sticker], 'bundleSize' => 3, 'bundlePrice' => Money::cents(1_000)]),
-            DiscountRuleFactory::createOne(['name' => '2 prints pour 25 €', 'eligibleTypes' => [$print], 'bundleSize' => 2, 'bundlePrice' => Money::cents(2_500)]),
+            DiscountRuleFactory::createOne(['workspace' => $workspace, 'name' => '3 stickers pour 10 €', 'eligibleTypes' => [$sticker], 'bundleSize' => 3, 'bundlePrice' => Money::cents(1_000)]),
+            DiscountRuleFactory::createOne(['workspace' => $workspace, 'name' => '2 prints pour 25 €', 'eligibleTypes' => [$print], 'bundleSize' => 2, 'bundlePrice' => Money::cents(2_500)]),
         ];
 
         $events = [
             EventFactory::new()->withExpenses(['Stand' => 18_000, 'Train' => 9_400, 'Hôtel (2 nuits)' => 16_000, 'Repas' => 4_500])
-                ->create(['name' => 'Japan Expo', 'location' => 'Paris Nord Villepinte', 'period' => EventFactory::during('-80 days', '-77 days')]),
+                ->create(['workspace' => $workspace, 'name' => 'Japan Expo', 'location' => 'Paris Nord Villepinte', 'period' => EventFactory::during('-80 days', '-77 days')]),
             EventFactory::new()->withExpenses(['Stand' => 6_000, 'Essence' => 3_200])
-                ->create(['name' => 'Festival de la BD', 'location' => 'Angoulême', 'period' => EventFactory::during('-45 days', '-44 days')]),
+                ->create(['workspace' => $workspace, 'name' => 'Festival de la BD', 'location' => 'Angoulême', 'period' => EventFactory::during('-45 days', '-44 days')]),
             EventFactory::new()->withExpenses(['Emplacement' => 2_500])
-                ->create(['name' => 'Marché des créateurs', 'location' => 'Lyon', 'period' => EventFactory::during('-12 days', '-12 days')]),
+                ->create(['workspace' => $workspace, 'name' => 'Marché des créateurs', 'location' => 'Lyon', 'period' => EventFactory::during('-12 days', '-12 days')]),
             EventFactory::new()->withExpenses(['Stand (acompte)' => 5_000])
-                ->create(['name' => 'Salon fantastique', 'location' => 'Lille', 'period' => EventFactory::during('+20 days', '+21 days')]),
+                ->create(['workspace' => $workspace, 'name' => 'Salon fantastique', 'location' => 'Lille', 'period' => EventFactory::during('+20 days', '+21 days')]),
         ];
 
         foreach ([$events[0], $events[1], $events[2]] as $index => $event) {
@@ -90,6 +99,7 @@ final class ConventionSeasonStory extends Story
     private function product(string $reference, string $name, int $selling, int $buying, array $variants = [], ?ProductType $type = null): Product
     {
         return ProductFactory::createOne([
+            'workspace' => $this->workspace,
             'type' => $type,
             'reference' => $reference,
             'name' => $name,

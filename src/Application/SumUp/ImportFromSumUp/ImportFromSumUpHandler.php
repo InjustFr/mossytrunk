@@ -8,6 +8,7 @@ use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
 use App\Application\Transaction;
+use App\Application\WorkspaceContext;
 use App\Domain\Event\EventRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
@@ -33,6 +34,7 @@ final readonly class ImportFromSumUpHandler
         private EventRepository $events,
         private OrderRepository $orders,
         private Transaction $transaction,
+        private WorkspaceContext $workspace,
     ) {
     }
 
@@ -45,7 +47,7 @@ final readonly class ImportFromSumUpHandler
         }
 
         $alreadyImported = array_flip($this->orders->importedSumUpTransactionCodes(array_keys($transactions)));
-        $resolver = new SumUpProductResolver($this->products, $this->references, $this->types, $this->createType);
+        $resolver = new SumUpProductResolver($this->products, $this->references, $this->types, $this->createType, $this->workspace);
         $imported = $withoutEvent = $withUnresolved = 0;
         $datesWithoutEvent = $unresolved = [];
 

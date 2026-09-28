@@ -13,10 +13,17 @@ use App\Application\Product\RenameProductType\RenameProductTypeHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Domain\Product\InvalidProduct;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProductTypeUseCasesTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testCodesAreUnique(): void
     {
         $create = self::getContainer()->get(CreateProductTypeHandler::class);

@@ -10,6 +10,7 @@ use App\Domain\Event\InvalidEvent;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -19,12 +20,12 @@ final class EventTest extends TestCase
     {
         $this->expectException(InvalidEvent::class);
 
-        Event::schedule('Japan Expo', '  ', self::period());
+        Event::schedule(TestWorkspace::get(), 'Japan Expo', '  ', self::period());
     }
 
     public function testCoversDaysOfItsPeriod(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
 
         self::assertTrue($event->covers(new \DateTimeImmutable('2026-07-10 18:00', new \DateTimeZone('Europe/Paris'))));
         self::assertFalse($event->covers(new \DateTimeImmutable('2026-07-13 09:00', new \DateTimeZone('Europe/Paris'))));
@@ -32,7 +33,7 @@ final class EventTest extends TestCase
 
     public function testTimingRelativeToToday(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period()); // 9 → 12 July 2026
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period()); // 9 → 12 July 2026
         $paris = new \DateTimeZone('Europe/Paris');
 
         self::assertSame(EventTiming::Upcoming, $event->timingOn(new \DateTimeImmutable('2026-07-08 23:59', $paris)));
@@ -45,7 +46,7 @@ final class EventTest extends TestCase
 
     public function testExpensesAreSummedAndRemovable(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
         $stand = $event->addExpense('Stand', Money::cents(30_000));
         $event->addExpense('Train', Money::cents(8_950));
 
@@ -58,7 +59,7 @@ final class EventTest extends TestCase
 
     public function testExpenseCanBeRevisedWithTheSameRules(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
         $stand = $event->addExpense('Stand', Money::cents(30_000));
 
         $event->reviseExpense($stand->id(), 'Stand (angle)', Money::cents(32_000));
@@ -71,7 +72,7 @@ final class EventTest extends TestCase
 
     public function testRemovingUnknownExpenseFails(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
 
         $this->expectException(InvalidEvent::class);
         $event->removeExpense(new Ulid());
@@ -79,7 +80,7 @@ final class EventTest extends TestCase
 
     public function testExpenseAmountMustBePositive(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
 
         $this->expectException(InvalidMoney::class);
         $event->addExpense('Stand', Money::zero());
@@ -87,7 +88,7 @@ final class EventTest extends TestCase
 
     public function testExpenseLabelIsRequired(): void
     {
-        $event = Event::schedule('Japan Expo', 'Villepinte', self::period());
+        $event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', self::period());
 
         $this->expectException(InvalidEvent::class);
         $event->addExpense(' ', Money::cents(100));

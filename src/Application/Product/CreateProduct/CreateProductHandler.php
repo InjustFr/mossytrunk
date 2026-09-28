@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Product\CreateProduct;
 
 use App\Application\Transaction;
+use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
@@ -19,6 +20,7 @@ final readonly class CreateProductHandler
         private ProductTypeRepository $types,
         private ProductReferenceGenerator $references,
         private Transaction $transaction,
+        private WorkspaceContext $workspace,
     ) {
     }
 
@@ -27,6 +29,7 @@ final readonly class CreateProductHandler
         $type = null === $command->typeId ? null : $this->types->get(Ulid::fromString($command->typeId));
 
         $product = Product::create(
+            $this->workspace->current(),
             $this->references->generate($type, $command->name),
             $command->name,
             Money::cents($command->sellingPriceCents),

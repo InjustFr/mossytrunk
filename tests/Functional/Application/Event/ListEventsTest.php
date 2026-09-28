@@ -14,12 +14,19 @@ use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 final class ListEventsTest extends KernelTestCase
 {
+    use ActsAsUser;
     use ClockSensitiveTrait;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
 
     public function testEachEventShowsItsTurnoverAndResult(): void
     {

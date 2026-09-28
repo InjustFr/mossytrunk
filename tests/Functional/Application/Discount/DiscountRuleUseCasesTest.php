@@ -18,10 +18,17 @@ use App\Application\Order\RequestedLine;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Domain\Shared\NotFound;
+use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DiscountRuleUseCasesTest extends KernelTestCase
 {
+    use ActsAsUser;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+    }
     public function testDiscountRuleLifecycle(): void
     {
         $sticker = (string) $this->product('STK', 'Sticker', 400);
