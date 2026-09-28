@@ -6,6 +6,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormField from '../ui/FormField.vue';
 import ProductPicker from './ProductPicker.vue';
 import TypePicker from './TypePicker.vue';
+import { regularBundlePrice } from '../../composables/useBundlePrice.js';
 import { formatCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
@@ -29,15 +30,7 @@ watch(() => props.rule, (rule) => {
     errors.value = {};
 }, { immediate: true });
 
-const regularPrice = computed(() => {
-    const prices = props.products
-        .filter((p) => form.productIds.includes(p.id) || (p.typeId !== null && form.typeIds.includes(p.typeId)))
-        .map((p) => p.sellingPrice);
-    if (prices.length === 0 || !form.bundleSize) {
-        return null;
-    }
-    return { min: Math.min(...prices) * form.bundleSize, max: Math.max(...prices) * form.bundleSize };
-});
+const regularPrice = computed(() => regularBundlePrice(props.products, form.productIds, form.typeIds, form.bundleSize));
 
 async function onSubmit() {
     saving.value = true;

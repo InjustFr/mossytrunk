@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
+import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import DiscountRuleForm from '../components/discounts/DiscountRuleForm.vue';
 import DiscountRuleList from '../components/discounts/DiscountRuleList.vue';
@@ -61,13 +62,16 @@ onMounted(() => Promise.all([load(), loadProducts(), loadTypes()]));
             Les remises par lot s'appliquent automatiquement aux nouvelles commandes, en choisissant la combinaison la plus avantageuse pour le client.
             Une remise peut viser des types entiers (ex. Print + Sticker : « 3 articles pour 30 € ») et/ou des produits précis.
         </p>
-        <DiscountRuleList
-            :rules="rules"
-            :selected-id="modalOpen ? editing?.id ?? null : null"
-            @edit="openEdit"
-            @toggle="onToggle"
-            @remove="onRemove"
-        />
+        <BaseCard>
+            <DiscountRuleList
+                :rules="rules"
+                :products="products"
+                :selected-id="modalOpen ? editing?.id ?? null : null"
+                @edit="openEdit"
+                @toggle="onToggle"
+                @remove="onRemove"
+            />
+        </BaseCard>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
             <DiscountRuleForm :rule="editing" :products="products" :types="types" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />

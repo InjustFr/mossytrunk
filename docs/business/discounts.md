@@ -51,4 +51,4 @@ Tests: `DiscountCalculatorTest::testTwoPrintsAndOneSticker…`.
 | Delete | `DELETE /api/discount-rules/{id}` |
 | List | `GET /api/discount-rules` |
 
-UI: `/remises` — list with active switch, edit and two-step delete; form with type chips, product picker (products covered by a chosen type shown ticked) and "normal price of N units" hint.
+UI: `/remises` — list with active switch, edit and two-step delete; each rule shows the normal price of its N units at today's selling prices (a range when eligible products differ) and the customer's saving; form with type chips, product picker (products covered by a chosen type shown ticked) and "normal price of N units" hint.

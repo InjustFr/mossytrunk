@@ -5,12 +5,28 @@ import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import { regularBundlePrice } from '../../composables/useBundlePrice.js';
+import { formatCents } from '../../composables/useMoney.js';
 
-defineProps({
+const props = defineProps({
     rules: { type: Array, required: true },
+    products: { type: Array, required: true },
     selectedId: { type: String, default: null },
 });
 const emit = defineEmits(['edit', 'toggle', 'remove']);
+
+const range = (min, max) => (min === max ? formatCents(min) : `${formatCents(min)} à ${formatCents(max)}`);
+
+function saving(rule) {
+    const regular = regularBundlePrice(props.products, rule.products.map((p) => p.id), rule.types.map((t) => t.id), rule.bundleSize);
+    if (!regular) {
+        return null;
+    }
+    return {
+        regular: range(regular.min, regular.max),
+        saved: range(Math.max(0, regular.min - rule.bundlePrice), Math.max(0, regular.max - rule.bundlePrice)),
+    };
+}
 </script>
 
 <template>
@@ -29,10 +45,15 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
                 <span class="discount-rule-list__name">{{ rule.name }}</span>
                 <span class="discount-rule-list__deal">
                     {{ rule.bundleSize }} articles pour <MoneyAmount :cents="rule.bundlePrice" />
+                    <template v-if="saving(rule)">, au lieu de {{ saving(rule).regular }}</template>
                 </span>
                 <span v-if="rule.types.length" class="discount-rule-list__products">Types : {{ rule.types.map((t) => t.name).join(', ') }}</span>
                 <span v-if="rule.products.length" class="discount-rule-list__products">Produits : {{ rule.products.map((p) => p.name).join(', ') }}</span>
             </div>
+            <p v-if="saving(rule)" class="discount-rule-list__saving">
+                <span class="discount-rule-list__saving-label">Économie client</span>
+                <span class="discount-rule-list__saving-amount">{{ saving(rule).saved }}</span>
+            </p>
             <label class="discount-rule-list__toggle">
                 <BaseSwitch :default-value="rule.active" @update:model-value="emit('toggle', rule, $event)" />
                 {{ rule.active ? 'Active' : 'Inactive' }}
@@ -46,34 +67,44 @@ const emit = defineEmits(['edit', 'toggle', 'remove']);
 </template>
 
 <style scoped>
-.discount-rule-list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.discount-rule-list { margin: 0; padding: 0; list-style: none; }
 
 .discount-rule-list__item {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 9rem 7rem auto;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-border);
-    border-left: 0.25rem solid var(--color-accent);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    transition: opacity var(--transition), border-color var(--transition), background var(--transition);
+    padding: var(--space-3) var(--space-2);
+    border-bottom: 0.0625rem solid var(--color-border);
+    transition: opacity var(--transition), background var(--transition);
 }
 
-.discount-rule-list__item--inactive { opacity: 0.6; border-left-color: var(--color-border); }
+.discount-rule-list__item:last-child { border-bottom: none; }
+.discount-rule-list__item--inactive .discount-rule-list__main,
+.discount-rule-list__item--inactive .discount-rule-list__saving { opacity: 0.55; }
 .discount-rule-list__item--selected { background: var(--color-accent-soft); }
 
-.discount-rule-list__main { flex: 1; display: flex; flex-direction: column; }
+.discount-rule-list__main { display: flex; flex-direction: column; min-width: 0; }
 .discount-rule-list__name { font-weight: 600; }
 .discount-rule-list__deal { font-size: 0.9rem; }
 .discount-rule-list__products { color: var(--color-muted); font-size: 0.85rem; }
 
-.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
+.discount-rule-list__saving { display: flex; flex-direction: column; align-items: flex-end; margin: 0; grid-column: 2; }
+.discount-rule-list__saving-label { color: var(--color-muted); font-size: 0.8rem; }
+.discount-rule-list__saving-amount { color: var(--color-success); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
+.discount-rule-list__toggle { grid-column: 3; display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
+.discount-rule-list__actions { grid-column: 4; display: flex; align-items: center; gap: var(--space-1); }
 
 .discount-rule-list__item-enter-active,
 .discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .discount-rule-list__item-enter-from,
 .discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-0.25rem); }
+
+@media (max-width: 43.75rem) {
+    .discount-rule-list__item { grid-template-columns: 1fr auto; }
+    .discount-rule-list__saving,
+    .discount-rule-list__toggle,
+    .discount-rule-list__actions { grid-column: auto; }
+}
 </style>
