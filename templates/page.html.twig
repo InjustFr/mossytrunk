@@ -1,0 +1,8 @@
+{# Generic shell: a Web controller passes the Vue page name and its initial props. #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block body %}
+    <div {{ vue_component(component, props|default({})) }}></div>
+{% endblock %}

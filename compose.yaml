@@ -1,0 +1,62 @@
+services:
+  php:
+    build: .
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/${POSTGRES_DB:-app}?serverVersion=18&charset=utf8
+      SUMUP_API_KEY: ${SUMUP_API_KEY:-}
+      SUMUP_MERCHANT_CODE: ${SUMUP_MERCHANT_CODE:-}
+    volumes:
+      - ./:/app
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+
+  node:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run watch"
+    volumes:
+      - ./:/app
+
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.63.0-noble
+    profiles: [e2e]
+    working_dir: /app/e2e
+    environment:
+      BASE_URL: http://php-e2e
+    volumes:
+      - ./:/app
+    depends_on:
+      - php-e2e
+
+  php-e2e:
+    build: .
+    profiles: [e2e]
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      APP_ENV: test
+      APP_DEBUG: 1
+      DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
+    volumes:
+      - ./:/app
+
+  database:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    volumes:
+      - database_data:/var/lib/postgresql:rw
+
+volumes:
+  database_data:
