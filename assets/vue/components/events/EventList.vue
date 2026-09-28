@@ -5,15 +5,19 @@ import { formatDate } from '../../composables/useDate.js';
 
 defineProps({
     events: { type: Array, required: true },
+    emptyMessage: { type: String, default: 'Aucun événement.' },
 });
 </script>
 
 <template>
-    <EmptyState v-if="events.length === 0">Aucun événement. Créez-en un pour y rattacher des commandes.</EmptyState>
+    <EmptyState v-if="events.length === 0">{{ emptyMessage }}</EmptyState>
     <ul v-else class="event-list">
         <li v-for="event in events" :key="event.id" class="event-list__item">
             <a class="event-list__link" :href="`/evenements/${event.id}`">
-                <span class="event-list__name">{{ event.name }}</span>
+                <span class="event-list__name">
+                    {{ event.name }}
+                    <span v-if="event.timing === 'ongoing'" class="event-list__badge">En cours</span>
+                </span>
                 <span class="event-list__meta">
                     {{ event.location }} · {{ formatDate(event.startDate) }}
                     <template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>
@@ -56,6 +60,20 @@ defineProps({
 .event-list__link:hover { border-color: var(--color-ink); transform: translateX(0.125rem); }
 
 .event-list__name { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; }
+.event-list__badge {
+    margin-left: var(--space-2);
+    padding: 0.125rem var(--space-2);
+    border-radius: 62.4375rem;
+    background: var(--color-accent);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.084rem;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
 .event-list__meta { grid-column: 1; color: var(--color-muted); font-size: 0.9rem; }
 .event-list__figures { grid-row: 1 / span 2; grid-column: 2; align-self: center; display: flex; gap: var(--space-5); margin: 0; }
 .event-list__figure { display: flex; flex-direction: column; align-items: flex-end; }

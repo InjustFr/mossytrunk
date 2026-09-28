@@ -52,6 +52,22 @@ final readonly class DateRange
         return $day >= $this->start->format('Y-m-d') && $day <= $this->end->format('Y-m-d');
     }
 
+    /**
+     * True when the whole range is after the moment's local day.
+     */
+    public function isAfter(\DateTimeImmutable $moment): bool
+    {
+        return $this->start->format('Y-m-d') > self::toDay($moment)->format('Y-m-d');
+    }
+
+    /**
+     * True when the whole range is before the moment's local day.
+     */
+    public function isBefore(\DateTimeImmutable $moment): bool
+    {
+        return $this->end->format('Y-m-d') < self::toDay($moment)->format('Y-m-d');
+    }
+
     public function overlaps(self $other): bool
     {
         return $this->start->format('Y-m-d') <= $other->end->format('Y-m-d')

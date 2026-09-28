@@ -113,6 +113,18 @@ class Event
         return $this->period->covers($moment);
     }
 
+    /**
+     * Upcoming until its first day, ongoing during its days, past from the day after its last day.
+     */
+    public function timingOn(\DateTimeImmutable $today): EventTiming
+    {
+        return match (true) {
+            $this->period->isAfter($today) => EventTiming::Upcoming,
+            $this->period->isBefore($today) => EventTiming::Past,
+            default => EventTiming::Ongoing,
+        };
+    }
+
     public function totalExpenses(): Money
     {
         return Money::sum($this->expenses->map(static fn (Expense $expense): Money => $expense->amount()));

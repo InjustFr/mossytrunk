@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 
 export function useEvents() {
@@ -11,7 +11,15 @@ export function useEvents() {
 
     const create = (payload) => api.post('/api/events', payload);
 
-    return { events, load, create };
+    // Ongoing events stay with the upcoming ones, soonest first; past events most recent first.
+    const upcoming = computed(() => events.value
+        .filter((event) => event.timing !== 'past')
+        .sort((a, b) => a.startDate.localeCompare(b.startDate)));
+    const past = computed(() => events.value
+        .filter((event) => event.timing === 'past')
+        .sort((a, b) => b.startDate.localeCompare(a.startDate)));
+
+    return { events, upcoming, past, load, create };
 }
 
 export function useEvent(eventId) {

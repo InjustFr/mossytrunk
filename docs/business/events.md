@@ -20,6 +20,7 @@ Model: `src/Domain/Event/Event.php`, `Expense.php`, `EventScheduler.php`, `src/D
 | E4 | **Events never overlap.** Guarantees an order date maps to at most one event (needed by the SumUp auto-link) | `EventScheduler::ensureFree()` used by `ScheduleEventHandler`/`UpdateEventHandler` | `EventUseCasesTest` |
 | E5 | Rescheduling must keep every existing order of the event inside the new period | `UpdateEventHandler` (see [orders](orders.md)) | `OrderUseCasesTest` |
 | E6 | Expense label required, amount > 0 — on creation and when revised; expenses can be edited and removed | `Event::addExpense()`, `Event::reviseExpense()`, `Expense::revise()`, `Event::removeExpense()` | `EventTest`, `EventUseCasesTest` |
+| E7 | Relative to today (Paris day): an event is **upcoming** before its first day, **ongoing** during its days, **past** from the day after its last day | `Event::timingOn()`, `EventTiming`, `DateRange::isAfter()/isBefore()`; today comes from the Symfony Clock in `ListEventsHandler` | `EventTest`, `ListEventsTest` |
 
 The profitability of an event is described in [event-report.md](event-report.md).
 
@@ -29,10 +30,10 @@ The profitability of an event is described in [event-report.md](event-report.md)
 |---|---|
 | `ScheduleEvent` | `POST /api/events` `{name, location, startDate, endDate}` (dates `YYYY-MM-DD`) |
 | `UpdateEvent` | `PUT /api/events/{id}` (same body) |
-| `ListEvents` | `GET /api/events` (most recent first, with expenses total, order count, **turnover and result** computed like the [event report](event-report.md)) |
+| `ListEvents` | `GET /api/events` (most recent first, with expenses total, order count, **turnover and result** computed like the [event report](event-report.md), and `timing`: `upcoming` / `ongoing` / `past`) |
 | `GetEvent` | `GET /api/events/{id}` (with expenses) |
 | `AddExpense` | `POST /api/events/{id}/expenses` `{label, amount}` |
 | `ReviseExpense` | `PUT /api/events/{id}/expenses/{expenseId}` `{label, amount}` |
 | `RemoveExpense` | `DELETE /api/events/{id}/expenses/{expenseId}` |
 
-UI: `/evenements` (list with CA, dépenses and **résultat** of each event + creation modal), `/evenements/{id}` (details, edit, expenses, report).
+UI: `/evenements` — two sections: **À venir** (ongoing ones included with an « En cours » badge, soonest first) and **Passés** (most recent first); each event shows CA, dépenses and **résultat**; creation modal, `/evenements/{id}` (details, edit, expenses, report).

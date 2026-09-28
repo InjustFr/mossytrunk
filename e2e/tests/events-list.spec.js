@@ -17,3 +17,17 @@ test('events list shows each event turnover and result', async ({ page, request 
     // CA 150 − coût 50 − dépenses 100 − URSSAF 19,20 = −19,20
     await expect(page.getByTestId(`event-result-${event.id}`)).toHaveText(/[−-]19,20/);
 });
+
+test('events are split between upcoming and past ones', async ({ page, request }) => {
+    const past = await createEvent(request, { name: unique('Salon passé'), startDate: '2019-05-04' });
+    const upcoming = await createEvent(request, { name: unique('Salon à venir') });
+
+    await page.goto('/evenements');
+    const upcomingSection = page.getByRole('region', { name: 'À venir' });
+    const pastSection = page.getByRole('region', { name: 'Passés' });
+
+    await expect(upcomingSection.getByRole('link', { name: new RegExp(upcoming.name) })).toBeVisible();
+    await expect(upcomingSection.getByRole('link', { name: new RegExp(past.name) })).toHaveCount(0);
+    await expect(pastSection.getByRole('link', { name: new RegExp(past.name) })).toBeVisible();
+    await expect(pastSection.getByRole('link', { name: new RegExp(upcoming.name) })).toHaveCount(0);
+});

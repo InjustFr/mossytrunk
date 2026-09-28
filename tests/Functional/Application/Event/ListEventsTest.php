@@ -15,9 +15,12 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 final class ListEventsTest extends KernelTestCase
 {
+    use ClockSensitiveTrait;
+
     public function testEachEventShowsItsTurnoverAndResult(): void
     {
         $container = self::getContainer();
@@ -35,5 +38,18 @@ final class ListEventsTest extends KernelTestCase
         self::assertSame(15_000 - 5_000 - 10_000 - 1_920, $events['Japan Expo']->result);
         self::assertSame(0, $events['Marché']->turnover);
         self::assertSame(0, $events['Marché']->result);
+    }
+
+    public function testEventsAreUpcomingOngoingOrPastRelativeToToday(): void
+    {
+        $container = self::getContainer();
+        foreach ([['Passé', '2026-07-01'], ['En cours', '2026-07-10'], ['À venir', '2026-07-20']] as [$name, $day]) {
+            $container->get(ScheduleEventHandler::class)(new ScheduleEvent($name, 'Lyon', new \DateTimeImmutable($day), new \DateTimeImmutable($day)));
+        }
+
+        self::mockTime('2026-07-10 15:00');
+        $timings = array_column($container->get(ListEventsHandler::class)(), 'timing', 'name');
+
+        self::assertSame(['À venir' => 'upcoming', 'En cours' => 'ongoing', 'Passé' => 'past'], $timings);
     }
 }

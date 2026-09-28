@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Event\ListEvents;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\EventTiming;
 use App\Domain\Reporting\EventResult;
 
 final readonly class EventSummaryView
@@ -19,10 +20,11 @@ final readonly class EventSummaryView
         public int $orderCount,
         public int $turnover,
         public int $result,
+        public string $timing,
     ) {
     }
 
-    public static function of(Event $event, EventResult $result): self
+    public static function of(Event $event, EventResult $result, EventTiming $timing): self
     {
         return new self(
             (string) $event->id(),
@@ -34,6 +36,7 @@ final readonly class EventSummaryView
             $result->orderCount,
             $result->turnover->amount(),
             $result->result->amount(),
+            $timing->value,
         );
     }
 }

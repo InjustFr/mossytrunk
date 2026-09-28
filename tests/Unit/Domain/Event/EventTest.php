@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Event;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\EventTiming;
 use App\Domain\Event\InvalidEvent;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\InvalidMoney;
@@ -27,6 +28,19 @@ final class EventTest extends TestCase
 
         self::assertTrue($event->covers(new \DateTimeImmutable('2026-07-10 18:00', new \DateTimeZone('Europe/Paris'))));
         self::assertFalse($event->covers(new \DateTimeImmutable('2026-07-13 09:00', new \DateTimeZone('Europe/Paris'))));
+    }
+
+    public function testTimingRelativeToToday(): void
+    {
+        $event = Event::schedule('Japan Expo', 'Villepinte', self::period()); // 9 → 12 July 2026
+        $paris = new \DateTimeZone('Europe/Paris');
+
+        self::assertSame(EventTiming::Upcoming, $event->timingOn(new \DateTimeImmutable('2026-07-08 23:59', $paris)));
+        self::assertSame(EventTiming::Ongoing, $event->timingOn(new \DateTimeImmutable('2026-07-09 00:00', $paris)));
+        self::assertSame(EventTiming::Ongoing, $event->timingOn(new \DateTimeImmutable('2026-07-12 23:59', $paris)));
+        self::assertSame(EventTiming::Past, $event->timingOn(new \DateTimeImmutable('2026-07-13 00:00', $paris)));
+        // 12 July 22:30 UTC is already the 13th in Paris.
+        self::assertSame(EventTiming::Past, $event->timingOn(new \DateTimeImmutable('2026-07-12T22:30:00+00:00')));
     }
 
     public function testExpensesAreSummedAndRemovable(): void
