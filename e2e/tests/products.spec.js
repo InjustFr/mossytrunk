@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
+import { createProduct } from './support/api.js';
 
 test('create a product with variants, then set its buying price', async ({ page }) => {
     const name = unique('T-shirt');
@@ -116,4 +117,24 @@ test('long lists are paginated', async ({ page, request }) => {
     await choose(page, pagination.getByRole('combobox', { name: 'Par page' }), '50');
     await expect(page.getByRole('row')).toHaveCount(26);
     await expect(pagination).toContainText('1–25 sur 25');
+});
+
+test('the dashboard leads to the products whose buying price is missing', async ({ page, request }) => {
+    const unknown = await createProduct(request, { name: unique('Mystère'), sellingPrice: 1_000, buyingPrice: 0 });
+    const known = await createProduct(request, { name: unique('Connu'), sellingPrice: 1_000, buyingPrice: 400 });
+
+    await page.goto('/tableau-de-bord');
+    await page.getByRole('status').getByRole('link', { name: "Renseigner les prix d'achat" }).click();
+
+    const missingCost = page.getByRole('button', { name: /prix d'achat à renseigner/ });
+    await expect(missingCost).toHaveAttribute('data-state', 'on');
+    await page.getByLabel('Rechercher un produit').fill(unknown.name);
+    await expect(page.getByRole('row').filter({ hasText: unknown.name })).toBeVisible();
+    await page.getByLabel('Rechercher un produit').fill(known.name);
+    await expect(page.getByRole('row').filter({ hasText: known.name })).toHaveCount(0);
+
+    await missingCost.click();
+    const row = page.getByRole('row').filter({ hasText: known.name });
+    await expect(row).toContainText('6,00');
+    await expect(row).toContainText('60 %');
 });

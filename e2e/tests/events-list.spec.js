@@ -29,7 +29,7 @@ test('events are split between upcoming and past ones', async ({ page, request }
 
     await expect(upcomingSection.getByRole('link', { name: new RegExp(upcoming.name) })).toBeVisible();
     await expect(upcomingSection.getByRole('link', { name: new RegExp(past.name) })).toHaveCount(0);
-    await expect(pastSection.getByRole('link', { name: new RegExp(past.name) })).toBeVisible();
+    await expect(pastSection.getByRole('table').getByRole('link', { name: new RegExp(past.name) })).toBeVisible();
     await expect(pastSection.getByRole('link', { name: new RegExp(upcoming.name) })).toHaveCount(0);
     await expect(pastSection.getByRole('row').filter({ hasText: past.name })).toContainText('Lyon');
 });
