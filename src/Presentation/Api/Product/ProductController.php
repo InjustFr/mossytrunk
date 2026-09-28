@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Product;
 
+use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
@@ -37,6 +38,12 @@ final class ProductController extends AbstractController
         ));
 
         return $this->json(['id' => (string) $id], Response::HTTP_CREATED);
+    }
+
+    #[Route('/batch', name: 'api_products_batch', methods: ['POST'])]
+    public function batch(#[MapRequestPayload] BatchProductsPayload $payload, BatchUpdateProductsHandler $batchUpdate): JsonResponse
+    {
+        return $this->json(['updated' => $batchUpdate($payload->toCommand())]);
     }
 
     #[Route('/{id}', name: 'api_products_update', requirements: ['id' => Requirement::ULID], methods: ['PUT'])]

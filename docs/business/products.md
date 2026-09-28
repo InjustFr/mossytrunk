@@ -32,13 +32,23 @@ Types are created from `/api/product-types` or **inline from the product form** 
 
 `SellableItem` is the only way to obtain a sellable tuple, so an order line can never reference an invalid product/variant pair. It also carries the selling and buying prices at the time of sale: orders **snapshot** them, so later price changes never alter past orders.
 
+## Filters & batch edit
+
+The product list can be filtered by type (chips, incl. « Sans type ») and text. Ticked products (« Tout sélectionner » ticks what is visible)
+can be edited together: selling price, buying price, type, variants to add (skipped when already present), variants to remove.
+
+| # | Rule | Where | Tests |
+|---|---|---|---|
+| P8 | A batch edit goes through the same entity methods as a single edit; any violation (e.g. negative price) aborts the whole batch | `BatchUpdateProductsHandler` | `BatchUpdateProductsTest` |
+
 ## Use cases & API
 
 | Use case | Endpoint |
 |---|---|
 | `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, buyingPrice?, variants[]}` |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
+| `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, buyingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
 
-UI: `/produits` (`ProductsPage.vue`) — list on the left, create/edit form on the right. Products with a buying price of 0 show a ⚠︎ to remind that the margin is overstated.
+UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. Products with a buying price of 0 show a ⚠︎ to remind that the margin is overstated.

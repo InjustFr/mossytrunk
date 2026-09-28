@@ -17,6 +17,7 @@ export function useProducts() {
 
     const create = (payload) => api.post('/api/products', payload);
     const update = (id, payload) => api.put(`/api/products/${id}`, payload);
+    const batchUpdate = (payload) => api.post('/api/products/batch', payload);
 
-    return { products, loading, load, create, update };
+    return { products, loading, load, create, update, batchUpdate };
 }

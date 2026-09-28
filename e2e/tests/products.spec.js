@@ -61,3 +61,32 @@ test('create a type inline and display products as "Type Nom"', async ({ page })
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${typeName} Forêt » ajouté.`);
     await expect(page.getByRole('row').filter({ hasText: `${typeName} Forêt` })).toContainText(typeName);
 });
+
+test('filter by type and edit the selection in batch', async ({ page, request }) => {
+    const { createProduct, createType } = await import('./support/api.js');
+    const sticker = await createType(request, unique('Sticker'));
+    const mousse = await createProduct(request, { name: 'Mousse', sellingPrice: 400, type: sticker });
+    const fougere = await createProduct(request, { name: 'Fougère', sellingPrice: 450, type: sticker });
+    const other = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500 });
+
+    await page.goto('/produits');
+    await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: sticker.name }).click();
+    await expect(page.getByRole('row').filter({ hasText: other.displayName })).toHaveCount(0);
+    await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
+    await expect(page.getByRole('region', { name: 'Sélection' })).toContainText('2 produit(s) sélectionné(s)');
+
+    await page.getByRole('button', { name: 'Modifier la sélection' }).click();
+    const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
+    await batch.getByLabel('Changer le prix de vente').check();
+    await batch.getByLabel('Nouveau prix de vente (€)').fill('5');
+    await batch.getByRole('textbox', { name: 'Variante à ajouter' }).fill('Brillant');
+    await batch.getByRole('textbox', { name: 'Variante à ajouter' }).press('Enter');
+    await batch.getByRole('button', { name: 'Appliquer à 2 produit(s)' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText('2 produit(s) mis à jour.');
+    for (const product of [mousse, fougere]) {
+        const row = page.getByRole('row').filter({ hasText: product.displayName });
+        await expect(row).toContainText('5,00');
+        await expect(row).toContainText('Brillant');
+    }
+});

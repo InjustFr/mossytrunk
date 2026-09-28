@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
 
+defineProps({
+    inputLabel: { type: String, default: 'Nouvelle variante' },
+});
 const variants = defineModel({ type: Array, required: true });
 const draft = ref('');
 
@@ -35,7 +38,7 @@ function remove(variant) {
             class="variants-input__field"
             type="text"
             placeholder="Ajouter une variante puis Entrée"
-            aria-label="Nouvelle variante"
+            :aria-label="inputLabel"
             @keydown.enter.prevent="add"
             @blur="add"
         >
