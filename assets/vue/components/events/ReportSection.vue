@@ -1,4 +1,5 @@
 <script setup>
+import { ChevronRight } from '@lucide/vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 // One collapsible section of the event report: title + signed amount, details in the slot.
@@ -14,7 +15,7 @@ defineProps({
 <template>
     <details class="report-section" :open="open">
         <summary class="report-section__summary">
-            <span class="report-section__chevron" aria-hidden="true">›</span>
+            <ChevronRight class="report-section__chevron" :size="16" aria-hidden="true" />
             <span class="report-section__title">{{ title }}</span>
             <span :class="['report-section__amount', `report-section__amount--${sign === '+' ? 'income' : 'cost'}`]">
                 {{ sign }} <MoneyAmount :cents="amount" />
@@ -40,8 +41,7 @@ defineProps({
 .report-section__summary::-webkit-details-marker { display: none; }
 
 .report-section__chevron {
-    display: inline-block;
-    width: 1em;
+    flex-shrink: 0;
     color: var(--color-muted);
     transition: transform var(--transition);
 }

@@ -1,4 +1,5 @@
 <script setup>
+import { X } from '@lucide/vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 const props = defineProps({
@@ -24,7 +25,7 @@ const label = (line) => {
                 <button type="button" class="order-draft-lines__step" :aria-label="`Ajouter un ${label(line)}`" @click="emit('quantity', line.key, line.quantity + 1)">+</button>
             </span>
             <MoneyAmount class="order-draft-lines__total" :cents="(productOf(line)?.sellingPrice ?? 0) * line.quantity" />
-            <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)">×</button>
+            <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)"><X :size="16" aria-hidden="true" /></button>
         </li>
     </TransitionGroup>
 </template>
@@ -46,6 +47,9 @@ const label = (line) => {
 
 .order-draft-lines__step,
 .order-draft-lines__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 28px;
     height: 28px;
     border: 1px solid var(--color-border);

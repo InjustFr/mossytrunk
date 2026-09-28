@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { ChevronRight, TriangleAlert } from '@lucide/vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 // Sold articles as a nested accordion: type → product → variants. The list can be hidden (choice remembered).
@@ -36,7 +37,7 @@ watch(visible, (value) => {
             <div v-if="visible && groups.length" class="order-recap__list" data-test="order-recap">
                 <details v-for="group in groups" :key="group.type" class="order-recap__group">
                     <summary class="order-recap__row order-recap__row--group">
-                        <span class="order-recap__chevron" aria-hidden="true">›</span>
+                        <ChevronRight class="order-recap__chevron" :size="14" aria-hidden="true" />
                         <span class="order-recap__label">{{ group.type }}</span>
                         <span class="order-recap__quantity">{{ group.quantity }} art.</span>
                         <MoneyAmount class="order-recap__amount" :cents="group.sales" />
@@ -45,7 +46,7 @@ watch(visible, (value) => {
                     <template v-for="product in group.products" :key="product.name">
                         <details v-if="product.variants.length" class="order-recap__product">
                             <summary class="order-recap__row order-recap__row--product">
-                                <span class="order-recap__chevron" aria-hidden="true">›</span>
+                                <ChevronRight class="order-recap__chevron" :size="14" aria-hidden="true" />
                                 <span class="order-recap__label">{{ product.name }}</span>
                                 <span class="order-recap__quantity">{{ product.quantity }}</span>
                                 <MoneyAmount class="order-recap__amount" :cents="product.sales" />
@@ -59,7 +60,7 @@ watch(visible, (value) => {
                         <div v-else class="order-recap__row order-recap__row--product order-recap__row--leaf">
                             <span class="order-recap__label">
                                 {{ product.name }}
-                                <span v-if="product.unknownCost" class="order-recap__warning" title="Prix d'achat non renseigné (0 €)">⚠︎</span>
+                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" :size="14" aria-label="Prix d'achat non renseigné (0 €)" role="img" />
                             </span>
                             <span class="order-recap__quantity">{{ product.quantity }}</span>
                             <MoneyAmount class="order-recap__amount" :cents="product.sales" />
@@ -103,7 +104,7 @@ details[open] > summary > .order-recap__chevron { transform: rotate(90deg); }
 
 .order-recap__quantity,
 .order-recap__amount { text-align: right; font-variant-numeric: tabular-nums; }
-.order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); }
+.order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -2px; }
 
 .order-recap__list-enter-active,
 .order-recap__list-leave-active { transition: opacity var(--transition); }

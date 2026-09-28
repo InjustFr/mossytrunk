@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { X } from '@lucide/vue';
 
 // Accessible modal: centred dialog, or a right-hand drawer that leaves the page visible (e.g. order entry next to the list).
 const props = defineProps({
@@ -49,7 +50,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
                 >
                     <header class="modal__header">
                         <h2 class="modal__title">{{ title }}</h2>
-                        <button type="button" class="modal__close" aria-label="Fermer" @click="close">×</button>
+                        <button type="button" class="modal__close" aria-label="Fermer" @click="close"><X :size="16" aria-hidden="true" /></button>
                     </header>
                     <div class="modal__body"><slot /></div>
                 </section>
@@ -94,6 +95,9 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown));
 .modal__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.45rem; }
 
 .modal__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     background: none;
     cursor: pointer;

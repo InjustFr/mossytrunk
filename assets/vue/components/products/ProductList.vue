@@ -1,4 +1,5 @@
 <script setup>
+import { TriangleAlert } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -48,7 +49,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
             </td>
             <td class="data-table__cell--number">
                 <MoneyAmount :cents="product.buyingPrice" />
-                <span v-if="product.buyingPrice === 0" class="product-list__warning" title="Prix d'achat à renseigner">⚠︎</span>
+                <TriangleAlert v-if="product.buyingPrice === 0" class="product-list__warning" :size="14" aria-label="Prix d'achat à renseigner" role="img" />
             </td>
             <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
             <td>
@@ -66,5 +67,5 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 .product-list__check input { accent-color: var(--color-accent); }
 .product-list__type { color: var(--color-muted); }
 .product-list__unique { color: var(--color-muted); font-style: italic; }
-.product-list__warning { margin-left: var(--space-1); color: #b7791f; }
+.product-list__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -2px; }
 </style>

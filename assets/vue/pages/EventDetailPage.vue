@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { ArrowLeft } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -52,7 +53,7 @@ onMounted(load);
 
 <template>
     <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a href="/evenements">← Événements</a></template>
+        <template #back><a class="back-link" href="/evenements"><ArrowLeft :size="14" aria-hidden="true" /> Événements</a></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>

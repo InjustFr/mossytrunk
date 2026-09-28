@@ -1,4 +1,5 @@
 <script setup>
+import { X } from '@lucide/vue';
 // The single error message listing everything the SumUp import could not bring in.
 defineProps({
     problem: { type: Object, required: true },
@@ -18,7 +19,7 @@ const emit = defineEmits(['dismiss']);
                 Produits à préciser : <strong>{{ problem.products.join(', ') }}</strong>
             </p>
         </div>
-        <button type="button" class="sumup-import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')">×</button>
+        <button type="button" class="sumup-import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')"><X :size="16" aria-hidden="true" /></button>
     </div>
 </template>
 
@@ -38,6 +39,9 @@ const emit = defineEmits(['dismiss']);
 .sumup-import-problem__detail { margin: var(--space-1) 0 0; }
 
 .sumup-import-problem__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     background: none;
     cursor: pointer;

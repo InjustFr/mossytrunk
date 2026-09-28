@@ -23,5 +23,8 @@
         "watch": "encore dev --watch",
         "build": "encore production --progress"
     },
-    "type": "module"
+    "type": "module",
+    "dependencies": {
+        "@lucide/vue": "^1.48.0"
+    }
 }

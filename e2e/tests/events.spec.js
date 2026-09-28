@@ -84,7 +84,7 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
 
     const recap = report.getByTestId('order-recap');
     await recap.getByText('Sans type').click();
-    await expect(recap.locator('.order-recap__row', { hasText: mystery.name })).toContainText('⚠︎');
+    await expect(recap.locator('.order-recap__row', { hasText: mystery.name }).getByRole('img', { name: "Prix d'achat non renseigné (0 €)" })).toBeVisible();
 
     // The article list can be hidden, and the choice is remembered.
     await report.getByLabel('Afficher le détail des articles').uncheck();

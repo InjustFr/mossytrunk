@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
+import { ArrowLeft } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
@@ -25,7 +26,7 @@ onMounted(load);
 
 <template>
     <AppLayout :title="order ? `Commande ${order.reference}` : 'Commande'">
-        <template #back><a href="/commandes">← Commandes</a></template>
+        <template #back><a class="back-link" href="/commandes"><ArrowLeft :size="14" aria-hidden="true" /> Commandes</a></template>
         <template #actions>
             <ConfirmButton v-if="order" label="Supprimer la commande" confirm-label="Confirmer la suppression" @confirm="onDelete" />
         </template>

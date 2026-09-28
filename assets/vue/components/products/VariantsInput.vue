@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { X } from '@lucide/vue';
 
 defineProps({
     inputLabel: { type: String, default: 'Nouvelle variante' },
@@ -30,7 +31,7 @@ function remove(variant) {
                     class="variants-input__remove"
                     :aria-label="`Retirer la variante ${variant}`"
                     @click="remove(variant)"
-                >×</button>
+                ><X :size="12" aria-hidden="true" /></button>
             </li>
         </TransitionGroup>
         <input
@@ -69,6 +70,9 @@ function remove(variant) {
 }
 
 .variants-input__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     background: none;
     cursor: pointer;

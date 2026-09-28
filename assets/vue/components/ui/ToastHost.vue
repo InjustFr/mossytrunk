@@ -1,4 +1,5 @@
 <script setup>
+import { X } from '@lucide/vue';
 import { useToast } from '../../composables/useToast.js';
 
 const { toasts, dismiss } = useToast();
@@ -15,7 +16,7 @@ const { toasts, dismiss } = useToast();
                 data-test="toast"
             >
                 <span class="toast__message">{{ toast.message }}</span>
-                <button class="toast__close" type="button" aria-label="Fermer" @click="dismiss(toast.id)">×</button>
+                <button class="toast__close" type="button" aria-label="Fermer" @click="dismiss(toast.id)"><X :size="16" aria-hidden="true" /></button>
             </div>
         </TransitionGroup>
     </div>
@@ -50,6 +51,9 @@ const { toasts, dismiss } = useToast();
 .toast__message { flex: 1; }
 
 .toast__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: none;
     background: none;
     cursor: pointer;

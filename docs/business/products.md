@@ -51,4 +51,4 @@ can be edited together: selling price, buying price, type, variants to add (skip
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
 
-UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. Products with a buying price of 0 show a ⚠︎ to remind that the margin is overstated.
+UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. Products with a buying price of 0 show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated.

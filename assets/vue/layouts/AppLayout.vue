@@ -1,4 +1,5 @@
 <script setup>
+import { CalendarDays, LayoutDashboard, Percent, Receipt, Tag } from '@lucide/vue';
 import ToastHost from '../components/ui/ToastHost.vue';
 
 defineProps({
@@ -6,11 +7,11 @@ defineProps({
 });
 
 const links = [
-    { href: '/tableau-de-bord', label: 'Tableau de bord', icon: '📊' },
-    { href: '/commandes', label: 'Commandes', icon: '🧾' },
-    { href: '/evenements', label: 'Événements', icon: '📅' },
-    { href: '/produits', label: 'Produits', icon: '🏷️' },
-    { href: '/remises', label: 'Remises', icon: '％' },
+    { href: '/tableau-de-bord', label: 'Tableau de bord', icon: LayoutDashboard },
+    { href: '/commandes', label: 'Commandes', icon: Receipt },
+    { href: '/evenements', label: 'Événements', icon: CalendarDays },
+    { href: '/produits', label: 'Produits', icon: Tag },
+    { href: '/remises', label: 'Remises', icon: Percent },
 ];
 
 const currentPath = window.location.pathname;
@@ -29,7 +30,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                     :class="['app-layout__link', 'eyebrow', { 'app-layout__link--active': isActive(link.href) }]"
                     :aria-current="isActive(link.href) ? 'page' : undefined"
                 >
-                    <span class="app-layout__icon" aria-hidden="true">{{ link.icon }}</span>
+                    <component :is="link.icon" class="app-layout__icon" :size="18" :stroke-width="1.75" aria-hidden="true" />
                     {{ link.label }}
                 </a>
             </nav>
@@ -100,8 +101,9 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     border-left-color: var(--color-accent);
 }
 
-.app-layout__icon { width: 1.2em; text-align: center; font-size: 0.95rem; filter: grayscale(1); opacity: 0.75; }
-.app-layout__link--active .app-layout__icon { filter: none; opacity: 1; }
+.app-layout__icon { flex-shrink: 0; color: var(--color-subtle); transition: color var(--transition); }
+.app-layout__link:hover .app-layout__icon { color: var(--color-ink); }
+.app-layout__link--active .app-layout__icon { color: var(--color-accent); }
 
 .app-layout__footer { margin: auto 0 0; padding: 0 var(--space-3); color: var(--color-subtle); font-size: 0.8rem; }
 

@@ -38,3 +38,5 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Wraps a form's fields to disable them all while it is being submitted, without affecting layout. */
 .form-lock { display: contents; }
+
+.back-link { display: inline-flex; align-items: center; gap: var(--space-1); }

@@ -51,7 +51,7 @@ Enforced by `deptrac.yaml`. Rules:
 - `composables/` — data fetching/state (`useOrders`, …), `useApi`, `useToast`, `useMoney`.
 - CSS: **BEM** class names (`block__element--modifier`), `<style scoped>`, design tokens in `assets/styles/tokens.css` (light mode, mossy green accent `--color-accent`). Small transitions only (`--transition`).
 - Creation/edition forms open in `components/ui/BaseModal.vue` from a header button (`variant="drawer"` for order entry so the list stays visible). Forms emit `saved`/`cancel`; the page closes the modal and reloads.
-- Look & feel: calm catalogue style (inspired by tikamoon.com) — white surfaces on light warm grey, near-black text, thin borders, 3px radius, serif display font (DM Serif Display) for brand/titles, Inter for text, small uppercase letter-spaced labels. Fonts are self-hosted via `@fontsource`.
+- Look & feel: calm catalogue style (inspired by tikamoon.com) — white surfaces on light warm grey, near-black text, thin borders, 3px radius, serif display font (DM Serif Display) for brand/titles, Inter for text, small uppercase letter-spaced labels. Fonts are self-hosted via `@fontsource`. Icons: **Lucide** (`@lucide/vue`, e.g. `import { X } from '@lucide/vue'`), `aria-hidden` when decorative, `role="img"` + `aria-label` when meaningful; no emoji/glyph icons.
 - Confirm user actions with `useToast().success/error`.
 - Add `data-test` attributes only when a role/label selector is not practical for Playwright.
 
