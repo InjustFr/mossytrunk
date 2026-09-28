@@ -40,3 +40,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .form-lock { display: contents; }
 
 .back-link { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+/* Turbo Drive navigation progress bar (YouTube-like). */
+.turbo-progress-bar {
+    height: 0.1875rem;
+    background: var(--color-accent);
+    box-shadow: 0 0 0.5rem var(--color-accent-soft);
+}

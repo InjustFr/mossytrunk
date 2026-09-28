@@ -9,6 +9,7 @@ import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { formatDateTime } from '../composables/useDate.js';
+import { visit } from '../composables/useNavigation.js';
 
 const props = defineProps({
     orderId: { type: String, required: true },
@@ -18,7 +19,7 @@ const { order, load, remove } = useOrder(props.orderId);
 
 async function onDelete() {
     await remove();
-    window.location.assign('/commandes');
+    visit('/commandes');
 }
 
 onMounted(load);

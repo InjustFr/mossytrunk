@@ -45,6 +45,7 @@ Enforced by `deptrac.yaml`. Rules:
 
 ## Frontend — `assets/vue/`
 
+- Navigation goes through **Turbo Drive** (`symfony/ux-turbo`): no full reload, mossy green top progress bar (`.turbo-progress-bar`). The UX Vue Stimulus controller unmounts/mounts page apps on each visit, so read URL state in `setup()` (not at module level) and navigate from code with `visit()` (`composables/useNavigation.js`), never `window.location`.
 - `pages/` — one per route, mounted from `templates/page.html.twig` via `PageController`. **Thin orchestrators**: layout + components + composables, no business logic.
 - `layouts/AppLayout.vue` — vertical sidebar nav, page title + header actions, toast host.
 - `components/<context>/` — feature components; `components/ui/` — generic building blocks.

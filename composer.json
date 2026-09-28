@@ -25,6 +25,7 @@
         "symfony/serializer": "8.1.*",
         "symfony/twig-bundle": "8.1.*",
         "symfony/uid": "8.1.*",
+        "symfony/ux-turbo": "^3.5",
         "symfony/ux-vue": "^3.5",
         "symfony/validator": "8.1.*",
         "symfony/webpack-encore-bundle": "^2.4",
