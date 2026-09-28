@@ -8,7 +8,7 @@ use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Units sold of one (product, variant) during an event, before discounts.
+ * Units sold of one product (or one variant of it) across a set of orders, before discounts.
  */
 final readonly class ProductSales
 {

@@ -7,6 +7,7 @@ namespace App\Domain\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
+use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -158,6 +159,11 @@ class Order
     public function placedAt(): \DateTimeImmutable
     {
         return $this->placedAt;
+    }
+
+    public function isPlacedIn(int $year): bool
+    {
+        return DateRange::yearOf($this->placedAt) === $year;
     }
 
     public function source(): OrderSource

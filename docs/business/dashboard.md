@@ -14,9 +14,12 @@ Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [ev
 | B3 | An event's expenses count in the **month the event starts** (even when it spans two months) | `MonthlyResults::of()` | `MonthlyResultsTest` |
 | B4 | A year is the **sum of its months** (URSSAF rounded per month, then summed) | `MonthlyResults::year()`, `SalesFigures::add()` | `MonthlyResultsTest` |
 | B5 | Selectable years = years with orders or expenses, plus the current year | `GetDashboardHandler` | `GetDashboardTest` |
+| B6 | The year's events = events **starting** in the year (as for expenses, B3), ranked by result, best first | `Event::startsIn()`, `GetDashboardHandler` | `GetDashboardTest` |
+| B7 | Best sellers = order lines of the year's orders (B2) summed per product, all variants together, before discounts; top 5 products, and every product type (untyped products together, « Sans type »), by sales | `SalesByProduct`, `GetDashboardHandler` | `SalesByProductTest`, `GetDashboardTest` |
 
 ## Display
 
-- Year selector; tiles: chiffre d'affaires (+ number of orders), coûts (achats + dépenses), URSSAF, résultat.
-- Bar chart of the monthly result from a zero baseline (green gain, red loss, hover/focus for figures).
-- Table month by month with the year total (accessible view of the chart), and a table of every year.
+- Year selector; the year's result as a receipt: chiffre d'affaires − coût d'achat − dépenses − URSSAF = résultat, with the result as a share of the turnover and the number of orders and events.
+- Bar chart of the monthly result from a zero baseline (green gain, red loss, value on each bar, hover/focus for figures).
+- The year's events as bars of their result (B6), and the best sellers (B7).
+- Table month by month with the year total (accessible view of the chart); months without orders nor expenses are hidden until « Afficher les 12 mois ». A table comparing years appears once there are at least two.

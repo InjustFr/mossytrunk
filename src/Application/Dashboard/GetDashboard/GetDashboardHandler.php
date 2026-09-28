@@ -4,19 +4,28 @@ declare(strict_types=1);
 
 namespace App\Application\Dashboard\GetDashboard;
 
+use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
+use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
+use App\Domain\Product\ProductRepository;
+use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\MonthlyResults;
+use App\Domain\Reporting\ProductSales;
+use App\Domain\Reporting\SalesByProduct;
 use App\Domain\Shared\DateRange;
 
 /**
- * Results per month of a year, and per year. See docs/business/dashboard.md.
+ * Results per month of a year, and per year, with the year's events and best sellers. See docs/business/dashboard.md.
  */
 final readonly class GetDashboardHandler
 {
+    private const int TOP_PRODUCTS = 5;
+
     public function __construct(
         private OrderRepository $orders,
         private EventRepository $events,
+        private ProductRepository $products,
     ) {
     }
 
@@ -25,8 +34,10 @@ final readonly class GetDashboardHandler
      */
     public function __invoke(?int $year = null): DashboardView
     {
-        $results = MonthlyResults::of($this->orders->list(), $this->events->all());
-        $year ??= (int) (new \DateTimeImmutable('now', new \DateTimeZone(DateRange::TIMEZONE)))->format('Y');
+        $orders = $this->orders->list();
+        $events = $this->events->all();
+        $results = MonthlyResults::of($orders, $events);
+        $year ??= DateRange::yearOf(new \DateTimeImmutable('now'));
 
         $years = $results->years();
         if (!\in_array($year, $years, true)) {
@@ -39,12 +50,80 @@ final readonly class GetDashboardHandler
             $months[] = ['month' => $month] + $results->month($year, $month)->toArray();
         }
 
+        $sales = SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->ranked();
+
         return new DashboardView(
             $year,
             $years,
             $months,
             $results->year($year)->toArray(),
             array_map(static fn (int $y): array => ['year' => $y] + $results->year($y)->toArray(), $results->years()),
+            $this->eventsOf($year, $events, $orders),
+            array_map(static fn (ProductSales $product): array => [
+                'id' => (string) $product->productId,
+                'name' => $product->productName,
+                'quantity' => $product->quantity,
+                'sales' => $product->sales->amount(),
+            ], \array_slice($sales, 0, self::TOP_PRODUCTS)),
+            $this->salesByType($sales),
         );
+    }
+
+    /**
+     * @param list<Event> $events
+     * @param list<Order> $orders
+     *
+     * @return list<array{id: string, name: string, startDate: string, turnover: int, result: int}>
+     */
+    private function eventsOf(int $year, array $events, array $orders): array
+    {
+        $ordersByEvent = [];
+        foreach ($orders as $order) {
+            $ordersByEvent[(string) $order->event()->id()][] = $order;
+        }
+
+        $rows = [];
+        foreach ($events as $event) {
+            if (!$event->startsIn($year)) {
+                continue;
+            }
+            $result = EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? []);
+            $rows[] = [
+                'id' => (string) $event->id(),
+                'name' => $event->name(),
+                'startDate' => $event->period()->start()->format('Y-m-d'),
+                'turnover' => $result->turnover->amount(),
+                'result' => $result->result->amount(),
+            ];
+        }
+        usort($rows, static fn (array $a, array $b): int => $b['result'] <=> $a['result']);
+
+        return $rows;
+    }
+
+    /**
+     * @param list<ProductSales> $sales
+     *
+     * @return list<array{name: ?string, quantity: int, sales: int}>
+     */
+    private function salesByType(array $sales): array
+    {
+        $typeNames = [];
+        foreach ($this->products->findByIds(array_map(static fn (ProductSales $product) => $product->productId, $sales)) as $product) {
+            $typeNames[(string) $product->id()] = $product->type()?->name();
+        }
+
+        $types = [];
+        foreach ($sales as $product) {
+            $name = $typeNames[(string) $product->productId] ?? null;
+            $key = $name ?? '';
+            $types[$key] ??= ['name' => $name, 'quantity' => 0, 'sales' => 0];
+            $types[$key]['quantity'] += $product->quantity;
+            $types[$key]['sales'] += $product->sales->amount();
+        }
+        $types = array_values($types);
+        usort($types, static fn (array $a, array $b): int => $b['sales'] <=> $a['sales']);
+
+        return $types;
     }
 }

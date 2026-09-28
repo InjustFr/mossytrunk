@@ -156,6 +156,11 @@ class Event
         return $this->period;
     }
 
+    public function startsIn(int $year): bool
+    {
+        return DateRange::yearOf($this->period->start()) === $year;
+    }
+
     /**
      * @return list<Expense>
      */

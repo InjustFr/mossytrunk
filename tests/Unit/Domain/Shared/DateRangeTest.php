@@ -52,4 +52,16 @@ final class DateRangeTest extends TestCase
         self::assertTrue($may->overlaps(DateRange::fromDates(new \DateTimeImmutable('2026-05-10'), new \DateTimeImmutable('2026-05-12'))));
         self::assertFalse($may->overlaps(DateRange::fromDates(new \DateTimeImmutable('2026-05-11'), new \DateTimeImmutable('2026-05-12'))));
     }
+
+    public function testCountsDaysInclusively(): void
+    {
+        self::assertSame(1, DateRange::fromDates(new \DateTimeImmutable('2026-05-10'), new \DateTimeImmutable('2026-05-10'))->days());
+        self::assertSame(4, DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12'))->days());
+    }
+
+    public function testYearOfUsesParisLocalDate(): void
+    {
+        self::assertSame(2027, DateRange::yearOf(new \DateTimeImmutable('2026-12-31T23:30:00+00:00')));
+        self::assertSame(2026, DateRange::yearOf(new \DateTimeImmutable('2026-12-31T22:30:00+00:00')));
+    }
 }

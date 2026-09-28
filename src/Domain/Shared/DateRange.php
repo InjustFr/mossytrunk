@@ -45,6 +45,16 @@ final readonly class DateRange
         return $this->end;
     }
 
+    public function days(): int
+    {
+        return $this->start->diff($this->end)->days + 1;
+    }
+
+    public static function yearOf(\DateTimeImmutable $moment): int
+    {
+        return (int) self::toDay($moment)->format('Y');
+    }
+
     public function covers(\DateTimeImmutable $moment): bool
     {
         $day = self::toDay($moment)->format('Y-m-d');
