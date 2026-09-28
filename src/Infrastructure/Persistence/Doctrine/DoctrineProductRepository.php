@@ -38,6 +38,13 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(Product::class)->findBy([], ['name' => 'ASC']);
+        return $this->entityManager->createQueryBuilder()
+            ->select('p', 't')
+            ->from(Product::class, 'p')
+            ->leftJoin('p.type', 't')
+            ->orderBy('t.name', 'ASC')
+            ->addOrderBy('p.name', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

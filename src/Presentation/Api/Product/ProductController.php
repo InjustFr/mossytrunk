@@ -34,6 +34,7 @@ final class ProductController extends AbstractController
             $payload->sellingPrice,
             $payload->buyingPrice,
             $payload->variants,
+            $payload->typeId,
         ));
 
         return $this->json(['id' => (string) $id], Response::HTTP_CREATED);
@@ -49,6 +50,7 @@ final class ProductController extends AbstractController
             $payload->sellingPrice,
             $payload->buyingPrice,
             $payload->variants,
+            $payload->typeId,
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

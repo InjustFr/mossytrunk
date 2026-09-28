@@ -9,7 +9,7 @@ const emit = defineEmits(['quantity', 'remove']);
 
 const productOf = (line) => props.products.find((p) => p.id === line.productId);
 const label = (line) => {
-    const name = productOf(line)?.name ?? '?';
+    const name = productOf(line)?.displayName ?? '?';
     return line.variant ? `${name} — ${line.variant}` : name;
 };
 </script>

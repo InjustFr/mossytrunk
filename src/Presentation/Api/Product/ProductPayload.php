@@ -28,6 +28,8 @@ final readonly class ProductPayload
         #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une variante ne peut pas être vide.')])]
         #[Assert\Unique(message: 'Les variantes doivent être uniques.')]
         public array $variants = [],
+        #[Assert\Ulid(message: 'Type invalide.')]
+        public ?string $typeId = null,
     ) {
     }
 }

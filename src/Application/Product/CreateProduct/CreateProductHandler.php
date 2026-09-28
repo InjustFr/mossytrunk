@@ -8,6 +8,7 @@ use App\Application\Transaction;
 use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -15,6 +16,7 @@ final readonly class CreateProductHandler
 {
     public function __construct(
         private ProductRepository $products,
+        private ProductTypeRepository $types,
         private Transaction $transaction,
     ) {
     }
@@ -31,6 +33,7 @@ final readonly class CreateProductHandler
             Money::cents($command->sellingPriceCents),
             Money::cents($command->buyingPriceCents),
             $command->variants,
+            null === $command->typeId ? null : $this->types->get(Ulid::fromString($command->typeId)),
         );
 
         $this->products->add($product);

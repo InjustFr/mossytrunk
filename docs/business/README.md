@@ -20,6 +20,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | UI (FR) | Code | Meaning |
 |---|---|---|
 | Produit | `Domain\Product\Product` | Real item sold; unique reference |
+| Type de produit | `Domain\Product\ProductType` | Print, Sticker…; product shown as « {type} {nom} » |
 | Variante | `Product::$variants` (strings) | Colour, size, design…; none = *produit unique* |
 | Article vendable | `Domain\Product\SellableItem` | Validated (product ULID, variant) tuple + prices at sale time |
 | Événement | `Domain\Event\Event` | Convention/market with an inclusive day period and a location |

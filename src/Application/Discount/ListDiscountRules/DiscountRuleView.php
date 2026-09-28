@@ -27,7 +27,7 @@ final readonly class DiscountRuleView
         return new self(
             (string) $rule->id(),
             $rule->name(),
-            array_map(static fn (Product $product): array => ['id' => (string) $product->id(), 'name' => $product->name()], $rule->eligibleProducts()),
+            array_map(static fn (Product $product): array => ['id' => (string) $product->id(), 'name' => $product->displayName()], $rule->eligibleProducts()),
             $rule->bundleSize(),
             $rule->bundlePrice()->amount(),
             $rule->isActive(),

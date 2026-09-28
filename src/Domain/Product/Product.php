@@ -18,6 +18,7 @@ use Symfony\Component\Uid\Ulid;
  * - prices are never negative; the buying price defaults to 0 (unknown, e.g. after a SumUp import).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
+ * - a product may have a type; it is then displayed as "{type} {name}" (e.g. "Print Forêt").
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
@@ -32,6 +33,10 @@ class Product
 
     #[ORM\Column(length: 255)]
     private string $name;
+
+    #[ORM\ManyToOne(targetEntity: ProductType::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?ProductType $type = null;
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'selling_price_')]
     private Money $sellingPrice;
@@ -49,11 +54,12 @@ class Product
     /**
      * @param list<string> $variants
      */
-    private function __construct(Ulid $id, string $reference, string $name, Money $sellingPrice, Money $buyingPrice, array $variants)
+    private function __construct(Ulid $id, string $reference, string $name, Money $sellingPrice, Money $buyingPrice, array $variants, ?ProductType $type)
     {
         $this->id = $id;
         $this->createdAt = new \DateTimeImmutable();
         $this->describe($reference, $name);
+        $this->type = $type;
         $this->reprice($sellingPrice, $buyingPrice);
         foreach ($variants as $variant) {
             $this->addVariant($variant);
@@ -63,9 +69,14 @@ class Product
     /**
      * @param list<string> $variants
      */
-    public static function create(string $reference, string $name, Money $sellingPrice, ?Money $buyingPrice = null, array $variants = []): self
+    public static function create(string $reference, string $name, Money $sellingPrice, ?Money $buyingPrice = null, array $variants = [], ?ProductType $type = null): self
     {
-        return new self(new Ulid(), $reference, $name, $sellingPrice, $buyingPrice ?? Money::zero(), $variants);
+        return new self(new Ulid(), $reference, $name, $sellingPrice, $buyingPrice ?? Money::zero(), $variants, $type);
+    }
+
+    public function classify(?ProductType $type): void
+    {
+        $this->type = $type;
     }
 
     public function describe(string $reference, string $name): void
@@ -147,16 +158,16 @@ class Product
 
         if ($this->hasVariants()) {
             if (null === $variant) {
-                throw InvalidProduct::variantRequired($this->name);
+                throw InvalidProduct::variantRequired($this->displayName());
             }
             if (!$this->hasVariant($variant)) {
-                throw InvalidProduct::unknownVariant($this->name, $variant);
+                throw InvalidProduct::unknownVariant($this->displayName(), $variant);
             }
         } elseif (null !== $variant) {
-            throw InvalidProduct::hasNoVariants($this->name);
+            throw InvalidProduct::hasNoVariants($this->displayName());
         }
 
-        return new SellableItem($this->id, $variant, $this->name, $this->sellingPrice, $this->buyingPrice);
+        return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice);
     }
 
     public function hasVariants(): bool
@@ -182,6 +193,19 @@ class Product
     public function name(): string
     {
         return $this->name;
+    }
+
+    /**
+     * How the product is shown everywhere (and snapshotted on orders): "{type} {name}", or the name alone.
+     */
+    public function displayName(): string
+    {
+        return null === $this->type ? $this->name : \sprintf('%s %s', $this->type->name(), $this->name);
+    }
+
+    public function type(): ?ProductType
+    {
+        return $this->type;
     }
 
     public function sellingPrice(): Money

@@ -43,3 +43,25 @@ test('shows validation errors inline', async ({ page }) => {
     await expect(form.getByText('La référence est obligatoire.')).toBeVisible();
     await expect(form.getByText('Le nom est obligatoire.')).toBeVisible();
 });
+
+test('create a type inline and display products as "Type Nom"', async ({ page }) => {
+    const typeName = unique('Print');
+    const reference = unique('PR').replace(' ', '-');
+
+    await page.goto('/produits');
+    await page.getByRole('button', { name: 'Nouveau produit' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
+    await form.getByLabel('Référence').fill(reference);
+    await form.getByRole('combobox', { name: 'Type' }).selectOption({ label: '＋ Créer un type…' });
+    await form.getByLabel('Nom du nouveau type').fill(typeName);
+    await form.getByRole('button', { name: 'Créer', exact: true }).click();
+    await expect(form.getByRole('combobox', { name: 'Type' })).toHaveValue(/.+/);
+
+    await form.getByLabel('Nom').fill('Forêt');
+    await expect(form.getByText(`Affiché « ${typeName} Forêt »`)).toBeVisible();
+    await form.getByLabel('Prix de vente (€)').fill('15');
+    await form.getByRole('button', { name: 'Ajouter le produit' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText(`Produit « ${typeName} Forêt » ajouté.`);
+    await expect(page.getByRole('row').filter({ hasText: `${typeName} Forêt` })).toContainText(typeName);
+});

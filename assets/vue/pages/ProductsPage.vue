@@ -7,9 +7,11 @@ import BaseModal from '../components/ui/BaseModal.vue';
 import ProductList from '../components/products/ProductList.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import { useProducts } from '../composables/useProducts.js';
+import { useProductTypes } from '../composables/useProductTypes.js';
 import { useToast } from '../composables/useToast.js';
 
 const { products, load, create, update } = useProducts();
+const { load: loadTypes } = useProductTypes();
 const toast = useToast();
 const modalOpen = ref(false);
 const editing = ref(null);
@@ -33,7 +35,7 @@ async function onSaved(name) {
     await load();
 }
 
-onMounted(load);
+onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>

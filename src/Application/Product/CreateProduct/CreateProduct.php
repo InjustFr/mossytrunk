@@ -15,6 +15,7 @@ final readonly class CreateProduct
         public int $sellingPriceCents,
         public int $buyingPriceCents = 0,
         public array $variants = [],
+        public ?string $typeId = null,
     ) {
     }
 }

@@ -29,7 +29,7 @@ function add() {
         return;
     }
     if (needsVariant.value && !variant.value) {
-        error.value = `Choisissez une variante pour « ${product.value.name} ».`;
+        error.value = `Choisissez une variante pour « ${product.value.displayName} ».`;
         return;
     }
     emit('add', { productId: product.value.id, variant: needsVariant.value ? variant.value : null, quantity: Math.max(1, Number(quantity.value) || 1) });
@@ -44,7 +44,7 @@ function add() {
         <FormField label="Produit" class="order-line-picker__product">
             <select v-model="productId">
                 <option value="" disabled>Choisir…</option>
-                <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} — {{ formatCents(p.sellingPrice) }}</option>
+                <option v-for="p in products" :key="p.id" :value="p.id">{{ p.displayName }} — {{ formatCents(p.sellingPrice) }}</option>
             </select>
         </FormField>
         <Transition name="order-line-picker__slide">

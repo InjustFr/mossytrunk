@@ -47,4 +47,19 @@ final class InvalidProduct extends DomainException
     {
         return new self(\sprintf('« %s » est un produit unique : il n\'a pas de variante.', $productName));
     }
+
+    public static function emptyTypeName(): self
+    {
+        return new self('Le nom du type est obligatoire.');
+    }
+
+    public static function typeAlreadyExists(string $name): self
+    {
+        return new self(\sprintf('Le type « %s » existe déjà.', $name));
+    }
+
+    public static function invalidTypeCode(string $code): self
+    {
+        return new self(\sprintf('Code de type invalide « %s » (1 à 8 lettres majuscules ou chiffres).', $code));
+    }
 }

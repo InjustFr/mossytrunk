@@ -15,6 +15,8 @@ use App\Domain\Shared\Money;
 use App\Fixtures\Factory\DiscountRuleFactory;
 use App\Fixtures\Factory\EventFactory;
 use App\Fixtures\Factory\ProductFactory;
+use App\Fixtures\Factory\ProductTypeFactory;
+use App\Domain\Product\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use Zenstruck\Foundry\Story;
 
@@ -36,22 +38,26 @@ final class ConventionSeasonStory extends Story
     {
         faker()->seed(2026);
 
+        $type = static fn (string $name, string $code): ProductType => ProductTypeFactory::createOne(['name' => $name, 'code' => $code]);
+        $sticker = $type('Sticker', 'STI');
+        $print = $type('Print', 'PRI');
+
         $stickers = [
-            $this->product('STK-MOU', 'Sticker Mousse', 400, 60),
-            $this->product('STK-FOU', 'Sticker Fougère', 400, 60),
-            $this->product('STK-CHA', 'Sticker Champignon', 400, 60),
-            $this->product('STK-HOL', 'Sticker holographique', 600, 120),
+            $this->product('STI-MOUSSE', 'Mousse', 400, 60, type: $sticker),
+            $this->product('STI-FOUGERE', 'Fougère', 400, 60, type: $sticker),
+            $this->product('STI-CHAMPIGNON', 'Champignon', 400, 60, type: $sticker),
+            $this->product('STI-HOLO', 'Holographique', 600, 120, type: $sticker),
         ];
         $prints = [
-            $this->product('PRT-FOR', 'Print Forêt', 1_500, 350, ['A5', 'A4', 'A3']),
-            $this->product('PRT-RIV', 'Print Rivière', 1_500, 350, ['A5', 'A4', 'A3']),
+            $this->product('PRI-FORET', 'Forêt', 1_500, 350, ['A5', 'A4', 'A3'], $print),
+            $this->product('PRI-RIVIERE', 'Rivière', 1_500, 350, ['A5', 'A4', 'A3'], $print),
         ];
         $others = [
-            $this->product('TS-LIC', 'T-shirt Lichen', 2_500, 1_100, ['S', 'M', 'L', 'XL']),
-            $this->product('TOTE', 'Tote bag', 1_500, 600, ['Naturel', 'Noir']),
-            $this->product('PIN-ESC', 'Pin\'s Escargot', 800, 250),
-            $this->product('ZINE-01', 'Zine « Sous-bois »', 1_000, 0), // buying price unknown on purpose
-            $this->product('ART-001', 'Aquarelle originale « Clairière »', 12_000, 0), // unique product
+            $this->product('TSH-LICHEN', 'Lichen', 2_500, 1_100, ['S', 'M', 'L', 'XL'], $type('T-shirt', 'TSH')),
+            $this->product('TOT-BAG', 'Mousse', 1_500, 600, ['Naturel', 'Noir'], $type('Tote bag', 'TOT')),
+            $this->product('PIN-ESCARGOT', 'Escargot', 800, 250, type: $type('Pin\'s', 'PIN')),
+            $this->product('ZIN-SOUS-BOIS', 'Sous-bois', 1_000, 0, type: $type('Zine', 'ZIN')), // buying price unknown on purpose
+            $this->product('ORI-CLAIRIERE', '« Clairière »', 12_000, 0, type: $type('Aquarelle originale', 'AQU')), // unique product
         ];
         $catalogue = [...$stickers, ...$prints, ...$others];
 
@@ -81,9 +87,10 @@ final class ConventionSeasonStory extends Story
     /**
      * @param list<string> $variants
      */
-    private function product(string $reference, string $name, int $selling, int $buying, array $variants = []): Product
+    private function product(string $reference, string $name, int $selling, int $buying, array $variants = [], ?ProductType $type = null): Product
     {
         return ProductFactory::createOne([
+            'type' => $type,
             'reference' => $reference,
             'name' => $name,
             'sellingPrice' => Money::cents($selling),
@@ -108,7 +115,7 @@ final class ConventionSeasonStory extends Story
             $items = [];
             foreach (faker()->randomElements($catalogue, faker()->numberBetween(1, 3)) as $product) {
                 $variant = $product->hasVariants() ? faker()->randomElement($product->variants()) : null;
-                $quantity = str_starts_with($product->reference(), 'STK') ? faker()->numberBetween(1, 5) : 1;
+                $quantity = str_starts_with($product->reference(), 'STI') ? faker()->numberBetween(1, 5) : 1;
                 $items[] = new OrderedItem($product->sellable($variant), $quantity);
             }
 

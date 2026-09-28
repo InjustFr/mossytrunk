@@ -16,6 +16,7 @@ final readonly class UpdateProduct
         public int $sellingPriceCents,
         public int $buyingPriceCents,
         public array $variants,
+        public ?string $typeId = null,
     ) {
     }
 }

@@ -12,7 +12,7 @@ const visible = computed(() => {
     const needle = filter.value.trim().toLowerCase();
     return needle === ''
         ? props.products
-        : props.products.filter((p) => `${p.name} ${p.reference}`.toLowerCase().includes(needle));
+        : props.products.filter((p) => `${p.displayName} ${p.reference}`.toLowerCase().includes(needle));
 });
 
 function toggle(id) {
@@ -29,7 +29,7 @@ function toggle(id) {
             <li v-for="product in visible" :key="product.id">
                 <label :class="['product-picker__option', { 'product-picker__option--checked': selected.includes(product.id) }]">
                     <input type="checkbox" :checked="selected.includes(product.id)" @change="toggle(product.id)">
-                    <span class="product-picker__name">{{ product.name }}</span>
+                    <span class="product-picker__name">{{ product.displayName }}</span>
                     <span class="product-picker__price">{{ formatCents(product.sellingPrice) }}</span>
                 </label>
             </li>

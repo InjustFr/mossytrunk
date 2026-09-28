@@ -20,7 +20,7 @@ interface ProductRepository
     public function findByName(string $name): ?Product;
 
     /**
-     * @return list<Product> sorted by name
+     * @return list<Product> sorted by type name (untyped last), then name
      */
     public function all(): array;
 }
