@@ -1,3 +1,5 @@
+import { begin, end } from '../../progress-bar.js';
+
 export class ApiError extends Error {
     constructor(message, status, violations = []) {
         super(message);
@@ -12,6 +14,15 @@ export class ApiError extends Error {
 }
 
 async function request(method, url, body) {
+    begin();
+    try {
+        return await send(method, url, body);
+    } finally {
+        end();
+    }
+}
+
+async function send(method, url, body) {
     const response = await fetch(url, {
         method,
         headers: { Accept: 'application/json', ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },

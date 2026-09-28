@@ -6,7 +6,10 @@ test('navigating between pages does not reload the document (Turbo Drive)', asyn
 
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
     await nav.getByRole('link', { name: 'Produits' }).click();
+    // The top loading bar shows during the visit and the new page's API calls, then goes away.
+    await expect(page.locator('.progress-bar--visible')).toBeAttached();
     await expect(page).toHaveURL(/\/produits$/);
+    await expect(page.locator('.progress-bar--visible')).toHaveCount(0);
     await expect(page.getByRole('heading', { level: 1, name: 'Produits' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Produits' })).toHaveAttribute('aria-current', 'page');
 

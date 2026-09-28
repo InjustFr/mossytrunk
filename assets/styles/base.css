@@ -41,9 +41,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .back-link { display: inline-flex; align-items: center; gap: var(--space-1); }
 
-/* Turbo Drive navigation progress bar (YouTube-like). */
-.turbo-progress-bar {
+/* Top loading bar during page changes and API calls (assets/progress-bar.js). */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 100%;
     height: 0.1875rem;
     background: var(--color-accent);
     box-shadow: 0 0 0.5rem var(--color-accent-soft);
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
+    transition: transform 200ms ease, opacity 200ms ease;
+    pointer-events: none;
 }
+
+.progress-bar--visible { opacity: 1; }
