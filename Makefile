@@ -2,7 +2,7 @@ DC = docker compose
 PHP = $(DC) exec php
 CONSOLE = $(PHP) php bin/console
 
-.PHONY: up down build install assets db db-test migration test test-unit test-functional deptrac e2e qa
+.PHONY: up down build install assets db db-test fixtures migration test test-unit test-functional deptrac e2e qa
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node
@@ -23,6 +23,9 @@ assets:
 db: ## Create and migrate the dev database
 	$(CONSOLE) doctrine:database:create --if-not-exists
 	$(CONSOLE) doctrine:migrations:migrate --no-interaction --allow-no-migration
+
+fixtures: db ## Reset the dev database with mock data (Foundry story)
+	$(CONSOLE) doctrine:fixtures:load --no-interaction --purge-with-truncate
 
 db-test: ## Create and migrate the test database
 	$(CONSOLE) doctrine:database:create --if-not-exists --env=test

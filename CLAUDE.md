@@ -18,6 +18,7 @@ Generic Symfony conventions: see `AGENTS.md` (this file wins when they disagree 
 ```bash
 make up              # php + database + node (encore watch) → http://localhost:8080
 make db              # create + migrate dev DB
+make fixtures        # reset dev DB with mock data (Foundry story fixtures/Story/ConventionSeasonStory.php)
 make migration       # doctrine:migrations:diff after mapping changes
 make test            # PHPUnit (migrates test DB first); make test-unit / test-functional
 make deptrac         # onion layer rules
@@ -53,6 +54,12 @@ Enforced by `deptrac.yaml`. Rules:
 - Look & feel: calm catalogue style (inspired by tikamoon.com) — white surfaces on light warm grey, near-black text, thin borders, 3px radius, serif display font (DM Serif Display) for brand/titles, Inter for text, small uppercase letter-spaced labels. Fonts are self-hosted via `@fontsource`.
 - Confirm user actions with `useToast().success/error`.
 - Add `data-test` attributes only when a role/label selector is not practical for Playwright.
+
+## Mock data
+
+`fixtures/` (namespace `App\Fixtures`, dev/test only, outside the onion layers): Foundry factories build entities through their
+named constructors (`Instantiator::namedConstructor()`, hydration disabled — no setters). `ConventionSeasonStory` creates a
+catalogue with variants, bundle rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event.
 
 ## Testing expectations
 
