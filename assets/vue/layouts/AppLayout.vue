@@ -108,8 +108,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__footer { margin: auto 0 0; padding: 0 var(--space-3); color: var(--color-subtle); font-size: 0.8rem; }
 
 .app-layout__main {
-    width: 100%;
-    max-width: 1280px;
+    min-width: 0;
     padding: var(--space-6) var(--space-7);
 }
 
