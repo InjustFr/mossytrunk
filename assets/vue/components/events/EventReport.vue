@@ -1,7 +1,7 @@
 <script setup>
-import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import OrderRecap from './OrderRecap.vue';
 import ReportSection from './ReportSection.vue';
 
 // Event profitability, in the order Dépenses → Commandes → URSSAF → Total.
@@ -32,25 +32,7 @@ const rate = (value) => `${String(value).replace('.', ',')} %`;
                 <div class="event-report__line"><dt>Coût d'achat des articles vendus</dt><dd><MoneyAmount :cents="report.orders.costOfGoods" /></dd></div>
             </dl>
 
-            <DataTable v-if="report.orders.products.length > 0" class="event-report__products">
-                <template #head>
-                    <tr>
-                        <th>Produit</th>
-                        <th class="data-table__cell--number">Qté</th>
-                        <th class="data-table__cell--number">Ventes</th>
-                        <th class="data-table__cell--number">Coût d'achat</th>
-                    </tr>
-                </template>
-                <tr v-for="product in report.orders.products" :key="product.label">
-                    <td>{{ product.label }}</td>
-                    <td class="data-table__cell--number">{{ product.quantity }}</td>
-                    <td class="data-table__cell--number"><MoneyAmount :cents="product.sales" /></td>
-                    <td class="data-table__cell--number">
-                        <MoneyAmount :cents="product.cost" />
-                        <span v-if="product.unknownCost" class="event-report__warning" title="Prix d'achat non renseigné (0 €)">⚠︎</span>
-                    </td>
-                </tr>
-            </DataTable>
+            <OrderRecap :groups="report.orders.groups" />
             <p class="event-report__more"><a :href="`/commandes?event=${eventId}`">Voir les commandes</a></p>
         </ReportSection>
 
@@ -85,8 +67,6 @@ const rate = (value) => `${String(value).replace('.', ',')} %`;
 .event-report__line dd { margin: 0; }
 .event-report__line--strong { font-weight: 600; }
 
-.event-report__products { margin-top: var(--space-3); }
-.event-report__warning { margin-left: var(--space-1); color: #b7791f; }
 .event-report__note { margin: 0; color: var(--color-muted); }
 .event-report__more { margin: var(--space-2) 0 0; font-size: 0.9rem; }
 

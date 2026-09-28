@@ -76,14 +76,51 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
 
     await page.goto(`/evenements/${event.id}`);
     const report = page.locator('.event-report');
-    const sections = report.locator('summary');
+    const sections = report.locator('summary.report-section__summary');
     await expect(sections).toHaveText([/Dépenses\s*−\s*100,00/, /Commandes\s*\+\s*160,00/, /URSSAF\s*−\s*20,48/]);
 
     // CA 160 − coût 50 − dépenses 100 − URSSAF 20,48 = −10,48
     await expect(report.getByTestId('event-result')).toHaveText(/−10,48|-10,48/);
-    await expect(report.getByRole('row', { name: new RegExp(mystery.name) })).toContainText('⚠︎');
+
+    const recap = report.getByTestId('order-recap');
+    await recap.getByText('Sans type').click();
+    await expect(recap.locator('.order-recap__row', { hasText: mystery.name })).toContainText('⚠︎');
+
+    // The article list can be hidden, and the choice is remembered.
+    await report.getByLabel('Afficher le détail des articles').uncheck();
+    await expect(recap).toHaveCount(0);
+    await page.reload();
+    await expect(report.getByLabel('Afficher le détail des articles')).not.toBeChecked();
+    await report.getByLabel('Afficher le détail des articles').check();
 
     await report.getByRole('link', { name: 'Voir les commandes' }).click();
     await expect(page.getByLabel('Événement')).toHaveValue(event.id);
     await expect(page.getByRole('row')).toHaveCount(3); // header + 2 orders
+});
+
+test('order recap groups sales by type, product and variant', async ({ page, request }) => {
+    const { createEvent, createProduct, createType } = await import('./support/api.js');
+    const event = await createEvent(request);
+    const printType = await createType(request, unique('Print'));
+    const foret = await createProduct(request, { name: 'Forêt', sellingPrice: 1_500, variants: ['A4', 'A3'], type: printType });
+    const response = await request.post('/api/orders', {
+        data: {
+            placedAt: `${event.startDate}T11:00`,
+            lines: [
+                { productId: foret.id, variant: 'A4', quantity: 2 },
+                { productId: foret.id, variant: 'A3', quantity: 1 },
+            ],
+        },
+    });
+    expect(response.status()).toBe(201);
+
+    await page.goto(`/evenements/${event.id}`);
+    const recap = page.getByTestId('order-recap');
+    const group = recap.locator('details.order-recap__group', { hasText: printType.name });
+    await expect(group.locator('summary').first()).toContainText('3 art.');
+    await group.locator('summary').first().click();
+    const product = group.locator('details.order-recap__product', { hasText: foret.displayName });
+    await product.locator('summary').click();
+    await expect(product.locator('.order-recap__row--variant', { hasText: 'A4' })).toContainText('30,00');
+    await expect(product.locator('.order-recap__row--variant', { hasText: 'A3' })).toContainText('15,00');
 });

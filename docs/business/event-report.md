@@ -29,6 +29,9 @@ result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 Sections, in this order, each collapsible with its amount in the header:
 
 1. **Dépenses** — every expense + total.
-2. **Commandes** — number of orders, gross sales, discounts, turnover, cost of goods, and a per (product, variant) table (quantity, sales before discounts, cost). Link to the orders list filtered on the event.
+2. **Commandes** — number of orders, gross sales, discounts, turnover, cost of goods, and the **orders recap**: an accordion
+   grouped by **type → product → variants** (quantity and sales before discounts at each level; ⚠︎ when a buying price is unknown).
+   Types and names are the products' current ones (untyped or deleted products under « Sans type »), see `GetEventReport/OrderRecap.php` (`OrderRecapTest`).
+   The article list can be hidden with « Afficher le détail des articles » (remembered in the browser). Link to the orders list filtered on the event.
 3. **URSSAF** — rate and base.
 4. **Total** — turnover − cost of goods − expenses − URSSAF = **Résultat**.

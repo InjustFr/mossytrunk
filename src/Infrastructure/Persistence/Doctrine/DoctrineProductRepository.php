@@ -36,6 +36,22 @@ final readonly class DoctrineProductRepository implements ProductRepository
         return $this->entityManager->getRepository(Product::class)->findOneBy(['name' => $name]);
     }
 
+    public function findByIds(array $ids): array
+    {
+        if ([] === $ids) {
+            return [];
+        }
+
+        return $this->entityManager->createQueryBuilder()
+            ->select('p', 't')
+            ->from(Product::class, 'p')
+            ->leftJoin('p.type', 't')
+            ->where('p.id IN (:ids)')
+            ->setParameter('ids', array_map(static fn (Ulid $id): string => $id->toRfc4122(), $ids), \Doctrine\DBAL\ArrayParameterType::STRING)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function all(): array
     {
         return $this->entityManager->createQueryBuilder()

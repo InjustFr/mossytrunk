@@ -20,6 +20,13 @@ interface ProductRepository
     public function findByName(string $name): ?Product;
 
     /**
+     * @param list<Ulid> $ids
+     *
+     * @return list<Product> the existing ones, in no particular order
+     */
+    public function findByIds(array $ids): array;
+
+    /**
      * @return list<Product> sorted by type name (untyped last), then name
      */
     public function all(): array;

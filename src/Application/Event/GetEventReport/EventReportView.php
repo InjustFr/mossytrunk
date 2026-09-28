@@ -7,7 +7,6 @@ namespace App\Application\Event\GetEventReport;
 use App\Domain\Event\Event;
 use App\Domain\Event\Expense;
 use App\Domain\Reporting\EventResult;
-use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\UrssafContribution;
 
 /**
@@ -29,7 +28,10 @@ final readonly class EventReportView
     ) {
     }
 
-    public static function of(Event $event, EventResult $result): self
+    /**
+     * @param array<string, \App\Domain\Product\Product> $products current products by id, for the recap grouping
+     */
+    public static function of(Event $event, EventResult $result, array $products = []): self
     {
         return new self(
             orders: [
@@ -38,13 +40,7 @@ final readonly class EventReportView
                 'discounts' => $result->discounts->amount(),
                 'turnover' => $result->turnover->amount(),
                 'costOfGoods' => $result->costOfGoods->amount(),
-                'products' => array_map(static fn (ProductSales $sales): array => [
-                    'label' => $sales->label,
-                    'quantity' => $sales->quantity,
-                    'sales' => $sales->sales->amount(),
-                    'cost' => $sales->cost->amount(),
-                    'unknownCost' => $sales->unknownCost,
-                ], $result->productSales),
+                'groups' => OrderRecap::group($result->productSales, $products),
             ],
             expenses: [
                 'items' => array_map(static fn (Expense $expense): array => ['label' => $expense->label(), 'amount' => $expense->amount()->amount()], $event->expenses()),
