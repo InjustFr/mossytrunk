@@ -74,3 +74,7 @@ make deploy DEPLOY_HOST=user@server DEPLOY_DIR=/path/to/mossytrunk   # run the c
 make image                                                            # build the production image locally
 make push                                                             # build and push by hand (docker login first)
 ```
+
+## License
+
+[MIT](LICENSE)
