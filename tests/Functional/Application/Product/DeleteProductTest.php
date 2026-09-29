@@ -12,18 +12,18 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Domain\Discount\InvalidDiscountRule;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DeleteProductTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -60,6 +60,6 @@ final class DeleteProductTest extends KernelTestCase
 
     private function product(string $name): string
     {
-        return (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct($name, 400));
+        return (string) self::createProduct($name, 400);
     }
 }

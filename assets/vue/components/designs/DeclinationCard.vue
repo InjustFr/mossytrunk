@@ -17,17 +17,16 @@ const props = defineProps({
 });
 const emit = defineEmits(['tick', 'withdraw']);
 
-const form = reactive({ productName: '', sellingPrice: null, buyingPrice: 0, variants: [] });
+const form = reactive({ productName: '', sellingPrice: null, variants: [] });
 const errors = ref({});
 const saving = ref(false);
 
 watch(() => props.declination, (declination) => {
-    Object.assign(form, { productName: declination.productName, sellingPrice: declination.sellingPrice, buyingPrice: declination.buyingPrice, variants: [...declination.variants] });
+    Object.assign(form, { productName: declination.productName, sellingPrice: declination.sellingPrice, variants: [...declination.variants] });
 }, { immediate: true });
 
 const dirty = computed(() => form.productName !== props.declination.productName
     || form.sellingPrice !== props.declination.sellingPrice
-    || form.buyingPrice !== props.declination.buyingPrice
     || form.variants.join('|') !== props.declination.variants.join('|'));
 const done = (adaptation) => props.declination.doneAdaptations.includes(adaptation);
 const typePrefix = computed(() => props.declination.gabarit.typeName);
@@ -36,7 +35,7 @@ async function onSubmit() {
     saving.value = true;
     errors.value = {};
     try {
-        await props.submit({ ...form, sellingPrice: form.sellingPrice ?? -1, buyingPrice: form.buyingPrice ?? 0 });
+        await props.submit({ ...form, sellingPrice: form.sellingPrice ?? -1 });
     } catch (error) {
         errors.value = error.fieldErrors ?? { productName: error.message };
     } finally {
@@ -74,7 +73,6 @@ async function onSubmit() {
 
         <dl v-if="locked" class="declination__facts">
             <div><dt>Vente</dt><dd><MoneyAmount :cents="declination.sellingPrice" /></dd></div>
-            <div><dt>Achat</dt><dd><MoneyAmount :cents="declination.buyingPrice" /></dd></div>
             <div><dt>Variantes</dt><dd>{{ declination.variants.join(', ') || 'Unique' }}</dd></div>
         </dl>
         <form v-else class="declination__form" novalidate @submit.prevent="onSubmit">
@@ -82,14 +80,9 @@ async function onSubmit() {
                 <FormField label="Nom du produit" :error="errors.productName" :hint="typePrefix ? `Affiché « ${typePrefix} ${form.productName} »` : null">
                     <input v-model="form.productName" type="text">
                 </FormField>
-                <div class="declination__row">
-                    <FormField label="Vente (€)" :error="errors.sellingPrice">
-                        <BaseMoneyField v-model="form.sellingPrice" />
-                    </FormField>
-                    <FormField label="Achat (€)" :error="errors.buyingPrice">
-                        <BaseMoneyField v-model="form.buyingPrice" />
-                    </FormField>
-                </div>
+                <FormField label="Prix de vente (€)" :error="errors.sellingPrice" hint="Le prix d'achat viendra des réapprovisionnements.">
+                    <BaseMoneyField v-model="form.sellingPrice" />
+                </FormField>
                 <FormField as="group" label="Variantes" :error="errors.variants">
                     <VariantsInput v-model="form.variants" />
                 </FormField>
@@ -113,7 +106,6 @@ async function onSubmit() {
 .declination__adaptation--done { color: var(--color-muted); text-decoration: line-through; }
 .declination__none { margin: 0; color: var(--color-subtle); font-size: 0.85rem; }
 .declination__form { display: flex; flex-direction: column; gap: var(--space-3); }
-.declination__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .declination__actions { display: flex; justify-content: flex-end; }
 .declination__facts { display: flex; gap: var(--space-5); margin: 0; }
 .declination__facts dt { color: var(--color-muted); font-size: 0.8rem; }

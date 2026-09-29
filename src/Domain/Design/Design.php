@@ -108,10 +108,10 @@ class Design
     /**
      * @param list<string> $variants
      */
-    public function adjust(Ulid $declinationId, string $productName, Money $sellingPrice, Money $buyingPrice, array $variants): void
+    public function adjust(Ulid $declinationId, string $productName, Money $sellingPrice, array $variants): void
     {
         $this->assertInProgress();
-        $this->declination($declinationId)->adjust($productName, $sellingPrice, $buyingPrice, $variants);
+        $this->declination($declinationId)->adjust($productName, $sellingPrice, $variants);
     }
 
     public function tick(Ulid $declinationId, string $adaptation, bool $done): void

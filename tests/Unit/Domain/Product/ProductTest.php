@@ -8,6 +8,7 @@ use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use App\Tests\Support\Costs;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +45,7 @@ final class ProductTest extends TestCase
         $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
 
         $this->expectException(InvalidMoney::class);
-        $product->reprice(Money::cents(400), Money::cents(-1));
+        $product->reprice(Money::cents(-1));
     }
 
     public function testVariantsAreUniqueAndNotEmpty(): void
@@ -79,7 +80,7 @@ final class ProductTest extends TestCase
 
     public function testProductWithVariantsRequiresOneOfThem(): void
     {
-        $product = Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), Money::cents(800), ['Mousse', 'Fougère']);
+        $product = Costs::bought(Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), ['Mousse', 'Fougère']), 800);
 
         $item = $product->sellable('Mousse');
         self::assertTrue($item->productId->equals($product->id()));

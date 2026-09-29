@@ -14,11 +14,13 @@ use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Domain\Product\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ProductTypeUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -49,16 +51,16 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('Mousse', 400, typeId: $sticker));
-        $forest = $create(new CreateProduct('Forêt', 1_500, typeId: $print));
-        $create(new CreateProduct('Aquarelle', 12_000));
+        self::createProduct('Mousse', 400, typeId: $sticker);
+        $forest = self::createProduct('Forêt', 1_500, typeId: $print);
+        self::createProduct('Aquarelle', 12_000);
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
         self::assertSame(['Print Forêt', 'Sticker Mousse', 'Aquarelle'], array_column($products, 'displayName'));
         self::assertSame('Print', $products[0]->typeName);
 
         self::getContainer()->get(RenameProductTypeHandler::class)($print, 'Affiche');
-        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'Forêt', 1_500, 0, [], $sticker));
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'Forêt', 1_500, [], $sticker));
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $products = self::getContainer()->get(ListProductsHandler::class)();

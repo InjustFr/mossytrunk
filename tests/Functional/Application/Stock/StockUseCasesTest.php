@@ -13,8 +13,6 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Product\MoveVariant\MoveVariant;
@@ -33,11 +31,13 @@ use App\Application\Stock\TakeStockCheck\TakeStockCheckHandler;
 use App\Domain\Order\Order;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class StockUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
     private string $eventId;
     private string $sticker;
     private string $tshirt;
@@ -48,9 +48,8 @@ final class StockUseCasesTest extends KernelTestCase
         $this->eventId = (string) self::getContainer()->get(ScheduleEventHandler::class)(
             new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')),
         );
-        $createProduct = self::getContainer()->get(CreateProductHandler::class);
-        $this->sticker = (string) $createProduct(new CreateProduct('Sticker', 400, 80, lowStockThreshold: 5));
-        $this->tshirt = (string) $createProduct(new CreateProduct('T-shirt', 2_000, 900, ['S', 'M']));
+        $this->sticker = (string) self::createProduct('Sticker', 400, 80, lowStockThreshold: 5);
+        $this->tshirt = (string) self::createProduct('T-shirt', 2_000, 900, ['S', 'M']);
     }
 
     public function testOrdersSellTheOldestStockFirstAndCostWhatItWasPaid(): void
@@ -142,7 +141,7 @@ final class StockUseCasesTest extends KernelTestCase
 
     public function testMovingAVariantMovesItsStock(): void
     {
-        $hoodie = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Hoodie', 4_000, 1_500, ['M']));
+        $hoodie = (string) self::createProduct('Hoodie', 4_000, 1_500, ['M']);
         $this->restock($this->tshirt, 'S', 4, 3_600);
         $this->restock($hoodie, 'M', 1, 1_500);
 
@@ -157,8 +156,8 @@ final class StockUseCasesTest extends KernelTestCase
     {
         $this->restock($this->tshirt, 'S', 4, 3_600);
 
-        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->tshirt, 'T-shirt', 2_000, 900, ['M']));
-        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->tshirt, 'T-shirt', 2_000, 900, ['S', 'M']));
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->tshirt, 'T-shirt', 2_000, ['M']));
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->tshirt, 'T-shirt', 2_000, ['S', 'M']));
         $this->clear();
 
         self::assertSame(0, $this->product($this->tshirt)->onHand);

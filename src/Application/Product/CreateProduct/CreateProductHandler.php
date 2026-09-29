@@ -33,7 +33,6 @@ final readonly class CreateProductHandler
             $this->references->generate($type, $command->name),
             $command->name,
             Money::cents($command->sellingPriceCents),
-            Money::cents($command->buyingPriceCents),
             $command->variants,
             $type,
         );

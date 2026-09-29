@@ -15,7 +15,6 @@ final readonly class SaveGabarit
         public string $name,
         public ?string $typeId,
         public int $sellingPriceCents,
-        public int $buyingPriceCents,
         public array $variants = [],
         public array $adaptations = [],
     ) {

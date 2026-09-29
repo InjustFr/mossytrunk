@@ -12,15 +12,15 @@ use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class GetDashboardTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -33,7 +33,7 @@ final class GetDashboardTest extends KernelTestCase
         $expo = (string) $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Marché', 'Lyon', new \DateTimeImmutable('2025-12-06'), new \DateTimeImmutable('2025-12-06')));
         $container->get(AddExpenseHandler::class)(new AddExpense($expo, 'Stand', 10_000));
-        $print = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Print', 1_500, 500));
+        $print = (string) self::createProduct('Print', 1_500, 500);
         $place = $container->get(PlaceOrderHandler::class);
         $place(new PlaceOrder(new \DateTimeImmutable('2026-07-10 12:00'), [new RequestedLine($print, null, 10)]));
         $place(new PlaceOrder(new \DateTimeImmutable('2025-12-06 12:00'), [new RequestedLine($print, null, 2)]));
@@ -64,8 +64,8 @@ final class GetDashboardTest extends KernelTestCase
         $bad = (string) $schedule(new ScheduleEvent('Salon raté', 'Lille', new \DateTimeImmutable('2027-04-10'), new \DateTimeImmutable('2027-04-10')));
         $container->get(AddExpenseHandler::class)(new AddExpense($bad, 'Stand', 5_000));
         $prints = (string) $container->get(CreateProductTypeHandler::class)('Print')->id();
-        $print = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_500, 300, [], $prints));
-        $sticker = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Sticker', 400));
+        $print = (string) self::createProduct('Forêt', 1_500, 300, [], $prints);
+        $sticker = (string) self::createProduct('Sticker', 400);
         $place = $container->get(PlaceOrderHandler::class);
         $place(new PlaceOrder(new \DateTimeImmutable('2027-03-06 12:00'), [new RequestedLine($print, null, 2), new RequestedLine($sticker, null, 1)]));
         $container->get('doctrine')->getManager()->clear();

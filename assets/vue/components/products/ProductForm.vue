@@ -3,6 +3,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import MoneyAmount from '../ui/MoneyAmount.vue';
 import FormField from '../ui/FormField.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantsInput from './VariantsInput.vue';
@@ -14,7 +15,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, buyingPrice: 0, variants: [], lowStockThreshold: 10 });
+const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, variants: [], lowStockThreshold: 10 });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -34,7 +35,6 @@ watch(() => props.product, (product) => {
             typeId: product.typeId ?? '',
             name: product.name,
             sellingPrice: product.sellingPrice,
-            buyingPrice: product.buyingPrice,
             variants: [...product.variants],
             lowStockThreshold: product.lowStockThreshold,
         }
@@ -50,7 +50,6 @@ async function onSubmit() {
             typeId: form.typeId || null,
             name: form.name,
             sellingPrice: form.sellingPrice ?? -1,
-            buyingPrice: form.buyingPrice ?? 0,
             variants: form.variants,
             lowStockThreshold: form.lowStockThreshold ?? 0,
         });
@@ -88,9 +87,12 @@ async function onSubmit() {
                 <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
-                <FormField label="Prix d'achat (€)" :error="errors.buyingPrice" hint="0 si inconnu">
-                    <BaseMoneyField v-model="form.buyingPrice" />
-                </FormField>
+                <div class="product-form__cost">
+                    <span class="product-form__cost-label">Prix d'achat</span>
+                    <strong v-if="isEditing && product.buyingPrice > 0"><MoneyAmount :cents="product.buyingPrice" /></strong>
+                    <span v-else class="product-form__cost-unknown">Pas encore acheté</span>
+                    <span class="product-form__cost-hint">Mis à jour par les réapprovisionnements et les commandes fournisseurs.</span>
+                </div>
             </div>
 
             <FormField as="group" label="Alerte stock bas" :error="errors.lowStockThreshold" hint="Le produit est signalé quand son stock (par variante) descend à ce seuil.">
@@ -112,6 +114,10 @@ async function onSubmit() {
 <style scoped>
 .product-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .product-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.product-form__cost { display: flex; flex-direction: column; gap: var(--space-1); }
+.product-form__cost-label { font-weight: 500; }
+.product-form__cost-unknown { color: var(--color-muted); }
+.product-form__cost-hint { color: var(--color-muted); font-size: 0.8rem; }
 .product-form__reference { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .product-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .product-form__error {

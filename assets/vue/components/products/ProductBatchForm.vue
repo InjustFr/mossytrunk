@@ -19,7 +19,6 @@ const typeOptions = computed(() => [{ value: '', label: 'Sans type' }, ...types.
 
 const form = reactive({
     changeSellingPrice: false, sellingPrice: null,
-    changeBuyingPrice: false, buyingPrice: null,
     changeType: false, typeId: '',
     addVariants: [], removeVariants: [],
 });
@@ -32,7 +31,6 @@ async function onSubmit() {
     try {
         const result = await props.submit({
             sellingPrice: form.changeSellingPrice ? form.sellingPrice ?? -1 : null,
-            buyingPrice: form.changeBuyingPrice ? form.buyingPrice ?? -1 : null,
             changeType: form.changeType,
             typeId: form.changeType && form.typeId ? form.typeId : null,
             addVariants: form.addVariants,
@@ -57,13 +55,6 @@ async function onSubmit() {
                 <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeSellingPrice" /> Changer le prix de vente</label>
                 <FormField v-if="form.changeSellingPrice" label="Nouveau prix de vente (€)" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" />
-                </FormField>
-            </div>
-
-            <div class="product-batch-form__option">
-                <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeBuyingPrice" /> Changer le prix d'achat</label>
-                <FormField v-if="form.changeBuyingPrice" label="Nouveau prix d'achat (€)" :error="errors.buyingPrice">
-                    <BaseMoneyField v-model="form.buyingPrice" />
                 </FormField>
             </div>
 

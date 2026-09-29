@@ -35,7 +35,6 @@ final class ProductController extends AbstractController
         $id = $createProduct(new CreateProduct(
             $payload->name,
             $payload->sellingPrice,
-            $payload->buyingPrice,
             $payload->variants,
             $payload->typeId,
             $payload->lowStockThreshold,
@@ -57,7 +56,6 @@ final class ProductController extends AbstractController
             $id,
             $payload->name,
             $payload->sellingPrice,
-            $payload->buyingPrice,
             $payload->variants,
             $payload->typeId,
             $payload->lowStockThreshold,

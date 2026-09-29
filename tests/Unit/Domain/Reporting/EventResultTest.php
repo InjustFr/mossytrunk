@@ -13,6 +13,7 @@ use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\UrssafContribution;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\Costs;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -29,8 +30,8 @@ final class EventResultTest extends TestCase
         $event->addExpense('Stand', Money::cents(15_000));
         $event->addExpense('Train', Money::cents(5_000));
 
-        $sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), Money::cents(100));
-        $tshirt = Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), Money::cents(800), ['S', 'M']);
+        $sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 100);
+        $tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S', 'M']), 800);
         $print = Product::create(TestWorkspace::get(), 'PRT', 'Print', Money::cents(1_500)); // unknown buying price
         $at = new \DateTimeImmutable('2026-07-10 14:00', new \DateTimeZone('Europe/Paris'));
 

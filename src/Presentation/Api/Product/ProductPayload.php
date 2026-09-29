@@ -21,8 +21,6 @@ final readonly class ProductPayload
         public string $name = '',
         #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
         public int $sellingPrice = 0,
-        #[Assert\PositiveOrZero(message: 'Le prix d\'achat ne peut pas être négatif.')]
-        public int $buyingPrice = 0,
         #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une variante ne peut pas être vide.')])]
         #[Assert\Unique(message: 'Les variantes doivent être uniques.')]
         public array $variants = [],

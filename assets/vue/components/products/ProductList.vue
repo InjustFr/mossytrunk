@@ -95,7 +95,7 @@ function setChecked(id, checked) {
                     <StatusBadge v-else-if="product.lowStock" tone="warning">Stock bas</StatusBadge>
                 </td>
                 <td class="data-table__cell--number">
-                    <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" aria-label="Prix d'achat à renseigner" role="img" />
+                    <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" aria-label="Coût d'achat inconnu : réapprovisionnez ce produit" role="img" />
                     <MoneyAmount :cents="product.stockUnitCost" />
                 </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>

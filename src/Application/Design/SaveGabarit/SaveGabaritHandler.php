@@ -32,14 +32,14 @@ final readonly class SaveGabaritHandler
             if (null !== $namesake) {
                 throw InvalidDesign::gabaritAlreadyExists($namesake->name());
             }
-            $gabarit = Gabarit::create($this->workspace->current(), $command->name, $type, Money::cents($command->sellingPriceCents), Money::cents($command->buyingPriceCents), $command->variants, $command->adaptations);
+            $gabarit = Gabarit::create($this->workspace->current(), $command->name, $type, Money::cents($command->sellingPriceCents), $command->variants, $command->adaptations);
             $this->gabarits->add($gabarit);
         } else {
             $gabarit = $this->gabarits->get(Ulid::fromString($command->gabaritId));
             if (null !== $namesake && $namesake !== $gabarit) {
                 throw InvalidDesign::gabaritAlreadyExists($namesake->name());
             }
-            $gabarit->describe($command->name, $type, Money::cents($command->sellingPriceCents), Money::cents($command->buyingPriceCents), $command->variants, $command->adaptations);
+            $gabarit->describe($command->name, $type, Money::cents($command->sellingPriceCents), $command->variants, $command->adaptations);
         }
 
         $this->transaction->commit();

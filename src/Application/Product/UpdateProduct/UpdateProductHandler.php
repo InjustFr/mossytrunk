@@ -26,7 +26,7 @@ final readonly class UpdateProductHandler
         $product = $this->products->get(Ulid::fromString($command->productId));
 
         $product->rename($command->name);
-        $product->reprice(Money::cents($command->sellingPriceCents), Money::cents($command->buyingPriceCents));
+        $product->reprice(Money::cents($command->sellingPriceCents));
         $product->replaceVariants($command->variants);
         $this->stock->forgetUnsold($product);
         $product->alertBelow($command->lowStockThreshold);

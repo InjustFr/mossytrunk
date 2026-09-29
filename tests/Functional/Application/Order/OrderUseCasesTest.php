@@ -16,12 +16,11 @@ use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\PreviewOrder\PreviewOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Domain\Event\InvalidEvent;
 use App\Domain\Order\InvalidOrder;
 use App\Domain\Product\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Uid\Ulid;
@@ -29,6 +28,7 @@ use Symfony\Component\Uid\Ulid;
 final class OrderUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
     private string $eventId;
     private string $sticker;
     private string $tshirt;
@@ -40,9 +40,8 @@ final class OrderUseCasesTest extends KernelTestCase
         $this->eventId = (string) self::getContainer()->get(ScheduleEventHandler::class)(
             new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')),
         );
-        $createProduct = self::getContainer()->get(CreateProductHandler::class);
-        $this->sticker = (string) $createProduct(new CreateProduct('Sticker', 400, 80));
-        $this->tshirt = (string) $createProduct(new CreateProduct('T-shirt', 2_000, 900, ['S', 'M']));
+        $this->sticker = (string) self::createProduct('Sticker', 400, 80);
+        $this->tshirt = (string) self::createProduct('T-shirt', 2_000, 900, ['S', 'M']);
         $this->rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('3 stickers pour 10 €', 1_000, DiscountRules::product($this->sticker, 3)));
     }
 

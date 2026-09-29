@@ -51,7 +51,6 @@ final readonly class DesignView
                 'productName' => $declination->productName(),
                 'displayName' => $declination->displayName(),
                 'sellingPrice' => $declination->sellingPrice()->amount(),
-                'buyingPrice' => $declination->buyingPrice()->amount(),
                 'variants' => $declination->variants(),
                 'adaptations' => $declination->adaptations(),
                 'doneAdaptations' => $declination->doneAdaptations(),

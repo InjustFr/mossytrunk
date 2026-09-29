@@ -33,9 +33,6 @@ class Declination
     #[ORM\Embedded(class: Money::class, columnPrefix: 'selling_price_')]
     private Money $sellingPrice;
 
-    #[ORM\Embedded(class: Money::class, columnPrefix: 'buying_price_')]
-    private Money $buyingPrice;
-
     /** @var list<string> */
     #[ORM\Column(type: Types::JSON)]
     private array $variants = [];
@@ -61,25 +58,24 @@ class Declination
         $this->gabarit = $gabarit;
         $this->createdAt = new \DateTimeImmutable();
         $this->adaptations = $gabarit->adaptations();
-        $this->adjust($design->name(), $gabarit->sellingPrice(), $gabarit->buyingPrice(), $gabarit->variants());
+        $this->adjust($design->name(), $gabarit->sellingPrice(), $gabarit->variants());
     }
 
     /**
      * @param list<string> $variants
      */
-    public function adjust(string $productName, Money $sellingPrice, Money $buyingPrice, array $variants): void
+    public function adjust(string $productName, Money $sellingPrice, array $variants): void
     {
         $productName = trim($productName);
         if ('' === $productName) {
             throw InvalidDesign::emptyName('du produit');
         }
-        if ($sellingPrice->isNegative() || $buyingPrice->isNegative()) {
+        if ($sellingPrice->isNegative()) {
             throw InvalidMoney::mustNotBeNegative('Le prix');
         }
 
         $this->productName = $productName;
         $this->sellingPrice = $sellingPrice;
-        $this->buyingPrice = $buyingPrice;
         $this->variants = array_values(array_unique(array_filter(array_map('trim', $variants), static fn (string $variant): bool => '' !== $variant)));
     }
 
@@ -136,11 +132,6 @@ class Declination
     public function sellingPrice(): Money
     {
         return $this->sellingPrice;
-    }
-
-    public function buyingPrice(): Money
-    {
-        return $this->buyingPrice;
     }
 
     /**

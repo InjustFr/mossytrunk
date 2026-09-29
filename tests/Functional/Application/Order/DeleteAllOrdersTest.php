@@ -12,15 +12,15 @@ use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DeleteAllOrdersTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     public function testEveryOrderOfTheWorkspaceGoesButNotItsProductsNorEvents(): void
     {
@@ -41,7 +41,7 @@ final class DeleteAllOrdersTest extends KernelTestCase
     private function placeOrders(int $count): void
     {
         $container = self::getContainer();
-        $sticker = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Sticker', 400));
+        $sticker = (string) self::createProduct('Sticker', 400);
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-14')));
         for ($i = 0; $i < $count; ++$i) {
             $container->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 12:00'), [new RequestedLine($sticker, null, 1)]));

@@ -6,18 +6,18 @@ namespace App\Tests\Functional\Application\Product;
 
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Domain\Shared\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class BatchUpdateProductsTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -49,16 +49,15 @@ final class BatchUpdateProductsTest extends KernelTestCase
         self::assertSame(['A4', 'A3'], $variants['Rivière']);
     }
 
-    public function testChangeTypeAndBuyingPrice(): void
+    public function testChangeType(): void
     {
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $foret = $this->product('Forêt', 1_500);
 
-        $this->batch(new BatchUpdateProducts([$foret], buyingPriceCents: 350, changeType: true, typeId: $print));
+        $this->batch(new BatchUpdateProducts([$foret], changeType: true, typeId: $print));
 
         $product = self::getContainer()->get(ListProductsHandler::class)()[0];
         self::assertSame('Print Forêt', $product->displayName);
-        self::assertSame(350, $product->buyingPrice);
         self::assertSame(1_500, $product->sellingPrice);
     }
 
@@ -80,7 +79,7 @@ final class BatchUpdateProductsTest extends KernelTestCase
      */
     private function product(string $name, int $price, array $variants = [], ?string $typeId = null): string
     {
-        return (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct($name, $price, 0, $variants, $typeId));
+        return (string) self::createProduct($name, $price, 0, $variants, $typeId);
     }
 
     private function batch(BatchUpdateProducts $command): int

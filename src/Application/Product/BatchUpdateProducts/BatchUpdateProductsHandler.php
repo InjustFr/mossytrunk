@@ -33,11 +33,8 @@ final readonly class BatchUpdateProductsHandler
         foreach ($ids as $id) {
             $product = $this->products->get(Ulid::fromString($id));
 
-            if (null !== $command->sellingPriceCents || null !== $command->buyingPriceCents) {
-                $product->reprice(
-                    null === $command->sellingPriceCents ? $product->sellingPrice() : Money::cents($command->sellingPriceCents),
-                    null === $command->buyingPriceCents ? $product->buyingPrice() : Money::cents($command->buyingPriceCents),
-                );
+            if (null !== $command->sellingPriceCents) {
+                $product->reprice(Money::cents($command->sellingPriceCents));
             }
             if ($command->changeType) {
                 $product->classify($type);

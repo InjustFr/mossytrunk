@@ -15,19 +15,19 @@ use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class WorkspaceIsolationTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     private string $eventId;
 
@@ -39,7 +39,7 @@ final class WorkspaceIsolationTest extends KernelTestCase
     {
         self::actAsMemberOf('Atelier A');
         $type = self::getContainer()->get(CreateProductTypeHandler::class)('Print');
-        $this->productId = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_500, typeId: (string) $type->id()));
+        $this->productId = (string) self::createProduct('Forêt', 1_500, typeId: (string) $type->id());
         $this->eventId = (string) self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
         self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('2 prints', 2_500, DiscountRules::product($this->productId, 2)));
         $this->orderId = (string) self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 15:00'), [new RequestedLine($this->productId, null, 1)]))->id();
@@ -70,7 +70,7 @@ final class WorkspaceIsolationTest extends KernelTestCase
         self::actAsMemberOf('Atelier B');
 
         self::getContainer()->get(CreateProductTypeHandler::class)('Print');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_500));
+        self::createProduct('Forêt', 1_500);
         self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
 
         self::assertCount(1, self::getContainer()->get(ListProductTypesHandler::class)());

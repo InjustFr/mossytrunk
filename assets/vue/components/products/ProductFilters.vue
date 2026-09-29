@@ -44,7 +44,7 @@ const selectedChip = computed({
         </Toggle>
         <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="product-filters__missing">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
-            {{ plural(missingCostCount, 'prix d\'achat à renseigner', 'prix d\'achat à renseigner') }}
+            {{ plural(missingCostCount, 'produit sans coût d\'achat', 'produits sans coût d\'achat') }}
         </Toggle>
     </div>
 </template>

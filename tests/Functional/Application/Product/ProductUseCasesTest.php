@@ -16,12 +16,14 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 
 final class ProductUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
     use ClockSensitiveTrait;
 
     protected function setUp(): void
@@ -32,8 +34,8 @@ final class ProductUseCasesTest extends KernelTestCase
     public function testCreateThenListProducts(): void
     {
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('T-shirt', 2_000, 800, ['S', 'M']));
-        $create(new CreateProduct('Aquarelle', 5_000));
+        self::createProduct('T-shirt', 2_000, 800, ['S', 'M']);
+        self::createProduct('Aquarelle', 5_000);
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
 
@@ -46,8 +48,8 @@ final class ProductUseCasesTest extends KernelTestCase
     public function testProductsShowTheirSalesOfTheCurrentYear(): void
     {
         $container = self::getContainer();
-        $print = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Print', 1_500, 300, ['A4', 'A3']));
-        $container->get(CreateProductHandler::class)(new CreateProduct('Zine', 1_000));
+        $print = (string) self::createProduct('Print', 1_500, 300, ['A4', 'A3']);
+        self::createProduct('Zine', 1_000);
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2027', 'Lyon', new \DateTimeImmutable('2027-03-06'), new \DateTimeImmutable('2027-03-06')));
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2028', 'Lyon', new \DateTimeImmutable('2028-03-04'), new \DateTimeImmutable('2028-03-04')));
         $place = $container->get(PlaceOrderHandler::class);
@@ -68,9 +70,9 @@ final class ProductUseCasesTest extends KernelTestCase
     {
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('Forêt', 1_500, typeId: $print));
-        $create(new CreateProduct('Forêt', 1_500, typeId: $print));
-        $create(new CreateProduct('Clairière', 12_000));
+        self::createProduct('Forêt', 1_500, typeId: $print);
+        self::createProduct('Forêt', 1_500, typeId: $print);
+        self::createProduct('Clairière', 12_000);
 
         $references = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference', 'displayName');
 
@@ -80,16 +82,16 @@ final class ProductUseCasesTest extends KernelTestCase
 
     public function testUpdateKeepsTheReference(): void
     {
-        $id = self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('T-shirt', 2_000, 0, ['S']));
+        $id = self::createProduct('T-shirt', 2_000, 900, ['S']);
 
-        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $id, 'T-shirt bio', 2_500, 900, ['S', 'M']));
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $id, 'T-shirt bio', 2_500, ['S', 'M']));
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $product = self::getContainer()->get(ListProductsHandler::class)()[0];
         self::assertSame('PRD-T-SHIRT', $product->reference);
         self::assertSame('T-shirt bio', $product->name);
         self::assertSame(2_500, $product->sellingPrice);
-        self::assertSame(900, $product->buyingPrice);
+        self::assertSame(900, $product->buyingPrice, 'editing a product never changes its buying price');
         self::assertSame(['S', 'M'], $product->variants);
     }
 }

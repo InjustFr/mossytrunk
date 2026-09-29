@@ -18,7 +18,6 @@ final readonly class GabaritView
         public ?string $typeId,
         public ?string $typeName,
         public int $sellingPrice,
-        public int $buyingPrice,
         public array $variants,
         public array $adaptations,
     ) {
@@ -32,7 +31,6 @@ final readonly class GabaritView
             null === $gabarit->type() ? null : (string) $gabarit->type()->id(),
             $gabarit->type()?->name(),
             $gabarit->sellingPrice()->amount(),
-            $gabarit->buyingPrice()->amount(),
             $gabarit->variants(),
             $gabarit->adaptations(),
         );

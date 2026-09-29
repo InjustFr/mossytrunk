@@ -14,7 +14,6 @@ final readonly class CreateProduct
     public function __construct(
         public string $name,
         public int $sellingPriceCents,
-        public int $buyingPriceCents = 0,
         public array $variants = [],
         public ?string $typeId = null,
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,

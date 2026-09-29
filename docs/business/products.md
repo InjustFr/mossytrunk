@@ -8,7 +8,7 @@ A **product** is a real item sold at events: sticker, print, T-shirt, original a
 | `type` | Optional **product type** (Print, Sticker, T-shirt…) |
 | `name` | Specific name; the product is **displayed as « {type} {name} »** (type Print + name « Forêt » = « Print Forêt ») |
 | `sellingPrice` | Default price charged to customers (cents) |
-| `buyingPrice` | What one unit costs the business (cents). **0 = unknown** (e.g. after a SumUp import), editable later; restocking sets it to the last purchase price (see [stock.md](stock.md)) |
+| `buyingPrice` | **Last purchase price**, read-only: set only by restocking or receiving a supplier order (see [stock.md](stock.md)); a new product starts at **0 = never bought** (cost unknown) |
 | `lowStockThreshold` | « Alerte stock bas », default 10 (see [stock.md](stock.md)) |
 | `variants` | Free-text labels (colour, size, design…). Empty list = **unique product** |
 
@@ -25,7 +25,7 @@ Types are created from `/api/product-types` or **inline from the product form** 
 |---|---|---|---|
 | P1 | Reference and name are required (trimmed) | `Product::__construct()`, `Product::rename()` | `ProductTest` |
 | P2 | Reference is generated as `{TYPE CODE or PRD}-{NAME SLUG}` (accents removed, max 40 chars), suffixed `-2`, `-3`… when taken; it never changes afterwards (renaming or re-typing keeps it) | `ProductReferenceGenerator`, `CreateProductHandler`, SumUp import (+ DB unique index on workspace + reference) | `ProductReferenceGeneratorTest`, `ProductUseCasesTest` |
-| P3 | Prices are never negative; buying price defaults to 0 | `Product::reprice()`, `Product::create()` | `ProductTest` |
+| P3 | Prices are never negative. Only the selling price is entered by the user; the buying price starts at 0 and changes only through purchases (`Product::bought()`: restock, supplier order reception, or copied when a variant moves to a new product). Editing a product never changes it | `Product::reprice()`, `Product::bought()` | `ProductTest`, `ProductUseCasesTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
 | P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `CreateProductTypeHandler`, `RenameProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
@@ -36,7 +36,7 @@ Types are created from `/api/product-types` or **inline from the product form** 
 ## Filters & batch edit
 
 The product list can be filtered by type (chips, incl. « Sans type ») and text. Ticked products (« Tout sélectionner » ticks what is visible)
-can be edited together: selling price, buying price, type, variants to add (skipped when already present), variants to remove.
+can be edited together: selling price, type, variants to add (skipped when already present), variants to remove.
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
@@ -70,9 +70,9 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 
 | Use case | Endpoint |
 |---|---|
-| `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, buyingPrice?, variants[]}` |
+| `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, variants[], lowStockThreshold?}` |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
-| `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, buyingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
+| `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
 | `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
@@ -81,5 +81,5 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 
 `ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
 
-UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with a colour mark, one colour per type in alphabetical order), margin (selling − buying price, and its share of the selling price), units sold and sales of the year.
-Products with a buying price of 0 show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N prix d'achat à renseigner » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).
+UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with a colour mark, one colour per type in alphabetical order), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
+Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).

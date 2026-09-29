@@ -75,10 +75,10 @@ final readonly class MoveVariantHandler
             $this->references->generate($source->type(), trim($name)),
             $name,
             $source->sellingPrice(),
-            $source->buyingPrice(),
             [],
             $source->type(),
         );
+        $product->bought($source->buyingPrice());
         $this->products->add($product);
 
         return $product;

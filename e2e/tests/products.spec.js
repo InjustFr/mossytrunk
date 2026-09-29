@@ -3,7 +3,7 @@ import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
 import { createProduct } from './support/api.js';
 
-test('create a product with variants, then set its buying price', async ({ page }) => {
+test('create a product with variants, then change its selling price; its buying price comes from stock', async ({ page }) => {
     const name = unique('T-shirt');
 
     await page.goto('/produits');
@@ -30,11 +30,12 @@ test('create a product with variants, then set its buying price', async ({ page 
     const edit = page.getByRole('dialog', { name: 'Modifier le produit' });
     await expect(edit.getByLabel('Nom')).toHaveValue(name);
     await expect(edit.getByText(/Référence PRD-T-SHIRT/)).toBeVisible();
-    await edit.getByLabel("Prix d'achat (€)").fill('7,50');
+    await expect(edit.getByText('Pas encore acheté')).toBeVisible();
+    await edit.getByLabel('Prix de vente (€)').fill('25');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('mis à jour');
-    await expect(row).toContainText('7,50');
+    await expect(row).toContainText('25,00');
 });
 
 test('shows validation errors inline', async ({ page }) => {
@@ -119,14 +120,14 @@ test('long lists are paginated', async ({ page, request }) => {
     await expect(pagination).toContainText('1–25 sur 25');
 });
 
-test('the dashboard leads to the products whose buying price is missing', async ({ page, request }) => {
+test('the dashboard leads to the products never bought', async ({ page, request }) => {
     const unknown = await createProduct(request, { name: unique('Mystère'), sellingPrice: 1_000, buyingPrice: 0 });
     const known = await createProduct(request, { name: unique('Connu'), sellingPrice: 1_000, buyingPrice: 400 });
 
     await page.goto('/tableau-de-bord');
-    await page.getByRole('status').getByRole('link', { name: "Renseigner les prix d'achat" }).click();
+    await page.getByRole('status').getByRole('link', { name: "Voir les produits sans coût d'achat" }).click();
 
-    const missingCost = page.getByRole('button', { name: /prix d'achat à renseigner/ });
+    const missingCost = page.getByRole('button', { name: /sans coût d'achat/ });
     await expect(missingCost).toHaveAttribute('data-state', 'on');
     await page.getByLabel('Rechercher un produit').fill(unknown.name);
     await expect(page.getByRole('row').filter({ hasText: unknown.name })).toBeVisible();

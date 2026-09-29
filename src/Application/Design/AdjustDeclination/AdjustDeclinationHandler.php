@@ -23,7 +23,6 @@ final readonly class AdjustDeclinationHandler
             Ulid::fromString($command->declinationId),
             $command->productName,
             Money::cents($command->sellingPriceCents),
-            Money::cents($command->buyingPriceCents),
             $command->variants,
         );
         $this->transaction->commit();

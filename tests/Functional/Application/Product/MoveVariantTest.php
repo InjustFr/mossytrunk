@@ -12,19 +12,19 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariant;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Domain\Product\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class MoveVariantTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -108,7 +108,7 @@ final class MoveVariantTest extends KernelTestCase
      */
     private function product(string $name, int $price, array $variants = []): string
     {
-        return (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct($name, $price, 300, $variants));
+        return (string) self::createProduct($name, $price, 300, $variants);
     }
 
     /**

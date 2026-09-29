@@ -36,8 +36,8 @@ final class DesignUseCasesTest extends KernelTestCase
         self::actAsMemberOf();
         $types = self::getContainer()->get(CreateProductTypeHandler::class);
         $saveGabarit = self::getContainer()->get(SaveGabaritHandler::class);
-        $this->print = (string) $saveGabarit(new SaveGabarit(null, 'Tirage 15×15', (string) $types('Print')->id(), 1_200, 300, [], ['Recadrage carré']))->id();
-        $this->sticker = (string) $saveGabarit(new SaveGabarit(null, 'Sticker brillant', (string) $types('Sticker')->id(), 400, 60, ['5 cm', '8 cm']))->id();
+        $this->print = (string) $saveGabarit(new SaveGabarit(null, 'Tirage 15×15', (string) $types('Print')->id(), 1_200, [], ['Recadrage carré']))->id();
+        $this->sticker = (string) $saveGabarit(new SaveGabarit(null, 'Sticker brillant', (string) $types('Sticker')->id(), 400, ['5 cm', '8 cm']))->id();
     }
 
     public function testValidatingADesignCreatesOneProductPerDeclination(): void
@@ -46,7 +46,7 @@ final class DesignUseCasesTest extends KernelTestCase
         $design = $this->view($designId);
         $print = $design->declinations[0];
         self::getContainer()->get(TickAdaptationHandler::class)($designId, $print['id'], 'Recadrage carré', true);
-        self::getContainer()->get(AdjustDeclinationHandler::class)(new AdjustDeclination($designId, $design->declinations[1]['id'], 'Forêt', 450, 70, ['8 cm']));
+        self::getContainer()->get(AdjustDeclinationHandler::class)(new AdjustDeclination($designId, $design->declinations[1]['id'], 'Forêt', 450, ['8 cm']));
 
         self::assertSame(2, self::getContainer()->get(ValidateDesignHandler::class)($designId));
         $this->clear();
@@ -57,7 +57,6 @@ final class DesignUseCasesTest extends KernelTestCase
         $products = self::getContainer()->get(ListProductsHandler::class)();
         $sticker = array_values(array_filter($products, static fn (ProductView $product): bool => 'Sticker Forêt' === $product->displayName))[0];
         self::assertSame(450, $sticker->sellingPrice);
-        self::assertSame(70, $sticker->buyingPrice);
         self::assertSame(['8 cm'], $sticker->variants);
         self::assertSame('STI-FORET', $sticker->reference);
         self::assertContains('Print Forêt', array_map(static fn (ProductView $product): string => $product->displayName, $products));

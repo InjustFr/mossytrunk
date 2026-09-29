@@ -66,7 +66,7 @@ watch(visible, (value) => {
                         <div v-else class="order-recap__row order-recap__row--product order-recap__row--leaf">
                             <span class="order-recap__label">
                                 {{ product.name }}
-                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" size="0.875rem" aria-label="Prix d'achat non renseigné (0 €)" role="img" />
+                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" size="0.875rem" aria-label="Coût d'achat inconnu (0 €)" role="img" />
                             </span>
                             <span class="order-recap__quantity">{{ product.quantity }}</span>
                             <MoneyAmount class="order-recap__amount" :cents="product.sales" />

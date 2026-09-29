@@ -20,8 +20,8 @@ final class DesignTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->print = Gabarit::create(TestWorkspace::get(), 'Tirage 15×15', ProductType::create(TestWorkspace::get(), 'Print', 'PRI'), Money::cents(1_200), Money::cents(300), [], ['Recadrage carré', 'Fond perdu 3 mm']);
-        $this->glossy = Gabarit::create(TestWorkspace::get(), 'Sticker brillant', ProductType::create(TestWorkspace::get(), 'Sticker', 'STI'), Money::cents(400), Money::cents(60), ['5 cm', '8 cm'], ['Détourage']);
+        $this->print = Gabarit::create(TestWorkspace::get(), 'Tirage 15×15', ProductType::create(TestWorkspace::get(), 'Print', 'PRI'), Money::cents(1_200), [], ['Recadrage carré', 'Fond perdu 3 mm']);
+        $this->glossy = Gabarit::create(TestWorkspace::get(), 'Sticker brillant', ProductType::create(TestWorkspace::get(), 'Sticker', 'STI'), Money::cents(400), ['5 cm', '8 cm'], ['Détourage']);
     }
 
     public function testADeclinationStartsFromItsGabarit(): void
@@ -85,12 +85,12 @@ final class DesignTest extends TestCase
         self::assertSame(DesignStatus::Validated, $design->status());
         self::assertFalse($design->isCurrent());
         $this->expectException(InvalidDesign::class);
-        $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::cents(300), Money::cents(50)));
+        $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::cents(300)));
     }
 
     public function testTwoDeclinationsCannotMakeTheSameProduct(): void
     {
-        $mat = Gabarit::create(TestWorkspace::get(), 'Sticker mat', $this->glossy->type(), Money::cents(400), Money::cents(60));
+        $mat = Gabarit::create(TestWorkspace::get(), 'Sticker mat', $this->glossy->type(), Money::cents(400));
         $design = Design::start(TestWorkspace::get(), 'Forêt');
         $design->decline($mat);
         $glossy = $design->decline($this->glossy);
@@ -105,7 +105,7 @@ final class DesignTest extends TestCase
     {
         $this->expectException(InvalidDesign::class);
 
-        Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::zero(), Money::zero(), [], ['Recto', 'Recto']);
+        Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::zero(), [], ['Recto', 'Recto']);
     }
 
     private function readyDesign(): Design

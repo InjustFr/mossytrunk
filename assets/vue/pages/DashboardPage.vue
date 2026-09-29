@@ -64,8 +64,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             <p v-if="dashboard.productsWithoutCost > 0" class="dashboard-page__check" role="status">
                 <TriangleAlert size="1rem" aria-hidden="true" />
                 <span>
-                    {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} pas de prix d'achat : leur coût compte pour 0 €, le résultat est donc surestimé.
-                    <a href="/produits?prix-achat=manquant">Renseigner les prix d'achat</a>
+                    {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} jamais été acheté{{ dashboard.productsWithoutCost > 1 ? 's' : '' }} : leur coût compte pour 0 €, le résultat est donc surestimé.
+                    <a href="/produits?prix-achat=manquant">Voir les produits sans coût d'achat</a>
                 </span>
             </p>
             <p v-if="dashboard.productsLowOnStock + dashboard.productsOutOfStock > 0" class="dashboard-page__check" role="status">

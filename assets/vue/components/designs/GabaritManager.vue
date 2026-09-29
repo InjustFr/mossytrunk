@@ -16,7 +16,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved']);
 
-const empty = () => ({ name: '', typeId: '', sellingPrice: null, buyingPrice: 0, variants: [], adaptations: [] });
+const empty = () => ({ name: '', typeId: '', sellingPrice: null, variants: [], adaptations: [] });
 const editingId = ref(null);
 const form = reactive(empty());
 const errors = ref({});
@@ -25,7 +25,7 @@ const saving = ref(false);
 function edit(gabarit) {
     editingId.value = gabarit?.id ?? null;
     Object.assign(form, gabarit
-        ? { name: gabarit.name, typeId: gabarit.typeId ?? '', sellingPrice: gabarit.sellingPrice, buyingPrice: gabarit.buyingPrice, variants: [...gabarit.variants], adaptations: [...gabarit.adaptations] }
+        ? { name: gabarit.name, typeId: gabarit.typeId ?? '', sellingPrice: gabarit.sellingPrice, variants: [...gabarit.variants], adaptations: [...gabarit.adaptations] }
         : empty());
     errors.value = {};
 }
@@ -34,7 +34,7 @@ async function onSubmit() {
     saving.value = true;
     errors.value = {};
     try {
-        await props.save(editingId.value, { ...form, typeId: form.typeId || null, sellingPrice: form.sellingPrice ?? -1, buyingPrice: form.buyingPrice ?? 0 });
+        await props.save(editingId.value, { ...form, typeId: form.typeId || null, sellingPrice: form.sellingPrice ?? -1 });
         emit('saved', form.name);
         edit(null);
     } catch (error) {
@@ -74,14 +74,9 @@ async function onSubmit() {
                 <FormField as="group" label="Type des produits créés" :error="errors.typeId">
                     <TypeSelect v-model="form.typeId" />
                 </FormField>
-                <div class="gabarit-manager__row">
-                    <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
-                        <BaseMoneyField v-model="form.sellingPrice" />
-                    </FormField>
-                    <FormField label="Prix d'achat (€)" :error="errors.buyingPrice">
-                        <BaseMoneyField v-model="form.buyingPrice" />
-                    </FormField>
-                </div>
+                <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
+                    <BaseMoneyField v-model="form.sellingPrice" />
+                </FormField>
                 <FormField as="group" label="Variantes proposées" :error="errors.variants">
                     <VariantsInput v-model="form.variants" />
                 </FormField>
@@ -106,6 +101,5 @@ async function onSubmit() {
 .gabarit-manager__meta { color: var(--color-muted); font-size: 0.85rem; }
 .gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-3); }
 .gabarit-manager__title { margin: 0; font-size: 1rem; }
-.gabarit-manager__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
 .gabarit-manager__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

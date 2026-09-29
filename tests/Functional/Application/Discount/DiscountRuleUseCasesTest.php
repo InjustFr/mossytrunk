@@ -20,11 +20,13 @@ use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DiscountRuleUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -34,8 +36,8 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
     public function testDiscountRuleLifecycle(): void
     {
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $sticker = (string) $create(new CreateProduct('Sticker', 400));
-        $bigSticker = (string) $create(new CreateProduct('Sticker XL', 600));
+        $sticker = (string) self::createProduct('Sticker', 400);
+        $bigSticker = (string) self::createProduct('Sticker XL', 600);
 
         $id = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
             '3 stickers pour 10 €',
@@ -70,8 +72,8 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $foret = (string) $create(new CreateProduct('Forêt', 1_500, typeId: $print));
-        $mousse = (string) $create(new CreateProduct('Mousse', 400, typeId: $sticker));
+        $foret = (string) self::createProduct('Forêt', 1_500, typeId: $print);
+        $mousse = (string) self::createProduct('Mousse', 400, typeId: $sticker);
         self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
             '2 prints et 1 sticker pour 15 €',
             [new ConditionDefinition(ConditionDefinition::TYPE, $print, 2), new ConditionDefinition(ConditionDefinition::TYPE, $sticker, 1)],

@@ -26,8 +26,7 @@ final class OtherWorkspaceStory extends Story
                 'reference' => 'CER-'.strtoupper($name),
                 'name' => $name,
                 'sellingPrice' => Money::cents($price),
-                'buyingPrice' => Money::cents(intdiv($price, 3)),
-            ]);
+            ])->bought(Money::cents(intdiv($price, 3)));
         }
     }
 }

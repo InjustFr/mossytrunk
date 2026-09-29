@@ -57,7 +57,6 @@ final readonly class ValidateDesignHandler
                 $this->references->generate($type, $declination->productName()),
                 $declination->productName(),
                 $declination->sellingPrice(),
-                $declination->buyingPrice(),
                 $declination->variants(),
                 $type,
             );

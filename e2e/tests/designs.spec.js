@@ -4,7 +4,7 @@ import { unique } from './support/unique.js';
 test('create a gabarit, decline a design on it, tick its adaptations and validate it into a product', async ({ page, request }) => {
     const gabarit = unique('Carte');
     const design = unique('Clairière');
-    const response = await request.post('/api/gabarits', { data: { name: gabarit, sellingPrice: 250, buyingPrice: 40, adaptations: ['Marges 5 mm', 'Texte au dos'] } });
+    const response = await request.post('/api/gabarits', { data: { name: gabarit, sellingPrice: 250, adaptations: ['Marges 5 mm', 'Texte au dos'] } });
     expect(response.status()).toBe(201);
 
     await page.goto('/creations');

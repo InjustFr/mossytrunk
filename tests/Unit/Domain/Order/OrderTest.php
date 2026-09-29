@@ -14,6 +14,7 @@ use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\Costs;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -27,8 +28,8 @@ final class OrderTest extends TestCase
     protected function setUp(): void
     {
         $this->event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
-        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), Money::cents(80));
-        $this->tshirt = Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), Money::cents(900), ['S', 'M']);
+        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 80);
+        $this->tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S', 'M']), 900);
     }
 
     public function testTotalsAndCostOfGoods(): void
@@ -75,7 +76,8 @@ final class OrderTest extends TestCase
     {
         $order = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
 
-        $this->sticker->reprice(Money::cents(500), Money::cents(100));
+        $this->sticker->reprice(Money::cents(500));
+        $this->sticker->bought(Money::cents(100));
 
         self::assertSame(400, $order->total()->amount());
         self::assertSame(80, $order->costOfGoods()->amount());
@@ -164,7 +166,7 @@ final class OrderTest extends TestCase
 
     public function testMovedSalesKeepTheirPricesAndMergeWithTheSameItemAtTheSamePrices(): void
     {
-        $tee = Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), Money::cents(900), ['M']);
+        $tee = Costs::bought(Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), ['M']), 900);
         $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [
             new OrderedItem($this->tshirt->sellable('M'), 1),
             new OrderedItem($tee->sellable('M'), 2),
@@ -183,7 +185,7 @@ final class OrderTest extends TestCase
     public function testMovedSalesAtAnotherPriceStayOnTheirOwnLine(): void
     {
         $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($this->sticker->sellable(null), 2)], []);
-        $cheaper = Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300), Money::cents(80));
+        $cheaper = Costs::bought(Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300)), 80);
         $order2 = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($cheaper->sellable(null), 1), new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         $order->moveSales($this->sticker->id(), null, $cheaper->sellable(null));

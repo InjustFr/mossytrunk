@@ -155,25 +155,27 @@ final class ConventionSeasonStory extends Story
      */
     private function product(string $reference, string $name, int $selling, int $buying, array $variants = [], ?ProductType $type = null): Product
     {
-        return ProductFactory::createOne([
+        $product = ProductFactory::createOne([
             'workspace' => $this->workspace,
             'type' => $type,
             'reference' => $reference,
             'name' => $name,
             'sellingPrice' => Money::cents($selling),
-            'buyingPrice' => Money::cents($buying),
             'variants' => $variants,
         ]);
+        $product->bought(Money::cents($buying));
+
+        return $product;
     }
 
     private function designs(ProductType $sticker, ProductType $print): void
     {
-        $gabarit = fn (string $name, ProductType $type, int $selling, int $buying, array $variants, array $adaptations): Gabarit => $this->persisted(
-            Gabarit::create($this->workspace, $name, $type, Money::cents($selling), Money::cents($buying), $variants, $adaptations),
+        $gabarit = fn (string $name, ProductType $type, int $selling, array $variants, array $adaptations): Gabarit => $this->persisted(
+            Gabarit::create($this->workspace, $name, $type, Money::cents($selling), $variants, $adaptations),
         );
-        $square = $gabarit('Tirage 15×15', $print, 1_200, 300, [], ['Recadrage carré', 'Fond perdu 3 mm', 'Profil couleur CMJN']);
-        $glossy = $gabarit('Sticker brillant', $sticker, 400, 60, [], ['Détourage', 'Contour de découpe']);
-        $gabarit('Sticker mat', $sticker, 450, 70, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
+        $square = $gabarit('Tirage 15×15', $print, 1_200, [], ['Recadrage carré', 'Fond perdu 3 mm', 'Profil couleur CMJN']);
+        $glossy = $gabarit('Sticker brillant', $sticker, 400, [], ['Détourage', 'Contour de découpe']);
+        $gabarit('Sticker mat', $sticker, 450, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
 
         $undergrowth = $this->persisted(DesignCollection::start($this->workspace, 'Sous-bois', 'Série d\'automne : champignons, lichens, fougères.'));
         $lichen = $this->persisted(Design::start($this->workspace, 'Lichen', $undergrowth, 'Palette vert-de-gris, texture papier.'));

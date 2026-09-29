@@ -20,8 +20,6 @@ final readonly class BatchProductsPayload
         public array $productIds = [],
         #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
         public ?int $sellingPrice = null,
-        #[Assert\PositiveOrZero(message: 'Le prix d\'achat ne peut pas être négatif.')]
-        public ?int $buyingPrice = null,
         public bool $changeType = false,
         #[Assert\Ulid(message: 'Type invalide.')]
         public ?string $typeId = null,
@@ -34,6 +32,6 @@ final readonly class BatchProductsPayload
 
     public function toCommand(): BatchUpdateProducts
     {
-        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->buyingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants);
+        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants);
     }
 }

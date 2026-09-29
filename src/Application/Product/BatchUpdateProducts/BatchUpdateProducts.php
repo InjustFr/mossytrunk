@@ -17,7 +17,6 @@ final readonly class BatchUpdateProducts
     public function __construct(
         public array $productIds,
         public ?int $sellingPriceCents = null,
-        public ?int $buyingPriceCents = null,
         public bool $changeType = false,
         public ?string $typeId = null,
         public array $addVariants = [],

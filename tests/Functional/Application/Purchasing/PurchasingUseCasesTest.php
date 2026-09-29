@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Purchasing;
 
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Purchasing\DeleteSupplierOrder\DeleteSupplierOrderHandler;
 use App\Application\Purchasing\GetSupplierOrder\GetSupplierOrderHandler;
 use App\Application\Purchasing\ListSupplierOrders\ListSupplierOrdersHandler;
@@ -22,11 +20,13 @@ use App\Application\Stock\GetProductStock\GetProductStockHandler;
 use App\Domain\Purchasing\InvalidPurchase;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class PurchasingUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
     private string $supplierId;
     private string $sticker;
     private string $tshirt;
@@ -35,9 +35,8 @@ final class PurchasingUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
         $this->supplierId = (string) self::getContainer()->get(SaveSupplierHandler::class)(new SaveSupplier(null, 'Imprimerie du Lac'))->id();
-        $createProduct = self::getContainer()->get(CreateProductHandler::class);
-        $this->sticker = (string) $createProduct(new CreateProduct('Sticker', 400, 30));
-        $this->tshirt = (string) $createProduct(new CreateProduct('T-shirt', 2_000, 900, ['S', 'M']));
+        $this->sticker = (string) self::createProduct('Sticker', 400, 30);
+        $this->tshirt = (string) self::createProduct('T-shirt', 2_000, 900, ['S', 'M']);
     }
 
     public function testReceivingAnOrderStocksWhatArrivedAtTheRealUnitCost(): void

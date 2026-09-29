@@ -14,7 +14,6 @@ final readonly class AdjustDeclination
         public string $declinationId,
         public string $productName,
         public int $sellingPriceCents,
-        public int $buyingPriceCents,
         public array $variants = [],
     ) {
     }

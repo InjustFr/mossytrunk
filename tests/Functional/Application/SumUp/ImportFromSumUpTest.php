@@ -24,12 +24,14 @@ use App\Application\Workspace\UpdateSumUpSettings\UpdateSumUpSettingsHandler;
 use App\Domain\Shared\Money;
 use App\Infrastructure\SumUp\FakeSumUpGateway;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ImportFromSumUpTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -99,8 +101,8 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testLinesAreMatchedToExistingProductVariants(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Print A4', 2_000, 600, ['Mousse', 'Fougère']));
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Tote bag', 1_500, 500));
+        self::createProduct('Print A4', 2_000, 600, ['Mousse', 'Fougère']);
+        self::createProduct('Tote bag', 1_500, 500);
 
         $report = $this->import();
 
@@ -112,7 +114,7 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testImportedOrdersTakeTheirUnitsFromStockInChronologicalOrder(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        $badge = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Badge', 300, 50));
+        $badge = (string) self::createProduct('Badge', 300, 50);
         self::getContainer()->get(RestockHandler::class)(new Restock($badge, null, 2, 100));
         self::getContainer()->get(RestockHandler::class)(new Restock($badge, null, 2, 400));
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
@@ -136,7 +138,7 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testProductWithVariantsButNoVariantInSumUpBlocksTheOrder(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('T-shirt', 2_000, 0, ['S', 'M']));
+        self::createProduct('T-shirt', 2_000, 0, ['S', 'M']);
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             new SumUpTransaction('TX-TS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(2_000), [new SumUpLine('T-shirt', Money::cents(2_000), 1)]),
         ]);
@@ -153,8 +155,8 @@ final class ImportFromSumUpTest extends KernelTestCase
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_200, typeId: $print));
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 600, typeId: $sticker));
+        self::createProduct('Forêt', 1_200, typeId: $print);
+        self::createProduct('Mousse', 600, typeId: $sticker);
         $rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(
             DiscountRules::fixedPrice('2 prints et 1 sticker pour 18 €', 1_800, DiscountRules::type($print, 2), DiscountRules::type($sticker, 1)),
         );
@@ -213,7 +215,7 @@ final class ImportFromSumUpTest extends KernelTestCase
     public function testDiscountedLinesNeitherLowerTheProductPriceNorTheOrderTotal(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 283));
+        self::createProduct('Mousse', 283);
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             new SumUpTransaction('TX-BUNDLE', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(800), [
                 new SumUpLine('Calcifer', Money::cents(267), 1),
@@ -239,8 +241,8 @@ final class ImportFromSumUpTest extends KernelTestCase
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('T-shirt', 2_000, 0, ['S', 'M']));
-        $create(new CreateProduct('Zine', 1_000));
+        self::createProduct('T-shirt', 2_000, 0, ['S', 'M']);
+        self::createProduct('Zine', 1_000);
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             new SumUpTransaction('TX-VARIANTS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(10_500), [
                 new SumUpLine('Forêt', Money::cents(1_500), 1, variant: 'A4'),
@@ -266,8 +268,8 @@ final class ImportFromSumUpTest extends KernelTestCase
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         $create = self::getContainer()->get(CreateProductHandler::class);
-        $create(new CreateProduct('Mug Lichen', 1_200));
-        $create(new CreateProduct('Mug (Fougère)', 1_200));
+        self::createProduct('Mug Lichen', 1_200);
+        self::createProduct('Mug (Fougère)', 1_200);
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             new SumUpTransaction('TX-SPLIT', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(2_400), [
                 new SumUpLine('Mug', Money::cents(1_200), 1, variant: 'Lichen'),
@@ -286,7 +288,7 @@ final class ImportFromSumUpTest extends KernelTestCase
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
-        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 400, 60, typeId: $sticker));
+        self::createProduct('Mousse', 400, 60, typeId: $sticker);
 
         $report = $this->import();
 

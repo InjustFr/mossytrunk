@@ -130,7 +130,7 @@ final class SumUpProductResolver
     private function sold(Product $product, ?string $variant, SumUpLine $line): SellableItem
     {
         if (isset($this->created[(string) $product->id()]) && $line->unitPrice->greaterThan($product->sellingPrice())) {
-            $product->reprice($line->unitPrice, $product->buyingPrice());
+            $product->reprice($line->unitPrice);
         }
         $item = $product->sellable($variant);
 
@@ -146,7 +146,7 @@ final class SumUpProductResolver
 
     private function create(string $name, Money $sellingPrice, ?ProductType $type): Product
     {
-        $product = Product::create($this->workspace->current(), $this->references->generate($type, $name), $name, $sellingPrice, Money::zero(), [], $type);
+        $product = Product::create($this->workspace->current(), $this->references->generate($type, $name), $name, $sellingPrice, [], $type);
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         $this->created[(string) $product->id()] = $product;

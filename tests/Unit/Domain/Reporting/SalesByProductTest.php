@@ -12,6 +12,7 @@ use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\SalesByProduct;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
+use App\Tests\Support\Costs;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +20,7 @@ final class SalesByProductTest extends TestCase
 {
     public function testSumsEveryVariantOfAProductAndRanksBySales(): void
     {
-        $print = Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_500), Money::cents(300), ['A4', 'A3']);
+        $print = Costs::bought(Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_500), ['A4', 'A3']), 300);
         $sticker = Product::create(TestWorkspace::get(), 'STI', 'Sticker', Money::cents(400));
         $event = Event::schedule(TestWorkspace::get(), 'Salon', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-05-09'), new \DateTimeImmutable('2026-05-10')));
         $at = new \DateTimeImmutable('2026-05-09 12:00', new \DateTimeZone('Europe/Paris'));

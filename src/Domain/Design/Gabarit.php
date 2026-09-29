@@ -36,9 +36,6 @@ class Gabarit
     #[ORM\Embedded(class: Money::class, columnPrefix: 'selling_price_')]
     private Money $sellingPrice;
 
-    #[ORM\Embedded(class: Money::class, columnPrefix: 'buying_price_')]
-    private Money $buyingPrice;
-
     /** @var list<string> */
     #[ORM\Column(type: Types::JSON)]
     private array $variants = [];
@@ -51,40 +48,39 @@ class Gabarit
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    private function __construct(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, Money $buyingPrice, array $variants, array $adaptations)
+    private function __construct(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, array $variants, array $adaptations)
     {
         $this->id = new Ulid();
         $this->workspace = $workspace;
-        $this->describe($name, $type, $sellingPrice, $buyingPrice, $variants, $adaptations);
+        $this->describe($name, $type, $sellingPrice, $variants, $adaptations);
     }
 
     /**
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    public static function create(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, Money $buyingPrice, array $variants = [], array $adaptations = []): self
+    public static function create(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, array $variants = [], array $adaptations = []): self
     {
-        return new self($workspace, $name, $type, $sellingPrice, $buyingPrice, $variants, $adaptations);
+        return new self($workspace, $name, $type, $sellingPrice, $variants, $adaptations);
     }
 
     /**
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    public function describe(string $name, ?ProductType $type, Money $sellingPrice, Money $buyingPrice, array $variants, array $adaptations): void
+    public function describe(string $name, ?ProductType $type, Money $sellingPrice, array $variants, array $adaptations): void
     {
         $name = trim($name);
         if ('' === $name) {
             throw InvalidDesign::emptyName('du gabarit');
         }
-        if ($sellingPrice->isNegative() || $buyingPrice->isNegative()) {
+        if ($sellingPrice->isNegative()) {
             throw InvalidMoney::mustNotBeNegative('Le prix');
         }
 
         $this->name = $name;
         $this->type = $type;
         $this->sellingPrice = $sellingPrice;
-        $this->buyingPrice = $buyingPrice;
         $this->variants = array_values(array_unique(array_filter(array_map('trim', $variants), static fn (string $variant): bool => '' !== $variant)));
         $this->adaptations = TextList::clean($adaptations);
     }
@@ -107,11 +103,6 @@ class Gabarit
     public function sellingPrice(): Money
     {
         return $this->sellingPrice;
-    }
-
-    public function buyingPrice(): Money
-    {
-        return $this->buyingPrice;
     }
 
     /**

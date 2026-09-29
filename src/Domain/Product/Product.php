@@ -17,7 +17,7 @@ use Symfony\Component\Uid\Ulid;
  * Rules (see docs/business/products.md):
  * - reference and name are required; the reference is unique, generated at creation
  *   ({@see ProductReferenceGenerator}) and never changes afterwards.
- * - prices are never negative; the buying price defaults to 0 (unknown, e.g. after a SumUp import).
+ * - prices are never negative; the buying price is the last purchase price, set by restocking only (0 = unknown).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
  * - a product may have a type; it is then displayed as "{type} {name}" (e.g. "Print Forêt").
@@ -66,7 +66,7 @@ class Product
     /**
      * @param list<string> $variants
      */
-    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, Money $buyingPrice, array $variants, ?ProductType $type)
+    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, array $variants, ?ProductType $type)
     {
         $this->id = $id;
         $this->workspace = $workspace;
@@ -78,7 +78,8 @@ class Product
         $this->reference = $reference;
         $this->rename($name);
         $this->type = $type;
-        $this->reprice($sellingPrice, $buyingPrice);
+        $this->reprice($sellingPrice);
+        $this->buyingPrice = Money::zero();
         foreach ($variants as $variant) {
             $this->addVariant($variant);
         }
@@ -87,9 +88,9 @@ class Product
     /**
      * @param list<string> $variants
      */
-    public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, ?Money $buyingPrice = null, array $variants = [], ?ProductType $type = null): self
+    public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, array $variants = [], ?ProductType $type = null): self
     {
-        return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $buyingPrice ?? Money::zero(), $variants, $type);
+        return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $variants, $type);
     }
 
     public function classify(?ProductType $type): void
@@ -107,22 +108,22 @@ class Product
         $this->name = $name;
     }
 
-    public function reprice(Money $sellingPrice, Money $buyingPrice): void
+    public function reprice(Money $sellingPrice): void
     {
         if ($sellingPrice->isNegative()) {
             throw InvalidMoney::mustNotBeNegative('Le prix de vente');
         }
-        if ($buyingPrice->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix d\'achat');
-        }
 
         $this->sellingPrice = $sellingPrice;
-        $this->buyingPrice = $buyingPrice;
     }
 
     public function bought(Money $unitCost): void
     {
-        $this->reprice($this->sellingPrice, $unitCost);
+        if ($unitCost->isNegative()) {
+            throw InvalidMoney::mustNotBeNegative('Le prix d\'achat');
+        }
+
+        $this->buyingPrice = $unitCost;
     }
 
     public function alertBelow(int $threshold): void

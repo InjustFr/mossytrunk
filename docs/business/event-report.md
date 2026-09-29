@@ -12,7 +12,7 @@ use case `GetEventReport` → `GET /api/events/{id}/report`; UI: report card on 
 gross sales        = Σ order subtotals (unit selling price snapshot × qty)
 discounts          = Σ order discounts (rules, « Remise SumUp »)
 turnover (CA)      = gross sales − discounts                  = Σ order totals
-cost of goods      = Σ unit buying price snapshot × qty
+cost of goods      = Σ line costs (units taken from stock)
 URSSAF             = 12.8 % × turnover   (rounded to the cent, half up)
 result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 ```
@@ -20,7 +20,7 @@ result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | R1 | URSSAF contributions are **12.8 % of the turnover** (after discounts), micro-entrepreneur flat rate for selling goods. The rate lives in one constant | `UrssafContribution::RATE_BASIS_POINTS` | `EventResultTest`, `MoneyTest` |
-| R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A buying price of 0 means *unknown* and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
+| R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A cost of 0 means *unknown* (product never bought) and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
 | R3 | Only the event's own orders count | `GetEventReportHandler` | `EventReportTest` |
 | R4 | The result can be negative (loss) | `EventResult` | `EventResultTest` |
 
@@ -30,7 +30,7 @@ The report is a **receipt**: the result in large type (with its share of the tur
 chiffre d'affaires − coût d'achat − dépenses − URSSAF (rate shown) = **Résultat**.
 
 - **Chiffre d'affaires** unfolds (open when there are orders) into gross sales, discounts and the **orders recap**: an accordion
-  grouped by **type → product → variants** (quantity and sales before discounts at each level; warning icon when a buying price is unknown).
+  grouped by **type → product → variants** (quantity and sales before discounts at each level; warning icon when a cost is unknown).
   Types and names are the products' current ones (untyped or deleted products under « Sans type »), see `GetEventReport/OrderRecap.php` (`OrderRecapTest`).
   The article list can be hidden with « Afficher le détail des articles » (remembered in the browser). Link to the orders list filtered on the event.
 - Expenses are listed (and edited) in their own card below the receipt.

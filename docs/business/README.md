@@ -9,7 +9,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Page | Covers |
 |---|---|
 | [accounts.md](accounts.md) | Users, workspaces, sign-in, invitation and password reset links |
-| [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price 0 = unknown |
+| [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price = last purchase price (0 = never bought) |
 | [events.md](events.md) | Events, periods in Europe/Paris, no overlap, expenses |
 | [orders.md](orders.md) | Orders, auto-link to the event, lines & snapshots, totals, margin |
 | [discounts.md](discounts.md) | Discount rules (conditions, action, validity) and the automatic calculation |

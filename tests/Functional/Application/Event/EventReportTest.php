@@ -12,14 +12,14 @@ use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
-use App\Application\Product\CreateProduct\CreateProduct;
-use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class EventReportTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ final class EventReportTest extends KernelTestCase
         $expo = (string) $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Japan Expo', 'Villepinte', new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Marché', 'Lyon', new \DateTimeImmutable('2026-08-01'), new \DateTimeImmutable('2026-08-01')));
         $container->get(AddExpenseHandler::class)(new AddExpense($expo, 'Stand', 10_000));
-        $print = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Print', 1_500, 500));
+        $print = (string) self::createProduct('Print', 1_500, 500);
 
         $place = $container->get(PlaceOrderHandler::class);
         $place(new PlaceOrder(new \DateTimeImmutable('2026-07-10 12:00'), [new RequestedLine($print, null, 10)]));

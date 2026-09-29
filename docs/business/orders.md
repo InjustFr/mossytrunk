@@ -7,7 +7,7 @@ An **order** is a sale made during an event.
 | `reference` | `CMD-YYYYMMDD-XXXXXX` for manual orders; the SumUp transaction code for imports |
 | `event` | The event the sale happened at (required) |
 | `placedAt` | Date-time of the sale (stored with time zone, displayed in Europe/Paris) |
-| `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and unit buying price |
+| `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and the **cost** of the units taken from stock |
 | `appliedDiscounts` | Snapshot list of `{label, amount, ruleId}` (`ruleId` null for « Remise SumUp » and older orders) |
 | `paymentMethod` | `card` or `cash`, from the SumUp import (see [sumup-import.md](sumup-import.md), S13); none for manual orders |
 | `source` | `manual` or `sumup` |

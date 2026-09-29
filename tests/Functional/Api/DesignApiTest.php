@@ -15,7 +15,7 @@ final class DesignApiTest extends WebTestCase
     public function testFromGabaritToProduct(): void
     {
         $client = self::signedInClient();
-        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'sellingPrice' => 250, 'buyingPrice' => 40, 'adaptations' => ['Marges 5 mm']]);
+        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'sellingPrice' => 250, 'adaptations' => ['Marges 5 mm']]);
         self::assertResponseStatusCodeSame(201);
         $gabaritId = self::body($client)['id'];
 
