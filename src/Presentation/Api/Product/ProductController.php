@@ -87,12 +87,13 @@ final class ProductController extends AbstractController
     public function design(string $id, Request $request, DesignProductHandler $designProduct): JsonResponse
     {
         $payload = $request->getPayload();
-        $gabaritId = (string) $payload->get('gabaritId');
-        $designId = $payload->get('designId');
+        $gabaritId = $payload->getString('gabaritId');
+        $designId = $payload->getString('designId');
+        $collectionId = $payload->getString('collectionId');
 
-        $design = null === $designId || '' === $designId
-            ? $designProduct->create($id, $gabaritId, $payload->get('collectionId') ?: null)
-            : $designProduct->attach($id, (string) $designId, $gabaritId);
+        $design = '' === $designId
+            ? $designProduct->create($id, $gabaritId, '' === $collectionId ? null : $collectionId)
+            : $designProduct->attach($id, $designId, $gabaritId);
 
         return $this->json(['designId' => (string) $design], Response::HTTP_CREATED);
     }

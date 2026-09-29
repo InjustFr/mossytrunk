@@ -8,7 +8,7 @@ final readonly class OrderPreview
 {
     /**
      * @param array{id: string, name: string}|null    $event    null when no event covers the date
-     * @param list<array{label: string, amount: int}> $discounts
+     * @param list<array{label: string, amount: int, ruleId: ?string}> $discounts
      */
     public function __construct(
         public ?array $event,

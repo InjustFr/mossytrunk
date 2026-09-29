@@ -11,7 +11,7 @@ final readonly class DesignView
 {
     /**
      * @param array{id: string, name: string}|null $collection
-     * @param list<array<string, mixed>>           $declinations
+     * @param list<array{id: string, gabarit: array{id: string, name: string, typeName: ?string}, productName: string, displayName: string, sellingPrice: int, variants: list<string>, adaptations: list<string>, doneAdaptations: list<string>, ready: bool, productId: ?string}> $declinations
      */
     public function __construct(
         public string $id,

@@ -8,7 +8,6 @@ use App\Domain\Identity\User;
 use App\Domain\Identity\Workspace;
 use App\Infrastructure\Security\SecurityUser;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Uid\Ulid;
 
@@ -39,13 +38,5 @@ trait ActsAsUser
         self::actAs($user);
 
         return $user;
-    }
-
-    protected static function signedInClient(string $workspaceName = 'Atelier'): KernelBrowser
-    {
-        $client = self::createClient();
-        $client->loginUser(SecurityUser::fromUser(self::createMember($workspaceName)));
-
-        return $client;
     }
 }

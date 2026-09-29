@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class StockApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testRestockAndCheckStockAfterAnEvent(): void
     {
@@ -23,24 +24,24 @@ final class StockApiTest extends WebTestCase
 
         $client->jsonRequest('GET', "/api/products/$productId/stock");
         $stock = self::body($client);
-        self::assertSame(10, $stock[0]['onHand']);
-        self::assertSame(100, $stock[0]['lots'][0]['unitCost']);
+        self::assertSame(10, Json::at($stock, 0, 'onHand'));
+        self::assertSame(100, Json::at($stock, 0, 'lots', 0, 'unitCost'));
 
         $client->jsonRequest('GET', "/api/events/$eventId/stock-sheet");
-        self::assertSame(10, self::body($client)[0]['onHand']);
+        self::assertSame(10, Json::at(self::body($client), 0, 'onHand'));
 
         $checkId = self::created($client, "/api/events/$eventId/stock-checks", ['items' => [['productId' => $productId, 'counted' => 8]]]);
 
         $client->jsonRequest('GET', "/api/events/$eventId/stock-checks");
-        $check = self::body($client)[0];
+        $check = Json::array(self::body($client), 0);
         self::assertSame(2, $check['unexplainedUnits']);
         self::assertSame(800, $check['missedSales']);
 
-        $client->jsonRequest('POST', "/api/stock-checks/$checkId/lines/{$check['lines'][0]['id']}/dismissal");
+        $client->jsonRequest('POST', '/api/stock-checks/'.$checkId.'/lines/'.Json::string($check, 'lines', 0, 'id').'/dismissal');
         self::assertResponseStatusCodeSame(204);
 
         $client->jsonRequest('GET', '/api/products');
-        $product = self::body($client)[0];
+        $product = Json::array(self::body($client), 0);
         self::assertSame(8, $product['onHand']);
         self::assertSame(3, $product['lowStockThreshold']);
     }
@@ -53,7 +54,7 @@ final class StockApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $productId, 'quantity' => 0, 'totalPaid' => -1]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSame(['quantity', 'totalPaid'], array_column(self::body($client)['violations'], 'propertyPath'));
+        self::assertSame(['quantity', 'totalPaid'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
     }
 
     public function testRestockingAVariantOfAProductWithoutVariantsIsRejected(): void
@@ -83,7 +84,7 @@ final class StockApiTest extends WebTestCase
         $client->jsonRequest('POST', $uri, $body);
         self::assertResponseStatusCodeSame(201);
 
-        return self::body($client)['id'];
+        return Json::string(self::body($client), 'id');
     }
 
     /**
@@ -91,6 +92,6 @@ final class StockApiTest extends WebTestCase
      */
     private static function body(KernelBrowser $client): array
     {
-        return json_decode((string) $client->getResponse()->getContent(), true);
+        return Json::decode((string) $client->getResponse()->getContent());
     }
 }

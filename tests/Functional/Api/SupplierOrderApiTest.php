@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class SupplierOrderApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testOrderThenReceive(): void
     {
@@ -23,13 +24,13 @@ final class SupplierOrderApiTest extends WebTestCase
         $client->jsonRequest('GET', "/api/supplier-orders/$orderId");
         $order = self::body($client);
         self::assertSame('ordered', $order['status']);
-        self::assertSame('Imprimerie du Lac', $order['supplier']['name']);
+        self::assertSame('Imprimerie du Lac', Json::at($order, 'supplier', 'name'));
 
-        $client->jsonRequest('POST', "/api/supplier-orders/$orderId/reception", ['lines' => [['lineId' => $order['lines'][0]['id'], 'received' => 80]]]);
+        $client->jsonRequest('POST', "/api/supplier-orders/$orderId/reception", ['lines' => [['lineId' => Json::string($order, 'lines', 0, 'id'), 'received' => 80]]]);
         self::assertResponseStatusCodeSame(204);
 
         $client->jsonRequest('GET', '/api/supplier-orders');
-        self::assertSame(25, self::body($client)[0]['lines'][0]['unitCost']);
+        self::assertSame(25, Json::at(self::body($client), 0, 'lines', 0, 'unitCost'));
 
         $client->jsonRequest('DELETE', "/api/supplier-orders/$orderId");
         self::assertResponseStatusCodeSame(422);
@@ -42,7 +43,7 @@ final class SupplierOrderApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/supplier-orders', ['supplierId' => '', 'orderedOn' => 'demain', 'lines' => []]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSame(['supplierId', 'orderedOn', 'lines'], array_column(self::body($client)['violations'], 'propertyPath'));
+        self::assertSame(['supplierId', 'orderedOn', 'lines'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
     }
 
     /**
@@ -53,7 +54,7 @@ final class SupplierOrderApiTest extends WebTestCase
         $client->jsonRequest('POST', $uri, $body);
         self::assertResponseStatusCodeSame(201);
 
-        return self::body($client)['id'];
+        return Json::string(self::body($client), 'id');
     }
 
     /**
@@ -61,6 +62,6 @@ final class SupplierOrderApiTest extends WebTestCase
      */
     private static function body(KernelBrowser $client): array
     {
-        return json_decode((string) $client->getResponse()->getContent(), true);
+        return Json::decode((string) $client->getResponse()->getContent());
     }
 }

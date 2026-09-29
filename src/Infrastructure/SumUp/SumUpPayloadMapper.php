@@ -19,13 +19,13 @@ final class SumUpPayloadMapper
      */
     public function transaction(array $transaction): SumUpTransaction
     {
-        $paid = self::cents($transaction['amount'] ?? 0) - self::cents($transaction['tip_amount'] ?? 0);
+        $paid = self::cents(SumUpJson::number($transaction['amount'] ?? 0)) - self::cents(SumUpJson::number($transaction['tip_amount'] ?? 0));
 
         return new SumUpTransaction(
-            (string) $transaction['transaction_code'],
-            new \DateTimeImmutable((string) $transaction['timestamp']),
+            SumUpJson::string($transaction['transaction_code'] ?? ''),
+            new \DateTimeImmutable(SumUpJson::string($transaction['timestamp'] ?? '')),
             Money::cents($paid),
-            array_map(self::line(...), $transaction['products'] ?? []),
+            array_map(self::line(...), SumUpJson::objects($transaction['products'] ?? [])),
             self::paymentMethod($transaction['payment_type'] ?? null),
         );
     }
@@ -45,9 +45,9 @@ final class SumUpPayloadMapper
     private static function line(array $product): SumUpLine
     {
         return new SumUpLine(
-            (string) ($product['name'] ?? ''),
-            Money::cents(self::cents($product['price_with_vat'] ?? $product['price'] ?? 0)),
-            max(1, (int) ($product['quantity'] ?? 1)),
+            SumUpJson::string($product['name'] ?? ''),
+            Money::cents(self::cents(SumUpJson::number($product['price_with_vat'] ?? $product['price'] ?? 0))),
+            max(1, (int) SumUpJson::number($product['quantity'] ?? 1)),
             self::category($product),
             self::variant($product),
         );

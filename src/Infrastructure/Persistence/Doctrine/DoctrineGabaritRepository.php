@@ -33,7 +33,7 @@ final readonly class DoctrineGabaritRepository implements GabaritRepository
 
     public function findByName(string $name): ?Gabarit
     {
-        return $this->entityManager->createQueryBuilder()
+        $result = $this->entityManager->createQueryBuilder()
             ->select('g')
             ->from(Gabarit::class, 'g')
             ->where('g.workspace = :workspace')
@@ -42,6 +42,8 @@ final readonly class DoctrineGabaritRepository implements GabaritRepository
             ->setParameter('name', trim($name))
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Gabarit ? $result : null;
     }
 
     public function all(): array

@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class OrderApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testPlaceListAndShowOrder(): void
     {
@@ -19,15 +20,15 @@ final class OrderApiTest extends WebTestCase
         $product = $this->post($client, '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']])['id'];
 
         $order = $this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'variant' => 'M', 'quantity' => 2]]]);
-        self::assertStringStartsWith('CMD-20260710-', $order['reference']);
+        self::assertStringStartsWith('CMD-20260710-', Json::string($order, 'reference'));
 
         $client->jsonRequest('GET', '/api/orders');
-        $orders = json_decode((string) $client->getResponse()->getContent(), true);
-        self::assertSame(4_000, $orders[0]['total']);
-        self::assertSame('Japan Expo', $orders[0]['eventName']);
+        $orders = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(4_000, Json::at($orders, 0, 'total'));
+        self::assertSame('Japan Expo', Json::at($orders, 0, 'eventName'));
 
-        $client->jsonRequest('GET', '/api/orders/'.$order['id']);
-        self::assertSame('T-shirt — M', json_decode((string) $client->getResponse()->getContent(), true)['lines'][0]['label']);
+        $client->jsonRequest('GET', '/api/orders/'.Json::string($order, 'id'));
+        self::assertSame('T-shirt — M', Json::at(Json::decode((string) $client->getResponse()->getContent()), 'lines', 0, 'label'));
     }
 
     public function testDeleteAllOrders(): void
@@ -39,10 +40,10 @@ final class OrderApiTest extends WebTestCase
 
         $client->jsonRequest('DELETE', '/api/orders');
         self::assertResponseIsSuccessful();
-        self::assertSame(['deleted' => 1], json_decode((string) $client->getResponse()->getContent(), true));
+        self::assertSame(['deleted' => 1], Json::decode((string) $client->getResponse()->getContent()));
 
         $client->jsonRequest('GET', '/api/orders');
-        self::assertSame([], json_decode((string) $client->getResponse()->getContent(), true));
+        self::assertSame([], Json::decode((string) $client->getResponse()->getContent()));
     }
 
     public function testLineViolationsAreReported(): void
@@ -52,20 +53,20 @@ final class OrderApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => 'nope', 'quantity' => 0]]]);
 
         self::assertResponseStatusCodeSame(422);
-        $paths = array_column(json_decode((string) $client->getResponse()->getContent(), true)['violations'], 'propertyPath');
+        $paths = array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath');
         self::assertEqualsCanonicalizing(['lines[0].productId', 'lines[0].quantity'], $paths);
     }
 
     /**
      * @param array<string, mixed> $body
      *
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
     private function post(KernelBrowser $client, string $url, array $body): array
     {
         $client->jsonRequest('POST', $url, $body);
         self::assertResponseStatusCodeSame(201, (string) $client->getResponse()->getContent());
 
-        return json_decode((string) $client->getResponse()->getContent(), true);
+        return Json::decode((string) $client->getResponse()->getContent());
     }
 }

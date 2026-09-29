@@ -41,6 +41,6 @@ final class FakeSumUpGateway implements SumUpGateway
 
         $payload = json_decode((string) file_get_contents($this->fixture), true, flags: \JSON_THROW_ON_ERROR);
 
-        return array_map($this->mapper->transaction(...), $payload['items']);
+        return array_map($this->mapper->transaction(...), SumUpJson::objects(SumUpJson::object($payload)['items'] ?? []));
     }
 }

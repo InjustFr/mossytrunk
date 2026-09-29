@@ -6,14 +6,14 @@ namespace App\Tests\Functional\Web;
 
 use App\Application\Identity\CreateUser\CreateUser;
 use App\Application\Identity\CreateUser\CreateUserHandler;
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Mime\Email;
 
 final class AuthenticationTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testAnonymousPagesRedirectToLogin(): void
     {
@@ -42,7 +42,7 @@ final class AuthenticationTest extends WebTestCase
         $client->request('GET', $link);
         self::assertResponseRedirects('/mot-de-passe/definir');
         $client->request('GET', '/mot-de-passe/definir');
-        self::assertSame(true, self::props($client)['invitation']);
+        self::assertTrue(self::props($client)['invitation']);
 
         $client->request('POST', '/mot-de-passe/definir', ['_csrf_token' => self::props($client)['csrfToken'], 'password' => 'correct horse battery', 'confirmation' => 'correct horse battery']);
         self::assertResponseRedirects('/connexion');
@@ -115,7 +115,10 @@ final class AuthenticationTest extends WebTestCase
     {
         $json = $client->getCrawler()->filter('[data-symfony--ux-vue--vue-props-value]')->attr('data-symfony--ux-vue--vue-props-value');
 
-        return json_decode((string) $json, true, flags: \JSON_THROW_ON_ERROR);
+        $props = json_decode((string) $json, true, flags: \JSON_THROW_ON_ERROR);
+        self::assertIsArray($props);
+
+        return array_filter($props, static fn (mixed $key): bool => \is_string($key), \ARRAY_FILTER_USE_KEY);
     }
 
     private function linkFromLastEmail(): string
@@ -123,7 +126,7 @@ final class AuthenticationTest extends WebTestCase
         $messages = self::getMailerMessages();
         $email = end($messages);
         self::assertInstanceOf(Email::class, $email);
-        preg_match('#https?://[^/]+(/mot-de-passe/definir/[0-9a-f]+)#', (string) $email->getHtmlBody(), $matches);
+        self::assertSame(1, preg_match('#https?://[^/]+(/mot-de-passe/definir/[0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
 
         return $matches[1];
     }

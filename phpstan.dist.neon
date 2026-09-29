@@ -1,0 +1,21 @@
+parameters:
+    level: 10
+    paths:
+        - src
+        - tests
+        - fixtures
+    excludePaths:
+        - tests/bootstrap.php
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+    doctrine:
+        objectManagerLoader: tests/object-manager.php
+    ignoreErrors:
+        -
+            identifier: method.unused
+            path: src/Kernel.php
+        -
+            identifier: doctrine.associationType
+            paths:
+                - src/Domain/Discount/ProductCondition.php
+                - src/Domain/Discount/TypeCondition.php

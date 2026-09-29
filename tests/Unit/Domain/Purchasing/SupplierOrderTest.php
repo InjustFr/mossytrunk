@@ -48,8 +48,8 @@ final class SupplierOrderTest extends TestCase
 
         self::assertSame(SupplierOrderStatus::Received, $order->status());
         self::assertCount(2, $received);
-        self::assertSame(16, $stickers->unitCost()->amount());
-        self::assertSame(56, $prints->unitCost()->amount());
+        self::assertSame(16, $stickers->unitCost()?->amount());
+        self::assertSame(56, $prints->unitCost()?->amount());
         self::assertSame(143, $order->receivedUnits());
     }
 
@@ -80,7 +80,7 @@ final class SupplierOrderTest extends TestCase
 
         $order->receive([(string) $stickers->id() => 100, (string) $prints->id() => 5], new \DateTimeImmutable('2026-09-10'));
 
-        self::assertSame(230, $prints->unitCost()->amount());
+        self::assertSame(230, $prints->unitCost()?->amount());
     }
 
     public function testFiveEurosOfDeliveryOverFiveLinesAddOneEuroToEach(): void

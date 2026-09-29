@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -85,7 +86,8 @@ final class SecurityController extends AbstractController
     public function setPassword(Request $request, CheckPasswordTokenHandler $check, SetPasswordHandler $setPassword): Response
     {
         $session = $request->getSession();
-        $token = (string) $session->get(self::SESSION_TOKEN, '');
+        $token = $session->get(self::SESSION_TOKEN, '');
+        $token = \is_string($token) ? $token : '';
 
         try {
             $purpose = $check($token);
@@ -157,9 +159,12 @@ final class SecurityController extends AbstractController
 
     private function flash(string $type): ?string
     {
-        $messages = $this->container->get('request_stack')->getSession()->getFlashBag()->get($type);
+        $session = $this->container->get('request_stack')->getSession();
+        $messages = $session instanceof FlashBagAwareSessionInterface ? $session->getFlashBag()->get($type) : [];
 
-        return $messages[0] ?? null;
+        $message = $messages[0] ?? null;
+
+        return \is_string($message) ? $message : null;
     }
 
     /** @param array<string, mixed> $props */

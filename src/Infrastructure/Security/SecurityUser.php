@@ -27,6 +27,10 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
 
     public function getUserIdentifier(): string
     {
+        if ('' === $this->email) {
+            throw new \LogicException('A signed-in user always has an email address.');
+        }
+
         return $this->email;
     }
 

@@ -6,6 +6,7 @@ namespace App\Application\Event\GetEventReport;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\Expense;
+use App\Domain\Product\Product;
 use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\UrssafContribution;
 
@@ -15,10 +16,10 @@ use App\Domain\Reporting\UrssafContribution;
 final readonly class EventReportView
 {
     /**
-     * @param array<string, mixed> $orders
-     * @param array<string, mixed> $expenses
-     * @param array<string, mixed> $urssaf
-     * @param array<string, mixed> $total
+     * @param array{count: int, grossSales: int, discounts: int, turnover: int, costOfGoods: int, groups: list<array{type: string, products: list<array{name: string, variants: list<array{variant: string, quantity: int, sales: int, cost: int, unknownCost: bool}>, quantity: int, sales: int, cost: int, unknownCost: bool}>, quantity: int, sales: int, cost: int, unknownCost: bool}>} $orders
+     * @param array{items: list<array{label: string, amount: int}>, total: int}                                          $expenses
+     * @param array{rate: int|float, base: int, amount: int}                                                                $urssaf
+     * @param array{turnover: int, costOfGoods: int, expenses: int, urssaf: int, result: int}                                $total
      */
     public function __construct(
         public array $orders,
@@ -29,7 +30,7 @@ final readonly class EventReportView
     }
 
     /**
-     * @param array<string, \App\Domain\Product\Product> $products current products by id, for the recap grouping
+     * @param array<string, Product> $products
      */
     public static function of(Event $event, EventResult $result, array $products = []): self
     {

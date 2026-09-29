@@ -37,7 +37,7 @@ final readonly class DoctrineEventRepository implements EventRepository
     {
         $day = $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d');
 
-        return $this->entityManager->createQueryBuilder()
+        $result = $this->entityManager->createQueryBuilder()
             ->select('e')
             ->from(Event::class, 'e')
             ->where('e.period.start <= :day')
@@ -48,6 +48,8 @@ final readonly class DoctrineEventRepository implements EventRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Event ? $result : null;
     }
 
     public function findOverlapping(DateRange $period, ?Ulid $except = null): ?Event
@@ -67,7 +69,9 @@ final readonly class DoctrineEventRepository implements EventRepository
             $query->andWhere('e.id != :except')->setParameter('except', $except, UlidType::NAME);
         }
 
-        return $query->getQuery()->getOneOrNullResult();
+        $result = $query->getQuery()->getOneOrNullResult();
+
+        return $result instanceof Event ? $result : null;
     }
 
     public function all(): array

@@ -33,7 +33,7 @@ final readonly class DoctrineProductTypeRepository implements ProductTypeReposit
 
     public function findByName(string $name): ?ProductType
     {
-        return $this->entityManager->createQueryBuilder()
+        $result = $this->entityManager->createQueryBuilder()
             ->select('t')
             ->from(ProductType::class, 't')
             ->where('LOWER(t.name) = LOWER(:name)')
@@ -42,6 +42,8 @@ final readonly class DoctrineProductTypeRepository implements ProductTypeReposit
             ->setParameter('name', trim($name))
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof ProductType ? $result : null;
     }
 
     public function codeExists(string $code): bool

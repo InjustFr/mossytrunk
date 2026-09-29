@@ -4,25 +4,26 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class DesignApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testFromGabaritToProduct(): void
     {
         $client = self::signedInClient();
         $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'sellingPrice' => 250, 'adaptations' => ['Marges 5 mm']]);
         self::assertResponseStatusCodeSame(201);
-        $gabaritId = self::body($client)['id'];
+        $gabaritId = Json::string(self::body($client), 'id');
 
         $client->jsonRequest('POST', '/api/designs', ['name' => 'Clairière']);
-        $designId = self::body($client)['id'];
+        $designId = Json::string(self::body($client), 'id');
         $client->jsonRequest('POST', "/api/designs/$designId/declinations", ['gabaritId' => $gabaritId]);
-        $declinationId = self::body($client)['id'];
+        $declinationId = Json::string(self::body($client), 'id');
 
         $client->jsonRequest('POST', "/api/designs/$designId/validation");
         self::assertResponseStatusCodeSame(422);
@@ -30,13 +31,13 @@ final class DesignApiTest extends WebTestCase
         $client->jsonRequest('PUT', "/api/designs/$designId/declinations/$declinationId/adaptations", ['adaptation' => 'Marges 5 mm', 'done' => true]);
         self::assertResponseStatusCodeSame(204);
         $client->jsonRequest('POST', "/api/designs/$designId/validation");
-        self::assertSame(['productsCreated' => 1], self::body($client));
+        self::assertSame(1, self::body($client)['productsCreated']);
 
         $client->jsonRequest('GET', '/api/products');
-        self::assertSame('Clairière', self::body($client)[0]['name']);
+        self::assertSame('Clairière', Json::at(self::body($client), 0, 'name'));
 
         $client->jsonRequest('GET', '/api/designs');
-        self::assertSame('validated', self::body($client)['standalone'][0]['status']);
+        self::assertSame('validated', Json::at(self::body($client), 'standalone', 0, 'status'));
     }
 
     public function testGabaritNeedsAName(): void
@@ -46,7 +47,7 @@ final class DesignApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/gabarits', ['name' => '', 'sellingPrice' => -1]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSame(['name', 'sellingPrice'], array_column(self::body($client)['violations'], 'propertyPath'));
+        self::assertSame(['name', 'sellingPrice'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
     }
 
     /**
@@ -54,6 +55,6 @@ final class DesignApiTest extends WebTestCase
      */
     private static function body(KernelBrowser $client): array
     {
-        return json_decode((string) $client->getResponse()->getContent(), true);
+        return Json::decode((string) $client->getResponse()->getContent());
     }
 }

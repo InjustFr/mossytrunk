@@ -26,8 +26,8 @@ final class ProductFactory extends PersistentObjectFactory
         return [
             'workspace' => WorkspaceFactory::new(),
             'reference' => strtoupper(self::faker()->unique()->bothify('PRD-####')),
-            'name' => ucfirst(self::faker()->words(2, true)),
-            'sellingPrice' => Money::cents(self::faker()->randomElement([400, 800, 1_200, 1_500, 2_000, 2_500])),
+            'name' => ucfirst(self::faker()->word().' '.self::faker()->word()),
+            'sellingPrice' => Money::cents(100 * self::faker()->numberBetween(4, 25)),
             'variants' => [],
         ];
     }

@@ -77,7 +77,7 @@ final class ProductUseCasesTest extends KernelTestCase
         $references = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference', 'displayName');
 
         self::assertSame('PRD-CLAIRIERE', $references['Clairière']);
-        self::assertEqualsCanonicalizing(['PRD-CLAIRIERE', 'PRI-FORET', 'PRI-FORET-2'], array_values(array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference')));
+        self::assertEqualsCanonicalizing(['PRD-CLAIRIERE', 'PRI-FORET', 'PRI-FORET-2'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference'));
     }
 
     public function testUpdateKeepsTheReference(): void

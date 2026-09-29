@@ -50,7 +50,7 @@ final readonly class ProductView
             $product->buyingPrice()->amount(),
             $product->variants(),
             $salesYear,
-            $sales?->quantity ?? 0,
+            $sales->quantity ?? 0,
             $sales?->sales->amount() ?? 0,
             $product->lowStockThreshold(),
             $stock->onHand,

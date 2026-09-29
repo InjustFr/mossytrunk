@@ -8,6 +8,7 @@ use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpUnavailable;
 use App\Infrastructure\SumUp\SumUpApiGateway;
 use App\Infrastructure\SumUp\SumUpPayloadMapper;
+use App\Tests\Support\Json;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
@@ -24,9 +25,9 @@ final class SumUpApiGatewayTest extends TestCase
             new JsonMockResponse(['items' => [], 'links' => []]),
         ];
         $client = new MockHttpClient(static function (string $method, string $url, array $options) use (&$requests, &$responses): MockResponse {
-            $requests[] = [$url, $options['normalized_headers']['authorization'][0] ?? null];
+            $requests[] = [$url, Json::at($options, 'normalized_headers', 'authorization', 0)];
 
-            return array_shift($responses);
+            return array_shift($responses) ?? throw new \LogicException('Unexpected SumUp request.');
         }, 'https://api.sumup.com');
 
         $transactions = iterator_to_array((new SumUpApiGateway($client, new SumUpPayloadMapper()))->successfulPayments(new SumUpCredentials('sup_sk_test', 'MCODE')), false);

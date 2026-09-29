@@ -37,7 +37,7 @@ final class CostAllocation
             --$left;
         }
 
-        return array_map(Money::cents(...), $shares);
+        return array_values(array_map(Money::cents(...), $shares));
     }
 
     /**

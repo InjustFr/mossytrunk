@@ -43,7 +43,7 @@ final readonly class GetProductHandler
 
         return new ProductDetailView(
             ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock),
-            $ever?->quantity ?? 0,
+            $ever->quantity ?? 0,
             $ever?->sales->amount() ?? 0,
             $stock->items,
             $this->movements($product->id(), $orders, $stockItems),

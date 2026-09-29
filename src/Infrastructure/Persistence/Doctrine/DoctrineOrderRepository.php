@@ -78,7 +78,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             return [];
         }
 
-        return $this->entityManager->createQueryBuilder()
+        $codes = $this->entityManager->createQueryBuilder()
             ->select('o.sumUpTransactionCode')
             ->from(Order::class, 'o')
             ->where('o.sumUpTransactionCode IN (:codes)')
@@ -87,6 +87,8 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->setParameter('codes', $transactionCodes, ArrayParameterType::STRING)
             ->getQuery()
             ->getSingleColumnResult();
+
+        return array_values(array_map(static fn (mixed $code): string => \is_scalar($code) ? (string) $code : '', $codes));
     }
 
     public function countOutside(Ulid $eventId, DateRange $period): int

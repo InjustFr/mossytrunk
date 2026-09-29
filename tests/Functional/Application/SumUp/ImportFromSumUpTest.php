@@ -65,7 +65,9 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(200, $orders[1]->discountTotal, 'SumUp discount kept');
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
-        $sticker = $products[array_search('Sticker Mousse', array_column($products, 'name'), true)];
+        $index = array_search('Sticker Mousse', array_column($products, 'name'), true);
+        self::assertIsInt($index);
+        $sticker = $products[$index];
         self::assertSame(400, $sticker->sellingPrice);
         self::assertSame(0, $sticker->buyingPrice);
         self::assertSame('PRD-STICKER-MOUSSE', $sticker->reference);

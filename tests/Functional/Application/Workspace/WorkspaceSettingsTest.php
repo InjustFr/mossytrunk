@@ -31,7 +31,8 @@ final class WorkspaceSettingsTest extends KernelTestCase
         self::assertTrue($sumUp->apiKeyConfigured);
         self::assertSame('••••1234', $sumUp->apiKeyHint);
 
-        $stored = (string) self::getContainer()->get(Connection::class)->fetchOne('SELECT ciphertext FROM workspace_secret');
+        $stored = self::getContainer()->get(Connection::class)->fetchOne('SELECT ciphertext FROM workspace_secret');
+        self::assertIsString($stored);
         self::assertStringStartsWith('v1:', $stored);
         self::assertStringNotContainsString('sup_sk_abcdef1234', $stored);
     }

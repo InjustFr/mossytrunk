@@ -59,7 +59,9 @@ final readonly class DoctrineStockRepository implements StockRepository
             $query->andWhere('s.variant = :variant')->setParameter('variant', $variant);
         }
 
-        return $query->getQuery()->getOneOrNullResult();
+        $result = $query->getQuery()->getOneOrNullResult();
+
+        return $result instanceof StockItem ? $result : null;
     }
 
     public function ofProduct(Ulid $productId): array

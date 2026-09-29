@@ -13,7 +13,8 @@ final readonly class OrderView
 {
     /**
      * @param list<array{productId: string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
-     * @param list<array{label: string, amount: int}>                                                               $discounts
+     * @param array{id: string, name: string}                                                                           $event
+     * @param list<array{label: string, amount: int, ruleId: ?string}>                                                $discounts
      */
     public function __construct(
         public string $id,

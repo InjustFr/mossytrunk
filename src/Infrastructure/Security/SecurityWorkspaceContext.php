@@ -24,6 +24,7 @@ final readonly class SecurityWorkspaceContext implements WorkspaceContext
             throw new \LogicException('No signed-in user: business data is only reachable inside a workspace.');
         }
 
-        return $this->entityManager->getReference(Workspace::class, $user->workspaceId);
+        return $this->entityManager->getReference(Workspace::class, $user->workspaceId)
+            ?? throw new \LogicException('The signed-in user\'s workspace no longer exists.');
     }
 }

@@ -37,12 +37,12 @@ final readonly class SumUpApiGateway implements SumUpGateway
                 $page = $this->get($credentials, \sprintf('/v2.1/merchants/%s/transactions/history?%s', rawurlencode($credentials->merchantCode), $query));
 
                 $details = [];
-                foreach ($page['items'] ?? [] as $item) {
-                    $details[] = [$item, $this->request($credentials, \sprintf('/v2.1/merchants/%s/transactions?%s', rawurlencode($credentials->merchantCode), http_build_query(['id' => $item['id']])))];
+                foreach (SumUpJson::objects($page['items'] ?? []) as $item) {
+                    $details[] = [$item, $this->request($credentials, \sprintf('/v2.1/merchants/%s/transactions?%s', rawurlencode($credentials->merchantCode), http_build_query(['id' => SumUpJson::string($item['id'] ?? '')])))];
                 }
 
                 foreach ($details as [$item, $response]) {
-                    yield $this->mapper->transaction($response->toArray() + $item);
+                    yield $this->mapper->transaction(SumUpJson::object($response->toArray()) + $item);
                 }
 
                 $query = self::nextPageQuery($page);
@@ -57,7 +57,7 @@ final readonly class SumUpApiGateway implements SumUpGateway
      */
     private function get(SumUpCredentials $credentials, string $url): array
     {
-        return $this->request($credentials, $url)->toArray();
+        return SumUpJson::object($this->request($credentials, $url)->toArray());
     }
 
     private function request(SumUpCredentials $credentials, string $url): ResponseInterface
@@ -70,9 +70,10 @@ final readonly class SumUpApiGateway implements SumUpGateway
      */
     private static function nextPageQuery(array $page): ?string
     {
-        foreach ($page['links'] ?? [] as $link) {
-            if ('next' === ($link['rel'] ?? null) && '' !== ($link['href'] ?? '')) {
-                return ltrim((string) $link['href'], '?');
+        foreach (SumUpJson::objects($page['links'] ?? []) as $link) {
+            $href = SumUpJson::string($link['href'] ?? '');
+            if ('next' === ($link['rel'] ?? null) && '' !== $href) {
+                return ltrim($href, '?');
             }
         }
 

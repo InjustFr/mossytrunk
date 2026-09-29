@@ -33,7 +33,7 @@ final readonly class DoctrineSupplierRepository implements SupplierRepository
 
     public function findByName(string $name): ?Supplier
     {
-        return $this->entityManager->createQueryBuilder()
+        $result = $this->entityManager->createQueryBuilder()
             ->select('s')
             ->from(Supplier::class, 's')
             ->where('s.workspace = :workspace')
@@ -42,6 +42,8 @@ final readonly class DoctrineSupplierRepository implements SupplierRepository
             ->setParameter('name', trim($name))
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $result instanceof Supplier ? $result : null;
     }
 
     public function all(): array

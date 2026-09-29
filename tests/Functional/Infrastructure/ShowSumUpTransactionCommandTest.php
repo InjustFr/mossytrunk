@@ -10,6 +10,7 @@ use App\Application\Workspace\WorkspaceSecrets;
 use App\Domain\Identity\WorkspaceRepository;
 use App\Infrastructure\Console\ShowSumUpTransactionCommand;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -29,7 +30,7 @@ final class ShowSumUpTransactionCommandTest extends KernelTestCase
         self::getContainer()->get(UpdateSumUpSettingsHandler::class)(new UpdateSumUpSettings('MCODE', 'sup_sk_test'));
         $requested = [];
         $client = new MockHttpClient(static function (string $method, string $url, array $options) use (&$requested): MockResponse {
-            $requested = [$url, $options['normalized_headers']['authorization'][0] ?? null];
+            $requested = [$url, Json::at($options, 'normalized_headers', 'authorization', 0)];
 
             return new JsonMockResponse([
                 'transaction_code' => 'TAAA6MPKY9S',

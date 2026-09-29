@@ -170,12 +170,9 @@ final class ConventionSeasonStory extends Story
 
     private function designs(ProductType $sticker, ProductType $print, Product $moss): void
     {
-        $gabarit = fn (string $name, ProductType $type, int $selling, array $variants, array $adaptations): Gabarit => $this->persisted(
-            Gabarit::create($this->workspace, $name, $type, Money::cents($selling), $variants, $adaptations),
-        );
-        $square = $gabarit('Tirage 15×15', $print, 1_200, [], ['Recadrage carré', 'Fond perdu 3 mm', 'Profil couleur CMJN']);
-        $glossy = $gabarit('Sticker brillant', $sticker, 400, [], ['Détourage', 'Contour de découpe']);
-        $gabarit('Sticker mat', $sticker, 450, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
+        $square = $this->gabarit('Tirage 15×15', $print, 1_200, [], ['Recadrage carré', 'Fond perdu 3 mm', 'Profil couleur CMJN']);
+        $glossy = $this->gabarit('Sticker brillant', $sticker, 400, [], ['Détourage', 'Contour de découpe']);
+        $this->gabarit('Sticker mat', $sticker, 450, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
 
         $undergrowth = $this->persisted(DesignCollection::start($this->workspace, 'Sous-bois', 'Série d\'automne : champignons, lichens, fougères.'));
         $lichen = $this->persisted(Design::start($this->workspace, 'Lichen', $undergrowth, 'Palette vert-de-gris, texture papier.'));
@@ -189,6 +186,15 @@ final class ConventionSeasonStory extends Story
 
         $this->persisted(Design::start($this->workspace, 'Héron', null, 'Idée de la brocante de Lyon.'))->workOn(false);
         $this->persisted(Design::fromProduct($this->workspace, $moss, $glossy, $undergrowth, new \DateTimeImmutable('-30 days')));
+    }
+
+    /**
+     * @param list<string> $variants
+     * @param list<string> $adaptations
+     */
+    private function gabarit(string $name, ProductType $type, int $selling, array $variants, array $adaptations): Gabarit
+    {
+        return $this->persisted(Gabarit::create($this->workspace, $name, $type, Money::cents($selling), $variants, $adaptations));
     }
 
     /**
@@ -267,7 +273,10 @@ final class ConventionSeasonStory extends Story
 
             $items = [];
             foreach (faker()->randomElements($catalogue, faker()->numberBetween(1, 3)) as $product) {
-                $variant = $product->hasVariants() ? faker()->randomElement($product->variants()) : null;
+                if (!$product instanceof Product) {
+                    continue;
+                }
+                $variant = $product->hasVariants() ? $product->variants()[faker()->numberBetween(0, \count($product->variants()) - 1)] : null;
                 $quantity = str_starts_with($product->reference(), 'STI') ? faker()->numberBetween(1, 5) : 1;
                 $item = $product->sellable($variant);
                 $items[] = (new OrderedItem($item, $quantity))->costing($this->stockOf($product, $variant)->withdraw($quantity, $item->buyingPrice));

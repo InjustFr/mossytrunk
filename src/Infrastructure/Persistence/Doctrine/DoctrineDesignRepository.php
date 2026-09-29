@@ -33,18 +33,19 @@ final readonly class DoctrineDesignRepository implements DesignRepository
 
     public function get(Ulid $id): Design
     {
-        return $this->designs()
+        $result = $this->designs()
             ->andWhere('d.id = :id')
             ->setParameter('id', $id, UlidType::NAME)
             ->getQuery()
-            ->getOneOrNullResult()
-            ?? throw NotFound::entity('Design', (string) $id);
+            ->getOneOrNullResult();
+
+        return $result instanceof Design ? $result : throw NotFound::entity('Design', (string) $id);
     }
 
     public function findByProduct(Ulid $productId): ?Design
     {
-        $id = $this->entityManager->createQueryBuilder()
-            ->select('d.id')
+        $design = $this->entityManager->createQueryBuilder()
+            ->select('d')
             ->from(Design::class, 'd')
             ->join('d.declinations', 'x')
             ->where('d.workspace = :workspace')
@@ -55,7 +56,7 @@ final readonly class DoctrineDesignRepository implements DesignRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        return null === $id ? null : $this->get($id['id']);
+        return $design instanceof Design ? $design : null;
     }
 
     public function inCollection(Ulid $collectionId): array

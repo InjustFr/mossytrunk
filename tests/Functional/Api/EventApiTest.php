@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class EventApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testEventLifecycle(): void
     {
@@ -17,13 +18,13 @@ final class EventApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
         self::assertResponseStatusCodeSame(201);
-        $id = json_decode((string) $client->getResponse()->getContent(), true)['id'];
+        $id = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
 
         $client->jsonRequest('POST', "/api/events/$id/expenses", ['label' => 'Stand', 'amount' => 30_000]);
         self::assertResponseStatusCodeSame(201);
 
         $client->jsonRequest('GET', "/api/events/$id");
-        $event = json_decode((string) $client->getResponse()->getContent(), true);
+        $event = Json::decode((string) $client->getResponse()->getContent());
         self::assertSame('Villepinte', $event['location']);
         self::assertSame(30_000, $event['expensesTotal']);
     }

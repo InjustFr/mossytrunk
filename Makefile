@@ -9,7 +9,7 @@ DEPLOY_HOST ?=
 DEPLOY_DIR ?= mossytrunk
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets db db-test fixtures migration test test-unit test-functional deptrac e2e qa image push deploy deploy-files
+.PHONY: up down build install assets db db-test fixtures migration test test-unit test-functional deptrac phpstan e2e qa image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -53,6 +53,9 @@ test-functional: db-test
 deptrac: ## Check onion layer dependencies
 	$(PHP) vendor/bin/deptrac analyse --no-progress
 
+phpstan: ## Static analysis (level in phpstan.dist.neon)
+	$(PHP) vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
 e2e: assets ## Playwright end-to-end tests against a dedicated app container
 	$(DC) --profile e2e up -d --wait php-e2e mailpit
 	$(DC) exec php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
@@ -62,7 +65,7 @@ e2e: assets ## Playwright end-to-end tests against a dedicated app container
 	$(DC) exec php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
 	$(DC) --profile e2e run --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test"
 
-qa: deptrac test e2e
+qa: phpstan deptrac test e2e
 
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .

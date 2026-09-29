@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\SignsInClient;
+use App\Tests\Support\Json;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class SumUpImportApiTest extends WebTestCase
 {
-    use ActsAsUser;
+    use SignsInClient;
 
     public function testImportReport(): void
     {
@@ -21,7 +22,7 @@ final class SumUpImportApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/sumup/import');
 
         self::assertResponseIsSuccessful();
-        $report = json_decode((string) $client->getResponse()->getContent(), true);
+        $report = Json::decode((string) $client->getResponse()->getContent());
         self::assertSame(2, $report['ordersImported']);
         self::assertSame(['2030-03-21', '2030-03-23'], $report['datesWithoutEvent']);
     }
@@ -35,7 +36,7 @@ final class SumUpImportApiTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertStringNotContainsString('very_secret', (string) $client->getResponse()->getContent());
-        $settings = json_decode((string) $client->getResponse()->getContent(), true);
+        $settings = Json::decode((string) $client->getResponse()->getContent());
         self::assertSame(['merchantCode' => 'MCODE', 'apiKeyConfigured' => true, 'apiKeyHint' => '••••9876'], $settings['sumUp']);
     }
 

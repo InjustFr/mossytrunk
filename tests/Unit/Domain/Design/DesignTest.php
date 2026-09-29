@@ -117,7 +117,7 @@ final class DesignTest extends TestCase
         self::assertSame(DesignStatus::Validated, $design->status());
         self::assertFalse($design->isCurrent());
         $declination = $design->declinations()[0];
-        self::assertTrue($declination->productId()->equals($product->id()));
+        self::assertEquals($product->id(), $declination->productId());
         self::assertSame(450, $declination->sellingPrice()->amount());
         self::assertSame([], $declination->pendingAdaptations());
         self::assertTrue($design->hasProducts());

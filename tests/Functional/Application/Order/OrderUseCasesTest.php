@@ -88,7 +88,7 @@ final class OrderUseCasesTest extends KernelTestCase
             [new RequestedLine($this->sticker, null, 7)],
         );
 
-        self::assertSame('Japan Expo', $preview->event['name']);
+        self::assertSame('Japan Expo', $preview->event['name'] ?? null);
         self::assertSame(2_800, $preview->subtotal);
         self::assertSame([['label' => '3 stickers pour 10 € ×2', 'amount' => 400, 'ruleId' => $this->rule]], $preview->discounts);
         self::assertSame(2_400, $preview->total);

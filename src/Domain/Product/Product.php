@@ -190,7 +190,10 @@ class Product
     private function followPriceHistory(): void
     {
         $history = $this->priceHistory();
-        $this->sellingPrice = end($history)->price();
+        $latest = end($history);
+        if (false !== $latest) {
+            $this->sellingPrice = $latest->price();
+        }
     }
 
     public function bought(Money $unitCost): void

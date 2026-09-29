@@ -26,6 +26,7 @@ make fixtures        # reset dev DB with mock data (Foundry story fixtures/Story
 make migration       # doctrine:migrations:diff after mapping changes
 make test            # PHPUnit (migrates test DB first); make test-unit / test-functional
 make deptrac         # onion layer rules
+make phpstan         # PHPStan level 10 (phpstan.dist.neon, Symfony/Doctrine/PHPUnit extensions) — keep it at 0 errors
 make e2e             # builds assets, boots php-e2e (APP_ENV=test, fake SumUp), runs Playwright
 docker compose exec php php bin/console …
 make push / make deploy DEPLOY_HOST=user@server   # prod image to Docker Hub, restart on server
@@ -85,6 +86,8 @@ catalogue with variants, discount rules, past events with expenses and orders (d
 `OtherWorkspaceStory` adds « Autre atelier » (user `autre@mossytrunk.local` / `mossytrunk`) with a few products, to check isolation.
 
 ## Testing expectations
+
+- PHPStan runs at **level 10** on `src`, `tests` and `fixtures`: no `mixed` leaks — narrow with `instanceof`/`is_*`, type arrays with shapes (`array{…}`, `list<…>`), read decoded JSON in tests through `tests/Support/Json`. Ignores live in `phpstan.dist.neon` only (never inline).
 
 - Unit test (`tests/Unit`) every business rule (entities, value objects, domain services).
 - Functional test (`tests/Functional`) for every use-case handler (real DB, KernelTestCase) and API endpoints (WebTestCase).

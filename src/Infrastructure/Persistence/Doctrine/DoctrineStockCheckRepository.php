@@ -28,12 +28,13 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
 
     public function get(Ulid $id): StockCheck
     {
-        return $this->checks()
+        $result = $this->checks()
             ->andWhere('c.id = :id')
             ->setParameter('id', $id, UlidType::NAME)
             ->getQuery()
-            ->getOneOrNullResult()
-            ?? throw NotFound::entity('Inventaire', (string) $id);
+            ->getOneOrNullResult();
+
+        return $result instanceof StockCheck ? $result : throw NotFound::entity('Inventaire', (string) $id);
     }
 
     public function ofEvent(Ulid $eventId): array
