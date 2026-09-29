@@ -27,6 +27,22 @@ final class ProductApiTest extends WebTestCase
         self::assertSame(['S', 'M'], $products[0]['variants']);
     }
 
+    public function testMoveAProductIntoANewOneAsAVariant(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Mug Lichen', 'sellingPrice' => 1_200]);
+        $id = json_decode((string) $client->getResponse()->getContent(), true)['id'];
+
+        $client->jsonRequest('POST', "/api/products/{$id}/move-variant", ['targetVariant' => 'Lichen']);
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('POST', "/api/products/{$id}/move-variant", ['newProductName' => 'Mug', 'targetVariant' => 'Lichen']);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('GET', '/api/products');
+        $products = json_decode((string) $client->getResponse()->getContent(), true);
+        self::assertSame([['Mug', ['Lichen']]], array_map(static fn (array $product): array => [$product['name'], $product['variants']], $products));
+    }
+
     public function testInvalidPayloadReturnsViolations(): void
     {
         $client = self::signedInClient();

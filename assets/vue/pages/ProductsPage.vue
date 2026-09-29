@@ -6,6 +6,7 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import ProductBatchForm from '../components/products/ProductBatchForm.vue';
 import ProductFilters from '../components/products/ProductFilters.vue';
+import MoveVariantForm from '../components/products/MoveVariantForm.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import ProductList from '../components/products/ProductList.vue';
 import SelectionBar from '../components/products/SelectionBar.vue';
@@ -16,7 +17,7 @@ import { useToast } from '../composables/useToast.js';
 import { plural } from '../composables/usePlural.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
-const { products, load, create, update, batchUpdate } = useProducts();
+const { products, load, create, update, batchUpdate, moveVariant } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
@@ -24,6 +25,8 @@ const toast = useToast();
 const colors = computed(() => typeColors(types.value.map((type) => type.name)));
 const modalOpen = ref(false);
 const batchOpen = ref(false);
+const moving = ref(null);
+const moveOpen = computed({ get: () => moving.value !== null, set: (open) => { if (!open) moving.value = null; } });
 const editing = ref(null);
 
 const modalTitle = computed(() => (editing.value ? 'Modifier le produit' : 'Nouveau produit'));
@@ -43,6 +46,12 @@ function openEdit(product) {
 async function onSaved(name) {
     toast.success(editing.value ? `Produit « ${name} » mis à jour.` : `Produit « ${name} » ajouté.`);
     modalOpen.value = false;
+    await load();
+}
+
+async function onMoved({ variant, target }) {
+    toast.success(variant ? `Déplacé vers « ${target} — ${variant} ».` : `Déplacé vers « ${target} ».`);
+    moving.value = null;
     await load();
 }
 
@@ -79,6 +88,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 :selected-id="modalOpen ? editing?.id ?? null : null"
                 @toggle-all="filters.toggleAllVisible"
                 @edit="openEdit"
+                @move="moving = $event"
             />
         </BaseCard>
 
@@ -86,6 +96,9 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
             <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
+        </BaseModal>
+        <BaseModal v-model:open="moveOpen" :title="moving?.variants.length ? 'Déplacer une variante' : 'Faire une variante de ce produit'">
+            <MoveVariantForm v-if="moving" :product="moving" :products="products" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
         </BaseModal>
         <BaseModal v-model:open="batchOpen" title="Modifier la sélection">
             <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />

@@ -24,6 +24,11 @@ interface OrderRepository
     public function list(?Ulid $eventId = null): array;
 
     /**
+     * @return list<Order> orders having at least one line of the product
+     */
+    public function selling(Ulid $productId): array;
+
+    /**
      * @param list<string> $transactionCodes
      *
      * @return list<string> the codes already imported

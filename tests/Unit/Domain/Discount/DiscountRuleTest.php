@@ -67,4 +67,19 @@ final class DiscountRuleTest extends TestCase
         $rule->activate();
         self::assertTrue($rule->isActive());
     }
+
+    public function testAnEligibleProductCanBeReplaced(): void
+    {
+        $old = Product::create(TestWorkspace::get(), 'OLD', 'Vieux', Money::cents(400));
+        $new = Product::create(TestWorkspace::get(), 'NEW', 'Neuf', Money::cents(400));
+        $other = Product::create(TestWorkspace::get(), 'OTH', 'Autre', Money::cents(400));
+        $rule = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [$old, $new], 3, Money::cents(1_000));
+        $untouched = DiscountRule::create(TestWorkspace::get(), '2 pour 7', [$other], 2, Money::cents(700));
+
+        $rule->replaceEligibleProduct($old, $new);
+        $untouched->replaceEligibleProduct($old, $new);
+
+        self::assertSame([$new], $rule->eligibleProducts());
+        self::assertSame([$other], $untouched->eligibleProducts());
+    }
 }

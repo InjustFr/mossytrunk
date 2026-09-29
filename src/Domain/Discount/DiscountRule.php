@@ -120,6 +120,17 @@ class DiscountRule
         }
     }
 
+    public function replaceEligibleProduct(Product $replaced, Product $by): void
+    {
+        if (!$this->eligibleProducts->contains($replaced)) {
+            return;
+        }
+        $this->eligibleProducts->removeElement($replaced);
+        if (!$this->eligibleProducts->contains($by)) {
+            $this->eligibleProducts->add($by);
+        }
+    }
+
     public function activate(): void
     {
         $this->active = true;

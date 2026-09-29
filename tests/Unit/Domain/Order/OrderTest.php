@@ -125,4 +125,36 @@ final class OrderTest extends TestCase
     {
         return new \DateTimeImmutable($localTime, new \DateTimeZone('Europe/Paris'));
     }
+
+    public function testMovedSalesKeepTheirPricesAndMergeWithTheSameItemAtTheSamePrices(): void
+    {
+        $tee = Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), Money::cents(900), ['M']);
+        $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [
+            new OrderedItem($this->tshirt->sellable('M'), 1),
+            new OrderedItem($tee->sellable('M'), 2),
+            new OrderedItem($this->tshirt->sellable('S'), 1),
+        ], []);
+
+        $order->moveSales($this->tshirt->id(), 'M', $tee->sellable('M'));
+
+        self::assertEqualsCanonicalizing(['Tee — M' => 3, 'T-shirt — S' => 1], array_combine(
+            array_map(static fn ($line): string => $line->label(), $order->lines()),
+            array_map(static fn ($line): int => $line->quantity(), $order->lines()),
+        ));
+        self::assertSame(8_000, $order->total()->amount());
+    }
+
+    public function testMovedSalesAtAnotherPriceStayOnTheirOwnLine(): void
+    {
+        $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($this->sticker->sellable(null), 2)], []);
+        $cheaper = Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300), Money::cents(80));
+        $order2 = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($cheaper->sellable(null), 1), new OrderedItem($this->sticker->sellable(null), 1)], []);
+
+        $order->moveSales($this->sticker->id(), null, $cheaper->sellable(null));
+        $order2->moveSales($this->sticker->id(), null, $cheaper->sellable(null));
+
+        self::assertSame(['Mug'], array_map(static fn ($line): string => $line->label(), $order->lines()));
+        self::assertSame(800, $order->total()->amount());
+        self::assertCount(2, $order2->lines());
+    }
 }

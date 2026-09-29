@@ -7,6 +7,7 @@ namespace App\Domain\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
+use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -182,6 +183,38 @@ class Order
     public function lines(): array
     {
         return array_values($this->lines->toArray());
+    }
+
+    /**
+     * Sales of a (product, variant) now count for another sellable item, keeping their prices.
+     * A line merges into a line already selling that item at the same prices.
+     */
+    public function moveSales(Ulid $productId, ?string $variant, SellableItem $to): void
+    {
+        foreach ($this->lines() as $line) {
+            if (!$line->productId()->equals($productId) || $line->variant() !== $variant) {
+                continue;
+            }
+
+            $twin = $this->lineSelling($to, $line);
+            if (null === $twin) {
+                $line->reassign($to);
+                continue;
+            }
+            $twin->add($line->quantity());
+            $this->lines->removeElement($line);
+        }
+    }
+
+    private function lineSelling(SellableItem $item, OrderLine $except): ?OrderLine
+    {
+        foreach ($this->lines as $line) {
+            if ($line !== $except && $line->sells($item) && $line->sameUnitAmountsAs($except)) {
+                return $line;
+            }
+        }
+
+        return null;
     }
 
     public function itemCount(): int

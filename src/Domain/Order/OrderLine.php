@@ -68,6 +68,21 @@ class OrderLine
         return $this->productId->equals($item->productId) && $this->variant === $item->variant;
     }
 
+    /**
+     * @internal the order moves its sales from one product to another
+     */
+    public function reassign(SellableItem $item): void
+    {
+        $this->productId = $item->productId;
+        $this->variant = $item->variant;
+        $this->productName = $item->productName;
+    }
+
+    public function sameUnitAmountsAs(self $other): bool
+    {
+        return $this->unitPrice->equals($other->unitPrice) && $this->unitCost->equals($other->unitCost);
+    }
+
     public function add(int $quantity): void
     {
         if ($quantity < 1) {

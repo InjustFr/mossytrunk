@@ -41,6 +41,19 @@ can be edited together: selling price, buying price, type, variants to add (skip
 |---|---|---|---|
 | P8 | A batch edit goes through the same entity methods as a single edit; any violation (e.g. negative price) aborts the whole batch | `BatchUpdateProductsHandler` | `BatchUpdateProductsTest` |
 
+## Moving a variant
+
+A product split per variant (« Mug Lichen », « Mug Fougère ») can be gathered into one product with variants, and a variant can move to another product:
+
+| # | Rule | Where | Tests |
+|---|---|---|---|
+| P10 | The moved part is one variant of the source, or the **whole source** when it has no variants. The target is an existing product (not the source) or a new product with the source's type and prices | `MoveVariantHandler` | `MoveVariantTest` |
+| P11 | The target variant is created when missing; left empty, sales merge into a target without variants. A target without variants that already has sales cannot get its first variant (those sales would have none) | `MoveVariantHandler`, `InvalidProduct::soldWithoutVariant()` | `MoveVariantTest` |
+| P12 | Every order line of the moved (product, variant) now sells the target: name and variant change, **prices stay** as sold. A line merges into a line of the same order already selling the target at the same prices | `Order::moveSales()`, `OrderLine::reassign()` | `OrderTest`, `MoveVariantTest` |
+| P13 | A source left without anything to sell (whole product moved, or its last variant) is **deleted**; bundle discounts listing it list the target instead | `MoveVariantHandler`, `DiscountRule::replaceEligibleProduct()` | `DiscountRuleTest`, `MoveVariantTest` |
+
+UI: row action « Faire de … une variante » / « Déplacer une variante de … » on `/produits`. For a whole product, the form suggests the name without its last word as the target and that word as the variant (« Mug Lichen » → « Mug » + Lichen).
+
 ## Use cases & API
 
 | Use case | Endpoint |
@@ -48,6 +61,7 @@ can be edited together: selling price, buying price, type, variants to add (skip
 | `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, buyingPrice?, variants[]}` |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, buyingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
+| `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
 

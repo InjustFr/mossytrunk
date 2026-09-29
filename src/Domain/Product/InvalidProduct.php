@@ -44,6 +44,16 @@ final class InvalidProduct extends DomainException
         return new self(\sprintf('« %s » est un produit unique : il n\'a pas de variante.', $productName));
     }
 
+    public static function movedOntoItself(): self
+    {
+        return new self('Choisissez un autre produit que celui d\'origine.');
+    }
+
+    public static function soldWithoutVariant(string $productName): self
+    {
+        return new self(\sprintf('« %s » a déjà des ventes sans variante : déplacez-le d\'abord lui-même vers une variante.', $productName));
+    }
+
     public static function emptyTypeName(): self
     {
         return new self('Le nom du type est obligatoire.');

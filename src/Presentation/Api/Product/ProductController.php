@@ -8,6 +8,7 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
+use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -59,5 +60,11 @@ final class ProductController extends AbstractController
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/move-variant', name: 'api_products_move_variant', requirements: ['id' => Requirement::ULID], methods: ['POST'])]
+    public function moveVariant(string $id, #[MapRequestPayload] MoveVariantPayload $payload, MoveVariantHandler $moveVariant): JsonResponse
+    {
+        return $this->json(['targetProductId' => (string) $moveVariant($payload->toCommand($id))]);
     }
 }

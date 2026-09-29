@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
 use App\Domain\Order\Order;
+use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\NotFound;
@@ -55,6 +56,20 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         }
 
         return $query->getQuery()->getResult();
+    }
+
+    public function selling(Ulid $productId): array
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('o', 'l')
+            ->from(Order::class, 'o')
+            ->join('o.lines', 'l')
+            ->where('o.workspace = :workspace')
+            ->andWhere('o.id IN (SELECT IDENTITY(s.order) FROM '.OrderLine::class.' s WHERE s.productId = :product)')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('product', $productId, UlidType::NAME)
+            ->getQuery()
+            ->getResult();
     }
 
     public function importedSumUpTransactionCodes(array $transactionCodes): array

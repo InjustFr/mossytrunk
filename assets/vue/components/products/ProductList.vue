@@ -1,7 +1,7 @@
 <script setup>
 import { computed, toRef } from 'vue';
 import { VisuallyHidden } from 'reka-ui';
-import { Pencil, TriangleAlert } from '@lucide/vue';
+import { FolderInput, Pencil, TriangleAlert } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
@@ -18,7 +18,7 @@ const props = defineProps({
     allSelected: { type: Boolean, default: false },
     typeColors: { type: Map, required: true },
 });
-const emit = defineEmits(['edit', 'toggle-all']);
+const emit = defineEmits(['edit', 'move', 'toggle-all']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
 const knownCost = (product) => product.buyingPrice > 0;
@@ -103,6 +103,7 @@ function setChecked(id, checked) {
                     <span v-else class="product-list__muted">—</span>
                 </td>
                 <td class="data-table__cell--actions">
+                    <IconButton :icon="FolderInput" :label="product.variants.length ? `Déplacer une variante de ${product.displayName}` : `Faire de ${product.displayName} une variante`" @click="emit('move', product)" />
                     <IconButton :icon="Pencil" :label="`Modifier ${product.displayName}`" @click="emit('edit', product)" />
                 </td>
             </tr>
