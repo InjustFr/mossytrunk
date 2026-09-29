@@ -38,18 +38,18 @@ final class SumUpPayloadMapper
             Money::cents(self::cents($product['price_with_vat'] ?? $product['price'] ?? 0)),
             max(1, (int) ($product['quantity'] ?? 1)),
             self::category($product),
-            self::priceLabel($product),
+            self::variant($product),
         );
     }
 
     /**
      * @param array<string, mixed> $product
      */
-    private static function priceLabel(array $product): ?string
+    private static function variant(array $product): ?string
     {
-        $label = $product['price_label'] ?? null;
+        $description = $product['description'] ?? null;
 
-        return \is_string($label) && '' !== trim($label) ? trim($label) : null;
+        return \is_string($description) && '' !== trim($description) ? trim($description) : null;
     }
 
     /**

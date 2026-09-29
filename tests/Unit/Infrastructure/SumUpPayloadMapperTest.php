@@ -17,7 +17,7 @@ final class SumUpPayloadMapperTest extends TestCase
             'amount' => 19.5,
             'tip_amount' => 0.5,
             'products' => [
-                ['name' => 'Forêt', 'price_label' => ' A4 ', 'price' => 15.0, 'price_with_vat' => 15.0, 'quantity' => 1, 'category' => ['name' => 'Print']],
+                ['name' => 'Forêt', 'description' => "  A4 \n", 'price_label' => 'Prix', 'price' => 15.0, 'price_with_vat' => 15.0, 'quantity' => 1, 'category' => ['name' => 'Print']],
                 ['name' => 'Mousse', 'price' => 4.0, 'quantity' => 1, 'category_name' => 'Sticker'],
                 ['name' => 'Libre', 'price' => 0.5],
             ],

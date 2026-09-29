@@ -26,8 +26,10 @@ use App\Domain\Shared\Money;
  * SumUp spreads a basket discount over its lines, so a line may be cheaper than the product: it is sold at the higher of
  * the two (the difference becomes the order's "Remise SumUp"), and a product created by this import takes the highest
  * price SumUp charged for it.
- * SumUp's price label is the variant: an existing product with variants learns a new label as a variant, a product
- * created by the import gets the labels it is sold with. A label on an existing product without variants is ignored.
+ * SumUp's product description is the variant. It is matched to the product's variants, else to a product holding that
+ * one variant on its own ("<name> <variant>", a product split per variant), else learnt as a new variant by a product
+ * that has variants or was created by this import; on another existing product without variants it is ignored.
+ * Without a description, "<product> <variant>", "<product> - <variant>" or "<product> (<variant>)" names are recognised.
  * Returns null when the line names a product that has variants without a known variant.
  */
 final class SumUpProductResolver
@@ -61,40 +63,57 @@ final class SumUpProductResolver
             return $this->freeAmount($line)->sellable(null)->at($line->unitPrice);
         }
 
+        $variant = null === $line->variant || '' === trim($line->variant) ? null : trim($line->variant);
         $product = $this->find($name);
+
+        if (null !== $variant) {
+            return $this->soldWithVariant($product, $name, $variant, $line);
+        }
+
         if (null !== $product) {
-            return $this->soldAs($product, $line);
-        }
-
-        foreach (self::splitVariant($name) as [$productName, $variant]) {
-            $product = $this->find($productName);
-            if (null !== $product && $product->hasVariant($variant)) {
-                return $this->sold($product, $variant, $line);
-            }
-        }
-
-        $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
-
-        return $this->soldAs($this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type), $line);
-    }
-
-    private function soldAs(Product $product, SumUpLine $line): ?SellableItem
-    {
-        if (null === $line->variant) {
             return $product->hasVariants() ? null : $this->sold($product, null, $line);
         }
 
-        $variant = self::matchingVariant($product, $line->variant);
-        if (null !== $variant) {
-            return $this->sold($product, $variant, $line);
-        }
-        if ($product->hasVariants() || isset($this->created[(string) $product->id()])) {
-            $product->addVariant($line->variant);
-
-            return $this->sold($product, $line->variant, $line);
+        foreach (self::splitVariant($name) as [$productName, $candidate]) {
+            $product = $this->find($productName);
+            $known = null === $product ? null : self::matchingVariant($product, $candidate);
+            if (null !== $known) {
+                return $this->sold($product, $known, $line);
+            }
         }
 
-        return $this->sold($product, null, $line);
+        return $this->sold($this->createFor($name, $line), null, $line);
+    }
+
+    private function soldWithVariant(?Product $product, string $name, string $variant, SumUpLine $line): SellableItem
+    {
+        $known = null === $product ? null : self::matchingVariant($product, $variant);
+        if (null !== $known) {
+            return $this->sold($product, $known, $line);
+        }
+
+        foreach ([\sprintf('%s %s', $name, $variant), \sprintf('%s - %s', $name, $variant), \sprintf('%s (%s)', $name, $variant)] as $splitName) {
+            $split = $this->find($splitName);
+            if (null !== $split && !$split->hasVariants()) {
+                return $this->sold($split, null, $line);
+            }
+        }
+
+        if (null !== $product && !$product->hasVariants() && !isset($this->created[(string) $product->id()])) {
+            return $this->sold($product, null, $line);
+        }
+
+        $product ??= $this->createFor($name, $line);
+        $product->addVariant($variant);
+
+        return $this->sold($product, $variant, $line);
+    }
+
+    private function createFor(string $name, SumUpLine $line): Product
+    {
+        $type = null === $line->category || '' === trim($line->category) ? null : $this->type(trim($line->category));
+
+        return $this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $line->unitPrice, $type);
     }
 
     private static function matchingVariant(Product $product, string $label): ?string
@@ -201,6 +220,10 @@ final class SumUpProductResolver
         }
         if (preg_match('/^(.+?)\s*\((.+)\)$/u', $name, $matches)) {
             $candidates[] = [trim($matches[1]), trim($matches[2])];
+        }
+        $words = preg_split('/\s+/u', $name) ?: [];
+        for ($cut = \count($words) - 1; $cut > 0; --$cut) {
+            $candidates[] = [implode(' ', \array_slice($words, 0, $cut)), implode(' ', \array_slice($words, $cut))];
         }
 
         return $candidates;

@@ -178,18 +178,19 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(800, $orders['TX-BUNDLE']->total);
     }
 
-    public function testPriceLabelIsTheVariant(): void
+    public function testDescriptionIsTheVariant(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         $create = self::getContainer()->get(CreateProductHandler::class);
         $create(new CreateProduct('T-shirt', 2_000, 0, ['S', 'M']));
         $create(new CreateProduct('Zine', 1_000));
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
-            new SumUpTransaction('TX-LABELS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(8_500), [
+            new SumUpTransaction('TX-VARIANTS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(10_500), [
                 new SumUpLine('Forêt', Money::cents(1_500), 1, variant: 'A4'),
                 new SumUpLine('Forêt', Money::cents(2_000), 1, variant: 'A3'),
                 new SumUpLine('T-shirt', Money::cents(2_000), 1, variant: 'm'),
                 new SumUpLine('T-shirt', Money::cents(2_000), 1, variant: 'XL'),
+                new SumUpLine('T-shirt S', Money::cents(2_000), 1),
                 new SumUpLine('Zine', Money::cents(1_000), 1, variant: 'Prix normal'),
             ]),
         ]);
@@ -202,6 +203,26 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(['A4', 'A3'], $variants['Forêt']);
         self::assertSame(['S', 'M', 'XL'], $variants['T-shirt']);
         self::assertSame([], $variants['Zine']);
+    }
+
+    public function testProductsSplitPerVariantAreRecognised(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $create = self::getContainer()->get(CreateProductHandler::class);
+        $create(new CreateProduct('Mug Lichen', 1_200));
+        $create(new CreateProduct('Mug (Fougère)', 1_200));
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-SPLIT', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(2_400), [
+                new SumUpLine('Mug', Money::cents(1_200), 1, variant: 'Lichen'),
+                new SumUpLine('Mug', Money::cents(1_200), 1, variant: 'Fougère'),
+            ]),
+        ]);
+
+        $report = $this->import();
+
+        self::assertSame(1, $report->ordersImported);
+        self::assertSame(0, $report->productsCreated);
+        self::assertSame([[], []], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'variants'));
     }
 
     public function testTypedProductsAreMatchedByDisplayName(): void
