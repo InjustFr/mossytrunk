@@ -41,6 +41,7 @@ services:
     environment:
       APP_ENV: test
       APP_DEBUG: 1
+      E2E_NATIVE_SESSIONS: 1
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
       MAILER_DSN: smtp://mailpit:1025
     volumes:

@@ -31,4 +31,9 @@ when@test:
         App\Infrastructure\SumUp\FakeSumUpGateway:
             autowire: true
             public: true
+        App\Tests\Support\EndToEndSessionStorageFactory:
+            arguments:
+                $mock: '@session.storage.factory.mock_file'
+                $native: '@session.storage.factory.native'
+                $useNative: '%env(bool:default::E2E_NATIVE_SESSIONS)%'
 
