@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
+use App\Domain\Accounting\DeclarationPeriodicity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -21,6 +22,9 @@ class Workspace
 
     #[ORM\Column(length: 32, nullable: true)]
     private ?string $sumUpMerchantCode = null;
+
+    #[ORM\Column(length: 16, enumType: DeclarationPeriodicity::class, options: ['default' => 'monthly'])]
+    private DeclarationPeriodicity $declarationPeriodicity = DeclarationPeriodicity::Monthly;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -55,6 +59,16 @@ class Workspace
         }
 
         $this->sumUpMerchantCode = $merchantCode;
+    }
+
+    public function declareEvery(DeclarationPeriodicity $periodicity): void
+    {
+        $this->declarationPeriodicity = $periodicity;
+    }
+
+    public function declarationPeriodicity(): DeclarationPeriodicity
+    {
+        return $this->declarationPeriodicity;
     }
 
     public function id(): Ulid

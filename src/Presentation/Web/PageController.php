@@ -93,6 +93,12 @@ final class PageController extends AbstractController
         return $this->page('DesignDetailPage', 'Design', ['designId' => $id]);
     }
 
+    #[Route('/comptabilite', name: 'accounting', methods: ['GET'])]
+    public function accounting(): Response
+    {
+        return $this->page('AccountingPage', 'Comptabilité');
+    }
+
     #[Route('/remises', name: 'discounts', methods: ['GET'])]
     public function discounts(): Response
     {
