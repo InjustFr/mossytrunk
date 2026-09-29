@@ -9,10 +9,5 @@ export function useWorkspaceSettings() {
         settings.value = await api.get('/api/workspace/settings');
     }
 
-    const saveSumUp = (payload) => api.put('/api/workspace/settings/sumup', payload);
-    const removeSumUpApiKey = () => api.del('/api/workspace/settings/sumup/api-key');
-    const disconnectEtsy = () => api.del('/api/etsy/connection');
-    const saveEtsy = (payload) => api.put('/api/etsy/settings', payload);
-
-    return { settings, load, saveSumUp, removeSumUpApiKey, disconnectEtsy, saveEtsy };
+    return { settings, load };
 }

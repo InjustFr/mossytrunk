@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\GetProduct;
 
+use App\Application\Integration\Connectors;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Stock\ProductStock;
 use App\Domain\Design\DesignRepository;
@@ -28,6 +29,7 @@ final readonly class GetProductHandler
         private StockCheckRepository $checks,
         private DesignRepository $designs,
         private ClockInterface $clock,
+        private Connectors $connectors,
     ) {
     }
 
@@ -89,7 +91,7 @@ final readonly class GetProductHandler
                         'quantity' => -$line->quantity(),
                         'cost' => $line->cost()->amount(),
                         'link' => '/commandes/'.$order->id(),
-                        'label' => $order->event()?->name() ?? 'Etsy',
+                        'label' => $order->event()?->name() ?? $this->connectors->labelOf($order->source()),
                     ];
                 }
             }

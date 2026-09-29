@@ -37,9 +37,8 @@ onMounted(load);
             <p class="order-detail-page__meta">
                 {{ formatDateTime(order.placedAt) }} ·
                 <a v-if="order.event" :href="`/evenements/${order.event.id}`">{{ order.event.name }}</a>
-                <template v-else>Boutique Etsy</template>
-                <span v-if="order.source === 'sumup'"> · importée de SumUp</span>
-                <span v-else-if="order.source === 'etsy'"> · importée d'Etsy</span>
+                <template v-else>Boutique {{ order.sourceLabel }}</template>
+                <span v-if="order.source !== 'manual'"> · importée depuis {{ order.sourceLabel }}</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
             </p>
             <div class="order-detail-page__grid">

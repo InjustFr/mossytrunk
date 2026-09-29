@@ -72,42 +72,25 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->getResult();
     }
 
-    public function importedEtsyReceiptIds(array $receiptIds): array
+    public function importedExternalIds(string $source, array $externalIds): array
     {
-        if ([] === $receiptIds) {
+        if ([] === $externalIds) {
             return [];
         }
 
         $ids = $this->entityManager->createQueryBuilder()
-            ->select('o.etsyReceiptId')
+            ->select('o.externalId')
             ->from(Order::class, 'o')
-            ->where('o.etsyReceiptId IN (:ids)')
+            ->where('o.externalId IN (:ids)')
+            ->andWhere('o.source = :source')
             ->andWhere('o.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->setParameter('ids', $receiptIds, ArrayParameterType::STRING)
+            ->setParameter('source', $source)
+            ->setParameter('ids', $externalIds, ArrayParameterType::STRING)
             ->getQuery()
             ->getSingleColumnResult();
 
         return array_values(array_map(static fn (mixed $id): string => \is_scalar($id) ? (string) $id : '', $ids));
-    }
-
-    public function importedSumUpTransactionCodes(array $transactionCodes): array
-    {
-        if ([] === $transactionCodes) {
-            return [];
-        }
-
-        $codes = $this->entityManager->createQueryBuilder()
-            ->select('o.sumUpTransactionCode')
-            ->from(Order::class, 'o')
-            ->where('o.sumUpTransactionCode IN (:codes)')
-            ->andWhere('o.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->setParameter('codes', $transactionCodes, ArrayParameterType::STRING)
-            ->getQuery()
-            ->getSingleColumnResult();
-
-        return array_values(array_map(static fn (mixed $code): string => \is_scalar($code) ? (string) $code : '', $codes));
     }
 
     public function countOutside(Ulid $eventId, DateRange $period): int

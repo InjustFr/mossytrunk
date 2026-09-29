@@ -21,8 +21,8 @@ class WorkspaceSecret
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Workspace $workspace;
 
-    #[ORM\Column(length: 50, enumType: SecretName::class)]
-    private SecretName $name;
+    #[ORM\Column(length: 50)]
+    private string $name;
 
     #[ORM\Column(type: 'text')]
     private string $ciphertext;
@@ -34,7 +34,7 @@ class WorkspaceSecret
     {
         $this->id = new Ulid();
         $this->workspace = $workspace;
-        $this->name = $name;
+        $this->name = $name->value;
         $this->replace($ciphertext);
     }
 
@@ -51,7 +51,7 @@ class WorkspaceSecret
 
     public function name(): SecretName
     {
-        return $this->name;
+        return SecretName::named($this->name);
     }
 
     public function ciphertext(): string

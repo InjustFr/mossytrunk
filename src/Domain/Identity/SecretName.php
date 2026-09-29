@@ -4,10 +4,23 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
-enum SecretName: string
+final readonly class SecretName
 {
-    case SumUpApiKey = 'sumup_api_key';
-    case EtsySharedSecret = 'etsy_shared_secret';
-    case EtsyAccessToken = 'etsy_access_token';
-    case EtsyRefreshToken = 'etsy_refresh_token';
+    private function __construct(public string $value)
+    {
+    }
+
+    public static function of(string $service, string $field): self
+    {
+        return self::named($service.'_'.$field);
+    }
+
+    public static function named(string $value): self
+    {
+        if (1 !== preg_match('/^[a-z0-9]+_[a-z0-9_]+$/', $value) || \strlen($value) > 50) {
+            throw InvalidAccount::invalidSecretName($value);
+        }
+
+        return new self($value);
+    }
 }

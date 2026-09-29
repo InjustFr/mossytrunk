@@ -28,18 +28,13 @@ final class InvalidAccount extends DomainException
         return new self(\sprintf('Le mot de passe doit contenir au moins %d caractères.', $minLength));
     }
 
-    public static function invalidSumUpMerchantCode(string $merchantCode): self
-    {
-        return new self(\sprintf('Code marchand SumUp invalide « %s » (lettres et chiffres).', $merchantCode));
-    }
-
     public static function emptySecret(): self
     {
         return new self('La clé ne peut pas être vide.');
     }
 
-    public static function invalidEtsyKeystring(): self
+    public static function invalidSecretName(string $name): self
     {
-        return new self('La clé de l\'application Etsy (keystring) ne contient que des lettres et des chiffres.');
+        return new self(\sprintf('Nom de clé invalide « %s ».', $name));
     }
 }

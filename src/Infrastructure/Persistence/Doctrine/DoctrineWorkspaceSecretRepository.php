@@ -28,6 +28,6 @@ final readonly class DoctrineWorkspaceSecretRepository implements WorkspaceSecre
 
     public function find(Workspace $workspace, SecretName $name): ?WorkspaceSecret
     {
-        return $this->entityManager->getRepository(WorkspaceSecret::class)->findOneBy(['workspace' => $workspace, 'name' => $name]);
+        return $this->entityManager->getRepository(WorkspaceSecret::class)->findOneBy(['workspace' => $workspace, 'name' => $name->value]);
     }
 }

@@ -10,7 +10,7 @@ use case `GetEventReport` → `GET /api/events/{id}/report`; UI: report card on 
 
 ```
 gross sales        = Σ order subtotals (unit selling price snapshot × qty)
-discounts          = Σ order discounts (rules, « Remise SumUp »)
+discounts          = Σ order discounts (rules, « Remise {service} »)
 turnover (CA)      = gross sales − discounts                  = Σ order totals
 cost of goods      = Σ line costs (units taken from stock)
 URSSAF             = 12.8 % × turnover   (rounded to the cent, half up)

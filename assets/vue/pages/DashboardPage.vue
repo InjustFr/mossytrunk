@@ -53,7 +53,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <section v-if="isEmpty" class="dashboard-page__welcome" aria-labelledby="dashboard-welcome">
             <h2 id="dashboard-welcome" class="dashboard-page__welcome-title">Pas encore de ventes</h2>
             <p class="dashboard-page__welcome-text">
-                Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis SumUp.
+                Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis un service connecté.
             </p>
             <div class="dashboard-page__welcome-actions">
                 <BaseButton @click="visit('/evenements?nouveau')">Créer un événement</BaseButton>

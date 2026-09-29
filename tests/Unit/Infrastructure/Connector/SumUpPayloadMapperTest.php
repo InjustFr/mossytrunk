@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Infrastructure\Connector;
+
+use App\Application\Integration\ExternalLine;
+use App\Domain\Order\PaymentMethod;
+use App\Infrastructure\Connector\SumUp\SumUpPayloadMapper;
+use PHPUnit\Framework\TestCase;
+
+final class SumUpPayloadMapperTest extends TestCase
+{
+    public function testMapsAmountsAndOptionalCategory(): void
+    {
+        $sale = (new SumUpPayloadMapper())->sale([
+            'transaction_code' => 'T1',
+            'timestamp' => '2030-03-14T10:00:00Z',
+            'amount' => 19.5,
+            'tip_amount' => 0.5,
+            'products' => [
+                ['name' => 'Forêt', 'description' => "  A4 \n", 'price_label' => 'Prix', 'price' => 15.0, 'price_with_vat' => 15.0, 'quantity' => 1, 'category' => ['name' => 'Print']],
+                ['name' => 'Mousse', 'price' => 4.0, 'quantity' => 1, 'category_name' => 'Sticker'],
+                ['name' => 'Libre', 'price' => 0.5],
+            ],
+        ]);
+
+        self::assertSame(['T1', 'T1'], [$sale->id, $sale->reference]);
+        self::assertSame(1_900, $sale->charged->amount());
+        self::assertTrue($sale->shipping->isZero());
+        self::assertSame(['Print', 'Sticker', null], array_map(static fn (ExternalLine $line): ?string => $line->category, $sale->lines));
+        self::assertSame(['A4', null, null], array_map(static fn (ExternalLine $line): ?string => $line->variant, $sale->lines));
+        self::assertSame(['forêt', 'mousse', 'libre'], array_map(static fn (ExternalLine $line): string => $line->externalRef, $sale->lines));
+        self::assertSame(50, $sale->lines[2]->unitPrice->amount());
+    }
+
+    public function testCashPaymentsAreToldApartFromCardOnes(): void
+    {
+        $mapper = new SumUpPayloadMapper();
+        $payment = static fn (?string $type): ?PaymentMethod => $mapper->sale(['transaction_code' => 'T', 'timestamp' => '2030-03-14T10:00:00Z', 'amount' => 1.0] + (null === $type ? [] : ['payment_type' => $type]))->paymentMethod;
+
+        self::assertSame(PaymentMethod::Cash, $payment('CASH'));
+        self::assertSame(PaymentMethod::Card, $payment('POS'));
+        self::assertSame(PaymentMethod::Card, $payment('ECOM'));
+        self::assertNull($payment(null));
+    }
+}

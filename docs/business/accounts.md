@@ -25,7 +25,7 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | A7 | "Mot de passe oublié ?" always shows the same confirmation, whether the account exists or not; at most 3 requests per email and IP every 15 minutes | `RequestPasswordResetHandler`, `forgot_password` rate limiter | `AccountUseCasesTest`, `AuthenticationTest` |
 | A8 | Sign-in: 5 failed attempts per 15 minutes are throttled; "Se souvenir de moi" keeps the session 30 days; a password change signs out the other sessions | `security.yaml` (`login_throttling`, `remember_me`), `SecurityUser::__serialize()` | e2e `auth.spec.js` |
 | A10 | All business data is scoped to the user's workspace: lists only show it, an id from another workspace answers « introuvable » (404) | `WorkspaceContext` used by every Doctrine repository; aggregates are created with the current workspace (orders take their event's) | `WorkspaceIsolationTest`, `ProductApiTest` |
-| A11 | Workspace API keys (SumUp now, others later) are stored **encrypted** (libsodium secretbox, key `APP_ENCRYPTION_KEY`), one per name and workspace; the API only returns whether a key is set and its last 4 characters; saving an empty key keeps the current one | `WorkspaceSecret`, `SecretName`, `WorkspaceSecrets`, `SodiumSecretCipher`, `UpdateSumUpSettingsHandler` | `SodiumSecretCipherTest`, `WorkspaceSettingsTest`, `SumUpImportApiTest` |
+| A11 | Workspace secrets (access keys and tokens of the connected services) are stored **encrypted** (libsodium secretbox, key `APP_ENCRYPTION_KEY`), one per name and workspace; the API only returns whether a key is set and its last 4 characters; saving an empty key keeps the current one | `WorkspaceSecret`, `SecretName`, `WorkspaceSecrets`, `SodiumSecretCipher`, `ConnectionCredentials` | `SodiumSecretCipherTest`, `SecretNameTest`, `ServiceConnectionUseCasesTest`, `ServicesApiTest` |
 | A9 | Every page requires signing in; the API answers 401 to anonymous calls and 403 to cross-site writes | `security.yaml` `access_control`, `AuthenticationEntryPoint`, `SameOriginGuard` | `AuthenticationTest` |
 
 ## Pages
@@ -36,4 +36,4 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | Mot de passe oublié | `/mot-de-passe/oublie` |
 | Choix du mot de passe (invitation or reset link) | `/mot-de-passe/definir/{token}` → `/mot-de-passe/definir` |
 | Déconnexion (POST) | `/deconnexion` |
-| Paramètres (SumUp) | `/parametres` — API `GET /api/workspace/settings`, `PUT /api/workspace/settings/sumup`, `DELETE /api/workspace/settings/sumup/api-key` |
+| Paramètres | `/parametres` — API `GET /api/workspace/settings`; services connectés: `/api/services` (see [imports.md](imports.md)) |

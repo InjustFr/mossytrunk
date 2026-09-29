@@ -1,26 +1,26 @@
 # Orders (Commandes)
 
-An **order** is a sale made during an event, or online on Etsy (then without event, see [etsy-import.md](etsy-import.md)).
+An **order** is a sale made during an event, or an online sale imported from a connected service (then without event, see [imports.md](imports.md)).
 
 | Field | Meaning |
 |---|---|
-| `reference` | `CMD-YYYYMMDD-XXXXXX` for manual orders; the SumUp transaction code for imports |
-| `event` | The event the sale happened at (required, except for Etsy orders) |
-| `shipping` | Shipping charged to the customer (Etsy), part of the total |
+| `reference` | `CMD-YYYYMMDD-XXXXXX` for manual orders; given by the service for imports (SumUp transaction code, `ETSY-<receipt id>`); unique within the workspace |
+| `event` | The event the sale happened at (required, except for online imported orders) |
+| `shipping` | Shipping charged to the customer by the service (Etsy), part of the total |
 | `placedAt` | Date-time of the sale (stored with time zone, displayed in Europe/Paris) |
 | `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and the **cost** of the units taken from stock |
 | `appliedDiscounts` | Snapshot list of `{label, amount, ruleId}` (`ruleId` null for « Remise SumUp » and older orders) |
-| `paymentMethod` | `card` or `cash`, from the SumUp import (see [sumup-import.md](sumup-import.md), S13); none for manual orders |
-| `source` | `manual` or `sumup` |
-| `sumUpTransactionCode` | Unique; set for imported orders |
+| `paymentMethod` | `card` or `cash`, given by the service on import (SumUp S13, Etsy card); none for manual orders |
+| `source` | `manual` or the key of the service it was imported from (`sumup`, `etsy`) |
+| `externalId` | The sale's id at the service; unique per source within the workspace |
 
-Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderSource.php`.
+Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`.
 
 ## Rules
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| O1 | A manual or SumUp order always belongs to an event, and its date must fall within the event's days; an Etsy order has none | `Order::__construct()` (`Event::covers()`) | `OrderTest` |
+| O1 | A manual order, or an order imported at the day's market, always belongs to an event, and its date must fall within the event's days; an online imported order has none | `Order::__construct()` (`Event::covers()`) | `OrderTest` |
 | O2 | **The event is deduced from the date** (events never overlap). No event at that date → the order is refused with « Aucun événement le … Créez d'abord l'événement » | `PlaceOrderHandler` (`EventRepository::findCovering()`) | `OrderUseCasesTest` |
 | O3 | At least one line; quantities ≥ 1 | `Order`, `OrderLine`, `OrderPricing::items()` | `OrderTest`, `OrderUseCasesTest` |
 | O4 | Each line is a valid (product, variant) tuple: variant mandatory for products with variants, forbidden for unique products | `Product::sellable()` via `OrderPricing` | `ProductTest`, `OrderUseCasesTest` |
@@ -30,8 +30,8 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | O8 | Discounts never exceed the subtotal | `Order::applyDiscounts()` | `OrderTest` |
 | O9 | `total = subtotal − discounts`; `costOfGoods = Σ line costs`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |
-| O11 | Imported orders keep the SumUp transaction code (unique within the workspace) so re-importing never duplicates them | `Order::importFromSumUp()` | [sumup-import.md](sumup-import.md) |
-| O12 | Every order of the workspace can be deleted at once; products and events stay. A later SumUp import brings SumUp sales back | `DeleteAllOrdersHandler` | `DeleteAllOrdersTest` |
+| O11 | Imported orders keep their source and external id (unique within the workspace) so re-importing never duplicates them | `Order::imported()` | [imports.md](imports.md) |
+| O12 | Every order of the workspace can be deleted at once; products and events stay. A later import brings the services' sales back | `DeleteAllOrdersHandler` | `DeleteAllOrdersTest` |
 
 ## Use cases & API
 

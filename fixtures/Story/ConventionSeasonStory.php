@@ -13,11 +13,15 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\ValidityPeriod;
-use App\Domain\Etsy\EtsyListing;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
+use App\Domain\Integration\ExternalItem;
+use App\Domain\Integration\SalesContext;
+use App\Domain\Integration\ServiceConnection;
+use App\Domain\Integration\UnknownItems;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
+use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Purchasing\PurchasedItem;
@@ -179,16 +183,24 @@ final class ConventionSeasonStory extends Story
             $variant = $product->hasVariants() ? 'A4' : null;
             $item = $product->sellable($variant);
             $placedAt = new \DateTimeImmutable(\sprintf('%d days 14:00', $daysAgo));
-            $this->entityManager->persist(Order::importFromEtsy(
+            $receiptId = (string) (3_100_000_000 + abs($daysAgo));
+            $this->entityManager->persist(Order::imported(
                 $this->workspace,
-                (string) (3_100_000_000 + abs($daysAgo)),
+                'etsy',
+                $receiptId,
+                'ETSY-'.$receiptId,
+                null,
                 $placedAt,
                 [(new OrderedItem($item, $quantity))->costing($this->stockOf($product, $variant)->withdraw($quantity, $item->buyingPrice))],
-                Money::cents($discount),
+                $item->sellingPrice->multiply($quantity)->subtract(Money::cents($discount)),
                 Money::cents($shipping),
+                PaymentMethod::Card,
+                [],
+                'Remise Etsy',
             ));
         }
-        $this->entityManager->persist(EtsyListing::seen($this->workspace, '1500000042', 'Tote bag brodé mousse forestière — coton bio', 'Noir', new \DateTimeImmutable('-6 days')));
+        $this->entityManager->persist(ServiceConnection::create($this->workspace, 'etsy', ['keystring' => 'mossydemo'], SalesContext::Online, UnknownItems::LinkByHand));
+        $this->entityManager->persist(ExternalItem::seen($this->workspace, 'etsy', '1500000042', 'Tote bag brodé mousse forestière — coton bio', 'Noir', new \DateTimeImmutable('-6 days')));
     }
 
     private function designs(ProductType $sticker, ProductType $print, Product $moss): void

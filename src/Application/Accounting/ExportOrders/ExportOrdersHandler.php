@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Accounting\ExportOrders;
 
+use App\Application\Integration\Connectors;
 use App\Domain\Accounting\InvalidDeclaration;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
-use App\Domain\Order\OrderSource;
 use App\Domain\Order\PaymentMethod;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
@@ -19,6 +19,7 @@ final readonly class ExportOrdersHandler
 
     public function __construct(
         private OrderRepository $orders,
+        private Connectors $connectors,
     ) {
     }
 
@@ -42,7 +43,7 @@ final readonly class ExportOrdersHandler
                 $order->reference(),
                 $placedAt->format('d/m/Y'),
                 $placedAt->format('H:i'),
-                self::source($order->source()),
+                $this->connectors->labelOf($order->source()),
                 $order->event()?->name() ?? '',
                 self::payment($order->paymentMethod()),
                 (string) $order->itemCount(),
@@ -74,15 +75,6 @@ final readonly class ExportOrdersHandler
     private static function amount(Money $money): string
     {
         return number_format($money->amount() / 100, 2, ',', '');
-    }
-
-    private static function source(OrderSource $source): string
-    {
-        return match ($source) {
-            OrderSource::Manual => 'Saisie',
-            OrderSource::SumUp => 'SumUp',
-            OrderSource::Etsy => 'Etsy',
-        };
     }
 
     private static function payment(?PaymentMethod $method): string

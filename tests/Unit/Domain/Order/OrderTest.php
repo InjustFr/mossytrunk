@@ -9,7 +9,6 @@ use App\Domain\Event\Event;
 use App\Domain\Order\InvalidOrder;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
-use App\Domain\Order\OrderSource;
 use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
@@ -44,7 +43,8 @@ final class OrderTest extends TestCase
         self::assertSame(3_000, $order->total()->amount());
         self::assertSame(1_140, $order->costOfGoods()->amount());
         self::assertSame(4, $order->itemCount());
-        self::assertSame(OrderSource::Manual, $order->source());
+        self::assertSame(Order::MANUAL, $order->source());
+        self::assertFalse($order->isImported());
         self::assertMatchesRegularExpression('/^CMD-20260710-[0-9A-Z]{6}$/', $order->reference());
     }
 
@@ -61,11 +61,14 @@ final class OrderTest extends TestCase
 
     public function testAnEtsyOrderHasNoEventAndItsShippingCountsInTheTotal(): void
     {
-        $order = Order::importFromEtsy(TestWorkspace::get(), '310', self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null)->at(Money::cents(450)), 2)], Money::cents(100), Money::cents(290));
+        $order = Order::imported(TestWorkspace::get(), 'etsy', '310', 'ETSY-310', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null)->at(Money::cents(450)), 2)], Money::cents(800), Money::cents(290), PaymentMethod::Card, [], 'Remise Etsy');
 
         self::assertNull($order->event());
-        self::assertSame(OrderSource::Etsy, $order->source());
+        self::assertSame('etsy', $order->source());
+        self::assertSame('310', $order->externalId());
+        self::assertTrue($order->isImported());
         self::assertSame('ETSY-310', $order->reference());
+        self::assertEquals([new AppliedDiscount('Remise Etsy', Money::cents(100))], $order->appliedDiscounts());
         self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
     }
 
@@ -128,23 +131,23 @@ final class OrderTest extends TestCase
         Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [new AppliedDiscount('Trop', Money::cents(500))]);
     }
 
-    public function testSumUpImportKeepsTransactionCodeAndSumUpDiscount(): void
+    public function testAnImportedOrderKeepsItsExternalIdAndTheGapAsTheServiceDiscount(): void
     {
-        $order = Order::importFromSumUp('TX123', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_000));
+        $order = $this->imported('TX123', 3, 1_000);
 
         self::assertSame('TX123', $order->reference());
-        self::assertSame('TX123', $order->sumUpTransactionCode());
-        self::assertSame(OrderSource::SumUp, $order->source());
+        self::assertSame('TX123', $order->externalId());
+        self::assertSame('sumup', $order->source());
         self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(200))], $order->appliedDiscounts());
         self::assertSame(1_000, $order->total()->amount());
     }
 
-    public function testSumUpImportKeepsTheMatchingRuleDiscountDespiteSumUpRounding(): void
+    public function testAnImportedOrderKeepsTheMatchingRuleDiscountDespiteRounding(): void
     {
         $rule = new AppliedDiscount('3 stickers pour 10 €', Money::cents(200), new Ulid());
 
-        $exact = Order::importFromSumUp('TX125', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_000), ruleDiscounts: [$rule]);
-        $rounded = Order::importFromSumUp('TX126', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_002), ruleDiscounts: [$rule]);
+        $exact = $this->imported('TX125', 3, 1_000, [$rule]);
+        $rounded = $this->imported('TX126', 3, 1_002, [$rule]);
 
         self::assertEquals([$rule], $exact->appliedDiscounts());
         self::assertEquals([$rule], $rounded->appliedDiscounts());
@@ -152,21 +155,34 @@ final class OrderTest extends TestCase
         self::assertSame(1_000, $rounded->total()->amount());
     }
 
-    public function testSumUpImportFallsBackToSumUpDiscountWhenNoRuleMatches(): void
+    public function testAnImportedOrderFallsBackToTheServiceDiscountWhenNoRuleMatches(): void
     {
         $rule = new AppliedDiscount('3 stickers pour 10 €', Money::cents(200), new Ulid());
 
-        $order = Order::importFromSumUp('TX127', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_003), ruleDiscounts: [$rule]);
-
-        self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(197))], $order->appliedDiscounts());
+        self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(197))], $this->imported('TX127', 3, 1_003, [$rule])->appliedDiscounts());
     }
 
-    public function testSumUpImportWithoutDiscount(): void
+    public function testAnImportedOrderWithoutDiscount(): void
     {
-        $order = Order::importFromSumUp('TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), PaymentMethod::Cash);
+        $order = Order::imported(TestWorkspace::get(), 'sumup', 'TX124', 'TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::zero(), PaymentMethod::Cash, [], 'Remise SumUp');
 
         self::assertSame([], $order->appliedDiscounts());
         self::assertSame(PaymentMethod::Cash, $order->paymentMethod());
+    }
+
+    public function testAnImportedOrderCannotHaveNegativeShipping(): void
+    {
+        $this->expectException(InvalidOrder::class);
+
+        Order::imported(TestWorkspace::get(), 'etsy', '311', 'ETSY-311', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::cents(-1), PaymentMethod::Card, [], 'Remise Etsy');
+    }
+
+    /**
+     * @param list<AppliedDiscount> $rules
+     */
+    private function imported(string $code, int $stickers, int $charged, array $rules = []): Order
+    {
+        return Order::imported(TestWorkspace::get(), 'sumup', $code, $code, $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), $stickers)], Money::cents($charged), Money::zero(), null, $rules, 'Remise SumUp');
     }
 
     private static function at(string $localTime): \DateTimeImmutable

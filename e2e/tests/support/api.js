@@ -36,10 +36,18 @@ export async function createDiscountRule(request, { name = unique('Remise'), con
     return { id: (await response.json()).id, name };
 }
 
-export async function configureSumUp(request, { merchantCode = 'MCODE', apiKey = 'sup_sk_e2e_key' } = {}) {
-    const response = await request.put('/api/workspace/settings/sumup', { data: { merchantCode, apiKey } });
-    expect(response.status()).toBe(204);
+export async function forgetService(request, service) {
+    const response = await request.delete(`/api/services/${service}`);
+    expect([204, 404]).toContain(response.status());
 }
+
+export async function addService(request, service, fields, options = {}) {
+    await forgetService(request, service);
+    const response = await request.post('/api/services', { data: { service, fields, ...options } });
+    expect(response.status()).toBe(201);
+}
+
+export const addSumUp = (request) => addService(request, 'sumup', { merchant_code: 'MCODE', api_key: 'sup_sk_e2e_key' });
 
 export async function restock(request, product, { variant = null, quantity, totalPaid }) {
     const response = await request.post('/api/stock/restock', { data: { productId: product.id, variant, quantity, totalPaid } });

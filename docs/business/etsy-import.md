@@ -1,39 +1,26 @@
 # Etsy import
 
-The workspace connects its Etsy shop once; its **paid receipts** then import as orders with source « Etsy ».
-Online sales do not happen at an event: **Etsy orders have no event**.
+The workspace connects its Etsy shop once; its **paid receipts** then go through the generic [import](imports.md). This page lists what is specific to Etsy.
 
-| Concept | Meaning |
-|---|---|
-| Etsy app | Each workspace brings its own Etsy developer app: keystring on `Workspace`, shared secret as an encrypted workspace secret (like SumUp); the app must declare the callback `<site>/parametres/etsy/retour` |
-| Connection | OAuth 2 with PKCE (scopes `transactions_r shops_r`); the shop id/name and token expiry are on `Workspace`, the access and refresh tokens are encrypted workspace secrets |
-| Etsy listing | An Etsy listing (+ its variation text) seen in a receipt, remembered with the product/variant it sells once linked (`Domain\Etsy\EtsyListing`) |
+Configuration: « Paramètres › Services connectés › Ajouter un service › Etsy »: each workspace brings its own Etsy developer app — « Keystring » and « Shared secret » (stored encrypted); the app must declare the return address shown in the form, `<site>/parametres/etsy/retour`. Then « Connecter la boutique ».
+Defaults: sales **online** (no event), unknown items **ask me**, line prices **listed**.
 
-Model: `src/Application/Etsy/`, `src/Domain/Etsy/`, adapters `src/Infrastructure/Etsy/` (`FakeEtsyGateway` in the test env).
+Code: `src/Infrastructure/Connector/Etsy/` — `EtsyConnector` (`AuthorizingConnector`), `EtsyApiGateway`, `EtsyPayloadMapper`, `FakeEtsyGateway` (test env: fake consent that redirects straight back, fixture `tests/Fixtures/etsy/receipts.json`).
+
+## What is read from Etsy
+
+- OAuth 2 with PKCE (scopes `transactions_r shops_r`); the shop id/name and token expiry are on the service connection, the access and refresh tokens are encrypted workspace secrets.
+- `GET /v3/application/shops/{shop}/receipts?was_paid=true` (pages of 100).
+- Mapping: receipt id = external id, reference `ETSY-<receipt id>`; line = listing id (external reference), title, SKU, variations joined with « / », quantity, price; charged = Σ lines − `discount_amt`; shipping = `total_shipping_cost`; payment « Carte ».
 
 ## Rules
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| Y1 | Connecting goes through Etsy's consent page; the `state` returned must match the one kept in the session, otherwise the connection is refused | `EtsyConnectionController` | `EtsyConnectionTest` |
-| Y1b | Saving other app keys (keystring or shared secret) disconnects the shop: its tokens belong to the previous app | `UpdateEtsySettingsHandler` | `EtsyUseCasesTest` |
-| Y2 | The access token (1 h) is renewed with the refresh token when it expires; disconnecting forgets both tokens and the shop, imported orders stay | `EtsySession`, `DisconnectEtsyHandler` | `EtsyUseCasesTest` |
-| Y3 | An import reads every paid receipt, oldest first; a receipt already imported (`ETSY-<receipt id>`, unique per workspace) is skipped | `ImportFromEtsyHandler` | `EtsyUseCasesTest` |
-| Y4 | A receipt line is matched to a product: the listing's link if any, else **SKU = product reference**, else **title = product display name**; a product with variants needs the variation to equal one of its variants | `EtsyItemResolver` | `EtsyUseCasesTest` |
-| Y5 | A receipt with an unmatched line is not imported: its listing is remembered « à associer ». Once linked to a product/variant, the next import brings the receipt in | `EtsyItemResolver`, `LinkEtsyListingHandler` | `EtsyUseCasesTest`, `etsy.spec.js` |
-| Y6 | An Etsy order has no event; items at the price paid on Etsy; the Etsy discount is kept as « Remise Etsy »; the **shipping charged** is part of the order total (so of the turnover); payment « Carte »; stock is taken like any sale | `Order::importFromEtsy()` | `OrderTest`, `EtsyUseCasesTest` |
-
-## Use cases & API
-
-| Use case | Endpoint |
-|---|---|
-| `UpdateEtsySettings` | `PUT /api/etsy/settings` `{keystring, sharedSecret?}` |
-| Connect | `GET /parametres/etsy/connexion` → Etsy → `GET /parametres/etsy/retour` → `/parametres?etsy=connecte\|refuse\|erreur\|indisponible` |
-| `DisconnectEtsy` | `DELETE /api/etsy/connection` |
-| `ImportFromEtsy` | `POST /api/etsy/import` → `{ordersImported, ordersAlreadyImported, ordersWaitingForListings, listingsToLink}` |
-| `ListEtsyListings` / `LinkEtsyListing` | `GET /api/etsy/listings`, `PUT /api/etsy/listings/{id}` `{productId, variant}` |
-
-## UI
-
-- **Paramètres › Etsy**: the callback address to declare in the Etsy app, « Keystring » and « Shared secret » (kept encrypted, shown as ••••1234), « Enregistrer les clés »; then « Connecter ma boutique Etsy », or the shop name and « Déconnecter la boutique » when connected.
-- **Commandes**: « Importer depuis Etsy » (when connected); a notice « N annonces Etsy à associer » opens « Annonces Etsy »: one row per listing (title, variation) with a product combobox and a variant select (pre-selected when the variation matches), « Associer », then « Relancer l'import Etsy ». Etsy orders show « Boutique Etsy » instead of an event and an « Etsy » badge; on a day with both stand and Etsy sales, the list shows one group per source (event first, then Etsy), each with its own count and total; the order page shows « Frais de port ».
+| Y1 | Connecting goes through Etsy's consent page; the `state` returned must match the one kept in the session, otherwise the connection is refused | `ServiceAuthorizationController` | `ServiceAuthorizationTest` |
+| Y1b | Saving other app keys disconnects the shop (see [imports.md](imports.md) I2) | `UpdateConnectionHandler` | `ServiceConnectionUseCasesTest` |
+| Y2 | The access token (1 h) is renewed with the refresh token when it expires, and saved at once; disconnecting forgets both tokens and the shop, imported orders stay | `ConnectionSession`, `AuthorizeHandler::disconnect()` | `ImportEtsySalesTest` |
+| Y3 | A receipt already imported is skipped (see I3) | `ImportSalesHandler` | `ImportEtsySalesTest` |
+| Y4 | A receipt line is matched by the listing's link, else **SKU = product reference**, else **title = product display name**; a product with variants needs the variation to equal one of its variants (see I5) | `ExternalItemResolver` | `ImportEtsySalesTest`, `ImportPoliciesTest` |
+| Y5 | A receipt with an unmatched line waits; its listing is remembered « à associer » (see I6) | `ExternalItemResolver`, `LinkExternalItemHandler` | `ImportEtsySalesTest`, `etsy.spec.js` |
+| Y6 | Items at the price paid on Etsy; the Etsy discount is kept as « Remise Etsy »; the **shipping charged** is part of the order total (so of the turnover); stock is taken like any sale | `Order::imported()`, `LinePrices::Listed` | `OrderTest`, `ImportEtsySalesTest` |

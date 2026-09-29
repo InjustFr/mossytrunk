@@ -19,8 +19,9 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [supplier-orders.md](supplier-orders.md) | Suppliers, supplier orders, reception into stock at the real unit cost |
 | [designs.md](designs.md) | Designs and collections declined onto gabarits, validated into products |
 | [accounting.md](accounting.md) | URSSAF declarations per month or quarter, CSV export of orders |
-| [etsy-import.md](etsy-import.md) | Etsy shop connection, paid receipts as orders without event, listings linked to products |
-| [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
+| [imports.md](imports.md) | Connected services, the generic sales import (event or online, unknown items created or linked by hand) |
+| [etsy-import.md](etsy-import.md) | Etsy specifics: shop connection, paid receipts, listings |
+| [sumup-import.md](sumup-import.md) | SumUp specifics: payments read, categories, free amounts, variants, payment method |
 
 ## Glossary (UI term → code)
 
@@ -49,6 +50,8 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Design / Série | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on (« sur l'établi »), alone or in a series; « sorti de l'atelier » once validated |
 | Déclinaison | `Domain\Design\Declination` | A design on a gabarit; becomes a product on validation |
 | Déclaration URSSAF | `Domain\Accounting\UrssafDeclaration` | A month or quarter marked declared, with the turnover declared |
+| Service connecté | `Domain\Integration\ServiceConnection` | An external service (SumUp, Etsy…) added to the workspace, with its access and import options |
+| Article à associer | `Domain\Integration\ExternalItem` | A service item not matched to a product, waiting to be linked |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |

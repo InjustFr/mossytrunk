@@ -22,9 +22,15 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    # SumUp: real API everywhere, fixture-based fake in the test env (PHPUnit + Playwright).
-    App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\SumUpApiGateway'
-    App\Application\Etsy\EtsyGateway: '@App\Infrastructure\Etsy\EtsyApiGateway'
+    _instanceof:
+        App\Application\Integration\SalesConnector:
+            tags: ['app.sales_connector']
+
+    App\Application\Integration\Connectors:
+        arguments: [!tagged_iterator app.sales_connector]
+
+    App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
+    App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'
 
     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
         arguments:
@@ -33,12 +39,12 @@ services:
 
 when@test:
     services:
-        App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\FakeSumUpGateway'
-        App\Infrastructure\SumUp\FakeSumUpGateway:
+        App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\FakeSumUpGateway'
+        App\Infrastructure\Connector\SumUp\FakeSumUpGateway:
             autowire: true
             public: true
-        App\Application\Etsy\EtsyGateway: '@App\Infrastructure\Etsy\FakeEtsyGateway'
-        App\Infrastructure\Etsy\FakeEtsyGateway:
+        App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\FakeEtsyGateway'
+        App\Infrastructure\Connector\Etsy\FakeEtsyGateway:
             autowire: true
             public: true
         App\Tests\Support\EndToEndSessionStorageFactory:

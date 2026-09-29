@@ -20,11 +20,12 @@ final readonly class OrderSummaryView
         public int $discountTotal,
         public int $total,
         public string $source,
+        public string $sourceLabel,
         public ?string $paymentMethod,
     ) {
     }
 
-    public static function fromOrder(Order $order): self
+    public static function fromOrder(Order $order, string $sourceLabel): self
     {
         return new self(
             (string) $order->id(),
@@ -36,7 +37,8 @@ final readonly class OrderSummaryView
             $order->subtotal()->amount(),
             $order->discountTotal()->amount(),
             $order->total()->amount(),
-            $order->source()->value,
+            $order->source(),
+            $sourceLabel,
             $order->paymentMethod()?->value,
         );
     }

@@ -1,0 +1,129 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Functional\Application\Integration;
+
+use App\Application\Accounting\ExportOrders\ExportOrdersHandler;
+use App\Application\Integration\Authorize\AuthorizeHandler;
+use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
+use App\Application\Integration\ConnectionSession;
+use App\Application\Integration\ImportSales\ImportSalesHandler;
+use App\Application\Integration\LinkExternalItem\LinkExternalItemHandler;
+use App\Application\Integration\ListExternalItems\ListExternalItemsHandler;
+use App\Application\Integration\ListServices\ListServicesHandler;
+use App\Application\Integration\ListServices\ServiceView;
+use App\Application\Integration\ServiceUnavailable;
+use App\Application\Order\GetOrder\GetOrderHandler;
+use App\Application\Order\ListOrders\ListOrdersHandler;
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Stock\GetProductStock\GetProductStockHandler;
+use App\Domain\Integration\ServiceConnectionRepository;
+use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
+use App\Tests\Support\ExternalSales;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+
+final class ImportEtsySalesTest extends KernelTestCase
+{
+    use ActsAsUser;
+    use CreatesProducts;
+
+    private const string CALLBACK = 'https://app.test/parametres/etsy/retour';
+
+    private string $sticker;
+    private string $print;
+
+    protected function setUp(): void
+    {
+        self::actAsMemberOf();
+        $types = self::getContainer()->get(CreateProductTypeHandler::class);
+        $this->sticker = self::createProduct('Mousse', 400, 60, typeId: (string) $types('Sticker')->id());
+        $this->print = self::createProduct('Forêt', 1_800, 300, ['A4', 'A3'], (string) $types('Print')->id());
+        ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'etsy', ['keystring' => 'keystring123', 'shared_secret' => 'shared-secret']);
+    }
+
+    public function testAuthorizingStoresTheShopAndDisconnectingForgetsIt(): void
+    {
+        self::assertSame('Atelier Mousse sur Etsy', $this->authorize());
+        self::assertSame([true, 'Atelier Mousse sur Etsy'], [$this->etsy()->connection?->authorized, $this->etsy()->connection?->accountName]);
+
+        self::getContainer()->get(AuthorizeHandler::class)->disconnect('etsy');
+
+        self::assertFalse($this->etsy()->connection?->authorized);
+    }
+
+    public function testImportIsRefusedUntilTheShopIsAuthorized(): void
+    {
+        $this->expectExceptionObject(ServiceUnavailable::notConnected('Etsy'));
+
+        $this->import();
+    }
+
+    public function testReceiptsWithAnUnknownListingWaitUntilItIsLinked(): void
+    {
+        $this->authorize();
+
+        $first = $this->import();
+        self::assertSame([1, 0, 1, 1], [$first->ordersImported, $first->ordersAlreadyImported, $first->ordersWaitingForItems, $first->itemsToLink]);
+
+        $item = self::getContainer()->get(ListExternalItemsHandler::class)('etsy')[0];
+        self::assertSame(['A4', null], [$item->variation, $item->linkedTo]);
+        self::getContainer()->get(LinkExternalItemHandler::class)('etsy', $item->id, $this->print, 'A4');
+
+        $second = $this->import();
+        self::assertSame([1, 1, 0, 0], [$second->ordersImported, $second->ordersAlreadyImported, $second->ordersWaitingForItems, $second->itemsToLink]);
+        self::getContainer()->get('doctrine')->getManager()->clear();
+
+        $orders = self::getContainer()->get(ListOrdersHandler::class)();
+        $receipt = array_values(array_filter($orders, static fn ($order): bool => 'ETSY-3100000001' === $order->reference))[0];
+        self::assertSame(['etsy', 'Etsy', null], [$receipt->source, $receipt->sourceLabel, $receipt->eventName]);
+        $order = self::getContainer()->get(GetOrderHandler::class)($receipt->id);
+        self::assertSame([2_600, 100, 250, 2_750], [$order->subtotal, $order->discountTotal, $order->shipping, $order->total]);
+        self::assertSame('Remise Etsy', $order->discounts[0]['label']);
+        self::assertNull($order->event);
+        self::assertSame(-3, self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0]->onHand);
+
+        $csv = self::getContainer()->get(ExportOrdersHandler::class)('2030-01-01', '2030-01-02')->content;
+        self::assertStringContainsString(';Etsy;;Carte;3;', $csv);
+        self::assertStringContainsString(';26,00;1,00;2,50;27,50;', $csv);
+    }
+
+    public function testAnItemCannotBeLinkedThroughAnotherService(): void
+    {
+        $this->authorize();
+        $this->import();
+        $item = self::getContainer()->get(ListExternalItemsHandler::class)('etsy')[0];
+
+        $this->expectException(\App\Domain\Shared\NotFound::class);
+
+        self::getContainer()->get(LinkExternalItemHandler::class)('sumup', $item->id, $this->print, 'A4');
+    }
+
+    public function testAnExpiredTokenIsRenewed(): void
+    {
+        $this->authorize();
+        $connection = self::getContainer()->get(ServiceConnectionRepository::class)->get('etsy');
+        $connection->renewToken(new \DateTimeImmutable('-1 minute'));
+
+        self::assertSame('fake-access-renewed', self::getContainer()->get(ConnectionSession::class)->credentials($connection)->accessToken);
+        self::assertGreaterThan(new \DateTimeImmutable('+30 minutes'), $connection->tokenExpiresAt());
+    }
+
+    private function authorize(): string
+    {
+        return self::getContainer()->get(AuthorizeHandler::class)->complete('etsy', 'code', 'verifier', self::CALLBACK);
+    }
+
+    private function import(): \App\Application\Integration\ImportSales\ImportReport
+    {
+        return self::getContainer()->get(ImportSalesHandler::class)('etsy');
+    }
+
+    private function etsy(): ServiceView
+    {
+        $services = array_column(self::getContainer()->get(ListServicesHandler::class)(), null, 'key');
+
+        return $services['etsy'];
+    }
+}

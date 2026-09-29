@@ -22,6 +22,7 @@ final readonly class OrderView
         public string $placedAt,
         public ?array $event,
         public string $source,
+        public string $sourceLabel,
         public ?string $paymentMethod,
         public array $lines,
         public array $discounts,
@@ -34,14 +35,15 @@ final readonly class OrderView
     ) {
     }
 
-    public static function fromOrder(Order $order): self
+    public static function fromOrder(Order $order, string $sourceLabel): self
     {
         return new self(
             (string) $order->id(),
             $order->reference(),
             $order->placedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
             null === $order->event() ? null : ['id' => (string) $order->event()->id(), 'name' => $order->event()->name()],
-            $order->source()->value,
+            $order->source(),
+            $sourceLabel,
             $order->paymentMethod()?->value,
             array_map(static fn (OrderLine $line): array => [
                 'productId' => (string) $line->productId(),

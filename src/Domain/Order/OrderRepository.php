@@ -29,18 +29,11 @@ interface OrderRepository
     public function selling(Ulid $productId): array;
 
     /**
-     * @param list<string> $transactionCodes
-     *
-     * @return list<string> the codes already imported
-     */
-    public function importedSumUpTransactionCodes(array $transactionCodes): array;
-
-    /**
-     * @param list<string> $receiptIds
+     * @param list<string> $externalIds
      *
      * @return list<string>
      */
-    public function importedEtsyReceiptIds(array $receiptIds): array;
+    public function importedExternalIds(string $source, array $externalIds): array;
 
     /**
      * Number of orders of the event whose date falls outside the given period.
