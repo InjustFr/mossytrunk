@@ -10,6 +10,7 @@ use App\Domain\Order\InvalidOrder;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderSource;
 use App\Domain\Order\OrderedItem;
+use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
@@ -116,9 +117,10 @@ final class OrderTest extends TestCase
 
     public function testSumUpImportWithoutDiscount(): void
     {
-        $order = Order::importFromSumUp('TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400));
+        $order = Order::importFromSumUp('TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), PaymentMethod::Cash);
 
         self::assertSame([], $order->appliedDiscounts());
+        self::assertSame(PaymentMethod::Cash, $order->paymentMethod());
     }
 
     private static function at(string $localTime): \DateTimeImmutable

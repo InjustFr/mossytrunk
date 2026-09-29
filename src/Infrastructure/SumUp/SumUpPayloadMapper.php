@@ -6,6 +6,7 @@ namespace App\Infrastructure\SumUp;
 
 use App\Application\SumUp\SumUpLine;
 use App\Application\SumUp\SumUpTransaction;
+use App\Domain\Order\PaymentMethod;
 use App\Domain\Shared\Money;
 
 /**
@@ -25,7 +26,17 @@ final class SumUpPayloadMapper
             new \DateTimeImmutable((string) $transaction['timestamp']),
             Money::cents($paid),
             array_map(self::line(...), $transaction['products'] ?? []),
+            self::paymentMethod($transaction['payment_type'] ?? null),
         );
+    }
+
+    private static function paymentMethod(mixed $paymentType): ?PaymentMethod
+    {
+        if (!\is_string($paymentType) || '' === trim($paymentType)) {
+            return null;
+        }
+
+        return 'CASH' === strtoupper(trim($paymentType)) ? PaymentMethod::Cash : PaymentMethod::Card;
     }
 
     /**

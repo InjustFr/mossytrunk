@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\SumUp;
 
+use App\Domain\Order\PaymentMethod;
 use App\Domain\Shared\Money;
 
 /**
@@ -19,6 +20,7 @@ final readonly class SumUpTransaction
         public \DateTimeImmutable $createdAt,
         public Money $amountPaid,
         public array $lines,
+        public ?PaymentMethod $paymentMethod = null,
     ) {
     }
 }

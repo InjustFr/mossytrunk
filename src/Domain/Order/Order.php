@@ -65,6 +65,9 @@ class Order
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $sumUpTransactionCode = null;
 
+    #[ORM\Column(length: 16, nullable: true, enumType: PaymentMethod::class)]
+    private ?PaymentMethod $paymentMethod = null;
+
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts
@@ -106,10 +109,11 @@ class Order
      * @param list<OrderedItem> $items
      * @param Money             $amountPaid what SumUp actually charged; any gap with the subtotal is SumUp's own discount
      */
-    public static function importFromSumUp(string $transactionCode, Event $event, \DateTimeImmutable $placedAt, array $items, Money $amountPaid): self
+    public static function importFromSumUp(string $transactionCode, Event $event, \DateTimeImmutable $placedAt, array $items, Money $amountPaid, ?PaymentMethod $paymentMethod = null): self
     {
         $order = new self($transactionCode, $event, $placedAt, $items, [], OrderSource::SumUp);
         $order->sumUpTransactionCode = $transactionCode;
+        $order->paymentMethod = $paymentMethod;
 
         $gap = $order->subtotal()->subtract($amountPaid);
         if ($gap->isPositive()) {
@@ -170,6 +174,11 @@ class Order
     public function source(): OrderSource
     {
         return $this->source;
+    }
+
+    public function paymentMethod(): ?PaymentMethod
+    {
+        return $this->paymentMethod;
     }
 
     public function sumUpTransactionCode(): ?string

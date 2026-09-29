@@ -21,6 +21,7 @@ final readonly class OrderView
         public string $placedAt,
         public array $event,
         public string $source,
+        public ?string $paymentMethod,
         public array $lines,
         public array $discounts,
         public int $subtotal,
@@ -39,6 +40,7 @@ final readonly class OrderView
             $order->placedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
             ['id' => (string) $order->event()->id(), 'name' => $order->event()->name()],
             $order->source()->value,
+            $order->paymentMethod()?->value,
             array_map(static fn (OrderLine $line): array => [
                 'productId' => (string) $line->productId(),
                 'label' => $line->label(),

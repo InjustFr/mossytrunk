@@ -53,6 +53,7 @@ final class ImportFromSumUpTest extends KernelTestCase
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
         self::assertSame(['TFAKE0002', 'TFAKE0001'], array_column($orders, 'reference'));
         self::assertSame(['sumup', 'sumup'], array_column($orders, 'source'));
+        self::assertSame(['cash', 'card'], array_column($orders, 'paymentMethod'));
         self::assertSame(1_000, $orders[1]->total, 'amount charged by SumUp');
         self::assertSame(200, $orders[1]->discountTotal, 'SumUp discount kept');
 

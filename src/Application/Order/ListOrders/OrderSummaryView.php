@@ -20,6 +20,7 @@ final readonly class OrderSummaryView
         public int $discountTotal,
         public int $total,
         public string $source,
+        public ?string $paymentMethod,
     ) {
     }
 
@@ -36,6 +37,7 @@ final readonly class OrderSummaryView
             $order->discountTotal()->amount(),
             $order->total()->amount(),
             $order->source()->value,
+            $order->paymentMethod()?->value,
         );
     }
 }

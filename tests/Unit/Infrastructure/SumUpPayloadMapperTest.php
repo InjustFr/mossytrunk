@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Infrastructure;
 
+use App\Domain\Order\PaymentMethod;
 use App\Infrastructure\SumUp\SumUpPayloadMapper;
 use PHPUnit\Framework\TestCase;
 
@@ -27,5 +28,16 @@ final class SumUpPayloadMapperTest extends TestCase
         self::assertSame(['Print', 'Sticker', null], array_map(static fn ($line) => $line->category, $transaction->lines));
         self::assertSame(['A4', null, null], array_map(static fn ($line) => $line->variant, $transaction->lines));
         self::assertSame(50, $transaction->lines[2]->unitPrice->amount());
+    }
+
+    public function testCashPaymentsAreToldApartFromCardOnes(): void
+    {
+        $mapper = new SumUpPayloadMapper();
+        $payment = static fn (?string $type) => $mapper->transaction(['transaction_code' => 'T', 'timestamp' => '2030-03-14T10:00:00Z', 'amount' => 1.0] + (null === $type ? [] : ['payment_type' => $type]))->paymentMethod;
+
+        self::assertSame(PaymentMethod::Cash, $payment('CASH'));
+        self::assertSame(PaymentMethod::Card, $payment('POS'));
+        self::assertSame(PaymentMethod::Card, $payment('ECOM'));
+        self::assertNull($payment(null));
     }
 }

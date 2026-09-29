@@ -7,6 +7,7 @@ import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
+import PaymentMethod from '../components/orders/PaymentMethod.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
@@ -37,6 +38,7 @@ onMounted(load);
                 {{ formatDateTime(order.placedAt) }} ·
                 <a :href="`/evenements/${order.event.id}`">{{ order.event.name }}</a>
                 <span v-if="order.source === 'sumup'"> · importée de SumUp</span>
+                <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
             </p>
             <div class="order-detail-page__grid">
                 <BaseCard title="Articles">

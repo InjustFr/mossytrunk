@@ -88,7 +88,7 @@ final readonly class ImportFromSumUpHandler
                 continue;
             }
 
-            $this->orders->add(Order::importFromSumUp($code, $event, $transaction->createdAt, $items, $transaction->amountPaid));
+            $this->orders->add(Order::importFromSumUp($code, $event, $transaction->createdAt, $items, $transaction->amountPaid, $transaction->paymentMethod));
             ++$imported;
         }
 

@@ -4,6 +4,7 @@
         {
             "id": "4b1c5d1a-0001-4000-8000-000000000001",
             "transaction_code": "TFAKE0001",
+            "payment_type": "POS",
             "timestamp": "2030-03-14T10:15:00.000Z",
             "status": "SUCCESSFUL",
             "type": "PAYMENT",
@@ -24,6 +25,7 @@
         {
             "id": "4b1c5d1a-0001-4000-8000-000000000002",
             "transaction_code": "TFAKE0002",
+            "payment_type": "CASH",
             "timestamp": "2030-03-15T15:40:00.000Z",
             "status": "SUCCESSFUL",
             "type": "PAYMENT",

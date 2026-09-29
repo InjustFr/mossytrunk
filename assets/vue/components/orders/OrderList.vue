@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import PaymentMethod from './PaymentMethod.vue';
 import { formatDay, formatTime } from '../../composables/useDate.js';
 import { plural } from '../../composables/usePlural.js';
 
@@ -38,6 +39,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                 <th class="data-table__cell--number">Articles</th>
                 <th class="data-table__cell--number">Remises</th>
                 <th class="data-table__cell--number">Total</th>
+                <th>Paiement</th>
                 <th>Référence</th>
             </tr>
         </template>
@@ -49,7 +51,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                         <a class="order-list__event" :href="`/evenements/${order.eventId}`">{{ order.eventName }}</a>
                     </th>
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
-                    <td class="order-list__day-count">{{ plural(day.count, 'commande') }}</td>
+                    <td class="order-list__day-count" colspan="2">{{ plural(day.count, 'commande') }}</td>
                 </tr>
                 <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]">
                     <td class="order-list__time">{{ formatTime(order.placedAt) }}</td>
@@ -59,6 +61,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                         <span v-else class="order-list__none">—</span>
                     </td>
                     <td class="data-table__cell--number order-list__total"><MoneyAmount :cents="order.total" /></td>
+                    <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__reference">
                         <a :href="`/commandes/${order.id}`">{{ order.reference }}</a>
                         <span v-if="order.source === 'sumup'" class="order-list__badge">SumUp</span>
@@ -71,7 +74,8 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <style scoped>
 .order-list :deep(.data-table__table) { table-layout: fixed; }
-.order-list :deep(th:nth-child(1)) { width: 22%; }
+.order-list :deep(th:nth-child(1)) { width: 20%; }
+.order-list :deep(th:nth-child(5)) { width: 12%; }
 .order-list :deep(th:nth-child(2)),
 .order-list :deep(th:nth-child(3)),
 .order-list :deep(th:nth-child(4)) { width: 13%; }
@@ -84,6 +88,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 .order-list__day-count { color: var(--color-muted); font-size: 0.875rem; }
 
 .order-list__time { font-variant-numeric: tabular-nums; }
+.order-list__payment { color: var(--color-muted); font-size: 0.875rem; }
 .order-list__total { font-weight: 600; }
 .order-list__none { color: var(--color-subtle); }
 

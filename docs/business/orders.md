@@ -9,6 +9,7 @@ An **order** is a sale made during an event.
 | `placedAt` | Date-time of the sale (stored with time zone, displayed in Europe/Paris) |
 | `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and unit buying price |
 | `appliedDiscounts` | Snapshot list of `{label, amount}` |
+| `paymentMethod` | `card` or `cash`, from the SumUp import (see [sumup-import.md](sumup-import.md), S13); none for manual orders |
 | `source` | `manual` or `sumup` |
 | `sumUpTransactionCode` | Unique; set for imported orders |
 
@@ -40,4 +41,4 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | `GetOrder` | `GET /api/orders/{id}` (lines, discounts, totals, cost of goods, margin) |
 | `DeleteOrder` | `DELETE /api/orders/{id}` |
 
-UI: `/commandes` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete.
+UI: `/commandes` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total, payment method (Carte / Espèces) and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete.

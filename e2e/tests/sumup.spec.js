@@ -23,6 +23,8 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Salon de printemps 2030' }).first()).toBeVisible();
     await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('SumUp');
+    await expect(page.getByRole('row').filter({ hasText: 'TFAKE0002' })).toContainText('Espèces');
+    await expect(page.getByRole('row').filter({ hasText: 'TFAKE0001' })).toContainText('Carte');
 
     await page.getByRole('button', { name: 'Importer depuis SumUp' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('0 commande importée, 0 produit créé, 2 déjà importées');
