@@ -30,6 +30,21 @@ final class OrderApiTest extends WebTestCase
         self::assertSame('T-shirt — M', json_decode((string) $client->getResponse()->getContent(), true)['lines'][0]['label']);
     }
 
+    public function testDeleteAllOrders(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $product = $this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400])['id'];
+        $this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'quantity' => 1]]]);
+
+        $client->jsonRequest('DELETE', '/api/orders');
+        self::assertResponseIsSuccessful();
+        self::assertSame(['deleted' => 1], json_decode((string) $client->getResponse()->getContent(), true));
+
+        $client->jsonRequest('GET', '/api/orders');
+        self::assertSame([], json_decode((string) $client->getResponse()->getContent(), true));
+    }
+
     public function testLineViolationsAreReported(): void
     {
         $client = self::signedInClient();

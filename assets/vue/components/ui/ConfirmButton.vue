@@ -18,6 +18,7 @@ defineProps({
     confirmLabel: { type: String, default: 'Confirmer ?' },
     message: { type: String, default: 'Cette action est définitive.' },
     icon: { type: [Object, Function], default: null },
+    variant: { type: String, default: 'ghost' },
 });
 const emit = defineEmits(['confirm']);
 </script>
@@ -26,7 +27,7 @@ const emit = defineEmits(['confirm']);
     <AlertDialogRoot>
         <AlertDialogTrigger as-child>
             <IconButton v-if="icon" :icon="icon" :label="label" variant="danger" />
-            <BaseButton v-else variant="ghost">{{ label }}</BaseButton>
+            <BaseButton v-else :variant="variant">{{ label }}</BaseButton>
         </AlertDialogTrigger>
         <AlertDialogPortal>
             <AlertDialogOverlay class="confirm-dialog">

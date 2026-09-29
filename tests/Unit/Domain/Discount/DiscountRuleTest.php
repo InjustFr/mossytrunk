@@ -96,4 +96,19 @@ final class DiscountRuleTest extends TestCase
         $this->expectExceptionObject(InvalidDiscountRule::onlyEligibleProduct('2 pins', 'Pin'));
         $alone->withdrawProduct($pin);
     }
+
+    public function testEveryProductCanBeWithdrawnOnlyFromARuleListingTypes(): void
+    {
+        $pin = Product::create(TestWorkspace::get(), 'PIN', 'Pin', Money::cents(400));
+        $withType = DiscountRule::create(TestWorkspace::get(), 'Prints et pins', [$pin], 2, Money::cents(2_000), [ProductType::create(TestWorkspace::get(), 'Print', 'PRI')]);
+        $productsOnly = DiscountRule::create(TestWorkspace::get(), '2 pins', [$pin], 2, Money::cents(700));
+
+        $withType->withdrawEveryProduct();
+        self::assertSame([], $withType->eligibleProducts());
+        self::assertTrue($withType->listsTypes());
+        self::assertFalse($productsOnly->listsTypes());
+
+        $this->expectExceptionObject(InvalidDiscountRule::noEligibleProduct());
+        $productsOnly->withdrawEveryProduct();
+    }
 }

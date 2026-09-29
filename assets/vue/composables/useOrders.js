@@ -13,8 +13,9 @@ export function useOrders() {
     }
 
     const place = (payload) => api.post('/api/orders', payload);
+    const removeAll = () => api.del('/api/orders');
 
-    return { orders, eventFilter, load, place };
+    return { orders, eventFilter, load, place, removeAll };
 }
 
 export function useOrder(orderId) {

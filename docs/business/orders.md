@@ -30,6 +30,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | O9 | `total = subtotal − discounts`; `costOfGoods = Σ unit buying price × qty`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |
 | O11 | Imported orders keep the SumUp transaction code (unique within the workspace) so re-importing never duplicates them | `Order::importFromSumUp()` | [sumup-import.md](sumup-import.md) |
+| O12 | Every order of the workspace can be deleted at once; products and events stay. A later SumUp import brings SumUp sales back | `DeleteAllOrdersHandler` | `DeleteAllOrdersTest` |
 
 ## Use cases & API
 
@@ -40,5 +41,6 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | `ListOrders` | `GET /api/orders[?eventId=]` (most recent first) |
 | `GetOrder` | `GET /api/orders/{id}` (lines, discounts, totals, cost of goods, margin) |
 | `DeleteOrder` | `DELETE /api/orders/{id}` |
+| `DeleteAllOrders` | `DELETE /api/orders` → `{deleted}` |
 
-UI: `/commandes` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total, payment method (Carte / Espèces) and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete.
+UI: `/commandes` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total, payment method (Carte / Espèces) and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/commandes/{id}` — detail with margin and delete. `/parametres` — « Zone de danger »: delete every order, behind a warning and a confirmation.

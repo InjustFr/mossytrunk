@@ -142,6 +142,19 @@ class DiscountRule
         $this->eligibleProducts->removeElement($product);
     }
 
+    public function listsTypes(): bool
+    {
+        return !$this->eligibleTypes->isEmpty();
+    }
+
+    public function withdrawEveryProduct(): void
+    {
+        if (!$this->listsTypes()) {
+            throw InvalidDiscountRule::noEligibleProduct();
+        }
+        $this->eligibleProducts->clear();
+    }
+
     public function activate(): void
     {
         $this->active = true;

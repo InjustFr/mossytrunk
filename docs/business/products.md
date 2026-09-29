@@ -61,7 +61,9 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | P14 | A deleted product leaves the catalogue and the bundle discounts listing it. Past orders keep their lines (name and prices are snapshots); reports show them under « Sans type » | `DeleteProductHandler`, `DiscountRule::withdrawProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
 | P15 | A product that a discount targets **alone** (no other product nor type) cannot be deleted: change or delete that discount first | `InvalidDiscountRule::onlyEligibleProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
 
-UI: trash icon on each row of `/produits`, with a confirmation.
+| P16 | Every product of the workspace can be deleted at once, like P14. Bundle discounts listing only products are deleted with them; those also listing types keep their types | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
+
+UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` — « Zone de danger »: delete every product, behind a warning and a confirmation.
 
 ## Use cases & API
 
@@ -72,6 +74,7 @@ UI: trash icon on each row of `/produits`, with a confirmation.
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, buyingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
+| `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
 | `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
 

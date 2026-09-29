@@ -7,6 +7,7 @@ namespace App\Presentation\Api\Product;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Application\Product\DeleteAllProducts\DeleteAllProductsHandler;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
@@ -75,5 +76,11 @@ final class ProductController extends AbstractController
         $deleteProduct($id);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('', name: 'api_products_delete_all', methods: ['DELETE'])]
+    public function deleteAll(DeleteAllProductsHandler $deleteAllProducts): JsonResponse
+    {
+        return $this->json(['deleted' => $deleteAllProducts()]);
     }
 }

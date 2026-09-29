@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Order;
 
+use App\Application\Order\DeleteAllOrders\DeleteAllOrdersHandler;
 use App\Application\Order\DeleteOrder\DeleteOrderHandler;
 use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
@@ -53,5 +54,11 @@ final class OrderController extends AbstractController
         $deleteOrder($id);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('', name: 'api_orders_delete_all', methods: ['DELETE'])]
+    public function deleteAll(DeleteAllOrdersHandler $deleteAllOrders): JsonResponse
+    {
+        return $this->json(['deleted' => $deleteAllOrders()]);
     }
 }

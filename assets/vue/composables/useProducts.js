@@ -20,6 +20,7 @@ export function useProducts() {
     const batchUpdate = (payload) => api.post('/api/products/batch', payload);
     const moveVariant = (id, payload) => api.post(`/api/products/${id}/move-variant`, payload);
     const remove = (id) => api.del(`/api/products/${id}`);
+    const removeAll = () => api.del('/api/products');
 
-    return { products, loading, load, create, update, batchUpdate, moveVariant, remove };
+    return { products, loading, load, create, update, batchUpdate, moveVariant, remove, removeAll };
 }

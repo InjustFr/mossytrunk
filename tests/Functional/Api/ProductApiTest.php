@@ -27,6 +27,20 @@ final class ProductApiTest extends WebTestCase
         self::assertSame(['S', 'M'], $products[0]['variants']);
     }
 
+    public function testDeleteAllProducts(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400]);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Pin', 'sellingPrice' => 400]);
+
+        $client->jsonRequest('DELETE', '/api/products');
+        self::assertResponseIsSuccessful();
+        self::assertSame(['deleted' => 2], json_decode((string) $client->getResponse()->getContent(), true));
+
+        $client->jsonRequest('GET', '/api/products');
+        self::assertSame([], json_decode((string) $client->getResponse()->getContent(), true));
+    }
+
     public function testMoveAProductIntoANewOneAsAVariant(): void
     {
         $client = self::signedInClient();
