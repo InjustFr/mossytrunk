@@ -22,7 +22,7 @@ test('create a gabarit, decline a design on it, tick its adaptations and validat
     await card.getByRole('checkbox').nth(1).click();
     await expect(card).toContainText('Prête');
 
-    await page.getByRole('button', { name: 'Valider le design' }).click();
+    await page.getByRole('button', { name: "Sortir de l'atelier" }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Créer les produits' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 produit créé');
     await expect(card.getByRole('link', { name: 'Voir le produit' })).toBeVisible();

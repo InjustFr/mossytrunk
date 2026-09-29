@@ -32,7 +32,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Type de produit | `Domain\Product\ProductType` | Print, Sticker…; product shown as « {type} {nom} » |
 | Variante | `Product::$variants` (strings) | Colour, size, design…; none = *produit unique* |
 | Article vendable | `Domain\Product\SellableItem` | Validated (product ULID, variant) tuple + prices at sale time |
-| Événement | `Domain\Event\Event` | Convention/market with an inclusive day period and a location |
+| Marché / salon (événement) | `Domain\Event\Event` | Convention/market with an inclusive day period and a location |
 | Dépense | `Domain\Event\Expense` | Money spent for an event |
 | Commande | `Domain\Order\Order` | A sale during an event |
 | Ligne de commande | `Domain\Order\OrderLine` | Quantity of one tuple, with name/price/cost snapshots |
@@ -41,12 +41,12 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Remise appliquée | `Domain\Discount\AppliedDiscount` | `{label, amount, ruleId}` snapshot stored on an order |
 | Sous-total / Total | `Order::subtotal()` / `total()` | Before / after discounts |
 | Coût d'achat | `Order::costOfGoods()` | Σ line costs (units taken from stock, oldest lot first) |
-| Stock | `Domain\Stock\StockItem` | Units of one sellable item, in lots |
+| Réserve (stock) | `Domain\Stock\StockItem` | Units of one sellable item, in lots |
 | Lot | `Domain\Stock\StockLot` | Units received together at one cost |
 | Fournisseur | `Domain\Purchasing\Supplier` | Who products are bought from |
 | Commande fournisseur | `Domain\Purchasing\SupplierOrder` | Purchase from a supplier: ordered, then received into stock |
 | Gabarit | `Domain\Design\Gabarit` | Generic support (tirage 15×15, sticker brillant…) with default prices and adaptations |
-| Design / Collection | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on, alone or in a series |
+| Design / Série | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on (« sur l'établi »), alone or in a series; « sorti de l'atelier » once validated |
 | Déclinaison | `Domain\Design\Declination` | A design on a gabarit; becomes a product on validation |
 | Déclaration URSSAF | `Domain\Accounting\UrssafDeclaration` | A month or quarter marked declared, with the turnover declared |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |

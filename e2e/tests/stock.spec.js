@@ -23,8 +23,8 @@ test('restock a product twice and read its lots, oldest first', async ({ page, r
     await expect(row.getByText('Stock bas')).toHaveCount(0);
     await expect(row).toContainText('0,75');
 
-    await row.getByRole('button', { name: `Historique du stock de ${product.name}` }).click();
-    const history = page.getByRole('dialog', { name: `Stock de ${product.name}` });
+    await row.getByRole('button', { name: `Historique de la réserve de ${product.name}` }).click();
+    const history = page.getByRole('dialog', { name: `Réserve de ${product.name}` });
     const lots = history.getByRole('list', { name: 'Stock restant, du plus ancien au plus récent' }).getByRole('listitem');
     await expect(lots).toHaveCount(2);
     await expect(lots.first()).toContainText('0,50');

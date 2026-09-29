@@ -112,7 +112,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
                     <dd v-else class="product-page__muted">—</dd>
                 </div>
                 <div>
-                    <dt>En stock</dt>
+                    <dt>En réserve</dt>
                     <dd>
                         {{ product.onHand }}
                         <StatusBadge v-if="product.negativeStock" tone="danger">Négatif</StatusBadge>
@@ -124,7 +124,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
 
             <div class="product-page__grid">
                 <div class="product-page__main">
-                    <BaseCard title="Stock">
+                    <BaseCard title="Réserve">
                         <StockHistory :key="version" :product="product" />
                     </BaseCard>
                     <BaseCard title="Mouvements">

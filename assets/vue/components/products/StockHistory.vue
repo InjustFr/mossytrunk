@@ -23,12 +23,12 @@ onMounted(async () => {
     <div class="stock-history">
         <section v-for="item in items ?? []" :key="item.variant ?? ''" class="stock-history__item">
             <header class="stock-history__header">
-                <h3 class="stock-history__title">{{ item.variant ?? 'En stock' }}</h3>
+                <h3 class="stock-history__title">{{ item.variant ?? 'En réserve' }}</h3>
                 <StatusBadge v-if="item.negative" tone="danger">Stock négatif</StatusBadge>
                 <StatusBadge v-else-if="item.low" tone="warning">Stock bas</StatusBadge>
-                <span class="stock-history__on-hand">{{ item.onHand }} en stock</span>
+                <span class="stock-history__on-hand">{{ item.onHand }} en réserve</span>
             </header>
-            <EmptyState v-if="item.lots.length === 0">Rien n'est encore entré en stock. Réapprovisionnez pour suivre son coût.</EmptyState>
+            <EmptyState v-if="item.lots.length === 0">Rien n'est encore entré en réserve. Réapprovisionnez pour suivre son coût.</EmptyState>
             <LotStrip v-else :lots="item.lots" />
             <table v-if="item.lots.length" class="stock-history__lots">
                 <thead>

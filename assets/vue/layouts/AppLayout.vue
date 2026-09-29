@@ -9,12 +9,12 @@ defineProps({
 });
 
 const groups = [
-    { label: null, links: [{ href: '/tableau-de-bord', label: 'Tableau de bord', icon: LayoutDashboard }] },
+    { label: null, links: [{ href: '/tableau-de-bord', label: 'Carnet de bord', icon: LayoutDashboard }] },
     {
         label: 'Ventes',
         links: [
             { href: '/commandes', label: 'Commandes', icon: Receipt },
-            { href: '/evenements', label: 'Événements', icon: CalendarDays },
+            { href: '/evenements', label: 'Marchés & salons', icon: CalendarDays },
             { href: '/remises', label: 'Remises', icon: Percent },
         ],
     },
@@ -26,7 +26,7 @@ const groups = [
             { href: '/commandes-fournisseurs', label: 'Fournisseurs', icon: Truck },
         ],
     },
-    { label: 'Gestion', links: [{ href: '/comptabilite', label: 'Comptabilité', icon: Landmark }] },
+    { label: 'Bureau', links: [{ href: '/comptabilite', label: 'Comptabilité', icon: Landmark }] },
     { label: null, bottom: true, links: [{ href: '/parametres', label: 'Paramètres', icon: Settings }] },
 ];
 

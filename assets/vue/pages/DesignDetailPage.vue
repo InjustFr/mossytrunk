@@ -46,7 +46,7 @@ async function run(action, success) {
 const onDecline = (gabarit) => run(() => decline(gabarit.id), `Décliné en « ${gabarit.name} ».`);
 const onTick = (declination, adaptation, done) => run(() => tick(declination.id, adaptation, done));
 const onWithdraw = (declination) => run(() => withdraw(declination.id), `Déclinaison « ${declination.gabarit.name} » retirée.`);
-const onBench = (current) => run(() => workOn(current), current ? 'Remis sur l\'établi.' : 'Mis en pause.');
+const onBench = (current) => run(() => workOn(current), current ? 'Remis sur l\'établi.' : 'Mis de côté.');
 
 async function submitAdjustment(declination, payload) {
     await adjust(declination.id, payload);
@@ -57,7 +57,7 @@ async function submitAdjustment(declination, payload) {
 async function onValidate() {
     try {
         const { productsCreated } = await validate();
-        toast.success(`Design validé : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
+        toast.success(`Sorti de l'atelier : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
         await load();
     } catch (error) {
         toast.error(error.message);
@@ -89,7 +89,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
                 <ConfirmButton
                     v-if="ready"
                     variant="primary"
-                    :label="hasProducts ? 'Créer les nouveaux produits' : 'Valider le design'"
+                    :label="hasProducts ? 'Créer les nouveaux produits' : 'Sortir de l\'atelier'"
                     confirm-label="Créer les produits"
                     :message="`Produits créés : ${productNames}. Ces déclinaisons ne pourront plus changer.`"
                     @confirm="onValidate"
@@ -99,9 +99,9 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
 
         <div v-if="design" class="design-page">
             <div class="design-page__meta">
-                <span v-if="design.collection">Collection <strong>{{ design.collection.name }}</strong></span>
-                <span v-else>Design seul</span>
-                <StatusBadge v-if="validated" tone="success">Validé le {{ formatDateTime(design.validatedAt) }}</StatusBadge>
+                <span v-if="design.collection">Série <strong>{{ design.collection.name }}</strong></span>
+                <span v-else>Hors série</span>
+                <StatusBadge v-if="validated" tone="success">Sorti de l'atelier le {{ formatDateTime(design.validatedAt) }}</StatusBadge>
                 <label v-if="!validated" class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> Sur l'établi</label>
             </div>
             <p v-if="design.notes" class="design-page__notes">{{ design.notes }}</p>

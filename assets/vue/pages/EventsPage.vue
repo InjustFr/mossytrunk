@@ -25,9 +25,9 @@ onMounted(load);
 </script>
 
 <template>
-    <AppLayout title="Événements">
+    <AppLayout title="Marchés & salons">
         <template #actions>
-            <BaseButton @click="modalOpen = true">Nouvel événement</BaseButton>
+            <BaseButton @click="modalOpen = true">Nouveau marché ou salon</BaseButton>
         </template>
 
         <div class="events-page">
@@ -41,7 +41,7 @@ onMounted(load);
             </BaseCard>
         </div>
 
-        <BaseModal v-model:open="modalOpen" title="Nouvel événement">
+        <BaseModal v-model:open="modalOpen" title="Nouveau marché ou salon">
             <EventForm :submit="create" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
     </AppLayout>

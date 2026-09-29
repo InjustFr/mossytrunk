@@ -65,7 +65,7 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 
 <template>
     <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a class="back-link" href="/evenements"><ArrowLeft size="0.875rem" aria-hidden="true" /> Événements</a></template>
+        <template #back><a class="back-link" href="/evenements"><ArrowLeft size="0.875rem" aria-hidden="true" /> Marchés & salons</a></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>

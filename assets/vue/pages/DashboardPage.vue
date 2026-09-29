@@ -45,7 +45,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>
-    <AppLayout title="Tableau de bord">
+    <AppLayout title="Carnet de bord">
         <template #actions>
             <BaseSelect v-if="dashboard && !isEmpty" :model-value="dashboard.year" :options="yearOptions" size="small" aria-label="Année" @update:model-value="load" />
         </template>
@@ -89,7 +89,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             </BaseCard>
 
             <div class="dashboard-page__pair">
-                <BaseCard title="Événements de l'année">
+                <BaseCard title="Marchés & salons de l'année">
                     <ResultBars v-if="eventBars.length" :items="eventBars" label="Résultat par événement, du meilleur au moins bon" />
                     <EmptyState v-else>Aucun événement en {{ dashboard.year }}.</EmptyState>
                 </BaseCard>

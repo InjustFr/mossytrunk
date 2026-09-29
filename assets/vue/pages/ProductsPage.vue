@@ -134,7 +134,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseModal v-model:open="restockOpen" :title="`Réapprovisionner ${restocking?.displayName ?? ''}`">
             <RestockForm v-if="restocking" :product="restocking" :submit="restock" @saved="onRestocked" @cancel="restocking = null" />
         </BaseModal>
-        <BaseModal v-model:open="historyOpen" :title="`Stock de ${viewingStock?.displayName ?? ''}`">
+        <BaseModal v-model:open="historyOpen" :title="`Réserve de ${viewingStock?.displayName ?? ''}`">
             <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
         <BaseModal v-model:open="batchOpen" title="Modifier la sélection">

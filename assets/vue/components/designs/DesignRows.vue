@@ -15,9 +15,9 @@ defineProps({
         <li v-for="design in designs" :key="design.id" class="design-rows__row">
             <a :href="`/creations/${design.id}`" class="design-rows__name">{{ design.name }}</a>
             <span class="design-rows__gabarits">{{ design.declinations.map((d) => d.gabarit.name).join(', ') || 'Pas encore décliné' }}</span>
-            <StatusBadge v-if="design.status === 'validated'" tone="success">Validé le {{ formatDate(design.validatedAt) }}</StatusBadge>
+            <StatusBadge v-if="design.status === 'validated'" tone="success">Sorti de l'atelier le {{ formatDate(design.validatedAt) }}</StatusBadge>
             <StatusBadge v-else-if="design.current" tone="warning">Sur l'établi</StatusBadge>
-            <StatusBadge v-else>En pause</StatusBadge>
+            <StatusBadge v-else>Mis de côté</StatusBadge>
         </li>
     </ul>
 </template>

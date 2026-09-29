@@ -8,8 +8,8 @@ test('schedule an event and track its expenses', async ({ page }) => {
     const end = uniqueDay(2);
 
     await page.goto('/evenements');
-    await page.getByRole('button', { name: 'Nouvel événement' }).click();
-    const form = page.getByRole('dialog', { name: 'Nouvel événement' }).locator('form');
+    await page.getByRole('button', { name: 'Nouveau marché ou salon' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouveau marché ou salon' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Lieu').fill('Villepinte');
     await fillDateRange(form.getByRole('group', { name: 'Dates', exact: true }), start, end);
@@ -48,7 +48,7 @@ test('refuses overlapping events', async ({ page }) => {
     const form = page.getByRole('dialog').locator('form');
 
     for (const name of [unique('Premier'), unique('Second')]) {
-        await page.getByRole('button', { name: 'Nouvel événement' }).click();
+        await page.getByRole('button', { name: 'Nouveau marché ou salon' }).click();
         await form.getByLabel('Nom').fill(name);
         await form.getByLabel('Lieu').fill('Lyon');
         await fillDateRange(form.getByRole('group', { name: 'Dates', exact: true }), day, day);
@@ -138,8 +138,8 @@ test('pick a multi-day range from the calendar', async ({ page }) => {
     const name = unique('Festival');
 
     await page.goto('/evenements');
-    await page.getByRole('button', { name: 'Nouvel événement' }).click();
-    const form = page.getByRole('dialog', { name: 'Nouvel événement' }).locator('form');
+    await page.getByRole('button', { name: 'Nouveau marché ou salon' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouveau marché ou salon' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByLabel('Lieu').fill('Nantes');
     const dates = form.getByRole('group', { name: 'Dates', exact: true });

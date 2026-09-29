@@ -1,4 +1,4 @@
-# Dashboard (Tableau de bord)
+# Dashboard (Carnet de bord)
 
 Results **per month and per year**, all events together. Home page of the app (`/` → `/tableau-de-bord`).
 

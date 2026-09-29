@@ -57,7 +57,7 @@ async function onRemove() {
 
 async function onReceived() {
     receiving.value = false;
-    toast.success(`Commande ${order.value.reference} réceptionnée : le stock est à jour.`);
+    toast.success(`Commande ${order.value.reference} déballée : la réserve est à jour.`);
     await load();
 }
 
@@ -71,7 +71,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
             <template v-if="isOrdered && !receiving">
                 <ConfirmButton variant="ghost" label="Supprimer" :message="`La commande ${order.reference} sera supprimée définitivement.`" @confirm="onRemove" />
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
-                <BaseButton @click="receiving = true">Réceptionner</BaseButton>
+                <BaseButton @click="receiving = true">Déballer le colis</BaseButton>
             </template>
         </template>
 

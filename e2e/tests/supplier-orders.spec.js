@@ -33,16 +33,16 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await row.getByRole('link').click();
 
     await expect(page.getByRole('heading', { level: 1, name: /^CMF-/ })).toBeVisible();
-    await page.getByRole('button', { name: 'Réceptionner' }).click();
+    await page.getByRole('button', { name: 'Déballer le colis' }).click();
     await expect(page.getByText('Ligne 1 sur 1')).toBeVisible();
     const received = page.getByRole('spinbutton', { name: 'Quantité reçue' });
     await received.fill('24');
     await received.press('Enter');
     await expect(page.getByRole('region', { name: 'Vérifier et valider' })).toContainText('+4');
     await expect(page.getByRole('region', { name: 'Vérifier et valider' })).toContainText('2,67');
-    await page.getByRole('button', { name: 'Valider la réception' }).click();
+    await page.getByRole('button', { name: 'Valider le déballage' }).click();
 
-    await expect(page.getByTestId('toast').last()).toContainText('réceptionnée');
+    await expect(page.getByTestId('toast').last()).toContainText('déballée');
     await expect(page.getByText('Reçue', { exact: true })).toBeVisible();
 
     await page.goto('/produits');

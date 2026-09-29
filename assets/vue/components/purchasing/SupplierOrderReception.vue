@@ -131,7 +131,7 @@ async function validate() {
         </section>
 
         <section v-else class="reception__panel" aria-label="Vérifier et valider">
-            <h3 class="reception__label">Vérifier la réception</h3>
+            <h3 class="reception__label">Vérifier le déballage</h3>
             <table class="reception__summary">
                 <thead>
                     <tr>
@@ -157,11 +157,11 @@ async function validate() {
                     </tr>
                 </tbody>
             </table>
-            <p class="reception__hint">Les quantités reçues entrent en stock au coût réel. La commande ne pourra plus être modifiée.</p>
+            <p class="reception__hint">Les quantités reçues entrent en réserve au coût réel. La commande ne pourra plus être modifiée.</p>
             <p v-if="error" class="reception__error" role="alert">{{ error }}</p>
             <div class="reception__nav">
                 <BaseButton variant="ghost" @click="step--">Précédent</BaseButton>
-                <BaseButton :loading="saving" @click="validate">Valider la réception</BaseButton>
+                <BaseButton :loading="saving" @click="validate">Valider le déballage</BaseButton>
             </div>
         </section>
     </div>

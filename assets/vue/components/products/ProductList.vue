@@ -26,7 +26,7 @@ const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
 const knownCost = (product) => product.stockUnitCost > 0;
 const margin = (product) => (knownCost(product) ? product.sellingPrice - product.stockUnitCost : null);
-const stockDetail = (product) => product.stock.map((item) => `${item.variant ?? 'Stock'} : ${item.onHand}`).join(', ');
+const stockDetail = (product) => product.stock.map((item) => `${item.variant ?? 'Réserve'} : ${item.onHand}`).join(', ');
 
 const columns = {
     type: (product) => `${product.typeName ?? '￿'} ${product.displayName}`,
@@ -57,7 +57,7 @@ function setChecked(id, checked) {
                 <SortableHeader :sort="ariaSort('name')" @sort="sortBy('name')">Nom</SortableHeader>
                 <SortableHeader :sort="ariaSort('type')" @sort="sortBy('type')">Type</SortableHeader>
                 <th>Variantes</th>
-                <SortableHeader :sort="ariaSort('stock')" numeric @sort="sortBy('stock')">Stock</SortableHeader>
+                <SortableHeader :sort="ariaSort('stock')" numeric @sort="sortBy('stock')">Réserve</SortableHeader>
                 <SortableHeader :sort="ariaSort('stockUnitCost')" numeric @sort="sortBy('stockUnitCost')">Coût</SortableHeader>
                 <SortableHeader :sort="ariaSort('sellingPrice')" numeric @sort="sortBy('sellingPrice')">Vente</SortableHeader>
                 <SortableHeader :sort="ariaSort('margin')" numeric @sort="sortBy('margin')">Marge</SortableHeader>
@@ -90,7 +90,7 @@ function setChecked(id, checked) {
                     <span v-else class="product-list__variants" :title="product.variants.join(', ')">{{ product.variants.join(', ') }}</span>
                 </td>
                 <td class="data-table__cell--number product-list__stock" :title="product.variants.length ? stockDetail(product) : null">
-                    <button type="button" class="product-list__on-hand" :aria-label="`Historique du stock de ${product.displayName}`" @click="emit('history', product)">{{ product.onHand }}</button>
+                    <button type="button" class="product-list__on-hand" :aria-label="`Historique de la réserve de ${product.displayName}`" @click="emit('history', product)">{{ product.onHand }}</button>
                     <StatusBadge v-if="product.negativeStock" tone="danger">Négatif</StatusBadge>
                     <StatusBadge v-else-if="product.lowStock" tone="warning">Stock bas</StatusBadge>
                 </td>

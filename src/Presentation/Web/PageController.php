@@ -24,7 +24,7 @@ final class PageController extends AbstractController
     #[Route('/tableau-de-bord', name: 'dashboard', methods: ['GET'])]
     public function dashboard(): Response
     {
-        return $this->page('DashboardPage', 'Tableau de bord');
+        return $this->page('DashboardPage', 'Carnet de bord');
     }
 
     #[Route('/commandes', name: 'orders', methods: ['GET'])]
@@ -54,7 +54,7 @@ final class PageController extends AbstractController
     #[Route('/evenements', name: 'events', methods: ['GET'])]
     public function events(): Response
     {
-        return $this->page('EventsPage', 'Événements');
+        return $this->page('EventsPage', 'Marchés & salons');
     }
 
     #[Route('/evenements/{id}', name: 'event_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
