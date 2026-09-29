@@ -12,7 +12,7 @@ use App\Domain\Reporting\ProductSales;
 final readonly class ProductView
 {
     /**
-     * @param list<string>                                                           $variants
+     * @param list<string>                                                          $variants
      * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}> $stock
      */
     public function __construct(

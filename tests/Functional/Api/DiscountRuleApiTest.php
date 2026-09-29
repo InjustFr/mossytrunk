@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Api;
 
-use App\Tests\Support\SignsInClient;
 use App\Tests\Support\Json;
+use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 final class DiscountRuleApiTest extends WebTestCase

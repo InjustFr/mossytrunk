@@ -6,10 +6,9 @@ namespace App\Application\Event\GetEventReport;
 
 use App\Domain\Event\EventRepository;
 use App\Domain\Order\OrderRepository;
-use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\EventResult;
+use App\Domain\Reporting\ProductSales;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class GetEventReportHandler
@@ -29,7 +28,6 @@ final readonly class GetEventReportHandler
 
         $products = [];
         foreach ($this->products->findByIds(array_map(static fn (ProductSales $sales): Ulid => $sales->productId, $result->productSales)) as $product) {
-            /** @var Product $product */
             $products[$product->id()->toRfc4122()] = $product;
         }
 

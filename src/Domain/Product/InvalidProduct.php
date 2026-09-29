@@ -18,7 +18,6 @@ final class InvalidProduct extends DomainException
         return new self('La référence du produit est obligatoire.');
     }
 
-
     public static function emptyVariant(): self
     {
         return new self('Une variante ne peut pas être vide.');

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Fixtures\Story;
 
+use App\Domain\Design\Design;
+use App\Domain\Design\DesignCollection;
+use App\Domain\Design\Gabarit;
 use App\Domain\Discount\BasketLine;
 use App\Domain\Discount\ConditionSpec;
 use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\ValidityPeriod;
-use App\Domain\Design\Design;
-use App\Domain\Design\DesignCollection;
-use App\Domain\Design\Gabarit;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
 use App\Domain\Order\Order;

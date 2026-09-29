@@ -10,7 +10,7 @@ use App\Domain\Purchasing\SupplierOrderLine;
 final readonly class SupplierOrderView
 {
     /**
-     * @param array{id: string, name: string}                                                                                                                            $supplier
+     * @param array{id: string, name: string}                                                                                                                                                                                                       $supplier
      * @param list<array{id: string, productId: string, variant: ?string, label: string, orderedQuantity: int, receivedQuantity: ?int, totalPrice: int, discountShare: int, feesShare: int, landedCost: int, plannedUnitCost: int, unitCost: ?int}> $lines
      */
     public function __construct(

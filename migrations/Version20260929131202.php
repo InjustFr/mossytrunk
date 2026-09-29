@@ -16,7 +16,7 @@ final class Version20260929131202 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql("UPDATE discount_rule SET valid_start = CASE WHEN valid_start > CURRENT_DATE - 1 THEN CURRENT_DATE - 1 ELSE valid_start END, valid_end = CURRENT_DATE - 1 WHERE active = false AND (valid_end IS NULL OR valid_end >= CURRENT_DATE)");
+        $this->addSql('UPDATE discount_rule SET valid_start = CASE WHEN valid_start > CURRENT_DATE - 1 THEN CURRENT_DATE - 1 ELSE valid_start END, valid_end = CURRENT_DATE - 1 WHERE active = false AND (valid_end IS NULL OR valid_end >= CURRENT_DATE)');
         $this->addSql('ALTER TABLE discount_rule DROP active');
     }
 

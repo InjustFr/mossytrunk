@@ -58,8 +58,8 @@ final readonly class GetProductHandler
     }
 
     /**
-     * @param list<Order>      $orders
-     * @param list<StockItem>  $stockItems
+     * @param list<Order>     $orders
+     * @param list<StockItem> $stockItems
      *
      * @return list<array{date: string, kind: string, variant: ?string, quantity: int, cost: int, link: ?string, label: ?string}>
      */

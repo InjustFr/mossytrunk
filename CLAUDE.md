@@ -26,6 +26,7 @@ make fixtures        # reset dev DB with mock data (Foundry story fixtures/Story
 make migration       # doctrine:migrations:diff after mapping changes
 make test            # PHPUnit (migrates test DB first); make test-unit / test-functional
 make deptrac         # onion layer rules
+make cs / make cs-fix # PHP-CS-Fixer (@Symfony + declare(strict_types=1) in every file)
 make phpstan         # PHPStan level 10 (phpstan.dist.neon, Symfony/Doctrine/PHPUnit extensions) — keep it at 0 errors
 make e2e             # builds assets, boots php-e2e (APP_ENV=test, fake SumUp), runs Playwright
 docker compose exec php php bin/console …

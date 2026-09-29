@@ -10,7 +10,7 @@ final readonly class DesignBoard
 {
     /**
      * @param list<array{id: string, name: string, description: ?string, current: bool, validated: bool, designs: list<DesignView>}> $collections
-     * @param list<DesignView>                                                                                                     $standalone
+     * @param list<DesignView>                                                                                                       $standalone
      */
     public function __construct(
         public array $collections,

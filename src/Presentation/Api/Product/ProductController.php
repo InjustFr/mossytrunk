@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Product;
 
+use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\DeleteAllProducts\DeleteAllProductsHandler;
-use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
-use App\Application\Product\ReviseSellingPrices\ReviseSellingPricesHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
+use App\Application\Product\ReviseSellingPrices\ReviseSellingPricesHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

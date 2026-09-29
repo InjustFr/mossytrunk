@@ -8,7 +8,6 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
-use App\Application\Product\ListProducts\ProductView;
 use App\Domain\Shared\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
@@ -98,7 +97,6 @@ final class BatchUpdateProductsTest extends KernelTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
         $prices = [];
         foreach (self::getContainer()->get(ListProductsHandler::class)() as $product) {
-            /** @var ProductView $product */
             $prices[$product->displayName] = $product->sellingPrice;
         }
         ksort($prices);
