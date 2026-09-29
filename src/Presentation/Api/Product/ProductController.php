@@ -11,6 +11,7 @@ use App\Application\Product\DeleteAllProducts\DeleteAllProductsHandler;
 use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
+use App\Application\Product\ReviseSellingPrices\ReviseSellingPricesHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
@@ -56,6 +57,30 @@ final class ProductController extends AbstractController
     public function show(string $id, GetProductHandler $getProduct): JsonResponse
     {
         return $this->json($getProduct($id));
+    }
+
+    #[Route('/{id}/prices', name: 'api_products_prices_record', requirements: ['id' => Requirement::ULID], methods: ['POST'])]
+    public function recordPrice(string $id, #[MapRequestPayload] SellingPricePayload $payload, ReviseSellingPricesHandler $prices): Response
+    {
+        $prices->record($id, $payload->price, $payload->since);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/prices/{changeId}', name: 'api_products_prices_amend', requirements: ['id' => Requirement::ULID, 'changeId' => Requirement::ULID], methods: ['PUT'])]
+    public function amendPrice(string $id, string $changeId, #[MapRequestPayload] SellingPricePayload $payload, ReviseSellingPricesHandler $prices): Response
+    {
+        $prices->amend($id, $changeId, $payload->price, $payload->since);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/prices/{changeId}', name: 'api_products_prices_forget', requirements: ['id' => Requirement::ULID, 'changeId' => Requirement::ULID], methods: ['DELETE'])]
+    public function forgetPrice(string $id, string $changeId, ReviseSellingPricesHandler $prices): Response
+    {
+        $prices->forget($id, $changeId);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/{id}/design', name: 'api_products_design', requirements: ['id' => Requirement::ULID], methods: ['POST'])]

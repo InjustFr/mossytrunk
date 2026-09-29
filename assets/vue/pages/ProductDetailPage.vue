@@ -26,7 +26,7 @@ const props = defineProps({
     productId: { type: String, required: true },
 });
 
-const { get, update, designProduct } = useProducts();
+const { get, update, designProduct, savePrice, forgetPrice } = useProducts();
 const { restock } = useStock();
 const { gabarits, load: loadGabarits } = useGabarits();
 const { board, load: loadBoard } = useDesignBoard();
@@ -57,6 +57,22 @@ async function onRestocked({ quantity }) {
     restockOpen.value = false;
     toast.success(`${plural(quantity, 'unité ajoutée', 'unités ajoutées')} au stock.`);
     await load();
+}
+
+async function onPriceSaved(changeId, payload) {
+    await savePrice(props.productId, changeId, payload);
+    toast.success('Historique des prix mis à jour.');
+    await load();
+}
+
+async function onPriceForgotten(changeId) {
+    try {
+        await forgetPrice(props.productId, changeId);
+        toast.success('Prix supprimé de l\'historique.');
+        await load();
+    } catch (error) {
+        toast.error(error.message);
+    }
 }
 
 function onDesigned(designId) {
@@ -117,7 +133,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
                 </div>
                 <aside class="product-page__side">
                     <BaseCard title="Prix de vente">
-                        <PriceHistory :history="detail.priceHistory" />
+                        <PriceHistory :history="detail.priceHistory" :save="onPriceSaved" :forget="onPriceForgotten" />
                     </BaseCard>
                     <BaseCard title="Design">
                         <ProductDesign

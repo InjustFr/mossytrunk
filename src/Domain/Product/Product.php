@@ -7,6 +7,7 @@ namespace App\Domain\Product;
 use App\Domain\Identity\Workspace;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use App\Domain\Shared\NotFound;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -130,12 +131,66 @@ class Product
         $this->priceHistory->add(new SellingPriceChange($this, $sellingPrice, new \DateTimeImmutable()));
     }
 
+    public function recordPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
+    {
+        $this->assertPastPrice($price, $since, $now);
+        $this->priceHistory->add(new SellingPriceChange($this, $price, $since));
+        $this->followPriceHistory();
+    }
+
+    public function amendPrice(Ulid $changeId, Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
+    {
+        $this->assertPastPrice($price, $since, $now);
+        $this->priceChange($changeId)->amend($price, $since);
+        $this->followPriceHistory();
+    }
+
+    public function forgetPrice(Ulid $changeId): void
+    {
+        if (1 === $this->priceHistory->count()) {
+            throw InvalidProduct::lastPriceKept();
+        }
+
+        $this->priceHistory->removeElement($this->priceChange($changeId));
+        $this->followPriceHistory();
+    }
+
     /**
      * @return list<SellingPriceChange>
      */
     public function priceHistory(): array
     {
-        return array_values($this->priceHistory->toArray());
+        $history = array_values($this->priceHistory->toArray());
+        usort($history, static fn (SellingPriceChange $a, SellingPriceChange $b): int => $a->since() <=> $b->since());
+
+        return $history;
+    }
+
+    private function priceChange(Ulid $changeId): SellingPriceChange
+    {
+        foreach ($this->priceHistory as $change) {
+            if ($change->id()->equals($changeId)) {
+                return $change;
+            }
+        }
+
+        throw NotFound::entity('Prix', (string) $changeId);
+    }
+
+    private function assertPastPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
+    {
+        if ($price->isNegative()) {
+            throw InvalidMoney::mustNotBeNegative('Le prix de vente');
+        }
+        if ($since > $now) {
+            throw InvalidProduct::priceDatedInTheFuture();
+        }
+    }
+
+    private function followPriceHistory(): void
+    {
+        $history = $this->priceHistory();
+        $this->sellingPrice = end($history)->price();
     }
 
     public function bought(Money $unitCost): void

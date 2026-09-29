@@ -36,6 +36,17 @@ class SellingPriceChange
         $this->since = $since;
     }
 
+    public function amend(Money $price, \DateTimeImmutable $since): void
+    {
+        $this->price = $price;
+        $this->since = $since;
+    }
+
+    public function id(): Ulid
+    {
+        return $this->id;
+    }
+
     public function price(): Money
     {
         return $this->price;

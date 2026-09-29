@@ -48,8 +48,10 @@ final readonly class GetProductHandler
             $stock->items,
             $this->movements($product->id(), $orders, $stockItems),
             array_reverse(array_map(static fn (SellingPriceChange $change): array => [
+                'id' => (string) $change->id(),
                 'price' => $change->price()->amount(),
                 'since' => $change->since()->format(\DateTimeInterface::ATOM),
+                'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
             ], $product->priceHistory())),
             null === $design ? null : ['id' => (string) $design->id(), 'name' => $design->name()],
         );

@@ -69,6 +69,16 @@ final class InvalidProduct extends DomainException
         return new self(\sprintf('Code de type invalide « %s » (1 à 8 lettres majuscules ou chiffres).', $code));
     }
 
+    public static function priceDatedInTheFuture(): self
+    {
+        return new self('Un prix ne peut pas être daté dans le futur.');
+    }
+
+    public static function lastPriceKept(): self
+    {
+        return new self('Le produit doit garder au moins un prix.');
+    }
+
     public static function negativeLowStockThreshold(): self
     {
         return new self('Le seuil de stock bas ne peut pas être négatif.');

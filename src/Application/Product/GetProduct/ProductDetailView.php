@@ -12,7 +12,7 @@ final readonly class ProductDetailView
     /**
      * @param list<StockItemView>                                                                                                                              $stock
      * @param list<array{date: string, kind: string, variant: ?string, quantity: int, cost: int, link: ?string, label: ?string}>                            $movements
-     * @param list<array{price: int, since: string}>                                                                                                          $priceHistory
+     * @param list<array{id: string, price: int, since: string, sinceDay: string}>                                                                                                          $priceHistory
      * @param array{id: string, name: string}|null                                                                                                            $design
      */
     public function __construct(

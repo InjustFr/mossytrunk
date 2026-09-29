@@ -132,4 +132,49 @@ final class ProductTest extends TestCase
 
         self::assertSame(90, $product->buyingPrice()->amount());
     }
+
+    public function testPastPricesCanBeRecordedAndTheLatestIsTheSellingPrice(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(500));
+        $now = new \DateTimeImmutable('2026-09-29 12:00');
+
+        $product->recordPrice(Money::cents(400), new \DateTimeImmutable('2026-07-01'), $now);
+
+        self::assertSame(500, $product->sellingPrice()->amount());
+        self::assertSame([400, 500], array_map(static fn ($change): int => $change->price()->amount(), $product->priceHistory()));
+    }
+
+    public function testAmendingTheLatestPriceCorrectsTheSellingPriceWithoutANewEntry(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(9_999));
+        $now = new \DateTimeImmutable('2026-09-29 12:00');
+        $current = $product->priceHistory()[0];
+
+        $product->amendPrice($current->id(), Money::cents(400), new \DateTimeImmutable('2026-09-01'), $now);
+
+        self::assertSame(400, $product->sellingPrice()->amount());
+        self::assertCount(1, $product->priceHistory());
+        self::assertEquals(new \DateTimeImmutable('2026-09-01'), $product->priceHistory()[0]->since());
+    }
+
+    public function testForgettingTheLatestPriceFallsBackToThePreviousOne(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+        $product->reprice(Money::cents(9_999));
+
+        $product->forgetPrice($product->priceHistory()[1]->id());
+
+        self::assertSame(400, $product->sellingPrice()->amount());
+        $this->expectException(InvalidProduct::class);
+        $product->forgetPrice($product->priceHistory()[0]->id());
+    }
+
+    public function testAPriceCannotBeDatedInTheFuture(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+
+        $this->expectException(InvalidProduct::class);
+
+        $product->recordPrice(Money::cents(500), new \DateTimeImmutable('2026-10-01'), new \DateTimeImmutable('2026-09-29'));
+    }
 }
