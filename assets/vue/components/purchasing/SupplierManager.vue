@@ -83,7 +83,7 @@ async function onSubmit() {
 .supplier-manager__item--editing { background: var(--color-accent-soft); }
 .supplier-manager__contact { display: block; color: var(--color-muted); font-size: 0.85rem; }
 .supplier-manager__notes { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.85rem; white-space: pre-line; }
-.supplier-manager__form .form-lock { display: flex; flex-direction: column; gap: var(--space-3); }
+.supplier-manager__form { display: flex; flex-direction: column; gap: var(--space-3); }
 .supplier-manager__title { margin: 0; font-size: 1rem; }
 .supplier-manager__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

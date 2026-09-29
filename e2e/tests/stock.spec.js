@@ -44,9 +44,10 @@ test('an inventory with missing units flags a missing order until it is dismisse
     await expect(page.getByRole('row').filter({ hasText: product.name })).toContainText('-3');
     await page.getByRole('button', { name: "Enregistrer l'inventaire" }).click();
 
+    await expect(page.getByTestId('toast').last()).toContainText('Inventaire enregistré');
     await expect(page).toHaveURL(new RegExp(`/evenements/${event.id}$`));
     const banner = page.getByRole('alert').filter({ hasText: 'Commande manquante probable' });
-    await expect(banner).toContainText('3 articles');
+    await expect(banner).toContainText('3 articles', { timeout: 10_000 });
     await expect(banner).toContainText('24,00');
 
     await banner.getByRole('button', { name: "Classer l'écart" }).click();

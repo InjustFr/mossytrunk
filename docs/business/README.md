@@ -17,6 +17,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [dashboard.md](dashboard.md) | Results per month and per year |
 | [stock.md](stock.md) | Stock per sellable item in FIFO lots, low stock, inventory after an event and missing orders |
 | [supplier-orders.md](supplier-orders.md) | Suppliers, supplier orders, reception into stock at the real unit cost |
+| [designs.md](designs.md) | Designs and collections declined onto gabarits, validated into products |
 | [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
 
 ## Glossary (UI term → code)
@@ -42,6 +43,9 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Lot | `Domain\Stock\StockLot` | Units received together at one cost |
 | Fournisseur | `Domain\Purchasing\Supplier` | Who products are bought from |
 | Commande fournisseur | `Domain\Purchasing\SupplierOrder` | Purchase from a supplier: ordered, then received into stock |
+| Gabarit | `Domain\Design\Gabarit` | Generic support (tirage 15×15, sticker brillant…) with default prices and adaptations |
+| Design / Collection | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on, alone or in a series |
+| Déclinaison | `Domain\Design\Declination` | A design on a gabarit; becomes a product on validation |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |

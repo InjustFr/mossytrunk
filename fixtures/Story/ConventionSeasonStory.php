@@ -10,6 +10,9 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\ValidityPeriod;
+use App\Domain\Design\Design;
+use App\Domain\Design\DesignCollection;
+use App\Domain\Design\Gabarit;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
 use App\Domain\Order\Order;
@@ -142,6 +145,7 @@ final class ConventionSeasonStory extends Story
         ]));
 
         $this->purchase($prints, $others[0]);
+        $this->designs($sticker, $print);
 
         $this->entityManager->flush();
     }
@@ -160,6 +164,42 @@ final class ConventionSeasonStory extends Story
             'buyingPrice' => Money::cents($buying),
             'variants' => $variants,
         ]);
+    }
+
+    private function designs(ProductType $sticker, ProductType $print): void
+    {
+        $gabarit = fn (string $name, ProductType $type, int $selling, int $buying, array $variants, array $adaptations): Gabarit => $this->persisted(
+            Gabarit::create($this->workspace, $name, $type, Money::cents($selling), Money::cents($buying), $variants, $adaptations),
+        );
+        $square = $gabarit('Tirage 15×15', $print, 1_200, 300, [], ['Recadrage carré', 'Fond perdu 3 mm', 'Profil couleur CMJN']);
+        $glossy = $gabarit('Sticker brillant', $sticker, 400, 60, [], ['Détourage', 'Contour de découpe']);
+        $gabarit('Sticker mat', $sticker, 450, 70, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
+
+        $undergrowth = $this->persisted(DesignCollection::start($this->workspace, 'Sous-bois', 'Série d\'automne : champignons, lichens, fougères.'));
+        $lichen = $this->persisted(Design::start($this->workspace, 'Lichen', $undergrowth, 'Palette vert-de-gris, texture papier.'));
+        $lichenPrint = $lichen->decline($square);
+        $lichen->tick($lichenPrint->id(), 'Recadrage carré', true);
+        $lichen->decline($glossy);
+        $cepe = $this->persisted(Design::start($this->workspace, 'Cèpe', $undergrowth));
+        $cepeSticker = $cepe->decline($glossy);
+        $cepe->tick($cepeSticker->id(), 'Détourage', true);
+        $cepe->tick($cepeSticker->id(), 'Contour de découpe', true);
+
+        $this->persisted(Design::start($this->workspace, 'Héron', null, 'Idée de la brocante de Lyon.'))->workOn(false);
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param T $entity
+     *
+     * @return T
+     */
+    private function persisted(object $entity): object
+    {
+        $this->entityManager->persist($entity);
+
+        return $entity;
     }
 
     /**

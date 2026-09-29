@@ -4,6 +4,8 @@ import { TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, 
 
 defineProps({
     inputLabel: { type: String, default: 'Nouvelle variante' },
+    placeholder: { type: String, default: 'Ajouter une variante puis Entrée' },
+    itemLabel: { type: String, default: 'la variante' },
 });
 const variants = defineModel({ type: Array, required: true });
 </script>
@@ -12,11 +14,11 @@ const variants = defineModel({ type: Array, required: true });
     <TagsInputRoot v-model="variants" add-on-blur add-on-paste class="variants-input">
         <TagsInputItem v-for="variant in variants" :key="variant" :value="variant" class="variants-input__chip">
             <TagsInputItemText />
-            <TagsInputItemDelete class="variants-input__remove" :aria-label="`Retirer la variante ${variant}`">
+            <TagsInputItemDelete class="variants-input__remove" :aria-label="`Retirer ${itemLabel} ${variant}`">
                 <X size="0.75rem" aria-hidden="true" />
             </TagsInputItemDelete>
         </TagsInputItem>
-        <TagsInputInput class="variants-input__field" placeholder="Ajouter une variante puis Entrée" :aria-label="inputLabel" @keypress.enter.prevent />
+        <TagsInputInput class="variants-input__field" :placeholder="placeholder" :aria-label="inputLabel" @keypress.enter.prevent />
     </TagsInputRoot>
 </template>
 

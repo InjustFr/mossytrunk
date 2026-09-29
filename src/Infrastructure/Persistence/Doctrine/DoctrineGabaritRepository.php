@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Persistence\Doctrine;
+
+use App\Application\WorkspaceContext;
+use App\Domain\Design\Gabarit;
+use App\Domain\Design\GabaritRepository;
+use App\Domain\Shared\NotFound;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
+
+final readonly class DoctrineGabaritRepository implements GabaritRepository
+{
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private WorkspaceContext $workspace,
+    ) {
+    }
+
+    public function add(Gabarit $entity): void
+    {
+        $this->entityManager->persist($entity);
+    }
+
+    public function get(Ulid $id): Gabarit
+    {
+        return $this->entityManager->getRepository(Gabarit::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
+            ?? throw NotFound::entity('Gabarit', (string) $id);
+    }
+
+    public function findByName(string $name): ?Gabarit
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('g')
+            ->from(Gabarit::class, 'g')
+            ->where('g.workspace = :workspace')
+            ->andWhere('LOWER(g.name) = LOWER(:name)')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('name', trim($name))
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function all(): array
+    {
+        return $this->entityManager->getRepository(Gabarit::class)->findBy(['workspace' => $this->workspace->current()], ['name' => 'ASC']);
+    }
+}

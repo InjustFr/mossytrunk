@@ -75,6 +75,18 @@ final class PageController extends AbstractController
         return $this->page('SupplierOrderDetailPage', 'Commande fournisseur', ['orderId' => $id]);
     }
 
+    #[Route('/creations', name: 'designs', methods: ['GET'])]
+    public function designs(): Response
+    {
+        return $this->page('DesignsPage', 'Créations');
+    }
+
+    #[Route('/creations/{id}', name: 'design_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function design(string $id): Response
+    {
+        return $this->page('DesignDetailPage', 'Design', ['designId' => $id]);
+    }
+
     #[Route('/remises', name: 'discounts', methods: ['GET'])]
     public function discounts(): Response
     {
