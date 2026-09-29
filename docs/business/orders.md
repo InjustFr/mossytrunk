@@ -8,7 +8,7 @@ An **order** is a sale made during an event.
 | `event` | The event the sale happened at (required) |
 | `placedAt` | Date-time of the sale (stored with time zone, displayed in Europe/Paris) |
 | `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and unit buying price |
-| `appliedDiscounts` | Snapshot list of `{label, amount}` |
+| `appliedDiscounts` | Snapshot list of `{label, amount, ruleId}` (`ruleId` null for « Remise SumUp » and older orders) |
 | `paymentMethod` | `card` or `cash`, from the SumUp import (see [sumup-import.md](sumup-import.md), S13); none for manual orders |
 | `source` | `manual` or `sumup` |
 | `sumUpTransactionCode` | Unique; set for imported orders |
@@ -25,7 +25,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | O4 | Each line is a valid (product, variant) tuple: variant mandatory for products with variants, forbidden for unique products | `Product::sellable()` via `OrderPricing` | `ProductTest`, `OrderUseCasesTest` |
 | O5 | Identical tuples are merged into one line | `Order::addItem()` | `OrderTest` |
 | O6 | Names/prices/costs are snapshots: editing a product never changes past orders | `OrderLine` | `OrderTest` |
-| O7 | Bundle discounts are computed automatically for manual orders ([discounts](discounts.md)) | `OrderPricing::discounts()` | `OrderUseCasesTest` |
+| O7 | Discount rules valid on the order's date are applied automatically to manual orders ([discounts](discounts.md)) | `OrderPricing::discounts()` | `OrderUseCasesTest` |
 | O8 | Discounts never exceed the subtotal | `Order::applyDiscounts()` | `OrderTest` |
 | O9 | `total = subtotal − discounts`; `costOfGoods = Σ unit buying price × qty`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |

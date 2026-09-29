@@ -29,7 +29,7 @@ final readonly class PlaceOrderHandler
         $event = $this->events->findCovering($command->placedAt) ?? throw InvalidOrder::noEventAt($command->placedAt);
 
         $items = $this->pricing->items($command->lines);
-        $order = Order::place($event, $command->placedAt, $items, $this->pricing->discounts($items));
+        $order = Order::place($event, $command->placedAt, $items, $this->pricing->discounts($items, $command->placedAt));
 
         $this->orders->add($order);
         $this->transaction->commit();

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Application\Product;
 
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
-use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
@@ -20,6 +19,7 @@ use App\Application\Product\MoveVariant\MoveVariant;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Domain\Product\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class MoveVariantTest extends KernelTestCase
@@ -69,12 +69,12 @@ final class MoveVariantTest extends KernelTestCase
     {
         $old = $this->product('Vieux print', 1_500, ['A4']);
         $print = $this->product('Print', 1_500, ['A3']);
-        self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('2 prints', [$old], 2, 2_500));
+        self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('2 prints', 2_500, DiscountRules::product($old, 2)));
 
         $this->move(new MoveVariant($old, 'A4', $print, null, 'A4'));
 
         self::assertSame(['Print'], array_column($this->products(), 'name'));
-        self::assertSame(['Print'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->products, 'name'));
+        self::assertSame(['Print'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
     }
 
     public function testATargetSoldWithoutVariantCannotGetAFirstOne(): void

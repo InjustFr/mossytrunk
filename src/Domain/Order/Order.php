@@ -33,6 +33,8 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\UniqueConstraint(name: 'order_workspace_sum_up_transaction_code', columns: ['workspace_id', 'sum_up_transaction_code'])]
 class Order
 {
+    private const int SUMUP_ROUNDING_TOLERANCE_CENTS = 2;
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
@@ -106,10 +108,11 @@ class Order
     }
 
     /**
-     * @param list<OrderedItem> $items
-     * @param Money             $amountPaid what SumUp actually charged; any gap with the subtotal is SumUp's own discount
+     * @param list<OrderedItem>     $items
+     * @param Money                 $amountPaid    what SumUp actually charged; any gap with the subtotal is SumUp's own discount
+     * @param list<AppliedDiscount> $ruleDiscounts
      */
-    public static function importFromSumUp(string $transactionCode, Event $event, \DateTimeImmutable $placedAt, array $items, Money $amountPaid, ?PaymentMethod $paymentMethod = null): self
+    public static function importFromSumUp(string $transactionCode, Event $event, \DateTimeImmutable $placedAt, array $items, Money $amountPaid, ?PaymentMethod $paymentMethod = null, array $ruleDiscounts = []): self
     {
         $order = new self($transactionCode, $event, $placedAt, $items, [], OrderSource::SumUp);
         $order->sumUpTransactionCode = $transactionCode;
@@ -117,7 +120,7 @@ class Order
 
         $gap = $order->subtotal()->subtract($amountPaid);
         if ($gap->isPositive()) {
-            $order->applyDiscounts([new AppliedDiscount('Remise SumUp', $gap)]);
+            $order->applyDiscounts(self::sumUpDiscounts($gap, $ruleDiscounts));
         }
 
         return $order;
@@ -268,6 +271,21 @@ class Order
     /**
      * CMD-YYYYMMDD-XXXXXX: readable, sortable by day, random suffix from a ULID.
      */
+    /**
+     * @param list<AppliedDiscount> $ruleDiscounts
+     *
+     * @return list<AppliedDiscount>
+     */
+    private static function sumUpDiscounts(Money $gap, array $ruleDiscounts): array
+    {
+        $ruleSaving = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $ruleDiscounts));
+        $rounding = abs($gap->subtract($ruleSaving)->amount());
+
+        return [] !== $ruleDiscounts && $rounding <= self::SUMUP_ROUNDING_TOLERANCE_CENTS
+            ? $ruleDiscounts
+            : [new AppliedDiscount('Remise SumUp', $gap)];
+    }
+
     private static function generateReference(\DateTimeImmutable $placedAt): string
     {
         return \sprintf('CMD-%s-%s', $placedAt->format('Ymd'), substr((string) new Ulid(), -6));

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Application\Identity;
 
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
-use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
 use App\Application\Event\GetEvent\GetEventHandler;
 use App\Application\Event\ListEvents\ListEventsHandler;
@@ -23,6 +22,7 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class WorkspaceIsolationTest extends KernelTestCase
@@ -41,7 +41,7 @@ final class WorkspaceIsolationTest extends KernelTestCase
         $type = self::getContainer()->get(CreateProductTypeHandler::class)('Print');
         $this->productId = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_500, typeId: (string) $type->id()));
         $this->eventId = (string) self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
-        self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('2 prints', [$this->productId], 2, 2_500));
+        self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('2 prints', 2_500, DiscountRules::product($this->productId, 2)));
         $this->orderId = (string) self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 15:00'), [new RequestedLine($this->productId, null, 1)]))->id();
     }
 
@@ -62,7 +62,7 @@ final class WorkspaceIsolationTest extends KernelTestCase
 
         $this->assertNotFound(fn () => self::getContainer()->get(GetEventHandler::class)($this->eventId));
         $this->assertNotFound(fn () => self::getContainer()->get(GetOrderHandler::class)($this->orderId));
-        $this->assertNotFound(fn () => self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('Vol', [$this->productId], 2, 100)));
+        $this->assertNotFound(fn () => self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('Vol', 100, DiscountRules::product($this->productId, 2))));
     }
 
     public function testNamesAndDatesAreOnlyUniqueWithinAWorkspace(): void

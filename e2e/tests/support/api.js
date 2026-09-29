@@ -24,8 +24,8 @@ export async function createEvent(request, { name = unique('Convention'), startD
     return { id: (await response.json()).id, name, startDate, endDate: endDate ?? startDate };
 }
 
-export async function createDiscountRule(request, { name = unique('Lot'), productIds, bundleSize, bundlePrice }) {
-    const response = await request.post('/api/discount-rules', { data: { name, productIds, bundleSize, bundlePrice } });
+export async function createDiscountRule(request, { name = unique('Remise'), conditions, action }) {
+    const response = await request.post('/api/discount-rules', { data: { name, conditions, action } });
     expect(response.status()).toBe(201);
     return { id: (await response.json()).id, name };
 }

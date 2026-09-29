@@ -6,8 +6,11 @@ namespace App\Tests\Unit\Domain\Discount;
 
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Discount\BasketLine;
+use App\Domain\Discount\ConditionSpec;
+use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
+use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
@@ -16,165 +19,135 @@ use PHPUnit\Framework\TestCase;
 
 final class DiscountCalculatorTest extends TestCase
 {
+    private ProductType $printType;
+    private ProductType $stickerType;
+    private Product $forest;
+    private Product $river;
     private Product $sticker;
-    private Product $bigSticker;
-    private Product $print;
+    private Product $holoSticker;
+    private Product $tshirt;
     private DiscountCalculator $calculator;
+    private \DateTimeImmutable $now;
 
     protected function setUp(): void
     {
-        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400));
-        $this->bigSticker = Product::create(TestWorkspace::get(), 'STK-XL', 'Sticker XL', Money::cents(600));
-        $this->print = Product::create(TestWorkspace::get(), 'PRT', 'Print', Money::cents(1_500), variants: ['A4', 'A3']);
+        $this->printType = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $this->stickerType = ProductType::create(TestWorkspace::get(), 'Sticker', 'STI');
+        $this->forest = Product::create(TestWorkspace::get(), 'PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4', 'A3'], type: $this->printType);
+        $this->river = Product::create(TestWorkspace::get(), 'PRI-RIVIERE', 'Rivière', Money::cents(1_500), type: $this->printType);
+        $this->sticker = Product::create(TestWorkspace::get(), 'STI-MOUSSE', 'Mousse', Money::cents(400), type: $this->stickerType);
+        $this->holoSticker = Product::create(TestWorkspace::get(), 'STI-HOLO', 'Holo', Money::cents(600), type: $this->stickerType);
+        $this->tshirt = Product::create(TestWorkspace::get(), 'TSH', 'T-shirt', Money::cents(2_500));
         $this->calculator = new DiscountCalculator();
+        $this->now = new \DateTimeImmutable('2026-07-10 15:00', new \DateTimeZone('Europe/Paris'));
     }
 
-    public function testNoDiscountBelowBundleSize(): void
+    public function testTwoPrintsAndOneStickerForAFixedPrice(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
+        $rule = $this->rule('2 prints et 1 sticker pour 15 €', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
 
-        self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 2)], [$rule]));
+        $discounts = $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->river, 1), $this->line($this->sticker, 1)], [$rule], $this->now);
+
+        self::assertEquals([new AppliedDiscount('2 prints et 1 sticker pour 15 €', Money::cents(1_900), $rule->id())], $discounts);
     }
 
-    public function testSingleBundle(): void
+    public function testEveryConditionMustBeMet(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
+        $rule = $this->rule('2 prints et 1 sticker', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
 
-        $discounts = $this->calculator->calculate([$this->line($this->sticker, 4)], [$rule]);
-
-        self::assertEquals([new AppliedDiscount('3 stickers pour 10 €', Money::cents(200))], $discounts);
+        self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->sticker, 3)], [$rule], $this->now));
     }
 
-    public function testSeveralBundlesOfTheSameRuleAreGrouped(): void
+    public function testRuleAppliesAsOftenAsTheBasketAllows(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
+        $rule = $this->rule('2 prints et 1 sticker', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(3_000)));
 
-        $discounts = $this->calculator->calculate([$this->line($this->sticker, 7)], [$rule]);
+        $discounts = $this->calculator->calculate([$this->line($this->forest, 5), $this->line($this->sticker, 2)], [$rule], $this->now);
 
-        self::assertEquals([new AppliedDiscount('3 stickers pour 10 € ×2', Money::cents(400))], $discounts);
+        self::assertEquals([new AppliedDiscount('2 prints et 1 sticker ×2', Money::cents(800), $rule->id())], $discounts);
     }
 
-    public function testEligibleProductsCanBeMixedAndMostExpensiveUnitsAreBundledFirst(): void
+    public function testProductConditionOnlyMatchesThatProductWhateverTheVariant(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker, $this->bigSticker], 3, Money::cents(1_000));
+        $rule = $this->rule('2 Forêt pour 25 €', [new ConditionSpec(2, $this->forest)], DiscountAction::fixedPrice(Money::cents(2_500)));
 
-        // units: 6, 6, 4, 4 → bundle 6+6+4 = 16 € for 10 € → saving 6 €
-        $discounts = $this->calculator->calculate([$this->line($this->sticker, 2), $this->line($this->bigSticker, 2)], [$rule]);
-
-        self::assertEquals([new AppliedDiscount('3 stickers pour 10 €', Money::cents(600))], $discounts);
+        self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->river, 1)], [$rule], $this->now));
+        self::assertCount(1, $this->calculator->calculate([$this->line($this->forest, 2)], [$rule], $this->now));
     }
 
-    public function testIneligibleProductsAreIgnored(): void
+    public function testProductConditionsPickTheirUnitsBeforeTypeConditions(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
+        $rule = $this->rule('1 Holo et 1 sticker', [new ConditionSpec(1, $this->stickerType), new ConditionSpec(1, $this->holoSticker)], DiscountAction::fixedPrice(Money::cents(800)));
 
-        self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 2), $this->line($this->print, 5)], [$rule]));
+        $discounts = $this->calculator->calculate([$this->line($this->holoSticker, 1), $this->line($this->sticker, 1)], [$rule], $this->now);
+
+        self::assertEquals([new AppliedDiscount('1 Holo et 1 sticker', Money::cents(200), $rule->id())], $discounts);
     }
 
-    public function testBundleWithoutSavingIsNotApplied(): void
+    public function testMostExpensiveMatchingUnitsAreTakenFirst(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '2 stickers pour 9 €', [$this->sticker], 2, Money::cents(900));
+        $rule = $this->rule('−50 % sur 1 sticker', [new ConditionSpec(1, $this->stickerType)], DiscountAction::percentOff(5_000));
 
-        self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 2)], [$rule]));
+        $discounts = $this->calculator->calculate([$this->line($this->sticker, 1), $this->line($this->holoSticker, 1)], [$rule], $this->now);
+
+        self::assertEquals([new AppliedDiscount('−50 % sur 1 sticker ×2', Money::cents(500), $rule->id())], $discounts);
     }
 
-    public function testInactiveRulesAreIgnored(): void
+    public function testAmountOffIsCappedAtTheItemsPrice(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
-        $rule->deactivate();
+        $rule = $this->rule('Sticker −10 €', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(1_000)));
 
-        self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 3)], [$rule]));
+        self::assertEquals([new AppliedDiscount('Sticker −10 €', Money::cents(400), $rule->id())], $this->calculator->calculate([$this->line($this->sticker, 1)], [$rule], $this->now));
+    }
+
+    public function testFixedPriceAboveTheRegularPriceIsNotApplied(): void
+    {
+        $rule = $this->rule('2 stickers pour 10 €', [new ConditionSpec(2, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_000)));
+
+        self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 2)], [$rule], $this->now));
     }
 
     public function testBestSavingWinsWhenRulesCompeteForTheSameUnits(): void
     {
-        $small = DiscountRule::create(TestWorkspace::get(), '2 stickers pour 7 €', [$this->sticker], 2, Money::cents(700)); // saves 1 € per 2
-        $big = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000)); // saves 2 € per 3
+        $small = $this->rule('A: T-shirt −2 €', [new ConditionSpec(1, $this->tshirt)], DiscountAction::amountOff(Money::cents(200)));
+        $big = $this->rule('B: T-shirt −20 %', [new ConditionSpec(1, $this->tshirt)], DiscountAction::percentOff(2_000));
 
-        // 5 stickers: big bundle first (2 €), remaining 2 → small bundle (1 €)
-        $discounts = $this->calculator->calculate([$this->line($this->sticker, 5)], [$small, $big]);
+        $discounts = $this->calculator->calculate([$this->line($this->tshirt, 1)], [$small, $big], $this->now);
 
-        self::assertEquals([
-            new AppliedDiscount('3 stickers pour 10 €', Money::cents(200)),
-            new AppliedDiscount('2 stickers pour 7 €', Money::cents(100)),
-        ], $discounts);
+        self::assertEquals([new AppliedDiscount('B: T-shirt −20 %', Money::cents(500), $big->id())], $discounts);
     }
 
-    public function testUnitIsUsedByOneBundleOnly(): void
+    public function testInactiveRulesAreIgnored(): void
     {
-        $stickers = DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [$this->sticker], 3, Money::cents(1_000));
-        $everything = DiscountRule::create(TestWorkspace::get(), 'Sticker + print', [$this->sticker, $this->print], 2, Money::cents(1_700));
+        $rule = $this->rule('T-shirt −2 €', [new ConditionSpec(1, $this->tshirt)], DiscountAction::amountOff(Money::cents(200)));
+        $rule->deactivate();
 
-        // print 15 + sticker 4 = 19 → 17 (saves 2 €), then 2 stickers left: no sticker bundle.
-        $discounts = $this->calculator->calculate([$this->line($this->sticker, 3), $this->line($this->print, 1)], [$stickers, $everything]);
-
-        $total = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));
-        self::assertSame(200, $total->amount());
-        self::assertCount(1, $discounts);
+        self::assertSame([], $this->calculator->calculate([$this->line($this->tshirt, 1)], [$rule], $this->now));
     }
 
-    public function testRuleOnATypeCoversAllProductsOfThatType(): void
+    public function testRulesOnlyApplyWithinTheirValidityPeriodBoundsIncluded(): void
     {
-        [$printType, $prints] = $this->prints();
-        $rule = DiscountRule::create(TestWorkspace::get(), '2 prints pour 25 €', [], 2, Money::cents(2_500), [$printType]);
+        $rule = $this->rule(
+            'T-shirt −2 €',
+            [new ConditionSpec(1, $this->tshirt)],
+            DiscountAction::amountOff(Money::cents(200)),
+            ValidityPeriod::between(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-11')),
+        );
+        $basket = [$this->line($this->tshirt, 1)];
+        $paris = new \DateTimeZone('Europe/Paris');
 
-        $discounts = $this->calculator->calculate([$this->line($prints[0], 1), $this->line($prints[1], 1)], [$rule]);
-
-        self::assertEquals([new AppliedDiscount('2 prints pour 25 €', Money::cents(500))], $discounts);
-    }
-
-    /**
-     * Basket: 2 prints (15 € each) + 1 sticker (4 €).
-     * With one rule per type, only the print bundle applies: 25 + 4 = 29 €.
-     */
-    public function testTwoPrintsAndOneStickerWithOneRulePerType(): void
-    {
-        [$printType, $prints, $stickerType, $sticker] = $this->printsAndSticker();
-        $rules = [
-            DiscountRule::create(TestWorkspace::get(), '2 prints pour 25 €', [], 2, Money::cents(2_500), [$printType]),
-            DiscountRule::create(TestWorkspace::get(), '3 stickers pour 10 €', [], 3, Money::cents(1_000), [$stickerType]),
-        ];
-
-        $discounts = $this->calculator->calculate([$this->line($prints[0], 1), $this->line($prints[1], 1), $this->line($sticker, 1)], $rules);
-
-        self::assertEquals([new AppliedDiscount('2 prints pour 25 €', Money::cents(500))], $discounts);
+        self::assertSame([], $this->calculator->calculate($basket, [$rule], new \DateTimeImmutable('2026-07-09 23:59', $paris)));
+        self::assertCount(1, $this->calculator->calculate($basket, [$rule], new \DateTimeImmutable('2026-07-10 00:01', $paris)));
+        self::assertCount(1, $this->calculator->calculate($basket, [$rule], new \DateTimeImmutable('2026-07-11 23:59', $paris)));
+        self::assertSame([], $this->calculator->calculate($basket, [$rule], new \DateTimeImmutable('2026-07-12 00:01', $paris)));
     }
 
     /**
-     * Same basket with a rule on both types, "3 articles pour 30 €": 15 + 15 + 4 = 34 → 30 €.
+     * @param list<ConditionSpec> $conditions
      */
-    public function testTwoPrintsAndOneStickerWithARuleOnSeveralTypes(): void
+    private function rule(string $name, array $conditions, DiscountAction $action, ?ValidityPeriod $validity = null): DiscountRule
     {
-        [$printType, $prints, $stickerType, $sticker] = $this->printsAndSticker();
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 articles pour 30 €', [], 3, Money::cents(3_000), [$printType, $stickerType]);
-
-        $discounts = $this->calculator->calculate([$this->line($prints[0], 1), $this->line($prints[1], 1), $this->line($sticker, 1)], [$rule]);
-
-        self::assertEquals([new AppliedDiscount('3 articles pour 30 €', Money::cents(400))], $discounts);
-    }
-
-    /**
-     * @return array{ProductType, list<Product>}
-     */
-    private function prints(): array
-    {
-        $type = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
-
-        return [$type, [
-            Product::create(TestWorkspace::get(), 'PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4'], type: $type),
-            Product::create(TestWorkspace::get(), 'PRI-RIVIERE', 'Rivière', Money::cents(1_500), type: $type),
-        ]];
-    }
-
-    /**
-     * @return array{ProductType, list<Product>, ProductType, Product}
-     */
-    private function printsAndSticker(): array
-    {
-        [$printType, $prints] = $this->prints();
-        $stickerType = ProductType::create(TestWorkspace::get(), 'Sticker', 'STI');
-
-        return [$printType, $prints, $stickerType, Product::create(TestWorkspace::get(), 'STI-MOUSSE', 'Mousse', Money::cents(400), type: $stickerType)];
+        return DiscountRule::create(TestWorkspace::get(), $name, $conditions, $action, $validity);
     }
 
     private function line(Product $product, int $quantity): BasketLine

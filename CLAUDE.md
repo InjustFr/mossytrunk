@@ -1,6 +1,6 @@
 # MossyTrunk — project guide for Claude
 
-Small-business management app. Module 1 = **Order Management** (products, events, orders, bundle discounts, SumUp import, event profitability).
+Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability).
 UI language: **French**. Code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.
@@ -80,7 +80,7 @@ Enforced by `deptrac.yaml`. Rules:
 
 `fixtures/` (namespace `App\Fixtures`, dev/test only, outside the onion layers): Foundry factories build entities through their
 named constructors (`Instantiator::namedConstructor()`, hydration disabled — no setters). `ConventionSeasonStory` creates a
-catalogue with variants, bundle rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
+catalogue with variants, discount rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
 `OtherWorkspaceStory` adds « Autre atelier » (user `autre@mossytrunk.local` / `mossytrunk`) with a few products, to check isolation.
 
 ## Testing expectations

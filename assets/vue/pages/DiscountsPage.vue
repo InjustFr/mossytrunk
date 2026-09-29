@@ -49,7 +49,24 @@ async function onRemove(rule) {
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadProducts(), loadTypes()]));
+const requestedRuleId = new URLSearchParams(window.location.search).get('remise');
+
+function openRequestedRule() {
+    if (!requestedRuleId) {
+        return;
+    }
+    const rule = rules.value.find((candidate) => candidate.id === requestedRuleId);
+    if (rule) {
+        openEdit(rule);
+    } else {
+        toast.error('Cette remise n\'existe plus.');
+    }
+}
+
+onMounted(async () => {
+    await Promise.all([load(), loadProducts(), loadTypes()]);
+    openRequestedRule();
+});
 </script>
 
 <template>
@@ -59,8 +76,8 @@ onMounted(() => Promise.all([load(), loadProducts(), loadTypes()]));
         </template>
 
         <p class="discounts-page__intro">
-            Les remises par lot s'appliquent automatiquement aux nouvelles commandes, en choisissant la combinaison la plus avantageuse pour le client.
-            Une remise peut viser des types entiers (ex. Print + Sticker : « 3 articles pour 30 € ») et/ou des produits précis.
+            Une remise combine des conditions (une quantité d'un type ou d'un produit précis) et une action : prix fixe, remise en € ou en %.
+            Elles s'appliquent automatiquement aux commandes passées pendant leur période de validité, la plus avantageuse d'abord, et plusieurs remises peuvent se cumuler sur une commande.
         </p>
         <BaseCard>
             <DiscountRuleList

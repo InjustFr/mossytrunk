@@ -1,11 +1,11 @@
 <script setup>
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
-// Subtotal, discounts and total of an order or of a preview.
 defineProps({
     subtotal: { type: Number, required: true },
     discounts: { type: Array, required: true },
     total: { type: Number, required: true },
+    linkRules: { type: Boolean, default: false },
 });
 </script>
 
@@ -17,7 +17,10 @@ defineProps({
         </div>
         <TransitionGroup name="order-totals__discount">
             <div v-for="discount in discounts" :key="discount.label" class="order-totals__row order-totals__row--discount">
-                <dt>{{ discount.label }}</dt>
+                <dt>
+                    <a v-if="linkRules && discount.ruleId" :href="`/remises?remise=${discount.ruleId}`" class="order-totals__rule">{{ discount.label }}</a>
+                    <template v-else>{{ discount.label }}</template>
+                </dt>
                 <dd>− <MoneyAmount :cents="discount.amount" /></dd>
             </div>
         </TransitionGroup>
@@ -33,6 +36,8 @@ defineProps({
 .order-totals__row { display: flex; justify-content: space-between; gap: var(--space-3); }
 .order-totals__row dd { margin: 0; }
 .order-totals__row--discount { color: var(--color-success); }
+.order-totals__rule { color: inherit; text-decoration: underline; text-underline-offset: 0.2em; }
+.order-totals__rule:hover { text-decoration-thickness: 0.125rem; }
 .order-totals__row--total {
     margin-top: var(--space-1);
     padding-top: var(--space-2);

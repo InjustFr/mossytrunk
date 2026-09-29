@@ -4,24 +4,23 @@ declare(strict_types=1);
 
 namespace App\Application\Discount\ListDiscountRules;
 
+use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
-use App\Domain\Product\Product;
-use App\Domain\Product\ProductType;
 
 final readonly class DiscountRuleView
 {
     /**
-     * @param list<array{id: string, name: string}> $products
-     * @param list<array{id: string, name: string}> $types
+     * @param list<array{kind: string, id: string, name: string, quantity: int}> $conditions
+     * @param array{kind: string, value: int}                                   $action
      */
     public function __construct(
         public string $id,
         public string $name,
-        public array $products,
-        public int $bundleSize,
-        public int $bundlePrice,
         public bool $active,
-        public array $types = [],
+        public array $conditions,
+        public array $action,
+        public ?string $startsOn,
+        public ?string $endsOn,
     ) {
     }
 
@@ -30,11 +29,16 @@ final readonly class DiscountRuleView
         return new self(
             (string) $rule->id(),
             $rule->name(),
-            array_map(static fn (Product $product): array => ['id' => (string) $product->id(), 'name' => $product->displayName()], $rule->eligibleProducts()),
-            $rule->bundleSize(),
-            $rule->bundlePrice()->amount(),
             $rule->isActive(),
-            array_map(static fn (ProductType $type): array => ['id' => (string) $type->id(), 'name' => $type->name()], $rule->eligibleTypes()),
+            array_map(static fn (DiscountCondition $condition): array => [
+                'kind' => $condition->kind(),
+                'id' => (string) $condition->targetId(),
+                'name' => $condition->targetName(),
+                'quantity' => $condition->quantity(),
+            ], $rule->conditions()),
+            ['kind' => $rule->action()->kind()->value, 'value' => $rule->action()->value()],
+            $rule->validity()->start()?->format('Y-m-d'),
+            $rule->validity()->end()?->format('Y-m-d'),
         );
     }
 }

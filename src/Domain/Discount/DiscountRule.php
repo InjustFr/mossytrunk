@@ -7,22 +7,12 @@ namespace App\Domain\Discount;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
-use App\Domain\Shared\InvalidMoney;
-use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Bundle discount: any `bundleSize` eligible units cost `bundlePrice` together.
- * Example: stickers cost 4 € each, "3 stickers for 10 €" → bundleSize 3, bundlePrice 10 €.
- * Eligible = one of the listed products, or any product of one of the listed types (e.g. all Prints
- * and Stickers). Units of different eligible products (and any of their variants) can be mixed.
- *
- * See docs/business/discounts.md and {@see DiscountCalculator}.
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'discount_rule')]
 class DiscountRule
@@ -38,121 +28,117 @@ class DiscountRule
     #[ORM\Column(length: 255)]
     private string $name;
 
-    /** @var Collection<int, Product> */
-    #[ORM\ManyToMany(targetEntity: Product::class)]
-    #[ORM\JoinTable(name: 'discount_rule_product')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
-    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
-    private Collection $eligibleProducts;
+    /** @var Collection<int, DiscountCondition> */
+    #[ORM\OneToMany(targetEntity: DiscountCondition::class, mappedBy: 'rule', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $conditions;
 
-    /** @var Collection<int, ProductType> */
-    #[ORM\ManyToMany(targetEntity: ProductType::class)]
-    #[ORM\JoinTable(name: 'discount_rule_product_type')]
-    #[ORM\JoinColumn(onDelete: 'CASCADE')]
-    #[ORM\InverseJoinColumn(onDelete: 'CASCADE')]
-    private Collection $eligibleTypes;
+    #[ORM\Embedded(class: DiscountAction::class, columnPrefix: 'action_')]
+    private DiscountAction $action;
 
-    #[ORM\Column]
-    private int $bundleSize;
-
-    #[ORM\Embedded(class: Money::class, columnPrefix: 'bundle_price_')]
-    private Money $bundlePrice;
+    #[ORM\Embedded(class: ValidityPeriod::class, columnPrefix: 'valid_')]
+    private ValidityPeriod $validity;
 
     #[ORM\Column]
     private bool $active = true;
 
     /**
-     * @param list<Product>     $eligibleProducts
-     * @param list<ProductType> $eligibleTypes
+     * @param list<ConditionSpec> $conditions
      */
-    private function __construct(Ulid $id, Workspace $workspace, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes)
+    private function __construct(Ulid $id, Workspace $workspace, string $name, array $conditions, DiscountAction $action, ValidityPeriod $validity)
     {
         $this->id = $id;
         $this->workspace = $workspace;
-        $this->eligibleProducts = new ArrayCollection();
-        $this->eligibleTypes = new ArrayCollection();
-        $this->redefine($name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
+        $this->conditions = new ArrayCollection();
+        $this->redefine($name, $conditions, $action, $validity);
     }
 
     /**
-     * @param list<Product>     $eligibleProducts
-     * @param list<ProductType> $eligibleTypes
+     * @param list<ConditionSpec> $conditions
      */
-    public static function create(Workspace $workspace, string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): self
+    public static function create(Workspace $workspace, string $name, array $conditions, DiscountAction $action, ?ValidityPeriod $validity = null): self
     {
-        return new self(new Ulid(), $workspace, $name, $eligibleProducts, $bundleSize, $bundlePrice, $eligibleTypes);
+        return new self(new Ulid(), $workspace, $name, $conditions, $action, $validity ?? ValidityPeriod::always());
     }
 
     /**
-     * @param list<Product>     $eligibleProducts
-     * @param list<ProductType> $eligibleTypes
+     * @param list<ConditionSpec> $conditions
      */
-    public function redefine(string $name, array $eligibleProducts, int $bundleSize, Money $bundlePrice, array $eligibleTypes = []): void
+    public function redefine(string $name, array $conditions, DiscountAction $action, ?ValidityPeriod $validity = null): void
     {
         $name = trim($name);
         if ('' === $name) {
             throw InvalidDiscountRule::emptyName();
         }
-        if ([] === $eligibleProducts && [] === $eligibleTypes) {
-            throw InvalidDiscountRule::noEligibleProduct();
+        if ([] === $conditions) {
+            throw InvalidDiscountRule::noCondition();
         }
-        if ($bundleSize < 2) {
-            throw InvalidDiscountRule::bundleTooSmall();
-        }
-        if (!$bundlePrice->isPositive()) {
-            throw InvalidMoney::mustBePositive('Le prix du lot');
+
+        $built = [];
+        foreach ($conditions as $spec) {
+            foreach ($built as $condition) {
+                if ($condition->targets($spec->target)) {
+                    throw InvalidDiscountRule::duplicateTarget($condition->targetName());
+                }
+            }
+            $built[] = $spec->target instanceof Product
+                ? new ProductCondition($this, $spec->quantity, $spec->target)
+                : new TypeCondition($this, $spec->quantity, $spec->target);
         }
 
         $this->name = $name;
-        $this->bundleSize = $bundleSize;
-        $this->bundlePrice = $bundlePrice;
-        $this->eligibleProducts->clear();
-        foreach ($eligibleProducts as $product) {
-            if (!$this->eligibleProducts->contains($product)) {
-                $this->eligibleProducts->add($product);
-            }
-        }
-        $this->eligibleTypes->clear();
-        foreach ($eligibleTypes as $type) {
-            if (!$this->eligibleTypes->contains($type)) {
-                $this->eligibleTypes->add($type);
-            }
+        $this->action = $action;
+        $this->validity = $validity ?? ValidityPeriod::always();
+        $this->conditions->clear();
+        foreach ($built as $condition) {
+            $this->conditions->add($condition);
         }
     }
 
-    public function replaceEligibleProduct(Product $replaced, Product $by): void
+    public function replaceProduct(Product $replaced, Product $by): void
     {
-        if (!$this->eligibleProducts->contains($replaced)) {
+        $source = $this->conditionOn($replaced);
+        if (!$source instanceof ProductCondition) {
             return;
         }
-        $this->eligibleProducts->removeElement($replaced);
-        if (!$this->eligibleProducts->contains($by)) {
-            $this->eligibleProducts->add($by);
+
+        $target = $this->conditionOn($by);
+        if (null === $target) {
+            $source->retarget($by);
+
+            return;
         }
+        $target->add($source->quantity());
+        $this->conditions->removeElement($source);
     }
 
     public function withdrawProduct(Product $product): void
     {
-        if (!$this->eligibleProducts->contains($product)) {
+        $condition = $this->conditionOn($product);
+        if (null === $condition) {
             return;
         }
-        if (1 === $this->eligibleProducts->count() && $this->eligibleTypes->isEmpty()) {
+        if (1 === $this->conditions->count()) {
             throw InvalidDiscountRule::onlyEligibleProduct($this->name, $product->displayName());
         }
-        $this->eligibleProducts->removeElement($product);
+        $this->conditions->removeElement($condition);
     }
 
     public function listsTypes(): bool
     {
-        return !$this->eligibleTypes->isEmpty();
+        return $this->conditions->exists(static fn (int $key, DiscountCondition $condition): bool => $condition instanceof TypeCondition);
     }
 
     public function withdrawEveryProduct(): void
     {
         if (!$this->listsTypes()) {
-            throw InvalidDiscountRule::noEligibleProduct();
+            throw InvalidDiscountRule::noCondition();
         }
-        $this->eligibleProducts->clear();
+        foreach ($this->conditions->toArray() as $condition) {
+            if ($condition instanceof ProductCondition) {
+                $this->conditions->removeElement($condition);
+            }
+        }
     }
 
     public function activate(): void
@@ -165,18 +151,9 @@ class DiscountRule
         $this->active = false;
     }
 
-    public function isEligible(Ulid $productId, ?Ulid $typeId = null): bool
+    public function appliesOn(\DateTimeImmutable $moment): bool
     {
-        return $this->eligibleProducts->exists(static fn (int $key, Product $product): bool => $product->id()->equals($productId))
-            || (null !== $typeId && $this->eligibleTypes->exists(static fn (int $key, ProductType $type): bool => $type->id()->equals($typeId)));
-    }
-
-    /**
-     * @return list<ProductType>
-     */
-    public function eligibleTypes(): array
-    {
-        return array_values($this->eligibleTypes->toArray());
+        return $this->active && $this->validity->covers($moment);
     }
 
     public function id(): Ulid
@@ -189,14 +166,33 @@ class DiscountRule
         return $this->name;
     }
 
-    public function bundleSize(): int
+    /**
+     * @return list<DiscountCondition>
+     */
+    public function conditions(): array
     {
-        return $this->bundleSize;
+        return array_values($this->conditions->toArray());
     }
 
-    public function bundlePrice(): Money
+    /**
+     * @return list<DiscountCondition>
+     */
+    public function conditionsMostSpecificFirst(): array
     {
-        return $this->bundlePrice;
+        $conditions = $this->conditions();
+        usort($conditions, static fn (DiscountCondition $a, DiscountCondition $b): int => $b->isSpecific() <=> $a->isSpecific());
+
+        return $conditions;
+    }
+
+    public function action(): DiscountAction
+    {
+        return $this->action;
+    }
+
+    public function validity(): ValidityPeriod
+    {
+        return $this->validity;
     }
 
     public function isActive(): bool
@@ -204,16 +200,13 @@ class DiscountRule
         return $this->active;
     }
 
-    /**
-     * @return list<Product>
-     */
-    public function eligibleProducts(): array
-    {
-        return array_values($this->eligibleProducts->toArray());
-    }
-
     public function workspace(): Workspace
     {
         return $this->workspace;
+    }
+
+    private function conditionOn(Product|ProductType $target): ?DiscountCondition
+    {
+        return $this->conditions->findFirst(static fn (int $key, DiscountCondition $condition): bool => $condition->targets($target));
     }
 }

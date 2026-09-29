@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\SumUp;
 
+use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
@@ -20,6 +22,7 @@ use App\Application\Workspace\UpdateSumUpSettings\UpdateSumUpSettingsHandler;
 use App\Domain\Shared\Money;
 use App\Infrastructure\SumUp\FakeSumUpGateway;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class ImportFromSumUpTest extends KernelTestCase
@@ -117,6 +120,33 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(0, $report->ordersImported);
         self::assertSame(1, $report->ordersWithUnresolvedProducts);
         self::assertSame(['T-shirt'], $report->unresolvedProducts);
+    }
+
+    public function testADiscountRuleMatchingSumUpsDiscountReplacesIt(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
+        $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker')->id();
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Forêt', 1_200, typeId: $print));
+        self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Mousse', 600, typeId: $sticker));
+        $rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(
+            DiscountRules::fixedPrice('2 prints et 1 sticker pour 18 €', 1_800, DiscountRules::type($print, 2), DiscountRules::type($sticker, 1)),
+        );
+        $lines = [new SumUpLine('Print Forêt', Money::cents(900), 2), new SumUpLine('Sticker Mousse', Money::cents(450), 1)];
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-RULE', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(1_800), $lines),
+            new SumUpTransaction('TX-ROUNDED', new \DateTimeImmutable('2030-03-14T13:00:00Z'), Money::cents(1_801), $lines),
+            new SumUpTransaction('TX-OTHER', new \DateTimeImmutable('2030-03-14T14:00:00Z'), Money::cents(1_750), $lines),
+        ]);
+
+        $this->import();
+
+        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'id', 'reference');
+        $discounts = static fn (string $reference): array => self::getContainer()->get(GetOrderHandler::class)($orders[$reference])->discounts;
+        self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-RULE'));
+        self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-ROUNDED'));
+        self::assertSame(1_800, self::getContainer()->get(GetOrderHandler::class)($orders['TX-ROUNDED'])->total);
+        self::assertSame([['label' => 'Remise SumUp', 'amount' => 1_250, 'ruleId' => null]], $discounts('TX-OTHER'));
     }
 
     public function testCategoryBecomesTheProductType(): void

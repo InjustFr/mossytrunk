@@ -13,18 +13,33 @@ final class InvalidDiscountRule extends DomainException
         return new self('Le nom de la remise est obligatoire.');
     }
 
-    public static function noEligibleProduct(): self
+    public static function noCondition(): self
     {
-        return new self('Choisissez au moins un type ou un produit concerné par la remise.');
+        return new self('Ajoutez au moins une condition à la remise.');
+    }
+
+    public static function quantityTooSmall(): self
+    {
+        return new self('Une condition porte sur au moins 1 article.');
+    }
+
+    public static function duplicateTarget(string $targetName): self
+    {
+        return new self(\sprintf('« %s » apparaît dans plusieurs conditions : regroupez-les en une seule.', $targetName));
+    }
+
+    public static function invalidPercentage(): self
+    {
+        return new self('Le pourcentage de remise doit être compris entre 0 et 100 %.');
+    }
+
+    public static function endsBeforeStart(): self
+    {
+        return new self('La fin de validité ne peut pas précéder son début.');
     }
 
     public static function onlyEligibleProduct(string $ruleName, string $productName): self
     {
         return new self(\sprintf('La remise « %s » ne concerne que « %s » : modifiez ou supprimez-la avant de supprimer le produit.', $ruleName, $productName));
-    }
-
-    public static function bundleTooSmall(): self
-    {
-        return new self('Un lot doit contenir au moins 2 articles.');
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Application\Order;
 
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
-use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Event\UpdateEvent\UpdateEvent;
@@ -23,6 +22,7 @@ use App\Domain\Event\InvalidEvent;
 use App\Domain\Order\InvalidOrder;
 use App\Domain\Product\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Uid\Ulid;
 
@@ -32,6 +32,7 @@ final class OrderUseCasesTest extends KernelTestCase
     private string $eventId;
     private string $sticker;
     private string $tshirt;
+    private string $rule;
 
     protected function setUp(): void
     {
@@ -42,7 +43,7 @@ final class OrderUseCasesTest extends KernelTestCase
         $createProduct = self::getContainer()->get(CreateProductHandler::class);
         $this->sticker = (string) $createProduct(new CreateProduct('Sticker', 400, 80));
         $this->tshirt = (string) $createProduct(new CreateProduct('T-shirt', 2_000, 900, ['S', 'M']));
-        self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('3 stickers pour 10 €', [$this->sticker], 3, 1_000));
+        $this->rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('3 stickers pour 10 €', 1_000, DiscountRules::product($this->sticker, 3)));
     }
 
     public function testPlaceOrderLinksEventAndAppliesDiscounts(): void
@@ -53,7 +54,7 @@ final class OrderUseCasesTest extends KernelTestCase
         $view = self::getContainer()->get(GetOrderHandler::class)((string) $order->id());
         self::assertSame('Japan Expo', $view->event['name']);
         self::assertSame(3_200, $view->subtotal);
-        self::assertSame([['label' => '3 stickers pour 10 €', 'amount' => 200]], $view->discounts);
+        self::assertSame([['label' => '3 stickers pour 10 €', 'amount' => 200, 'ruleId' => $this->rule]], $view->discounts);
         self::assertSame(3_000, $view->total);
         self::assertSame(1_140, $view->costOfGoods);
         self::assertSame(1_860, $view->margin);
@@ -90,7 +91,7 @@ final class OrderUseCasesTest extends KernelTestCase
 
         self::assertSame('Japan Expo', $preview->event['name']);
         self::assertSame(2_800, $preview->subtotal);
-        self::assertSame([['label' => '3 stickers pour 10 € ×2', 'amount' => 400]], $preview->discounts);
+        self::assertSame([['label' => '3 stickers pour 10 € ×2', 'amount' => 400, 'ruleId' => $this->rule]], $preview->discounts);
         self::assertSame(2_400, $preview->total);
 
         $noEvent = self::getContainer()->get(PreviewOrderHandler::class)(new \DateTimeImmutable('2026-08-01 12:00'), [new RequestedLine($this->sticker, null, 1)]);

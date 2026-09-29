@@ -4,111 +4,139 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Discount;
 
+use App\Domain\Discount\ConditionSpec;
+use App\Domain\Discount\DiscountAction;
+use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\InvalidDiscountRule;
+use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
-use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Uid\Ulid;
 
 final class DiscountRuleTest extends TestCase
 {
-    public function testEligibility(): void
-    {
-        $sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400));
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [$sticker, $sticker], 3, Money::cents(1_000));
+    private ProductType $print;
+    private Product $sticker;
+    private Product $holo;
 
-        self::assertTrue($rule->isEligible($sticker->id()));
-        self::assertFalse($rule->isEligible(new Ulid()));
-        self::assertCount(1, $rule->eligibleProducts());
-        self::assertTrue($rule->isActive());
+    protected function setUp(): void
+    {
+        $this->print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400));
+        $this->holo = Product::create(TestWorkspace::get(), 'HOLO', 'Holo', Money::cents(600));
     }
 
-    public function testTypeMakesItsProductsEligible(): void
+    public function testConditionsDescribeTheirTarget(): void
     {
-        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
-        $rule = DiscountRule::create(TestWorkspace::get(), '2 prints', [], 2, Money::cents(2_500), [$print]);
+        $rule = $this->rule([new ConditionSpec(2, $this->print), new ConditionSpec(1, $this->sticker)]);
 
-        self::assertTrue($rule->isEligible(new Ulid(), $print->id()));
-        self::assertFalse($rule->isEligible(new Ulid(), new Ulid()));
-        self::assertFalse($rule->isEligible(new Ulid()));
+        self::assertSame(
+            [['type', 'Print', 2], ['product', 'Sticker', 1]],
+            array_map(static fn (DiscountCondition $c): array => [$c->kind(), $c->targetName(), $c->quantity()], $rule->conditions()),
+        );
     }
 
-    public function testNeedsAtLeastOneProductOrType(): void
+    public function testNeedsANameAndAtLeastOneCondition(): void
     {
         $this->expectException(InvalidDiscountRule::class);
 
-        DiscountRule::create(TestWorkspace::get(), '3 pour 10', [], 3, Money::cents(1_000));
+        $this->rule([]);
     }
 
-    public function testBundleHasAtLeastTwoUnits(): void
+    public function testNameIsRequired(): void
     {
         $this->expectException(InvalidDiscountRule::class);
 
-        DiscountRule::create(TestWorkspace::get(), '1 pour 3', [Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400))], 1, Money::cents(300));
+        DiscountRule::create(TestWorkspace::get(), '  ', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)));
     }
 
-    public function testBundlePriceMustBePositive(): void
+    public function testConditionQuantityIsAtLeastOne(): void
     {
-        $this->expectException(InvalidMoney::class);
+        $this->expectException(InvalidDiscountRule::class);
 
-        DiscountRule::create(TestWorkspace::get(), 'Gratuit', [Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400))], 2, Money::zero());
+        $this->rule([new ConditionSpec(0, $this->sticker)]);
     }
 
-    public function testCanBeToggled(): void
+    public function testATargetAppearsInOneConditionOnly(): void
     {
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400))], 3, Money::cents(1_000));
+        $this->expectExceptionMessage('« Print » apparaît dans plusieurs conditions');
 
+        $this->rule([new ConditionSpec(1, $this->print), new ConditionSpec(2, $this->print)]);
+    }
+
+    public function testValidityEndCannotPrecedeItsStart(): void
+    {
+        $this->expectException(InvalidDiscountRule::class);
+
+        ValidityPeriod::between(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-09'));
+    }
+
+    public function testAppliesWhenActiveAndWithinItsPeriod(): void
+    {
+        $rule = DiscountRule::create(
+            TestWorkspace::get(),
+            'Été',
+            [new ConditionSpec(1, $this->sticker)],
+            DiscountAction::amountOff(Money::cents(100)),
+            ValidityPeriod::between(new \DateTimeImmutable('2026-07-01'), null),
+        );
+
+        self::assertFalse($rule->appliesOn(new \DateTimeImmutable('2026-06-30 12:00')));
+        self::assertTrue($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
         $rule->deactivate();
-        self::assertFalse($rule->isActive());
+        self::assertFalse($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
         $rule->activate();
-        self::assertTrue($rule->isActive());
+        self::assertTrue($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
     }
 
-    public function testAnEligibleProductCanBeReplaced(): void
+    public function testAReplacedProductIsRetargetedOrMergedWithTheTarget(): void
     {
-        $old = Product::create(TestWorkspace::get(), 'OLD', 'Vieux', Money::cents(400));
-        $new = Product::create(TestWorkspace::get(), 'NEW', 'Neuf', Money::cents(400));
         $other = Product::create(TestWorkspace::get(), 'OTH', 'Autre', Money::cents(400));
-        $rule = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [$old, $new], 3, Money::cents(1_000));
-        $untouched = DiscountRule::create(TestWorkspace::get(), '2 pour 7', [$other], 2, Money::cents(700));
+        $retargeted = $this->rule([new ConditionSpec(2, $this->sticker)]);
+        $merged = $this->rule([new ConditionSpec(2, $this->sticker), new ConditionSpec(1, $this->holo)]);
 
-        $rule->replaceEligibleProduct($old, $new);
-        $untouched->replaceEligibleProduct($old, $new);
+        $retargeted->replaceProduct($this->sticker, $other);
+        $merged->replaceProduct($this->sticker, $this->holo);
 
-        self::assertSame([$new], $rule->eligibleProducts());
-        self::assertSame([$other], $untouched->eligibleProducts());
+        self::assertSame([['Autre', 2]], $this->targets($retargeted));
+        self::assertSame([['Holo', 3]], $this->targets($merged));
     }
 
-    public function testAProductCanBeWithdrawnUnlessItIsTheOnlyOneTargeted(): void
+    public function testAProductCanBeWithdrawnUnlessItIsTheOnlyCondition(): void
     {
-        $sticker = Product::create(TestWorkspace::get(), 'STI', 'Sticker', Money::cents(400));
-        $pin = Product::create(TestWorkspace::get(), 'PIN', 'Pin', Money::cents(400));
-        $both = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [$sticker, $pin], 3, Money::cents(1_000));
-        $alone = DiscountRule::create(TestWorkspace::get(), '2 pins', [$pin], 2, Money::cents(700));
+        $both = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(1, $this->holo)]);
+        $both->withdrawProduct($this->holo);
+        self::assertSame([['Sticker', 1]], $this->targets($both));
 
-        $both->withdrawProduct($pin);
-        self::assertSame([$sticker], $both->eligibleProducts());
-
-        $this->expectExceptionObject(InvalidDiscountRule::onlyEligibleProduct('2 pins', 'Pin'));
-        $alone->withdrawProduct($pin);
+        $this->expectException(InvalidDiscountRule::class);
+        $both->withdrawProduct($this->sticker);
     }
 
-    public function testEveryProductCanBeWithdrawnOnlyFromARuleListingTypes(): void
+    public function testEveryProductCanBeWithdrawnWhenTypesRemain(): void
     {
-        $pin = Product::create(TestWorkspace::get(), 'PIN', 'Pin', Money::cents(400));
-        $withType = DiscountRule::create(TestWorkspace::get(), 'Prints et pins', [$pin], 2, Money::cents(2_000), [ProductType::create(TestWorkspace::get(), 'Print', 'PRI')]);
-        $productsOnly = DiscountRule::create(TestWorkspace::get(), '2 pins', [$pin], 2, Money::cents(700));
+        $rule = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(2, $this->print)]);
 
-        $withType->withdrawEveryProduct();
-        self::assertSame([], $withType->eligibleProducts());
-        self::assertTrue($withType->listsTypes());
-        self::assertFalse($productsOnly->listsTypes());
+        $rule->withdrawEveryProduct();
 
-        $this->expectExceptionObject(InvalidDiscountRule::noEligibleProduct());
-        $productsOnly->withdrawEveryProduct();
+        self::assertSame([['Print', 2]], $this->targets($rule));
+    }
+
+    /**
+     * @param list<ConditionSpec> $conditions
+     */
+    private function rule(array $conditions): DiscountRule
+    {
+        return DiscountRule::create(TestWorkspace::get(), 'Remise', $conditions, DiscountAction::fixedPrice(Money::cents(1_000)));
+    }
+
+    /**
+     * @return list<array{string, int}>
+     */
+    private function targets(DiscountRule $rule): array
+    {
+        return array_map(static fn (DiscountCondition $c): array => [$c->targetName(), $c->quantity()], $rule->conditions());
     }
 }

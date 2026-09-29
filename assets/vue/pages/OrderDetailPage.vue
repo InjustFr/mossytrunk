@@ -46,7 +46,7 @@ onMounted(load);
                 </BaseCard>
                 <div class="order-detail-page__side">
                     <BaseCard title="Montant">
-                        <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :total="order.total" />
+                        <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :total="order.total" link-rules />
                     </BaseCard>
                     <BaseCard title="Marge">
                         <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :margin="order.margin" />

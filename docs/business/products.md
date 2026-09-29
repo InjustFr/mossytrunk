@@ -50,7 +50,7 @@ A product split per variant (« Mug Lichen », « Mug Fougère ») can be gather
 | P10 | The moved part is one variant of the source, or the **whole source** when it has no variants. The target is an existing product (not the source) or a new product with the source's type and prices | `MoveVariantHandler` | `MoveVariantTest` |
 | P11 | The target variant is created when missing; left empty, sales merge into a target without variants. A target without variants that already has sales cannot get its first variant (those sales would have none) | `MoveVariantHandler`, `InvalidProduct::soldWithoutVariant()` | `MoveVariantTest` |
 | P12 | Every order line of the moved (product, variant) now sells the target: name and variant change, **prices stay** as sold. A line merges into a line of the same order already selling the target at the same prices | `Order::moveSales()`, `OrderLine::reassign()` | `OrderTest`, `MoveVariantTest` |
-| P13 | A source left without anything to sell (whole product moved, or its last variant) is **deleted**; bundle discounts listing it list the target instead | `MoveVariantHandler`, `DiscountRule::replaceEligibleProduct()` | `DiscountRuleTest`, `MoveVariantTest` |
+| P13 | A source left without anything to sell (whole product moved, or its last variant) is **deleted**; discount conditions on it target the product it went into instead (quantities added when that product already has a condition) | `MoveVariantHandler`, `DiscountRule::replaceProduct()` | `DiscountRuleTest`, `MoveVariantTest` |
 
 UI: row action « Faire de … une variante » / « Déplacer une variante de … » on `/produits`. For a whole product, the form suggests the name without its last word as the target and that word as the variant (« Mug Lichen » → « Mug » + Lichen).
 
@@ -58,10 +58,10 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| P14 | A deleted product leaves the catalogue and the bundle discounts listing it. Past orders keep their lines (name and prices are snapshots); reports show them under « Sans type » | `DeleteProductHandler`, `DiscountRule::withdrawProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
-| P15 | A product that a discount targets **alone** (no other product nor type) cannot be deleted: change or delete that discount first | `InvalidDiscountRule::onlyEligibleProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
+| P14 | A deleted product leaves the catalogue, and the discount conditions on it are removed. Past orders keep their lines (name and prices are snapshots); reports show them under « Sans type » | `DeleteProductHandler`, `DiscountRule::withdrawProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
+| P15 | A product that is the **only condition** of a discount cannot be deleted: change or delete that discount first | `InvalidDiscountRule::onlyEligibleProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
 
-| P16 | Every product of the workspace can be deleted at once, like P14. Bundle discounts listing only products are deleted with them; those also listing types keep their types | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
+| P16 | Every product of the workspace can be deleted at once, like P14. Discounts with product conditions only are deleted with them; those also having type conditions keep those | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
 
 UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` — « Zone de danger »: delete every product, behind a warning and a confirmation.
 

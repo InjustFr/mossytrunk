@@ -55,7 +55,7 @@ final readonly class MoveVariantHandler
         }
         if (null === $variant || !$source->hasVariants()) {
             foreach ($this->discountRules->all() as $rule) {
-                $rule->replaceEligibleProduct($source, $target);
+                $rule->replaceProduct($source, $target);
             }
             $this->products->remove($source);
         }

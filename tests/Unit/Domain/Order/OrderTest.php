@@ -16,6 +16,7 @@ use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class OrderTest extends TestCase
 {
@@ -113,6 +114,28 @@ final class OrderTest extends TestCase
         self::assertSame(OrderSource::SumUp, $order->source());
         self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(200))], $order->appliedDiscounts());
         self::assertSame(1_000, $order->total()->amount());
+    }
+
+    public function testSumUpImportKeepsTheMatchingRuleDiscountDespiteSumUpRounding(): void
+    {
+        $rule = new AppliedDiscount('3 stickers pour 10 €', Money::cents(200), new Ulid());
+
+        $exact = Order::importFromSumUp('TX125', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_000), ruleDiscounts: [$rule]);
+        $rounded = Order::importFromSumUp('TX126', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_002), ruleDiscounts: [$rule]);
+
+        self::assertEquals([$rule], $exact->appliedDiscounts());
+        self::assertEquals([$rule], $rounded->appliedDiscounts());
+        self::assertSame(1_200, $rounded->subtotal()->amount());
+        self::assertSame(1_000, $rounded->total()->amount());
+    }
+
+    public function testSumUpImportFallsBackToSumUpDiscountWhenNoRuleMatches(): void
+    {
+        $rule = new AppliedDiscount('3 stickers pour 10 €', Money::cents(200), new Ulid());
+
+        $order = Order::importFromSumUp('TX127', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 3)], Money::cents(1_003), ruleDiscounts: [$rule]);
+
+        self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(197))], $order->appliedDiscounts());
     }
 
     public function testSumUpImportWithoutDiscount(): void

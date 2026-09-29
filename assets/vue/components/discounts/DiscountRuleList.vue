@@ -4,9 +4,9 @@ import BaseSwitch from '../ui/BaseSwitch.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
-import MoneyAmount from '../ui/MoneyAmount.vue';
-import { regularBundlePrice } from '../../composables/useBundlePrice.js';
+import { describeAction, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatCents } from '../../composables/useMoney.js';
+import { formatDate } from '../../composables/useDate.js';
 
 const props = defineProps({
     rules: { type: Array, required: true },
@@ -15,22 +15,42 @@ const props = defineProps({
 });
 const emit = defineEmits(['edit', 'toggle', 'remove']);
 
+const today = new Date().toISOString().slice(0, 10);
 const range = (min, max) => (min === max ? formatCents(min) : `${formatCents(min)} à ${formatCents(max)}`);
 
+const conditions = (rule) => rule.conditions.map((condition) => `${condition.quantity} × ${condition.name}`).join(' + ');
+
+function period(rule) {
+    if (rule.startsOn && rule.endsOn) {
+        return `Du ${formatDate(rule.startsOn)} au ${formatDate(rule.endsOn)}`;
+    }
+    if (rule.startsOn) {
+        return `À partir du ${formatDate(rule.startsOn)}`;
+    }
+    return rule.endsOn ? `Jusqu'au ${formatDate(rule.endsOn)}` : null;
+}
+
+function status(rule) {
+    if (rule.endsOn && rule.endsOn < today) {
+        return 'Expirée';
+    }
+    return rule.startsOn && rule.startsOn > today ? 'À venir' : null;
+}
+
 function saving(rule) {
-    const regular = regularBundlePrice(props.products, rule.products.map((p) => p.id), rule.types.map((t) => t.id), rule.bundleSize);
+    const regular = regularPrice(props.products, rule.conditions);
     if (!regular) {
         return null;
     }
     return {
         regular: range(regular.min, regular.max),
-        saved: range(Math.max(0, regular.min - rule.bundlePrice), Math.max(0, regular.max - rule.bundlePrice)),
+        saved: range(savingOn(regular.min, rule.action), savingOn(regular.max, rule.action)),
     };
 }
 </script>
 
 <template>
-    <EmptyState v-if="rules.length === 0">Aucune remise. Créez un lot, ex. « 3 stickers pour 10 € ».</EmptyState>
+    <EmptyState v-if="rules.length === 0">Aucune remise. Créez-en une, ex. « 2 prints et 1 sticker pour 15 € ».</EmptyState>
     <TransitionGroup v-else name="discount-rule-list__item" tag="ul" class="discount-rule-list">
         <li
             v-for="rule in rules"
@@ -42,13 +62,15 @@ function saving(rule) {
             :data-test="`discount-rule-${rule.name}`"
         >
             <div class="discount-rule-list__main">
-                <span class="discount-rule-list__name">{{ rule.name }}</span>
+                <span class="discount-rule-list__name">
+                    {{ rule.name }}
+                    <span v-if="status(rule)" class="discount-rule-list__status">{{ status(rule) }}</span>
+                </span>
                 <span class="discount-rule-list__deal">
-                    {{ rule.bundleSize }} articles pour <MoneyAmount :cents="rule.bundlePrice" />
+                    {{ conditions(rule) }} {{ describeAction(rule.action, formatCents) }}
                     <template v-if="saving(rule)">, au lieu de {{ saving(rule).regular }}</template>
                 </span>
-                <span v-if="rule.types.length" class="discount-rule-list__products">Types : {{ rule.types.map((t) => t.name).join(', ') }}</span>
-                <span v-if="rule.products.length" class="discount-rule-list__products">Produits : {{ rule.products.map((p) => p.name).join(', ') }}</span>
+                <span v-if="period(rule)" class="discount-rule-list__period">{{ period(rule) }}</span>
             </div>
             <p v-if="saving(rule)" class="discount-rule-list__saving">
                 <span class="discount-rule-list__saving-label">Économie client</span>
@@ -85,9 +107,19 @@ function saving(rule) {
 .discount-rule-list__item--selected { background: var(--color-accent-soft); }
 
 .discount-rule-list__main { display: flex; flex-direction: column; min-width: 0; }
-.discount-rule-list__name { font-weight: 600; }
+.discount-rule-list__name { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; }
+.discount-rule-list__status {
+    padding: 0 var(--space-2);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: 62.4375rem;
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
 .discount-rule-list__deal { font-size: 0.9rem; }
-.discount-rule-list__products { color: var(--color-muted); font-size: 0.85rem; }
+.discount-rule-list__period { color: var(--color-muted); font-size: 0.85rem; }
 
 .discount-rule-list__saving { display: flex; flex-direction: column; align-items: flex-end; margin: 0; grid-column: 2; }
 .discount-rule-list__saving-label { color: var(--color-muted); font-size: 0.8rem; }

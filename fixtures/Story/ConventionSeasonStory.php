@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Fixtures\Story;
 
 use App\Domain\Discount\BasketLine;
+use App\Domain\Discount\ConditionSpec;
+use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
+use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
 use App\Domain\Order\Order;
@@ -70,9 +73,23 @@ final class ConventionSeasonStory extends Story
         ];
         $catalogue = [...$stickers, ...$prints, ...$others];
 
+        $rule = static fn (string $name, array $conditions, DiscountAction $action, ?ValidityPeriod $validity = null): DiscountRule => DiscountRuleFactory::createOne([
+            'workspace' => $workspace,
+            'name' => $name,
+            'conditions' => $conditions,
+            'action' => $action,
+            'validity' => $validity,
+        ]);
         $rules = [
-            DiscountRuleFactory::createOne(['workspace' => $workspace, 'name' => '3 stickers pour 10 €', 'eligibleTypes' => [$sticker], 'bundleSize' => 3, 'bundlePrice' => Money::cents(1_000)]),
-            DiscountRuleFactory::createOne(['workspace' => $workspace, 'name' => '2 prints pour 25 €', 'eligibleTypes' => [$print], 'bundleSize' => 2, 'bundlePrice' => Money::cents(2_500)]),
+            $rule('3 stickers pour 10 €', [new ConditionSpec(3, $sticker)], DiscountAction::fixedPrice(Money::cents(1_000))),
+            $rule('2 prints et 1 sticker pour 30 €', [new ConditionSpec(2, $print), new ConditionSpec(1, $sticker)], DiscountAction::fixedPrice(Money::cents(3_000))),
+            $rule('T-shirt et tote bag : −5 €', [new ConditionSpec(1, $others[0]), new ConditionSpec(1, $others[1])], DiscountAction::amountOff(Money::cents(500))),
+            $rule(
+                'Pin\'s et zine : −10 % (Angoulême)',
+                [new ConditionSpec(1, $others[2]), new ConditionSpec(1, $others[3])],
+                DiscountAction::percentOff(1_000),
+                ValidityPeriod::between(new \DateTimeImmutable('-45 days'), new \DateTimeImmutable('-44 days')),
+            ),
         ];
 
         $events = [
@@ -130,7 +147,7 @@ final class ConventionSeasonStory extends Story
             }
 
             $basket = array_map(static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId), $items);
-            $this->entityManager->persist(Order::place($event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules)));
+            $this->entityManager->persist(Order::place($event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt)));
         }
     }
 }

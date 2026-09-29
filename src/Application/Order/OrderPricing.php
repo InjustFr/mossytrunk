@@ -49,13 +49,13 @@ final readonly class OrderPricing
      *
      * @return list<AppliedDiscount>
      */
-    public function discounts(array $items): array
+    public function discounts(array $items, \DateTimeImmutable $placedAt): array
     {
         $basket = array_map(
             static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId),
             $items,
         );
 
-        return $this->calculator->calculate($basket, $this->discountRules->active());
+        return $this->calculator->calculate($basket, $this->discountRules->active(), $placedAt);
     }
 }

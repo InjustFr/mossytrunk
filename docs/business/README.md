@@ -12,7 +12,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price 0 = unknown |
 | [events.md](events.md) | Events, periods in Europe/Paris, no overlap, expenses |
 | [orders.md](orders.md) | Orders, auto-link to the event, lines & snapshots, totals, margin |
-| [discounts.md](discounts.md) | Bundle discounts and the automatic calculation |
+| [discounts.md](discounts.md) | Discount rules (conditions, action, validity) and the automatic calculation |
 | [event-report.md](event-report.md) | Profitability of an event: Dépenses, Commandes, URSSAF 12.8 %, Total |
 | [dashboard.md](dashboard.md) | Results per month and per year |
 | [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
@@ -31,8 +31,9 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Dépense | `Domain\Event\Expense` | Money spent for an event |
 | Commande | `Domain\Order\Order` | A sale during an event |
 | Ligne de commande | `Domain\Order\OrderLine` | Quantity of one tuple, with name/price/cost snapshots |
-| Remise (par lot) | `Domain\Discount\DiscountRule` | N eligible units for a fixed price |
-| Remise appliquée | `Domain\Discount\AppliedDiscount` | `{label, amount}` snapshot stored on an order |
+| Remise | `Domain\Discount\DiscountRule` | Conditions (quantity of a type or product) + action (prix fixe, remise en € ou en %) + validity period |
+| Condition | `Domain\Discount\DiscountCondition` | `quantity × product` or `quantity × type` |
+| Remise appliquée | `Domain\Discount\AppliedDiscount` | `{label, amount, ruleId}` snapshot stored on an order |
 | Sous-total / Total | `Order::subtotal()` / `total()` | Before / after discounts |
 | Coût d'achat | `Order::costOfGoods()` | Σ buying price × quantity |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |

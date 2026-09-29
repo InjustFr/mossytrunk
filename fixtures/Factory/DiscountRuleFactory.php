@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Fixtures\Factory;
 
+use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Shared\Money;
 use Zenstruck\Foundry\Object\Instantiator;
@@ -24,10 +25,9 @@ final class DiscountRuleFactory extends PersistentObjectFactory
         return [
             'workspace' => WorkspaceFactory::new(),
             'name' => 'Lot',
-            'eligibleProducts' => [],
-            'eligibleTypes' => [],
-            'bundleSize' => 3,
-            'bundlePrice' => Money::cents(1_000),
+            'conditions' => [],
+            'action' => DiscountAction::fixedPrice(Money::cents(1_000)),
+            'validity' => null,
         ];
     }
 

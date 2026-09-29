@@ -29,7 +29,7 @@ final readonly class PreviewOrderHandler
     {
         $event = $this->events->findCovering($placedAt);
         $items = $this->pricing->items($lines);
-        $discounts = $this->pricing->discounts($items);
+        $discounts = $this->pricing->discounts($items, $placedAt);
 
         $subtotal = Money::sum(array_map(static fn (OrderedItem $ordered): Money => $ordered->item->sellingPrice->multiply($ordered->quantity), $items));
         $discountTotal = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));

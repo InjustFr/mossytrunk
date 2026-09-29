@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\SumUp\ImportFromSumUp;
 
+use App\Application\Order\OrderPricing;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpGateway;
@@ -40,6 +41,7 @@ final readonly class ImportFromSumUpHandler
         private Transaction $transaction,
         private WorkspaceContext $workspace,
         private WorkspaceSecrets $secrets,
+        private OrderPricing $pricing,
     ) {
     }
 
@@ -88,7 +90,15 @@ final readonly class ImportFromSumUpHandler
                 continue;
             }
 
-            $this->orders->add(Order::importFromSumUp($code, $event, $transaction->createdAt, $items, $transaction->amountPaid, $transaction->paymentMethod));
+            $this->orders->add(Order::importFromSumUp(
+                $code,
+                $event,
+                $transaction->createdAt,
+                $items,
+                $transaction->amountPaid,
+                $transaction->paymentMethod,
+                $this->pricing->discounts($items, $transaction->createdAt),
+            ));
             ++$imported;
         }
 
