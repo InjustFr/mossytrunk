@@ -117,14 +117,6 @@ final class DiscountCalculatorTest extends TestCase
         self::assertEquals([new AppliedDiscount('B: T-shirt −20 %', Money::cents(500), $big->id())], $discounts);
     }
 
-    public function testInactiveRulesAreIgnored(): void
-    {
-        $rule = $this->rule('T-shirt −2 €', [new ConditionSpec(1, $this->tshirt)], DiscountAction::amountOff(Money::cents(200)));
-        $rule->deactivate();
-
-        self::assertSame([], $this->calculator->calculate([$this->line($this->tshirt, 1)], [$rule], $this->now));
-    }
-
     public function testRulesOnlyApplyWithinTheirValidityPeriodBoundsIncluded(): void
     {
         $rule = $this->rule(

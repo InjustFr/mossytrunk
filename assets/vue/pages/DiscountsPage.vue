@@ -37,9 +37,13 @@ async function onSaved(name) {
     await load();
 }
 
-async function onToggle(rule, active) {
-    await setActive(rule.id, active);
-    toast.success(active ? `Remise « ${rule.name} » activée.` : `Remise « ${rule.name} » désactivée.`);
+async function onToggle(rule, running) {
+    try {
+        await setActive(rule.id, running);
+        toast.success(running ? `Remise « ${rule.name} » lancée à partir d'aujourd'hui.` : `Remise « ${rule.name} » arrêtée : elle s'est terminée hier.`);
+    } catch (error) {
+        toast.error(error.message);
+    }
     await load();
 }
 

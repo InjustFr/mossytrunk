@@ -39,9 +39,6 @@ class DiscountRule
     #[ORM\Embedded(class: ValidityPeriod::class, columnPrefix: 'valid_')]
     private ValidityPeriod $validity;
 
-    #[ORM\Column]
-    private bool $active = true;
-
     /**
      * @param list<ConditionSpec> $conditions
      */
@@ -141,19 +138,32 @@ class DiscountRule
         }
     }
 
-    public function activate(): void
+    public function startOn(\DateTimeImmutable $today): void
     {
-        $this->active = true;
+        match ($this->statusOn($today)) {
+            DiscountStatus::Expired => throw InvalidDiscountRule::expired($this->name),
+            DiscountStatus::Upcoming => $this->validity = $this->validity->startingOn($today),
+            DiscountStatus::Running => null,
+        };
     }
 
-    public function deactivate(): void
+    public function stopBefore(\DateTimeImmutable $today): void
     {
-        $this->active = false;
+        if (DiscountStatus::Running !== $this->statusOn($today)) {
+            throw InvalidDiscountRule::notRunning($this->name);
+        }
+
+        $this->validity = $this->validity->endingBefore($today);
+    }
+
+    public function statusOn(\DateTimeImmutable $moment): DiscountStatus
+    {
+        return $this->validity->statusOn($moment);
     }
 
     public function appliesOn(\DateTimeImmutable $moment): bool
     {
-        return $this->active && $this->validity->covers($moment);
+        return $this->validity->covers($moment);
     }
 
     public function id(): Ulid
@@ -193,11 +203,6 @@ class DiscountRule
     public function validity(): ValidityPeriod
     {
         return $this->validity;
-    }
-
-    public function isActive(): bool
-    {
-        return $this->active;
     }
 
     public function workspace(): Workspace

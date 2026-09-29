@@ -4,7 +4,7 @@ import { fillDate } from './support/date.js';
 import { unique } from './support/unique.js';
 import { createEvent, createProduct, createType } from './support/api.js';
 
-test('create "2 prints and 1 sticker for 15 €", apply it to an order, deactivate and delete it', async ({ page, request }) => {
+test('create "2 prints and 1 sticker for 15 €", start it today and delete it', async ({ page, request }) => {
     const printType = await createType(request, unique('Print'));
     const stickerType = await createType(request, unique('Sticker'));
     const foret = await createProduct(request, { name: 'Forêt', sellingPrice: 1_500, type: printType });
@@ -40,9 +40,14 @@ test('create "2 prints and 1 sticker for 15 €", apply it to an order, deactiva
     expect(during.discounts).toContainEqual({ label: name, amount: 1_900, ruleId: expect.any(String) });
     expect(during.total).toBe(1_500);
 
+    await expect(item).toContainText('À venir');
+    await item.getByRole('switch').check();
+    await expect(item).toContainText('En cours');
+    expect((await preview(`${event.startDate}T12:00`)).total).toBe(1_500);
+
     await item.getByRole('switch').uncheck();
-    await expect(item).toContainText('Inactive');
-    expect((await preview(`${event.startDate}T12:00`)).discounts).toEqual([]);
+    await expect(page.getByTestId('toast').last()).toContainText('commence aujourd\'hui');
+    await expect(item).toContainText('En cours');
 
     await item.getByRole('button', { name: 'Supprimer' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer ?' }).click();
@@ -74,4 +79,21 @@ test('a product condition and an amount off, edited afterwards', async ({ page, 
 
     await expect(item).toContainText(`1 × ${tshirt.name} −20 %`);
     await expect(item).toContainText('5,00');
+});
+
+test('stopping a running discount ends it yesterday; an expired discount has no switch', async ({ page, request }) => {
+    const sticker = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400 });
+    const name = unique('Sticker −1 €');
+    const response = await request.post('/api/discount-rules', {
+        data: { name, conditions: [{ kind: 'product', id: sticker.id, quantity: 1 }], action: { kind: 'amountOff', value: 100 }, startsOn: '2026-01-01', endsOn: null },
+    });
+    expect(response.status()).toBe(201);
+
+    await page.goto('/remises');
+    const item = page.getByTestId(`discount-rule-${name}`);
+    await expect(item).toContainText('En cours');
+    await item.getByRole('switch').uncheck();
+
+    await expect(item).toContainText('Expirée');
+    await expect(item.getByRole('switch')).toHaveCount(0);
 });

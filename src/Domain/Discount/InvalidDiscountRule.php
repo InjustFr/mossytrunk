@@ -33,6 +33,21 @@ final class InvalidDiscountRule extends DomainException
         return new self('Le pourcentage de remise doit être compris entre 0 et 100 %.');
     }
 
+    public static function startedToday(): self
+    {
+        return new self('Cette remise commence aujourd\'hui : modifiez ses dates ou supprimez-la pour l\'arrêter.');
+    }
+
+    public static function expired(string $name): self
+    {
+        return new self(\sprintf('« %s » est expirée : modifiez ses dates pour la relancer.', $name));
+    }
+
+    public static function notRunning(string $name): self
+    {
+        return new self(\sprintf('« %s » n\'est pas en cours.', $name));
+    }
+
     public static function endsBeforeStart(): self
     {
         return new self('La fin de validité ne peut pas précéder son début.');

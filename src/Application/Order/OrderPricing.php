@@ -56,6 +56,6 @@ final readonly class OrderPricing
             $items,
         );
 
-        return $this->calculator->calculate($basket, $this->discountRules->active(), $placedAt);
+        return $this->calculator->calculate($basket, $this->discountRules->all(), $placedAt);
     }
 }

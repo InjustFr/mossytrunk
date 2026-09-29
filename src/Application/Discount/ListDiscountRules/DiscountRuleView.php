@@ -16,7 +16,7 @@ final readonly class DiscountRuleView
     public function __construct(
         public string $id,
         public string $name,
-        public bool $active,
+        public string $status,
         public array $conditions,
         public array $action,
         public ?string $startsOn,
@@ -24,12 +24,12 @@ final readonly class DiscountRuleView
     ) {
     }
 
-    public static function fromRule(DiscountRule $rule): self
+    public static function fromRule(DiscountRule $rule, \DateTimeImmutable $today): self
     {
         return new self(
             (string) $rule->id(),
             $rule->name(),
-            $rule->isActive(),
+            $rule->statusOn($today)->value,
             array_map(static fn (DiscountCondition $condition): array => [
                 'kind' => $condition->kind(),
                 'id' => (string) $condition->targetId(),

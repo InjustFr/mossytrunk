@@ -39,9 +39,4 @@ final readonly class DoctrineDiscountRuleRepository implements DiscountRuleRepos
     {
         return $this->entityManager->getRepository(DiscountRule::class)->findBy(['workspace' => $this->workspace->current()], ['name' => 'ASC']);
     }
-
-    public function active(): array
-    {
-        return $this->entityManager->getRepository(DiscountRule::class)->findBy(['active' => true, 'workspace' => $this->workspace->current()], ['name' => 'ASC']);
-    }
 }

@@ -15,7 +15,6 @@ const props = defineProps({
 });
 const emit = defineEmits(['edit', 'toggle', 'remove']);
 
-const today = new Date().toISOString().slice(0, 10);
 const range = (min, max) => (min === max ? formatCents(min) : `${formatCents(min)} à ${formatCents(max)}`);
 
 const conditions = (rule) => rule.conditions.map((condition) => `${condition.quantity} × ${condition.name}`).join(' + ');
@@ -30,12 +29,7 @@ function period(rule) {
     return rule.endsOn ? `Jusqu'au ${formatDate(rule.endsOn)}` : null;
 }
 
-function status(rule) {
-    if (rule.endsOn && rule.endsOn < today) {
-        return 'Expirée';
-    }
-    return rule.startsOn && rule.startsOn > today ? 'À venir' : null;
-}
+const STATUSES = { running: 'En cours', upcoming: 'À venir', expired: 'Expirée' };
 
 function saving(rule) {
     const regular = regularPrice(props.products, rule.conditions);
@@ -56,7 +50,7 @@ function saving(rule) {
             v-for="rule in rules"
             :key="rule.id"
             :class="['discount-rule-list__item', {
-                'discount-rule-list__item--inactive': !rule.active,
+                'discount-rule-list__item--inactive': rule.status !== 'running',
                 'discount-rule-list__item--selected': rule.id === selectedId,
             }]"
             :data-test="`discount-rule-${rule.name}`"
@@ -64,7 +58,7 @@ function saving(rule) {
             <div class="discount-rule-list__main">
                 <span class="discount-rule-list__name">
                     {{ rule.name }}
-                    <span v-if="status(rule)" class="discount-rule-list__status">{{ status(rule) }}</span>
+                    <span v-if="rule.status === 'expired'" class="discount-rule-list__status">{{ STATUSES.expired }}</span>
                 </span>
                 <span class="discount-rule-list__deal">
                     {{ conditions(rule) }} {{ describeAction(rule.action, formatCents) }}
@@ -76,10 +70,11 @@ function saving(rule) {
                 <span class="discount-rule-list__saving-label">Économie client</span>
                 <span class="discount-rule-list__saving-amount">{{ saving(rule).saved }}</span>
             </p>
-            <label class="discount-rule-list__toggle">
-                <BaseSwitch :default-value="rule.active" @update:model-value="emit('toggle', rule, $event)" />
-                {{ rule.active ? 'Active' : 'Inactive' }}
+            <label v-if="rule.status !== 'expired'" class="discount-rule-list__toggle" :title="rule.status === 'running' ? 'Arrêter : la remise se termine hier' : 'Lancer : la remise commence aujourd\'hui'">
+                <BaseSwitch :key="rule.status" :default-value="rule.status === 'running'" @update:model-value="emit('toggle', rule, $event)" />
+                {{ STATUSES[rule.status] }}
             </label>
+            <span v-else class="discount-rule-list__toggle discount-rule-list__toggle--none" />
             <div class="discount-rule-list__actions">
                 <IconButton :icon="Pencil" :label="`Modifier ${rule.name}`" @click="emit('edit', rule)" />
                 <ConfirmButton :icon="Trash2" :label="`Supprimer ${rule.name}`" @confirm="emit('remove', rule)" />

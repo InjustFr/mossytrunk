@@ -9,7 +9,6 @@ use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Discount\DeleteDiscountRule\DeleteDiscountRuleHandler;
 use App\Application\Discount\DiscountRuleDefinition;
 use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
-use App\Application\Discount\ToggleDiscountRule\ToggleDiscountRuleHandler;
 use App\Application\Discount\UpdateDiscountRule\UpdateDiscountRuleHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
@@ -53,14 +52,13 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
             '2026-07-01',
             '2026-07-31',
         ));
-        self::getContainer()->get(ToggleDiscountRuleHandler::class)($id, false);
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $rule = self::getContainer()->get(ListDiscountRulesHandler::class)()[0];
         self::assertSame('Sticker et sticker XL : −10 %', $rule->name);
         self::assertSame(['kind' => 'percentOff', 'value' => 1_000], $rule->action);
         self::assertSame(['2026-07-01', '2026-07-31'], [$rule->startsOn, $rule->endsOn]);
-        self::assertFalse($rule->active);
+        self::assertSame('expired', $rule->status);
         self::assertSame([['Sticker', 1], ['Sticker XL', 1]], array_map(static fn (array $c): array => [$c['name'], $c['quantity']], $rule->conditions));
 
         self::getContainer()->get(DeleteDiscountRuleHandler::class)($id);

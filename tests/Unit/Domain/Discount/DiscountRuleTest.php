@@ -8,6 +8,7 @@ use App\Domain\Discount\ConditionSpec;
 use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
+use App\Domain\Discount\DiscountStatus;
 use App\Domain\Discount\InvalidDiscountRule;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
@@ -74,22 +75,63 @@ final class DiscountRuleTest extends TestCase
         ValidityPeriod::between(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-09'));
     }
 
-    public function testAppliesWhenActiveAndWithinItsPeriod(): void
+    public function testAppliesWithinItsPeriod(): void
     {
-        $rule = DiscountRule::create(
-            TestWorkspace::get(),
-            'Été',
-            [new ConditionSpec(1, $this->sticker)],
-            DiscountAction::amountOff(Money::cents(100)),
-            ValidityPeriod::between(new \DateTimeImmutable('2026-07-01'), null),
-        );
+        $rule = $this->summer(new \DateTimeImmutable('2026-07-01'), null);
 
         self::assertFalse($rule->appliesOn(new \DateTimeImmutable('2026-06-30 12:00')));
         self::assertTrue($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
-        $rule->deactivate();
-        self::assertFalse($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
-        $rule->activate();
-        self::assertTrue($rule->appliesOn(new \DateTimeImmutable('2027-01-01 12:00')));
+    }
+
+    public function testStatusFollowsTheDates(): void
+    {
+        $rule = $this->summer(new \DateTimeImmutable('2026-07-01'), new \DateTimeImmutable('2026-07-31'));
+
+        self::assertSame(DiscountStatus::Upcoming, $rule->statusOn(new \DateTimeImmutable('2026-06-30 12:00')));
+        self::assertSame(DiscountStatus::Running, $rule->statusOn(new \DateTimeImmutable('2026-07-31 23:00', new \DateTimeZone('Europe/Paris'))));
+        self::assertSame(DiscountStatus::Expired, $rule->statusOn(new \DateTimeImmutable('2026-08-01 12:00')));
+    }
+
+    public function testStoppingARunningDiscountEndsItYesterday(): void
+    {
+        $rule = $this->summer(new \DateTimeImmutable('2026-07-01'), null);
+
+        $rule->stopBefore(new \DateTimeImmutable('2026-09-29 12:00'));
+
+        self::assertSame('2026-09-28', $rule->validity()->end()?->format('Y-m-d'));
+        self::assertSame(DiscountStatus::Expired, $rule->statusOn(new \DateTimeImmutable('2026-09-29 12:00')));
+    }
+
+    public function testADiscountStartedTodayCannotBeStopped(): void
+    {
+        $rule = $this->summer(new \DateTimeImmutable('2026-09-29'), null);
+
+        $this->expectException(InvalidDiscountRule::class);
+
+        $rule->stopBefore(new \DateTimeImmutable('2026-09-29 12:00'));
+    }
+
+    public function testStartingAnUpcomingDiscountMovesItsStartToToday(): void
+    {
+        $rule = $this->summer(new \DateTimeImmutable('2026-12-01'), new \DateTimeImmutable('2026-12-31'));
+
+        $rule->startOn(new \DateTimeImmutable('2026-09-29 12:00'));
+
+        self::assertSame(['2026-09-29', '2026-12-31'], [$rule->validity()->start()?->format('Y-m-d'), $rule->validity()->end()?->format('Y-m-d')]);
+    }
+
+    public function testAnExpiredDiscountCannotBeStartedAgain(): void
+    {
+        $rule = $this->summer(new \DateTimeImmutable('2026-07-01'), new \DateTimeImmutable('2026-07-31'));
+
+        $this->expectException(InvalidDiscountRule::class);
+
+        $rule->startOn(new \DateTimeImmutable('2026-09-29 12:00'));
+    }
+
+    private function summer(?\DateTimeImmutable $start, ?\DateTimeImmutable $end): DiscountRule
+    {
+        return DiscountRule::create(TestWorkspace::get(), 'Été', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)), ValidityPeriod::between($start, $end));
     }
 
     public function testAReplacedProductIsRetargetedOrMergedWithTheTarget(): void

@@ -21,9 +21,4 @@ interface DiscountRuleRepository
      * @return list<DiscountRule> sorted by name
      */
     public function all(): array;
-
-    /**
-     * @return list<DiscountRule>
-     */
-    public function active(): array;
 }
