@@ -37,6 +37,12 @@ class SupplierOrderLine
     #[ORM\Embedded(class: Money::class, columnPrefix: 'total_price_')]
     private Money $totalPrice;
 
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'discount_share_')]
+    private Money $discountShare;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'fees_share_')]
+    private Money $feesShare;
+
     #[ORM\Column(nullable: true)]
     private ?int $receivedQuantity = null;
 
@@ -59,7 +65,20 @@ class SupplierOrderLine
         $this->label = $purchased->item->label();
         $this->orderedQuantity = $purchased->quantity;
         $this->totalPrice = $purchased->totalPrice;
+        $this->discountShare = Money::zero();
+        $this->feesShare = Money::zero();
         $this->position = $position;
+    }
+
+    public function share(Money $discount, Money $fees): void
+    {
+        $this->discountShare = $discount;
+        $this->feesShare = $fees;
+    }
+
+    public function landedCost(): Money
+    {
+        return $this->totalPrice->subtract($this->discountShare)->add($this->feesShare);
     }
 
     public function receive(int $quantity): void
@@ -78,12 +97,12 @@ class SupplierOrderLine
 
     public function plannedUnitCost(): Money
     {
-        return self::divide($this->totalPrice, $this->orderedQuantity);
+        return self::divide($this->landedCost(), $this->orderedQuantity);
     }
 
     public function unitCost(): ?Money
     {
-        return null === $this->receivedQuantity || 0 === $this->receivedQuantity ? null : self::divide($this->totalPrice, $this->receivedQuantity);
+        return null === $this->receivedQuantity || 0 === $this->receivedQuantity ? null : self::divide($this->landedCost(), $this->receivedQuantity);
     }
 
     private static function divide(Money $total, int $quantity): Money
@@ -119,6 +138,16 @@ class SupplierOrderLine
     public function totalPrice(): Money
     {
         return $this->totalPrice;
+    }
+
+    public function discountShare(): Money
+    {
+        return $this->discountShare;
+    }
+
+    public function feesShare(): Money
+    {
+        return $this->feesShare;
     }
 
     public function receivedQuantity(): ?int

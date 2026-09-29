@@ -9,6 +9,7 @@ use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Transaction;
 use App\Domain\Purchasing\SupplierOrderRepository;
 use App\Domain\Purchasing\SupplierRepository;
+use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class ReviseSupplierOrderHandler
@@ -27,6 +28,8 @@ final readonly class ReviseSupplierOrderHandler
             $this->suppliers->get(Ulid::fromString($draft->supplierId)),
             $draft->orderedOn,
             $this->items->of($draft->lines),
+            Money::cents($draft->discountCents),
+            Money::cents($draft->deliveryFeesCents),
         );
         $this->transaction->commit();
     }

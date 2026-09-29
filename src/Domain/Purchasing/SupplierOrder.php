@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Purchasing;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -36,6 +37,12 @@ class SupplierOrder
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $orderedOn;
 
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'discount_')]
+    private Money $discount;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'delivery_fees_')]
+    private Money $deliveryFees;
+
     #[ORM\Column(length: 16, enumType: SupplierOrderStatus::class)]
     private SupplierOrderStatus $status = SupplierOrderStatus::Ordered;
 
@@ -50,31 +57,39 @@ class SupplierOrder
     /**
      * @param list<PurchasedItem> $items
      */
-    private function __construct(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items)
+    private function __construct(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, Money $discount, Money $deliveryFees)
     {
         $this->id = new Ulid();
         $this->workspace = $supplier->workspace();
         $this->reference = \sprintf('CMF-%s-%s', $orderedOn->format('Ymd'), substr((string) new Ulid(), -6));
         $this->lines = new ArrayCollection();
-        $this->revise($supplier, $orderedOn, $items);
+        $this->revise($supplier, $orderedOn, $items, $discount, $deliveryFees);
     }
 
     /**
      * @param list<PurchasedItem> $items
      */
-    public static function place(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items): self
+    public static function place(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, ?Money $discount = null, ?Money $deliveryFees = null): self
     {
-        return new self($supplier, $orderedOn, $items);
+        return new self($supplier, $orderedOn, $items, $discount ?? Money::zero(), $deliveryFees ?? Money::zero());
     }
 
     /**
      * @param list<PurchasedItem> $items
      */
-    public function revise(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items): void
+    public function revise(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, ?Money $discount = null, ?Money $deliveryFees = null): void
     {
         $this->assertStillOrdered();
         if ([] === $items) {
             throw InvalidPurchase::emptyOrder();
+        }
+        $discount ??= Money::zero();
+        $deliveryFees ??= Money::zero();
+        if ($discount->isNegative()) {
+            throw InvalidMoney::mustNotBeNegative('La remise globale');
+        }
+        if ($deliveryFees->isNegative()) {
+            throw InvalidMoney::mustNotBeNegative('Les frais de livraison');
         }
 
         $this->supplier = $supplier;
@@ -87,6 +102,24 @@ class SupplierOrder
                 }
             }
             $this->lines->add(new SupplierOrderLine($this, $purchased, $position));
+        }
+
+        $this->allocate($discount, $deliveryFees);
+    }
+
+    private function allocate(Money $discount, Money $deliveryFees): void
+    {
+        $lines = $this->lines();
+        if ($discount->greaterThan($this->subtotal())) {
+            throw InvalidPurchase::discountExceedsLines();
+        }
+
+        $this->discount = $discount;
+        $this->deliveryFees = $deliveryFees;
+        $discounts = CostAllocation::proportionally($discount, array_map(static fn (SupplierOrderLine $line): Money => $line->totalPrice(), $lines));
+        $fees = CostAllocation::equally($deliveryFees, \count($lines));
+        foreach ($lines as $index => $line) {
+            $line->share($discounts[$index], $fees[$index]);
         }
     }
 
@@ -116,9 +149,24 @@ class SupplierOrder
         }
     }
 
-    public function total(): Money
+    public function subtotal(): Money
     {
         return Money::sum(array_map(static fn (SupplierOrderLine $line): Money => $line->totalPrice(), $this->lines()));
+    }
+
+    public function total(): Money
+    {
+        return $this->subtotal()->subtract($this->discount)->add($this->deliveryFees);
+    }
+
+    public function discount(): Money
+    {
+        return $this->discount;
+    }
+
+    public function deliveryFees(): Money
+    {
+        return $this->deliveryFees;
     }
 
     public function orderedUnits(): int

@@ -33,6 +33,11 @@ final class InvalidPurchase extends DomainException
         return new self(\sprintf('« %s » figure deux fois dans la commande.', $label));
     }
 
+    public static function discountExceedsLines(): self
+    {
+        return new self('La remise globale ne peut pas dépasser le prix des produits.');
+    }
+
     public static function alreadyReceived(string $reference): self
     {
         return new self(\sprintf('La commande %s est déjà réceptionnée : elle ne peut plus changer.', $reference));

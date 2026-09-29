@@ -23,7 +23,7 @@ const current = computed(() => lines.value[step.value] ?? null);
 const counted = (line) => counts[line.id] !== null && counts[line.id] !== undefined;
 const allCounted = computed(() => lines.value.every(counted));
 const delta = (line) => (counted(line) ? counts[line.id] - line.orderedQuantity : null);
-const realUnitCost = (line) => (counted(line) && counts[line.id] > 0 ? Math.round(line.totalPrice / counts[line.id]) : null);
+const realUnitCost = (line) => (counted(line) && counts[line.id] > 0 ? Math.round(line.landedCost / counts[line.id]) : null);
 
 function conform() {
     counts[current.value.id] = current.value.orderedQuantity;
@@ -94,8 +94,11 @@ async function validate() {
                     <dd>{{ current.orderedQuantity }}</dd>
                 </div>
                 <div>
-                    <dt>Payé</dt>
-                    <dd><MoneyAmount :cents="current.totalPrice" /></dd>
+                    <dt>Coût total</dt>
+                    <dd>
+                        <MoneyAmount :cents="current.landedCost" />
+                        <span v-if="current.landedCost !== current.totalPrice" class="reception__planned">dont remise et livraison</span>
+                    </dd>
                 </div>
                 <div>
                     <dt>Coût unitaire</dt>

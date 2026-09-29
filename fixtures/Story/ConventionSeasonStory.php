@@ -215,12 +215,12 @@ final class ConventionSeasonStory extends Story
         $received = SupplierOrder::place($printer, new \DateTimeImmutable('-20 days'), [
             new PurchasedItem($prints[0]->sellable('A3'), 10, Money::cents(4_500)),
             new PurchasedItem($prints[1]->sellable('A4'), 20, Money::cents(6_000)),
-        ]);
+        ], Money::cents(1_000), Money::cents(1_200));
         [$forest, $river] = $received->lines();
         $receivedAt = new \DateTimeImmutable('-8 days');
         $received->receive([(string) $forest->id() => 12, (string) $river->id() => 19], $receivedAt);
         foreach ([[$prints[0], 'A3', $forest], [$prints[1], 'A4', $river]] as [$product, $variant, $line]) {
-            $lot = $this->stockOf($product, $variant)->receive((int) $line->receivedQuantity(), $line->totalPrice(), LotOrigin::SupplierOrder, $receivedAt, $received->id());
+            $lot = $this->stockOf($product, $variant)->receive((int) $line->receivedQuantity(), $line->landedCost(), LotOrigin::SupplierOrder, $receivedAt, $received->id());
             $product->bought($lot->unitCost());
         }
         $this->entityManager->persist($received);

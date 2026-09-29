@@ -21,6 +21,10 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await form.getByLabel('Prix total (€)').fill('60');
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
     await expect(form.getByRole('row').filter({ hasText: `${product.name} — A4` })).toContainText('3,00');
+    await form.getByLabel('Frais de livraison (€)').fill('4');
+    await form.getByLabel('Frais de livraison (€)').press('Tab');
+    await expect(form.getByRole('row').filter({ hasText: `${product.name} — A4` })).toContainText('3,20');
+    await expect(form.getByText('Total payé')).toContainText('64,00');
     await form.getByRole('button', { name: 'Passer la commande' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('Commande fournisseur passée.');
@@ -35,7 +39,7 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await received.fill('24');
     await received.press('Enter');
     await expect(page.getByRole('region', { name: 'Vérifier et valider' })).toContainText('+4');
-    await expect(page.getByRole('region', { name: 'Vérifier et valider' })).toContainText('2,50');
+    await expect(page.getByRole('region', { name: 'Vérifier et valider' })).toContainText('2,67');
     await page.getByRole('button', { name: 'Valider la réception' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('réceptionnée');
@@ -45,5 +49,5 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await page.getByLabel('Rechercher un produit').fill(product.name);
     const productRow = page.getByRole('row').filter({ hasText: product.name });
     await expect(productRow).toContainText('24');
-    await expect(productRow).toContainText('2,50');
+    await expect(productRow).toContainText('2,67');
 });

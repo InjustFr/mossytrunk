@@ -13,6 +13,8 @@ final readonly class SupplierOrderDraft
         public string $supplierId,
         public \DateTimeImmutable $orderedOn,
         public array $lines,
+        public int $discountCents = 0,
+        public int $deliveryFeesCents = 0,
     ) {
     }
 }

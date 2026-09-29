@@ -10,6 +10,7 @@ import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import PurchaseLinePicker from './PurchaseLinePicker.vue';
 import SupplierSelect from './SupplierSelect.vue';
+import { landedCosts } from '../../composables/usePurchasing.js';
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -21,7 +22,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 
 const today = () => new Date().toLocaleDateString('sv-SE');
-const form = reactive({ supplierId: '', orderedOn: today(), lines: [] });
+const form = reactive({ supplierId: '', orderedOn: today(), lines: [], discount: 0, deliveryFees: 0 });
 const errors = ref({});
 const saving = ref(false);
 
@@ -31,13 +32,17 @@ watch(() => props.order, (order) => {
             supplierId: order.supplier.id,
             orderedOn: order.orderedOn,
             lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice })),
+            discount: order.discount,
+            deliveryFees: order.deliveryFees,
         }
-        : { supplierId: '', orderedOn: today(), lines: [] });
+        : { supplierId: '', orderedOn: today(), lines: [], discount: 0, deliveryFees: 0 });
     errors.value = {};
 }, { immediate: true });
 
-const total = computed(() => form.lines.reduce((sum, line) => sum + (line.totalPrice ?? 0), 0));
-const unitCost = (line) => (line.quantity > 0 ? Math.round((line.totalPrice ?? 0) / line.quantity) : 0);
+const subtotal = computed(() => form.lines.reduce((sum, line) => sum + (line.totalPrice ?? 0), 0));
+const total = computed(() => subtotal.value - (form.discount ?? 0) + (form.deliveryFees ?? 0));
+const landed = computed(() => landedCosts(form.lines, form.discount, form.deliveryFees));
+const unitCost = (line, index) => (line.quantity > 0 ? Math.round(landed.value[index] / line.quantity) : 0);
 
 function addLine(line) {
     const existing = form.lines.find((l) => l.productId === line.productId && l.variant === line.variant);
@@ -57,6 +62,8 @@ async function onSubmit() {
             supplierId: form.supplierId,
             orderedOn: form.orderedOn,
             lines: form.lines.map(({ productId, variant, quantity, totalPrice }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0 })),
+            discount: form.discount ?? 0,
+            deliveryFees: form.deliveryFees ?? 0,
         });
         emit('saved');
     } catch (error) {
@@ -91,7 +98,7 @@ async function onSubmit() {
                             <th>Produit</th>
                             <th>Quantité</th>
                             <th>Prix total (€)</th>
-                            <th class="supplier-order-form__number">Unitaire</th>
+                            <th class="supplier-order-form__number">Coût unitaire</th>
                             <th />
                         </tr>
                     </thead>
@@ -105,20 +112,30 @@ async function onSubmit() {
                             </td>
                             <td class="supplier-order-form__quantity"><BaseNumberField v-model="line.quantity" :min="1" :label="`Quantité de ${line.label}`" /></td>
                             <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="`Prix total de ${line.label}`" /></td>
-                            <td class="supplier-order-form__number"><MoneyAmount :cents="unitCost(line)" /></td>
+                            <td class="supplier-order-form__number"><MoneyAmount :cents="unitCost(line, index)" /></td>
                             <td><IconButton :icon="X" :label="`Retirer ${line.label}`" @click="form.lines.splice(index, 1)" /></td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2">Total</td>
-                            <td><MoneyAmount :cents="total" /></td>
+                            <td colspan="2">Produits</td>
+                            <td><MoneyAmount :cents="subtotal" /></td>
                             <td colspan="2" />
                         </tr>
                     </tfoot>
                 </table>
                 <p v-if="errors.lines" class="supplier-order-form__line-error" role="alert">{{ errors.lines }}</p>
                 <PurchaseLinePicker :products="products" @add="addLine" />
+            </section>
+
+            <section class="supplier-order-form__extras" aria-label="Remise et livraison">
+                <FormField label="Remise globale (€)" :error="errors.discount" hint="Répartie selon le prix de chaque ligne.">
+                    <BaseMoneyField v-model="form.discount" />
+                </FormField>
+                <FormField label="Frais de livraison (€)" :error="errors.deliveryFees" hint="Répartis à parts égales entre les lignes.">
+                    <BaseMoneyField v-model="form.deliveryFees" />
+                </FormField>
+                <p class="supplier-order-form__total">Total payé <strong><MoneyAmount :cents="total" /></strong></p>
             </section>
 
             <div class="supplier-order-form__actions">
@@ -143,6 +160,8 @@ async function onSubmit() {
 .supplier-order-form__table th.supplier-order-form__number { text-align: right; }
 .supplier-order-form__label { min-width: 10rem; }
 .supplier-order-form__line-error { display: block; margin: 0; color: var(--color-danger); font-size: 0.8rem; }
+.supplier-order-form__extras { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.supplier-order-form__total { grid-column: 1 / -1; display: flex; justify-content: space-between; margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
 .supplier-order-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .supplier-order-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

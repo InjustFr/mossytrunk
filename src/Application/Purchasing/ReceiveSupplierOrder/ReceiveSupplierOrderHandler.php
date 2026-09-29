@@ -36,7 +36,7 @@ final readonly class ReceiveSupplierOrderHandler
             if (null === $product) {
                 continue;
             }
-            $lot = $this->stock->for($product, $line->variant())->receive((int) $line->receivedQuantity(), $line->totalPrice(), LotOrigin::SupplierOrder, $receivedAt, $order->id());
+            $lot = $this->stock->for($product, $line->variant())->receive((int) $line->receivedQuantity(), $line->landedCost(), LotOrigin::SupplierOrder, $receivedAt, $order->id());
             $product->bought($lot->unitCost());
         }
 

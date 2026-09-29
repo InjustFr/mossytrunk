@@ -80,6 +80,9 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
                 <div><dt>Fournisseur</dt><dd>{{ order.supplier.name }}</dd></div>
                 <div><dt>Commandée le</dt><dd>{{ formatDate(order.orderedOn) }}</dd></div>
                 <div v-if="order.receivedAt"><dt>Reçue le</dt><dd>{{ formatDateTime(order.receivedAt) }}</dd></div>
+                <div><dt>Produits</dt><dd><MoneyAmount :cents="order.subtotal" /></dd></div>
+                <div v-if="order.discount"><dt>Remise globale</dt><dd>−<MoneyAmount :cents="order.discount" /></dd></div>
+                <div v-if="order.deliveryFees"><dt>Livraison</dt><dd><MoneyAmount :cents="order.deliveryFees" /></dd></div>
                 <div><dt>Total payé</dt><dd><MoneyAmount :cents="order.total" /></dd></div>
                 <div><dt>Statut</dt><dd><StatusBadge :tone="status.tone">{{ status.label }}</StatusBadge></dd></div>
             </dl>
@@ -93,7 +96,9 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
                             <th>Produit</th>
                             <th class="supplier-order-page__number">Commandé</th>
                             <th class="supplier-order-page__number">Reçu</th>
-                            <th class="supplier-order-page__number">Prix payé</th>
+                            <th class="supplier-order-page__number">Prix</th>
+                            <th v-if="order.discount || order.deliveryFees" class="supplier-order-page__number">Remise / livraison</th>
+                            <th class="supplier-order-page__number">Coût total</th>
                             <th class="supplier-order-page__number">Coût unitaire</th>
                         </tr>
                     </thead>
@@ -110,6 +115,11 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
                                 </template>
                             </td>
                             <td class="supplier-order-page__number"><MoneyAmount :cents="line.totalPrice" /></td>
+                            <td v-if="order.discount || order.deliveryFees" class="supplier-order-page__number supplier-order-page__shares">
+                                <span v-if="line.discountShare">−<MoneyAmount :cents="line.discountShare" /></span>
+                                <span v-if="line.feesShare">+<MoneyAmount :cents="line.feesShare" /></span>
+                            </td>
+                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.landedCost" /></td>
                             <td class="supplier-order-page__number">
                                 <template v-if="line.unitCost !== null">
                                     <MoneyAmount :cents="line.unitCost" />
@@ -151,5 +161,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
 .supplier-order-page__lines th.supplier-order-page__number { text-align: right; }
 .supplier-order-page__lines .status-badge { margin-left: var(--space-1); }
 .supplier-order-page__planned { display: block; color: var(--color-muted); font-size: 0.75rem; }
+.supplier-order-page__shares { color: var(--color-muted); font-size: 0.85rem; }
+.supplier-order-page__shares span { display: flex; justify-content: flex-end; white-space: nowrap; }
 .supplier-order-page__muted { color: var(--color-subtle); }
 </style>

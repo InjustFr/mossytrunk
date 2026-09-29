@@ -23,6 +23,10 @@ final readonly class SupplierOrderPayload
         #[Assert\Count(min: 1, minMessage: 'Ajoutez au moins un produit.')]
         #[Assert\Valid]
         public array $lines = [],
+        #[Assert\PositiveOrZero(message: 'La remise globale ne peut pas être négative.')]
+        public int $discount = 0,
+        #[Assert\PositiveOrZero(message: 'Les frais de livraison ne peuvent pas être négatifs.')]
+        public int $deliveryFees = 0,
     ) {
     }
 
@@ -32,6 +36,8 @@ final readonly class SupplierOrderPayload
             $this->supplierId,
             new \DateTimeImmutable($this->orderedOn),
             array_map(static fn (PurchaseLinePayload $line): PurchaseLine => $line->toLine(), $this->lines),
+            $this->discount,
+            $this->deliveryFees,
         );
     }
 }

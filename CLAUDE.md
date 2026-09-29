@@ -1,6 +1,6 @@
 # MossyTrunk — project guide for Claude
 
-Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability), then **Stock** (FIFO lots, inventory after events) , **Supplier orders** (ordered → received into stock) and **Designs** (declined onto gabarits, validated into products).
+Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability), then **Stock** (FIFO lots, inventory after events), **Supplier orders** (ordered → received into stock) and **Designs** (declined onto gabarits, validated into products).
 UI language: **French**. Code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.

@@ -62,6 +62,25 @@ final class PurchasingUseCasesTest extends KernelTestCase
         self::assertSame(8_000, $medium->remainingValue);
     }
 
+    public function testDiscountAndDeliveryFeesAreStockedWithTheLines(): void
+    {
+        $orderId = (string) self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft(
+            $this->supplierId,
+            new \DateTimeImmutable('2026-09-01'),
+            [new PurchaseLine($this->sticker, null, 100, 2_000), new PurchaseLine($this->tshirt, 'S', 10, 2_000)],
+            400,
+            600,
+        ));
+        $lines = $this->view($orderId)->lines;
+        self::assertSame(4_200, $this->view($orderId)->total);
+
+        self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$lines[0]['id'] => 100, $lines[1]['id'] => 10]);
+        $this->clear();
+
+        $sticker = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0];
+        self::assertSame(2_000 - 200 + 300, $sticker->remainingValue);
+    }
+
     public function testAReceivedOrderCanNeitherBeRevisedNorDeleted(): void
     {
         $orderId = $this->place([new PurchaseLine($this->sticker, null, 10, 300)]);
