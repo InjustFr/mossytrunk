@@ -1,0 +1,117 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Unit\Domain\Purchasing;
+
+use App\Domain\Product\Product;
+use App\Domain\Purchasing\InvalidPurchase;
+use App\Domain\Purchasing\PurchasedItem;
+use App\Domain\Purchasing\Supplier;
+use App\Domain\Purchasing\SupplierOrder;
+use App\Domain\Purchasing\SupplierOrderStatus;
+use App\Domain\Shared\Money;
+use App\Tests\Support\TestWorkspace;
+use PHPUnit\Framework\TestCase;
+
+final class SupplierOrderTest extends TestCase
+{
+    private Supplier $printer;
+    private Product $sticker;
+    private Product $print;
+
+    protected function setUp(): void
+    {
+        $this->printer = Supplier::create(TestWorkspace::get(), 'Imprimerie du Lac', 'contact@lac.test');
+        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400));
+        $this->print = Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_500), variants: ['A5', 'A4']);
+    }
+
+    public function testAnOrderStartsOrderedWithItsTotal(): void
+    {
+        $order = $this->order();
+
+        self::assertSame(SupplierOrderStatus::Ordered, $order->status());
+        self::assertSame(3_000, $order->total()->amount());
+        self::assertSame(120, $order->orderedUnits());
+        self::assertNull($order->receivedUnits());
+        self::assertSame(20, $order->lines()[0]->plannedUnitCost()->amount());
+        self::assertMatchesRegularExpression('/^CMF-20260901-[0-9A-Z]{6}$/', $order->reference());
+    }
+
+    public function testReceivingRecomputesTheUnitCostFromWhatActuallyArrived(): void
+    {
+        $order = $this->order();
+        [$stickers, $prints] = $order->lines();
+
+        $received = $order->receive([(string) $stickers->id() => 125, (string) $prints->id() => 18], new \DateTimeImmutable('2026-09-10'));
+
+        self::assertSame(SupplierOrderStatus::Received, $order->status());
+        self::assertCount(2, $received);
+        self::assertSame(16, $stickers->unitCost()->amount());
+        self::assertSame(56, $prints->unitCost()->amount());
+        self::assertSame(143, $order->receivedUnits());
+    }
+
+    public function testNothingReceivedMeansNoStockAndNoUnitCost(): void
+    {
+        $order = $this->order();
+        [$stickers, $prints] = $order->lines();
+
+        $received = $order->receive([(string) $stickers->id() => 100, (string) $prints->id() => 0], new \DateTimeImmutable('2026-09-10'));
+
+        self::assertSame([$stickers], $received);
+        self::assertNull($prints->unitCost());
+    }
+
+    public function testEveryLineMustBeCounted(): void
+    {
+        $order = $this->order();
+
+        $this->expectException(InvalidPurchase::class);
+
+        $order->receive([(string) $order->lines()[0]->id() => 100], new \DateTimeImmutable('2026-09-10'));
+    }
+
+    public function testAReceivedOrderCannotChangeAnyMore(): void
+    {
+        $order = $this->order();
+        $order->receive(array_fill_keys(array_map(static fn ($line): string => (string) $line->id(), $order->lines()), 1), new \DateTimeImmutable('2026-09-10'));
+
+        $this->expectException(InvalidPurchase::class);
+
+        $order->revise($this->printer, new \DateTimeImmutable('2026-09-01'), [new PurchasedItem($this->sticker->sellable(null), 1, Money::zero())]);
+    }
+
+    public function testAnItemIsOrderedOnce(): void
+    {
+        $this->expectException(InvalidPurchase::class);
+
+        SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+            new PurchasedItem($this->sticker->sellable(null), 10, Money::cents(200)),
+            new PurchasedItem($this->sticker->sellable(null), 5, Money::cents(100)),
+        ]);
+    }
+
+    public function testAnOrderHasAtLeastOneLine(): void
+    {
+        $this->expectException(InvalidPurchase::class);
+
+        SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), []);
+    }
+
+    public function testSupplierNameIsRequired(): void
+    {
+        $this->expectException(InvalidPurchase::class);
+
+        Supplier::create(TestWorkspace::get(), '  ');
+    }
+
+    private function order(): SupplierOrder
+    {
+        return SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+            new PurchasedItem($this->sticker->sellable(null), 100, Money::cents(2_000)),
+            new PurchasedItem($this->print->sellable('A4'), 20, Money::cents(1_000)),
+        ]);
+    }
+}

@@ -16,6 +16,9 @@ use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
+use App\Domain\Purchasing\PurchasedItem;
+use App\Domain\Purchasing\Supplier;
+use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockCheck;
@@ -138,6 +141,8 @@ final class ConventionSeasonStory extends Story
             new StockCount($forestA4, max(0, $forestA4->onHand()), $prints[0]->buyingPrice()),
         ]));
 
+        $this->purchase($prints, $others[0]);
+
         $this->entityManager->flush();
     }
 
@@ -155,6 +160,35 @@ final class ConventionSeasonStory extends Story
             'buyingPrice' => Money::cents($buying),
             'variants' => $variants,
         ]);
+    }
+
+    /**
+     * @param list<Product> $prints
+     */
+    private function purchase(array $prints, Product $tshirt): void
+    {
+        $printer = Supplier::create($this->workspace, 'Imprimerie du Lac', 'commandes@imprimerie-du-lac.test', 'Tirages giclée, délai 10 jours.');
+        $textile = Supplier::create($this->workspace, 'Atelier Textile', '04 78 00 00 00');
+        $this->entityManager->persist($printer);
+        $this->entityManager->persist($textile);
+
+        $received = SupplierOrder::place($printer, new \DateTimeImmutable('-20 days'), [
+            new PurchasedItem($prints[0]->sellable('A3'), 10, Money::cents(4_500)),
+            new PurchasedItem($prints[1]->sellable('A4'), 20, Money::cents(6_000)),
+        ]);
+        [$forest, $river] = $received->lines();
+        $receivedAt = new \DateTimeImmutable('-8 days');
+        $received->receive([(string) $forest->id() => 12, (string) $river->id() => 19], $receivedAt);
+        foreach ([[$prints[0], 'A3', $forest], [$prints[1], 'A4', $river]] as [$product, $variant, $line]) {
+            $lot = $this->stockOf($product, $variant)->receive((int) $line->receivedQuantity(), $line->totalPrice(), LotOrigin::SupplierOrder, $receivedAt, $received->id());
+            $product->bought($lot->unitCost());
+        }
+        $this->entityManager->persist($received);
+
+        $this->entityManager->persist(SupplierOrder::place($textile, new \DateTimeImmutable('-3 days'), array_map(
+            static fn (string $size): PurchasedItem => new PurchasedItem($tshirt->sellable($size), 6, Money::cents(6 * 1_050)),
+            $tshirt->variants(),
+        )));
     }
 
     private function receive(Product $product, ?string $variant, int $quantity, \DateTimeImmutable $at, ?int $unitCost = null): void

@@ -18,7 +18,7 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | K1 | One stock per sellable item (validated by `Product::sellable()`); it belongs to the product's workspace and disappears with the product or when its variant is removed | `StockItem::open()`, `StockKeeper::forgetUnsold()`, FK `ON DELETE CASCADE` | `StockItemTest`, `StockUseCasesTest` |
-| K2 | **Restocking** adds a lot: quantity ≥ 1, total paid ≥ 0; unit cost = total / quantity. The product's buying price becomes that unit cost (last purchase price) | `StockItem::receive()`, `RestockHandler`, `Product::bought()` | `StockItemTest`, `StockUseCasesTest` |
+| K2 | **Restocking** (by hand, or by receiving a [supplier order](supplier-orders.md)) adds a lot: quantity ≥ 1, total paid ≥ 0; unit cost = total / quantity. The product's buying price becomes that unit cost (last purchase price) | `StockItem::receive()`, `RestockHandler`, `Product::bought()` | `StockItemTest`, `StockUseCasesTest` |
 | K3 | Sales take units from the lot received first (then by id). A lot's unit costs always add up to exactly what was paid for it (cents spread by rounding the running total) | `StockItem::withdraw()`, `StockLot::take()` | `StockItemTest` |
 | K4 | Selling more than the stock is allowed: `onHand` goes negative and the missing units cost the **last purchase price**, or the product's buying price if it was never bought | `StockItem::withdraw()` | `StockItemTest`, `StockUseCasesTest` |
 | K5 | A lot received while the stock is negative first covers the units already sold (they are not charged twice) | `StockItem::receive()` | `StockItemTest` |

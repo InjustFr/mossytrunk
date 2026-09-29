@@ -63,6 +63,18 @@ final class PageController extends AbstractController
         return $this->page('StockCheckPage', 'Inventaire', ['eventId' => $id]);
     }
 
+    #[Route('/commandes-fournisseurs', name: 'supplier_orders', methods: ['GET'])]
+    public function supplierOrders(): Response
+    {
+        return $this->page('SupplierOrdersPage', 'Commandes fournisseurs');
+    }
+
+    #[Route('/commandes-fournisseurs/{id}', name: 'supplier_order_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function supplierOrder(string $id): Response
+    {
+        return $this->page('SupplierOrderDetailPage', 'Commande fournisseur', ['orderId' => $id]);
+    }
+
     #[Route('/remises', name: 'discounts', methods: ['GET'])]
     public function discounts(): Response
     {

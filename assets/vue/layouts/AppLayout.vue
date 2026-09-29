@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Settings, Tag } from '@lucide/vue';
+import { CalendarDays, LayoutDashboard, LogOut, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
 import ToastHost from '../components/ui/ToastHost.vue';
 import { useSession } from '../composables/useSession.js';
@@ -13,6 +13,7 @@ const links = [
     { href: '/commandes', label: 'Commandes', icon: Receipt },
     { href: '/evenements', label: 'Événements', icon: CalendarDays },
     { href: '/produits', label: 'Produits', icon: Tag },
+    { href: '/commandes-fournisseurs', label: 'Fournisseurs', icon: Truck },
     { href: '/remises', label: 'Remises', icon: Percent },
     { href: '/parametres', label: 'Paramètres', icon: Settings },
 ];
