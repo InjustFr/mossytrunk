@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Product;
 
+use App\Domain\Product\Product;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -27,6 +28,8 @@ final readonly class ProductPayload
         public array $variants = [],
         #[Assert\Ulid(message: 'Type invalide.')]
         public ?string $typeId = null,
+        #[Assert\PositiveOrZero(message: 'Le seuil de stock bas ne peut pas être négatif.')]
+        public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
     ) {
     }
 }

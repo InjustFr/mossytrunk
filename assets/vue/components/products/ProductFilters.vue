@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
-import { TriangleAlert } from '@lucide/vue';
+import { PackageMinus, TriangleAlert } from '@lucide/vue';
 import TypeMark from '../ui/TypeMark.vue';
 import { UNTYPED } from '../../composables/useProductFilters.js';
 import { plural } from '../../composables/usePlural.js';
@@ -9,11 +9,13 @@ import { plural } from '../../composables/usePlural.js';
 const props = defineProps({
     types: { type: Array, required: true },
     missingCostCount: { type: Number, default: 0 },
+    lowStockCount: { type: Number, default: 0 },
     typeColors: { type: Map, required: true },
 });
 const typeId = defineModel('typeId', { type: String, required: true });
 const search = defineModel('search', { type: String, required: true });
 const missingCost = defineModel('missingCost', { type: Boolean, default: false });
+const lowStock = defineModel('lowStock', { type: Boolean, default: false });
 
 const ALL = '__all__';
 const chips = computed(() => [{ id: ALL, name: 'Tous', mark: false }, ...props.types.map((type) => ({ ...type, mark: true })), { id: UNTYPED, name: 'Sans type', mark: false }]);
@@ -36,6 +38,10 @@ const selectedChip = computed({
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
             </ToggleGroupItem>
         </ToggleGroupRoot>
+        <Toggle v-if="lowStockCount > 0 || lowStock" v-model="lowStock" class="product-filters__missing product-filters__low-stock">
+            <PackageMinus size="0.875rem" aria-hidden="true" />
+            {{ plural(lowStockCount, 'produit en stock bas', 'produits en stock bas') }}
+        </Toggle>
         <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="product-filters__missing">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ plural(missingCostCount, 'prix d\'achat à renseigner', 'prix d\'achat à renseigner') }}
@@ -79,6 +85,7 @@ const selectedChip = computed({
     transition: background var(--transition), color var(--transition);
 }
 
+.product-filters__low-stock + .product-filters__missing { margin-left: 0; }
 .product-filters__missing[data-state="on"] { background: var(--color-warning); color: var(--color-surface); }
 
 .product-filters__search {

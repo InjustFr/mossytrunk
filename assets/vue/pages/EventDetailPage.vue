@@ -9,7 +9,9 @@ import EventHeader from '../components/events/EventHeader.vue';
 import EventReport from '../components/events/EventReport.vue';
 import ExpenseForm from '../components/events/ExpenseForm.vue';
 import ExpenseList from '../components/events/ExpenseList.vue';
+import StockDiscrepancies from '../components/stock/StockDiscrepancies.vue';
 import { useEvent } from '../composables/useEvents.js';
+import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { useTypeColors } from '../composables/useTypeColor.js';
 
@@ -20,6 +22,9 @@ const props = defineProps({
 const { event, report, load, update, addExpense, reviseExpense, removeExpense } = useEvent(props.eventId);
 const { colors: typeColors, load: loadTypes } = useTypeColors();
 const toast = useToast();
+const { stockChecks, dismiss } = useStock();
+const checks = ref([]);
+const loadChecks = async () => { checks.value = await stockChecks(props.eventId); };
 const editOpen = ref(false);
 const expenseOpen = ref(false);
 const editingExpense = ref(null);
@@ -43,13 +48,19 @@ async function onExpenseSaved(label) {
     await load();
 }
 
+async function onDismissed(line) {
+    await dismiss(line.checkId, line.id);
+    toast.success(`Écart de « ${line.label} » classé.`);
+    await loadChecks();
+}
+
 async function onExpenseRemoved(expense) {
     await removeExpense(expense.id);
     toast.success(`Dépense « ${expense.label} » supprimée.`);
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadTypes()]));
+onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 </script>
 
 <template>
@@ -58,12 +69,14 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
+                <BaseButton variant="secondary" :href="`/evenements/${event.id}/inventaire`">Faire l'inventaire</BaseButton>
                 <BaseButton @click="openExpense()">Ajouter une dépense</BaseButton>
             </template>
         </template>
 
         <div v-if="event" class="event-detail-page">
             <EventHeader :event="event" />
+            <StockDiscrepancies :checks="checks" @dismiss="onDismissed" />
 
             <EventReport :report="report" :event-id="event.id" :upcoming="event.timing === 'upcoming'" :type-colors="typeColors">
                 <template #aside>

@@ -1,6 +1,6 @@
 # MossyTrunk — project guide for Claude
 
-Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability).
+Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability), then **Stock** (FIFO lots, inventory after events).
 UI language: **French**. Code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.
@@ -73,6 +73,7 @@ Enforced by `deptrac.yaml`. Rules:
 - Creation/edition forms open in `components/ui/BaseModal.vue` from a header button (`variant="drawer"` for order entry so the list stays visible). Forms emit `saved`/`cancel`; the page closes the modal and reloads. Form action rows are right-aligned (`justify-content: flex-end`) with the confirming/submit button last (rightmost); table row actions sit in a right-aligned `data-table__cell--actions` cell.
 - Look & feel: calm catalogue style (inspired by tikamoon.com) — white surfaces on light warm grey, near-black text, thin borders, 0.5rem radius (`--radius`), display font Patua One (Google font, self-hosted) for brand/titles, Inter for text, small uppercase letter-spaced labels. Fonts are self-hosted via `@fontsource`. Icons: **Lucide** (`@lucide/vue`, e.g. `import { X } from '@lucide/vue'`), `aria-hidden` when decorative, `role="img"` + `aria-label` when meaningful; no emoji/glyph icons. Row actions in tables/lists are icon-only (`components/ui/IconButton.vue`: Pencil = modifier, Trash2 = supprimer via `ConfirmButton :icon`), with the action as `label` (aria-label + tooltip).
 - Tables use `components/ui/DataTable.vue`; pass `:items` to paginate client-side (default slot gets `{ rows }` = current page, pagination bar with 20/50/100 per page appears above 20 rows). Playwright tests look rows up after searching/filtering, never assuming they are on page 1.
+- Status pills use `components/ui/StatusBadge.vue` (`tone`: neutral, warning, danger, success). `BaseButton` renders a link when given `href`.
 - Confirm user actions with `useToast().success/error`.
 - Add `data-test` attributes only when a role/label selector is not practical for Playwright.
 

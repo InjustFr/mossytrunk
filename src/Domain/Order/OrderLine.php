@@ -38,8 +38,8 @@ class OrderLine
     #[ORM\Embedded(class: Money::class, columnPrefix: 'unit_price_')]
     private Money $unitPrice;
 
-    #[ORM\Embedded(class: Money::class, columnPrefix: 'unit_cost_')]
-    private Money $unitCost;
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'cost_')]
+    private Money $cost;
 
     #[ORM\Column]
     private int $quantity;
@@ -47,7 +47,7 @@ class OrderLine
     /**
      * @internal built by Order
      */
-    public function __construct(Order $order, SellableItem $item, int $quantity)
+    public function __construct(Order $order, SellableItem $item, int $quantity, Money $cost)
     {
         if ($quantity < 1) {
             throw InvalidOrder::invalidQuantity();
@@ -59,7 +59,7 @@ class OrderLine
         $this->variant = $item->variant;
         $this->productName = $item->productName;
         $this->unitPrice = $item->sellingPrice;
-        $this->unitCost = $item->buyingPrice;
+        $this->cost = $cost;
         $this->quantity = $quantity;
     }
 
@@ -80,16 +80,17 @@ class OrderLine
 
     public function sameUnitAmountsAs(self $other): bool
     {
-        return $this->unitPrice->equals($other->unitPrice) && $this->unitCost->equals($other->unitCost);
+        return $this->unitPrice->equals($other->unitPrice);
     }
 
-    public function add(int $quantity): void
+    public function add(int $quantity, Money $cost): void
     {
         if ($quantity < 1) {
             throw InvalidOrder::invalidQuantity();
         }
 
         $this->quantity += $quantity;
+        $this->cost = $this->cost->add($cost);
     }
 
     public function total(): Money
@@ -99,7 +100,7 @@ class OrderLine
 
     public function cost(): Money
     {
-        return $this->unitCost->multiply($this->quantity);
+        return $this->cost;
     }
 
     public function id(): Ulid
@@ -134,7 +135,7 @@ class OrderLine
 
     public function unitCost(): Money
     {
-        return $this->unitCost;
+        return Money::cents((int) round($this->cost->amount() / $this->quantity, 0, \PHP_ROUND_HALF_UP));
     }
 
     public function quantity(): int

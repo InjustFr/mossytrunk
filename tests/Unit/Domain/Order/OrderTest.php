@@ -47,6 +47,17 @@ final class OrderTest extends TestCase
         self::assertMatchesRegularExpression('/^CMD-20260710-[0-9A-Z]{6}$/', $order->reference());
     }
 
+    public function testCostsFromStockAreKeptAndMergedPerLine(): void
+    {
+        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+            (new OrderedItem($this->sticker->sellable(null), 2))->costing(Money::cents(150)),
+            (new OrderedItem($this->sticker->sellable(null), 1))->costing(Money::cents(100)),
+        ], []);
+
+        self::assertSame(250, $order->costOfGoods()->amount());
+        self::assertSame(83, $order->lines()[0]->unitCost()->amount());
+    }
+
     public function testSameProductVariantTupleIsMerged(): void
     {
         $order = Order::place($this->event, self::at('2026-07-10 15:00'), [

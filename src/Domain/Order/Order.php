@@ -213,7 +213,7 @@ class Order
                 $line->reassign($to);
                 continue;
             }
-            $twin->add($line->quantity());
+            $twin->add($line->quantity(), $line->cost());
             $this->lines->removeElement($line);
         }
     }
@@ -246,13 +246,13 @@ class Order
     {
         foreach ($this->lines as $line) {
             if ($line->sells($ordered->item)) {
-                $line->add($ordered->quantity);
+                $line->add($ordered->quantity, $ordered->cost());
 
                 return;
             }
         }
 
-        $this->lines->add(new OrderLine($this, $ordered->item, $ordered->quantity));
+        $this->lines->add(new OrderLine($this, $ordered->item, $ordered->quantity, $ordered->cost()));
     }
 
     /**

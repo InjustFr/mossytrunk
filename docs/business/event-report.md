@@ -20,7 +20,7 @@ result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | R1 | URSSAF contributions are **12.8 % of the turnover** (after discounts), micro-entrepreneur flat rate for selling goods. The rate lives in one constant | `UrssafContribution::RATE_BASIS_POINTS` | `EventResultTest`, `MoneyTest` |
-| R2 | Cost of goods uses the buying prices **at the time of sale** (snapshots). A buying price of 0 means *unknown* and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
+| R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A buying price of 0 means *unknown* and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
 | R3 | Only the event's own orders count | `GetEventReportHandler` | `EventReportTest` |
 | R4 | The result can be negative (loss) | `EventResult` | `EventResultTest` |
 

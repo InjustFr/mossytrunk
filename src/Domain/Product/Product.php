@@ -27,6 +27,8 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\UniqueConstraint(name: 'product_workspace_reference', columns: ['workspace_id', 'reference'])]
 class Product
 {
+    public const int DEFAULT_LOW_STOCK_THRESHOLD = 10;
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
@@ -57,6 +59,9 @@ class Product
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(options: ['default' => self::DEFAULT_LOW_STOCK_THRESHOLD])]
+    private int $lowStockThreshold = self::DEFAULT_LOW_STOCK_THRESHOLD;
 
     /**
      * @param list<string> $variants
@@ -113,6 +118,25 @@ class Product
 
         $this->sellingPrice = $sellingPrice;
         $this->buyingPrice = $buyingPrice;
+    }
+
+    public function bought(Money $unitCost): void
+    {
+        $this->reprice($this->sellingPrice, $unitCost);
+    }
+
+    public function alertBelow(int $threshold): void
+    {
+        if ($threshold < 0) {
+            throw InvalidProduct::negativeLowStockThreshold();
+        }
+
+        $this->lowStockThreshold = $threshold;
+    }
+
+    public function lowStockThreshold(): int
+    {
+        return $this->lowStockThreshold;
     }
 
     public function addVariant(string $variant): void

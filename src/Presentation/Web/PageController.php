@@ -57,6 +57,12 @@ final class PageController extends AbstractController
         return $this->page('EventDetailPage', 'Événement', ['eventId' => $id]);
     }
 
+    #[Route('/evenements/{id}/inventaire', name: 'event_stock_check', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function stockCheck(string $id): Response
+    {
+        return $this->page('StockCheckPage', 'Inventaire', ['eventId' => $id]);
+    }
+
     #[Route('/remises', name: 'discounts', methods: ['GET'])]
     public function discounts(): Response
     {

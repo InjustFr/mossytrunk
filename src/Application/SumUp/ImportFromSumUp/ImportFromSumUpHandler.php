@@ -6,6 +6,7 @@ namespace App\Application\SumUp\ImportFromSumUp;
 
 use App\Application\Order\OrderPricing;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Stock\StockKeeper;
 use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
@@ -42,6 +43,7 @@ final readonly class ImportFromSumUpHandler
         private WorkspaceContext $workspace,
         private WorkspaceSecrets $secrets,
         private OrderPricing $pricing,
+        private StockKeeper $stock,
     ) {
     }
 
@@ -52,6 +54,7 @@ final readonly class ImportFromSumUpHandler
         foreach ($this->sumUp->successfulPayments($this->credentials()) as $transaction) {
             $transactions[$transaction->code] ??= $transaction;
         }
+        uasort($transactions, static fn (SumUpTransaction $a, SumUpTransaction $b): int => $a->createdAt <=> $b->createdAt);
 
         $alreadyImported = array_flip($this->orders->importedSumUpTransactionCodes(array_keys($transactions)));
         $resolver = new SumUpProductResolver($this->products, $this->references, $this->types, $this->createType, $this->workspace);
@@ -90,6 +93,7 @@ final readonly class ImportFromSumUpHandler
                 continue;
             }
 
+            $items = $this->stock->withdraw($event, $items);
             $this->orders->add(Order::importFromSumUp(
                 $code,
                 $event,

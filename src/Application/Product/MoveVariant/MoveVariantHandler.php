@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\MoveVariant;
 
+use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRuleRepository;
@@ -21,6 +22,7 @@ final readonly class MoveVariantHandler
         private OrderRepository $orders,
         private DiscountRuleRepository $discountRules,
         private ProductReferenceGenerator $references,
+        private StockKeeper $stock,
         private Transaction $transaction,
         private WorkspaceContext $workspace,
     ) {
@@ -49,6 +51,7 @@ final readonly class MoveVariantHandler
         foreach ($this->orders->selling($source->id()) as $order) {
             $order->moveSales($source->id(), $variant, $to);
         }
+        $this->stock->move($source, $variant, $target, $targetVariant);
 
         if (null !== $variant) {
             $source->removeVariant($variant);

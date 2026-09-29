@@ -13,6 +13,8 @@ use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
+use App\Application\Stock\Restock\Restock;
+use App\Application\Stock\Restock\RestockHandler;
 use App\Application\SumUp\ImportFromSumUp\ImportFromSumUpHandler;
 use App\Application\SumUp\SumUpLine;
 use App\Application\SumUp\SumUpTransaction;
@@ -105,6 +107,30 @@ final class ImportFromSumUpTest extends KernelTestCase
         self::assertSame(1, $report->productsCreated, 'only Sticker Mousse is new');
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
         self::assertSame(3, $orders[0]->itemCount);
+    }
+
+    public function testImportedOrdersTakeTheirUnitsFromStockInChronologicalOrder(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $badge = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Badge', 300, 50));
+        self::getContainer()->get(RestockHandler::class)(new Restock($badge, null, 2, 100));
+        self::getContainer()->get(RestockHandler::class)(new Restock($badge, null, 2, 400));
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            new SumUpTransaction('TX-LATE', new \DateTimeImmutable('2030-03-14T15:00:00Z'), Money::cents(600), [new SumUpLine('Badge', Money::cents(300), 2)]),
+            new SumUpTransaction('TX-EARLY', new \DateTimeImmutable('2030-03-14T10:00:00Z'), Money::cents(600), [new SumUpLine('Badge', Money::cents(300), 2)]),
+        ]);
+
+        $this->import();
+        self::getContainer()->get('doctrine')->getManager()->clear();
+
+        $orders = self::getContainer()->get(ListOrdersHandler::class)();
+        $costs = [];
+        foreach ($orders as $order) {
+            $costs[$order->reference] = self::getContainer()->get(GetOrderHandler::class)($order->id)->costOfGoods;
+        }
+        self::assertSame(['TX-LATE' => 400, 'TX-EARLY' => 100], $costs);
+        $product = array_values(array_filter(self::getContainer()->get(ListProductsHandler::class)(), static fn ($view): bool => $view->id === $badge))[0];
+        self::assertSame(0, $product->onHand);
     }
 
     public function testProductWithVariantsButNoVariantInSumUpBlocksTheOrder(): void

@@ -17,6 +17,10 @@ use App\Domain\Order\OrderedItem;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\LotOrigin;
+use App\Domain\Stock\StockCheck;
+use App\Domain\Stock\StockCount;
+use App\Domain\Stock\StockItem;
 use App\Fixtures\Factory\DiscountRuleFactory;
 use App\Fixtures\Factory\EventFactory;
 use App\Fixtures\Factory\ProductFactory;
@@ -35,6 +39,9 @@ use function Zenstruck\Foundry\faker;
 final class ConventionSeasonStory extends Story
 {
     private Workspace $workspace;
+
+    /** @var array<string, StockItem> */
+    private array $stock = [];
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -103,9 +110,33 @@ final class ConventionSeasonStory extends Story
                 ->create(['workspace' => $workspace, 'name' => 'Salon fantastique', 'location' => 'Lille', 'period' => EventFactory::during('+20 days', '+21 days')]),
         ];
 
-        foreach ([$events[0], $events[1], $events[2]] as $index => $event) {
-            $this->sellDuring($event, $catalogue, $rules, [45, 25, 15][$index]);
+        $received = new \DateTimeImmutable('-100 days');
+        foreach ([...$stickers, $others[2], $others[3]] as $product) {
+            $this->receive($product, null, 150, $received);
         }
+        foreach ($prints as $product) {
+            foreach ($product->variants() as $variant) {
+                $this->receive($product, $variant, 12, $received);
+            }
+        }
+        foreach ($others[0]->variants() as $variant) {
+            $this->receive($others[0], $variant, 4, $received);
+        }
+        foreach ($others[1]->variants() as $variant) {
+            $this->receive($others[1], $variant, 15, $received);
+        }
+
+        $this->sellDuring($events[0], $catalogue, $rules, 45);
+        $this->receive($stickers[0], null, 100, new \DateTimeImmutable('-60 days'), 80);
+        $this->sellDuring($events[1], $catalogue, $rules, 25);
+        $this->sellDuring($events[2], $catalogue, $rules, 15);
+
+        $pins = $this->stockOf($others[2], null);
+        $forestA4 = $this->stockOf($prints[0], 'A4');
+        $this->entityManager->persist(StockCheck::take($events[2], new \DateTimeImmutable('-11 days'), [
+            new StockCount($pins, $pins->onHand() - 2, $others[2]->buyingPrice()),
+            new StockCount($forestA4, max(0, $forestA4->onHand()), $prints[0]->buyingPrice()),
+        ]));
 
         $this->entityManager->flush();
     }
@@ -126,6 +157,24 @@ final class ConventionSeasonStory extends Story
         ]);
     }
 
+    private function receive(Product $product, ?string $variant, int $quantity, \DateTimeImmutable $at, ?int $unitCost = null): void
+    {
+        $unitCost ??= $product->buyingPrice()->amount();
+        $this->stockOf($product, $variant)->receive($quantity, Money::cents($unitCost * $quantity), LotOrigin::Purchase, $at);
+        $product->bought(Money::cents($unitCost));
+    }
+
+    private function stockOf(Product $product, ?string $variant): StockItem
+    {
+        $key = $product->reference().'|'.$variant;
+        if (!isset($this->stock[$key])) {
+            $this->stock[$key] = StockItem::open($product, $variant);
+            $this->entityManager->persist($this->stock[$key]);
+        }
+
+        return $this->stock[$key];
+    }
+
     /**
      * @param list<Product>      $catalogue
      * @param list<DiscountRule> $rules
@@ -143,7 +192,8 @@ final class ConventionSeasonStory extends Story
             foreach (faker()->randomElements($catalogue, faker()->numberBetween(1, 3)) as $product) {
                 $variant = $product->hasVariants() ? faker()->randomElement($product->variants()) : null;
                 $quantity = str_starts_with($product->reference(), 'STI') ? faker()->numberBetween(1, 5) : 1;
-                $items[] = new OrderedItem($product->sellable($variant), $quantity);
+                $item = $product->sellable($variant);
+                $items[] = (new OrderedItem($item, $quantity))->costing($this->stockOf($product, $variant)->withdraw($quantity, $item->buyingPrice));
             }
 
             $basket = array_map(static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId), $items);

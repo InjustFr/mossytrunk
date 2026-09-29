@@ -28,6 +28,8 @@ final readonly class DashboardView
         public array $products,
         public array $types,
         public int $productsWithoutCost,
+        public int $productsLowOnStock = 0,
+        public int $productsOutOfStock = 0,
     ) {
     }
 }

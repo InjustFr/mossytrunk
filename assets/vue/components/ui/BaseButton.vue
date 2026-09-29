@@ -4,11 +4,14 @@ defineProps({
     type: { type: String, default: 'button' },
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
+    href: { type: String, default: null },
 });
 </script>
 
 <template>
+    <a v-if="href" :href="href" :class="['button', `button--${variant}`]"><slot /></a>
     <button
+        v-else
         :type="type"
         :class="['button', `button--${variant}`, { 'button--loading': loading }]"
         :disabled="disabled || loading"
@@ -20,6 +23,7 @@ defineProps({
 
 <style scoped>
 .button {
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;

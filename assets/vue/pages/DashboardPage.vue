@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue';
-import { TriangleAlert } from '@lucide/vue';
+import { TriangleAlert, PackageMinus } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -66,6 +66,14 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 <span>
                     {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} pas de prix d'achat : leur coût compte pour 0 €, le résultat est donc surestimé.
                     <a href="/produits?prix-achat=manquant">Renseigner les prix d'achat</a>
+                </span>
+            </p>
+            <p v-if="dashboard.productsLowOnStock + dashboard.productsOutOfStock > 0" class="dashboard-page__check" role="status">
+                <PackageMinus size="1rem" aria-hidden="true" />
+                <span>
+                    <template v-if="dashboard.productsOutOfStock > 0">{{ plural(dashboard.productsOutOfStock, 'produit a', 'produits ont') }} un stock négatif. </template>
+                    <template v-if="dashboard.productsLowOnStock > 0">{{ plural(dashboard.productsLowOnStock, 'produit arrive', 'produits arrivent') }} sous leur seuil de stock bas. </template>
+                    <a href="/produits?stock=bas">Voir les produits à réapprovisionner</a>
                 </span>
             </p>
             <ResultReceipt :title="`Résultat ${dashboard.year}`" :turnover="dashboard.total.turnover" :lines="receiptLines" :result="dashboard.total.result" result-test="year-result">

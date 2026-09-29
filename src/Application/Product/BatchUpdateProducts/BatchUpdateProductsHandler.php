@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\BatchUpdateProducts;
 
+use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductTypeRepository;
@@ -19,6 +20,7 @@ final readonly class BatchUpdateProductsHandler
     public function __construct(
         private ProductRepository $products,
         private ProductTypeRepository $types,
+        private StockKeeper $stock,
         private Transaction $transaction,
     ) {
     }
@@ -48,6 +50,7 @@ final readonly class BatchUpdateProductsHandler
                     $product->addVariant($variant);
                 }
             }
+            $this->stock->forgetUnsold($product);
         }
 
         $this->transaction->commit();

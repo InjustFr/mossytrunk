@@ -2,19 +2,19 @@
 import { computed, reactive, ref, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormField from '../ui/FormField.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantsInput from './VariantsInput.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
-    // Product being edited, or null to create one.
     product: { type: Object, default: null },
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, buyingPrice: 0, variants: [] });
+const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, buyingPrice: 0, variants: [], lowStockThreshold: 10 });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -36,6 +36,7 @@ watch(() => props.product, (product) => {
             sellingPrice: product.sellingPrice,
             buyingPrice: product.buyingPrice,
             variants: [...product.variants],
+            lowStockThreshold: product.lowStockThreshold,
         }
         : emptyForm());
     errors.value = {};
@@ -51,6 +52,7 @@ async function onSubmit() {
             sellingPrice: form.sellingPrice ?? -1,
             buyingPrice: form.buyingPrice ?? 0,
             variants: form.variants,
+            lowStockThreshold: form.lowStockThreshold ?? 0,
         });
         emit('saved', displayName.value);
         if (!isEditing.value) {
@@ -90,6 +92,10 @@ async function onSubmit() {
                     <BaseMoneyField v-model="form.buyingPrice" />
                 </FormField>
             </div>
+
+            <FormField as="group" label="Alerte stock bas" :error="errors.lowStockThreshold" hint="Le produit est signalé quand son stock (par variante) descend à ce seuil.">
+                <BaseNumberField v-model="form.lowStockThreshold" :min="0" label="Alerte stock bas" />
+            </FormField>
 
             <FormField as="group" label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
                 <VariantsInput v-model="form.variants" />

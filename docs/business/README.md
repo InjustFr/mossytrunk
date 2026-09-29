@@ -15,6 +15,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [discounts.md](discounts.md) | Discount rules (conditions, action, validity) and the automatic calculation |
 | [event-report.md](event-report.md) | Profitability of an event: Dépenses, Commandes, URSSAF 12.8 %, Total |
 | [dashboard.md](dashboard.md) | Results per month and per year |
+| [stock.md](stock.md) | Stock per sellable item in FIFO lots, low stock, inventory after an event and missing orders |
 | [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
 
 ## Glossary (UI term → code)
@@ -35,7 +36,10 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Condition | `Domain\Discount\DiscountCondition` | `quantity × product` or `quantity × type` |
 | Remise appliquée | `Domain\Discount\AppliedDiscount` | `{label, amount, ruleId}` snapshot stored on an order |
 | Sous-total / Total | `Order::subtotal()` / `total()` | Before / after discounts |
-| Coût d'achat | `Order::costOfGoods()` | Σ buying price × quantity |
+| Coût d'achat | `Order::costOfGoods()` | Σ line costs (units taken from stock, oldest lot first) |
+| Stock | `Domain\Stock\StockItem` | Units of one sellable item, in lots |
+| Lot | `Domain\Stock\StockLot` | Units received together at one cost |
+| Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |
 | Résultat | `EventResult::$result` | Turnover − cost of goods − expenses − URSSAF |

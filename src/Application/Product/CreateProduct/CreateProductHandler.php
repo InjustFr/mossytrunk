@@ -38,6 +38,7 @@ final readonly class CreateProductHandler
             $type,
         );
 
+        $product->alertBelow($command->lowStockThreshold);
         $this->products->add($product);
         $this->transaction->commit();
 

@@ -24,10 +24,10 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 | O3 | At least one line; quantities ≥ 1 | `Order`, `OrderLine`, `OrderPricing::items()` | `OrderTest`, `OrderUseCasesTest` |
 | O4 | Each line is a valid (product, variant) tuple: variant mandatory for products with variants, forbidden for unique products | `Product::sellable()` via `OrderPricing` | `ProductTest`, `OrderUseCasesTest` |
 | O5 | Identical tuples are merged into one line | `Order::addItem()` | `OrderTest` |
-| O6 | Names/prices/costs are snapshots: editing a product never changes past orders | `OrderLine` | `OrderTest` |
+| O6 | Names/prices/costs are snapshots: editing a product never changes past orders. A line stores its **total cost**, computed when the units are taken from stock (FIFO, see [stock.md](stock.md)) | `OrderLine`, `StockKeeper` | `OrderTest`, `StockUseCasesTest` |
 | O7 | Discount rules valid on the order's date are applied automatically to manual orders ([discounts](discounts.md)) | `OrderPricing::discounts()` | `OrderUseCasesTest` |
 | O8 | Discounts never exceed the subtotal | `Order::applyDiscounts()` | `OrderTest` |
-| O9 | `total = subtotal − discounts`; `costOfGoods = Σ unit buying price × qty`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
+| O9 | `total = subtotal − discounts`; `costOfGoods = Σ line costs`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |
 | O11 | Imported orders keep the SumUp transaction code (unique within the workspace) so re-importing never duplicates them | `Order::importFromSumUp()` | [sumup-import.md](sumup-import.md) |
 | O12 | Every order of the workspace can be deleted at once; products and events stay. A later SumUp import brings SumUp sales back | `DeleteAllOrdersHandler` | `DeleteAllOrdersTest` |

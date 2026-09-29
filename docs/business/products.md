@@ -8,7 +8,8 @@ A **product** is a real item sold at events: sticker, print, T-shirt, original a
 | `type` | Optional **product type** (Print, Sticker, T-shirt…) |
 | `name` | Specific name; the product is **displayed as « {type} {name} »** (type Print + name « Forêt » = « Print Forêt ») |
 | `sellingPrice` | Default price charged to customers (cents) |
-| `buyingPrice` | What one unit costs the business (cents). **0 = unknown** (e.g. after a SumUp import), editable later |
+| `buyingPrice` | What one unit costs the business (cents). **0 = unknown** (e.g. after a SumUp import), editable later; restocking sets it to the last purchase price (see [stock.md](stock.md)) |
+| `lowStockThreshold` | « Alerte stock bas », default 10 (see [stock.md](stock.md)) |
 | `variants` | Free-text labels (colour, size, design…). Empty list = **unique product** |
 
 Model: `src/Domain/Product/Product.php` (Doctrine entity), `ProductType.php`, `SellableItem.php`.

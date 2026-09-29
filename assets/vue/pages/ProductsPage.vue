@@ -9,10 +9,13 @@ import ProductFilters from '../components/products/ProductFilters.vue';
 import MoveVariantForm from '../components/products/MoveVariantForm.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import ProductList from '../components/products/ProductList.vue';
+import RestockForm from '../components/products/RestockForm.vue';
+import StockHistory from '../components/products/StockHistory.vue';
 import SelectionBar from '../components/products/SelectionBar.vue';
 import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
+import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { plural } from '../composables/usePlural.js';
 import { typeColors } from '../composables/useTypeColor.js';
@@ -21,6 +24,7 @@ const { products, load, create, update, batchUpdate, moveVariant, remove } = use
 const { types, load: loadTypes } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
+const { restock } = useStock();
 
 const colors = computed(() => typeColors(types.value.map((type) => type.name)));
 const modalOpen = ref(false);
@@ -28,6 +32,10 @@ const batchOpen = ref(false);
 const moving = ref(null);
 const moveOpen = computed({ get: () => moving.value !== null, set: (open) => { if (!open) moving.value = null; } });
 const editing = ref(null);
+const restocking = ref(null);
+const restockOpen = computed({ get: () => restocking.value !== null, set: (open) => { if (!open) restocking.value = null; } });
+const viewingStock = ref(null);
+const historyOpen = computed({ get: () => viewingStock.value !== null, set: (open) => { if (!open) viewingStock.value = null; } });
 
 const modalTitle = computed(() => (editing.value ? 'Modifier le produit' : 'Nouveau produit'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
@@ -52,6 +60,13 @@ async function onSaved(name) {
 async function onMoved({ variant, target }) {
     toast.success(variant ? `Déplacé vers « ${target} — ${variant} ».` : `Déplacé vers « ${target} ».`);
     moving.value = null;
+    await load();
+}
+
+async function onRestocked({ quantity, variant }) {
+    const name = restocking.value.displayName;
+    toast.success(`${plural(quantity, 'unité ajoutée', 'unités ajoutées')} au stock de « ${variant ? `${name} — ${variant}` : name} ».`);
+    restocking.value = null;
     await load();
 }
 
@@ -87,6 +102,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 v-model:type-id="filters.typeId.value"
                 v-model:search="filters.search.value"
                 v-model:missing-cost="filters.missingCost.value"
+                v-model:low-stock="filters.lowStock.value"
+                :low-stock-count="filters.lowStockCount.value"
                 :types="types"
                 :missing-cost-count="filters.missingCostCount.value"
                 :type-colors="colors"
@@ -100,6 +117,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 @toggle-all="filters.toggleAllVisible"
                 @edit="openEdit"
                 @move="moving = $event"
+                @restock="restocking = $event"
+                @history="viewingStock = $event"
                 @remove="onRemove"
             />
         </BaseCard>
@@ -111,6 +130,12 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         </BaseModal>
         <BaseModal v-model:open="moveOpen" :title="moving?.variants.length ? 'Déplacer une variante' : 'Faire une variante de ce produit'">
             <MoveVariantForm v-if="moving" :product="moving" :products="products" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
+        </BaseModal>
+        <BaseModal v-model:open="restockOpen" :title="`Réapprovisionner ${restocking?.displayName ?? ''}`">
+            <RestockForm v-if="restocking" :product="restocking" :submit="restock" @saved="onRestocked" @cancel="restocking = null" />
+        </BaseModal>
+        <BaseModal v-model:open="historyOpen" :title="`Stock de ${viewingStock?.displayName ?? ''}`">
+            <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
         <BaseModal v-model:open="batchOpen" title="Modifier la sélection">
             <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />

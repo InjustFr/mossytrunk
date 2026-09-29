@@ -12,7 +12,7 @@ use App\Domain\Order\OrderLine;
 final readonly class OrderView
 {
     /**
-     * @param list<array{productId: string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int}> $lines
+     * @param list<array{productId: string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
      * @param list<array{label: string, amount: int}>                                                               $discounts
      */
     public function __construct(
@@ -48,6 +48,7 @@ final readonly class OrderView
                 'unitPrice' => $line->unitPrice()->amount(),
                 'total' => $line->total()->amount(),
                 'unitCost' => $line->unitCost()->amount(),
+                'cost' => $line->cost()->amount(),
             ], $order->lines()),
             array_map(static fn (AppliedDiscount $discount): array => $discount->toArray(), $order->appliedDiscounts()),
             $order->subtotal()->amount(),

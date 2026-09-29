@@ -1,5 +1,6 @@
 <script setup>
 import { toRef } from 'vue';
+import { PackageSearch } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import SortableHeader from '../ui/SortableHeader.vue';
@@ -53,6 +54,13 @@ const headers = [
             <tr v-for="event in rows" :key="event.id">
                 <td>
                     <a :href="`/evenements/${event.id}`">{{ event.name }}</a>
+                    <PackageSearch
+                        v-if="event.unexplainedUnits > 0"
+                        class="event-comparison__missing"
+                        size="0.875rem"
+                        role="img"
+                        :aria-label="`Commande manquante probable (${event.unexplainedUnits})`"
+                    />
                     <span class="event-comparison__location">{{ event.location }}</span>
                 </td>
                 <td class="event-comparison__date">{{ formatDate(event.startDate) }}</td>
@@ -83,4 +91,5 @@ const headers = [
 .event-comparison__track { display: flex; width: 5rem; height: 0.375rem; overflow: hidden; border-radius: 0.1875rem; background: var(--color-border); }
 .event-comparison__track--loss { background: var(--color-danger-soft); box-shadow: inset 0 0 0 0.0625rem var(--color-danger); }
 .event-comparison__kept { background: var(--color-accent); }
+.event-comparison__missing { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

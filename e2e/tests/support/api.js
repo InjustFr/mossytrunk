@@ -34,3 +34,8 @@ export async function configureSumUp(request, { merchantCode = 'MCODE', apiKey =
     const response = await request.put('/api/workspace/settings/sumup', { data: { merchantCode, apiKey } });
     expect(response.status()).toBe(204);
 }
+
+export async function restock(request, product, { variant = null, quantity, totalPaid }) {
+    const response = await request.post('/api/stock/restock', { data: { productId: product.id, variant, quantity, totalPaid } });
+    expect(response.status()).toBe(204);
+}

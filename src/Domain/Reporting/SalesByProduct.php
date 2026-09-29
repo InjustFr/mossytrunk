@@ -27,7 +27,7 @@ final readonly class SalesByProduct
             foreach ($order->lines() as $line) {
                 $key = (string) $line->productId();
                 $products[$key] = ($products[$key] ?? new ProductSales($line->productName(), $line->productId(), $line->productName(), null, 0, Money::zero(), Money::zero(), false))
-                    ->add($line->quantity(), $line->total(), $line->cost(), $line->unitCost()->isZero());
+                    ->add($line->quantity(), $line->total(), $line->cost(), $line->cost()->isZero());
             }
         }
 

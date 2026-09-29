@@ -24,10 +24,11 @@ final readonly class EventSummaryView
         public int $urssaf,
         public int $result,
         public string $timing,
+        public int $unexplainedUnits = 0,
     ) {
     }
 
-    public static function of(Event $event, EventResult $result, EventTiming $timing): self
+    public static function of(Event $event, EventResult $result, EventTiming $timing, int $unexplainedUnits = 0): self
     {
         return new self(
             (string) $event->id(),
@@ -43,6 +44,7 @@ final readonly class EventSummaryView
             $result->urssaf->amount(),
             $result->result->amount(),
             $timing->value,
+            $unexplainedUnits,
         );
     }
 }

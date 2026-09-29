@@ -68,4 +68,9 @@ final class InvalidProduct extends DomainException
     {
         return new self(\sprintf('Code de type invalide « %s » (1 à 8 lettres majuscules ou chiffres).', $code));
     }
+
+    public static function negativeLowStockThreshold(): self
+    {
+        return new self('Le seuil de stock bas ne peut pas être négatif.');
+    }
 }

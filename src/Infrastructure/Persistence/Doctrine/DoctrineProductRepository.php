@@ -32,8 +32,12 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function get(Ulid $id): Product
     {
-        return $this->entityManager->getRepository(Product::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Produit', (string) $id);
+        $product = $this->entityManager->find(Product::class, $id);
+        if (null === $product || !$product->workspace()->id()->equals($this->workspace->current()->id())) {
+            throw NotFound::entity('Produit', (string) $id);
+        }
+
+        return $product;
     }
 
     public function findByReference(string $reference): ?Product
