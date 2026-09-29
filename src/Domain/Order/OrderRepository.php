@@ -36,6 +36,13 @@ interface OrderRepository
     public function importedSumUpTransactionCodes(array $transactionCodes): array;
 
     /**
+     * @param list<string> $receiptIds
+     *
+     * @return list<string>
+     */
+    public function importedEtsyReceiptIds(array $receiptIds): array;
+
+    /**
      * Number of orders of the event whose date falls outside the given period.
      */
     public function countOutside(Ulid $eventId, DateRange $period): int;

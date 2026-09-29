@@ -89,7 +89,7 @@ final readonly class GetProductHandler
                         'quantity' => -$line->quantity(),
                         'cost' => $line->cost()->amount(),
                         'link' => '/commandes/'.$order->id(),
-                        'label' => $order->event()->name(),
+                        'label' => $order->event()?->name() ?? 'Etsy',
                     ];
                 }
             }

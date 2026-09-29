@@ -36,8 +36,10 @@ onMounted(load);
         <div v-if="order" class="order-detail-page">
             <p class="order-detail-page__meta">
                 {{ formatDateTime(order.placedAt) }} ·
-                <a :href="`/evenements/${order.event.id}`">{{ order.event.name }}</a>
+                <a v-if="order.event" :href="`/evenements/${order.event.id}`">{{ order.event.name }}</a>
+                <template v-else>Boutique Etsy</template>
                 <span v-if="order.source === 'sumup'"> · importée de SumUp</span>
+                <span v-else-if="order.source === 'etsy'"> · importée d'Etsy</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
             </p>
             <div class="order-detail-page__grid">
@@ -46,7 +48,7 @@ onMounted(load);
                 </BaseCard>
                 <div class="order-detail-page__side">
                     <BaseCard title="Montant">
-                        <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :total="order.total" link-rules />
+                        <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :shipping="order.shipping" :total="order.total" link-rules />
                     </BaseCard>
                     <BaseCard title="Marge">
                         <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :margin="order.margin" />

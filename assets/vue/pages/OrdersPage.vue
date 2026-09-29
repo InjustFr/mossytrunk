@@ -8,6 +8,10 @@ import EventFilter from '../components/orders/EventFilter.vue';
 import OrderForm from '../components/orders/OrderForm.vue';
 import OrderList from '../components/orders/OrderList.vue';
 import SumUpImportProblem from '../components/orders/SumUpImportProblem.vue';
+import EtsyListingLinker from '../components/etsy/EtsyListingLinker.vue';
+import EtsyListingsNotice from '../components/etsy/EtsyListingsNotice.vue';
+import { useEtsy } from '../composables/useEtsy.js';
+import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
 import { useEvents } from '../composables/useEvents.js';
 import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
@@ -19,6 +23,9 @@ const { products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
 const toast = useToast();
 const sumUp = useSumUpImport();
+const etsy = useEtsy();
+const { settings, load: loadSettings } = useWorkspaceSettings();
+const linkerOpen = ref(false);
 const formOpen = ref(false);
 const lastPlacedId = ref(null);
 
@@ -35,20 +42,46 @@ async function importFromSumUp() {
     }
 }
 
+async function importFromEtsy() {
+    if (await etsy.run()) {
+        await load();
+    }
+}
+
+async function onListingLinked(listing) {
+    toast.success(`Annonce « ${listing.title} » associée.`);
+    await etsy.loadListings();
+}
+
+async function reimportEtsy() {
+    await importFromEtsy();
+    if (etsy.unlinked.value.length === 0) {
+        linkerOpen.value = false;
+    }
+}
+
 watch(eventFilter, load);
-onMounted(() => Promise.all([load(), loadProducts(), loadEvents()]));
+onMounted(async () => {
+    await Promise.all([load(), loadProducts(), loadEvents(), loadSettings()]);
+    if (settings.value?.etsy.connected) {
+        await etsy.loadListings();
+    }
+});
 </script>
 
 <template>
     <AppLayout title="Commandes">
         <template #actions>
             <BaseButton variant="secondary" :loading="sumUp.importing.value" @click="importFromSumUp">Importer depuis SumUp</BaseButton>
+            <BaseButton v-if="settings?.etsy.connected" variant="secondary" :loading="etsy.importing.value" @click="importFromEtsy">Importer depuis Etsy</BaseButton>
             <BaseButton @click="formOpen = true">Nouvelle commande</BaseButton>
         </template>
 
         <Transition name="orders-page__problem">
             <SumUpImportProblem v-if="sumUp.problem.value" class="orders-page__problem" :problem="sumUp.problem.value" @dismiss="sumUp.dismiss" />
         </Transition>
+
+        <EtsyListingsNotice v-if="etsy.unlinked.value.length" class="orders-page__problem" :count="etsy.unlinked.value.length" @open="linkerOpen = true" />
 
         <BaseCard>
             <template #actions>
@@ -57,6 +90,16 @@ onMounted(() => Promise.all([load(), loadProducts(), loadEvents()]));
             <OrderList :orders="orders" :highlight-id="lastPlacedId" />
         </BaseCard>
 
+        <BaseModal v-model:open="linkerOpen" title="Annonces Etsy">
+            <EtsyListingLinker
+                :listings="etsy.listings.value"
+                :products="products"
+                :submit="etsy.link"
+                :importing="etsy.importing.value"
+                @linked="onListingLinked"
+                @reimport="reimportEtsy"
+            />
+        </BaseModal>
         <BaseModal v-model:open="formOpen" title="Nouvelle commande" variant="drawer">
             <OrderForm :products="products" :submit="place" @placed="onPlaced" />
         </BaseModal>

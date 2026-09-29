@@ -37,4 +37,9 @@ final class InvalidAccount extends DomainException
     {
         return new self('La clé ne peut pas être vide.');
     }
+
+    public static function invalidEtsyKeystring(): self
+    {
+        return new self('La clé de l\'application Etsy (keystring) ne contient que des lettres et des chiffres.');
+    }
 }

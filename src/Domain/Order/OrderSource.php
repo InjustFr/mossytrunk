@@ -8,4 +8,5 @@ enum OrderSource: string
 {
     case Manual = 'manual';
     case SumUp = 'sumup';
+    case Etsy = 'etsy';
 }

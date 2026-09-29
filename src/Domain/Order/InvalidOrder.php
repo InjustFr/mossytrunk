@@ -26,6 +26,11 @@ final class InvalidOrder extends DomainException
         ));
     }
 
+    public static function negativeShipping(): self
+    {
+        return new self('Les frais de port ne peuvent pas être négatifs.');
+    }
+
     public static function empty(): self
     {
         return new self('Une commande doit contenir au moins un produit.');

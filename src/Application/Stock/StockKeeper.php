@@ -27,9 +27,9 @@ final readonly class StockKeeper
      *
      * @return list<OrderedItem>
      */
-    public function withdraw(Event $event, array $items): array
+    public function withdraw(?Event $event, array $items): array
     {
-        $checks = $this->checks->ofEvent($event->id());
+        $checks = null === $event ? [] : $this->checks->ofEvent($event->id());
 
         return array_map(function (OrderedItem $ordered) use ($checks): OrderedItem {
             $item = $ordered->item;

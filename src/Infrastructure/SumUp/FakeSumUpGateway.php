@@ -7,6 +7,7 @@ namespace App\Infrastructure\SumUp;
 use App\Application\SumUp\SumUpCredentials;
 use App\Application\SumUp\SumUpGateway;
 use App\Application\SumUp\SumUpTransaction;
+use App\Infrastructure\Http\Json;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -41,6 +42,6 @@ final class FakeSumUpGateway implements SumUpGateway
 
         $payload = json_decode((string) file_get_contents($this->fixture), true, flags: \JSON_THROW_ON_ERROR);
 
-        return array_map($this->mapper->transaction(...), SumUpJson::objects(SumUpJson::object($payload)['items'] ?? []));
+        return array_map($this->mapper->transaction(...), Json::objects(Json::object($payload)['items'] ?? []));
     }
 }

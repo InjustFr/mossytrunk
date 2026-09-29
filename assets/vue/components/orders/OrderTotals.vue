@@ -4,6 +4,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 defineProps({
     subtotal: { type: Number, required: true },
     discounts: { type: Array, required: true },
+    shipping: { type: Number, default: 0 },
     total: { type: Number, required: true },
     linkRules: { type: Boolean, default: false },
 });
@@ -24,6 +25,10 @@ defineProps({
                 <dd>− <MoneyAmount :cents="discount.amount" /></dd>
             </div>
         </TransitionGroup>
+        <div v-if="shipping > 0" class="order-totals__row">
+            <dt>Frais de port</dt>
+            <dd><MoneyAmount :cents="shipping" /></dd>
+        </div>
         <div class="order-totals__row order-totals__row--total">
             <dt>Total</dt>
             <dd><MoneyAmount :cents="total" data-test="order-total" /></dd>

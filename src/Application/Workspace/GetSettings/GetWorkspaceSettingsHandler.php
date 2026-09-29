@@ -23,6 +23,8 @@ final readonly class GetWorkspaceSettingsHandler
         return new WorkspaceSettingsView(
             $workspace->name(),
             SumUpSettingsView::of($workspace->sumUpMerchantCode(), $this->secrets->reveal($workspace, SecretName::SumUpApiKey)),
+            EtsySettingsView::of($workspace->etsyKeystring(), $this->secrets->reveal($workspace, SecretName::EtsySharedSecret), null === $workspace->etsyShopId() ? null : $workspace->etsyShopName()),
+            $workspace->declarationPeriodicity()->value,
         );
     }
 }

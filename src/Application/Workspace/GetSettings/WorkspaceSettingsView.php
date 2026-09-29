@@ -9,6 +9,8 @@ final readonly class WorkspaceSettingsView
     public function __construct(
         public string $name,
         public SumUpSettingsView $sumUp,
+        public EtsySettingsView $etsy,
+        public string $declarationPeriodicity,
     ) {
     }
 }

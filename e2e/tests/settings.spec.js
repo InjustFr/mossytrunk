@@ -7,7 +7,7 @@ test('save the SumUp credentials: the API key is never shown again', async ({ pa
 
     await page.getByLabel('Code marchand').fill('mc42');
     await page.getByLabel('Clé API').fill('sup_sk_settings_4321');
-    await page.getByRole('button', { name: 'Enregistrer' }).click();
+    await page.getByRole('button', { name: 'Enregistrer', exact: true }).click();
 
     await expect(page.getByTestId('toast')).toContainText('Paramètres SumUp enregistrés.');
     await expect(page.getByLabel('Code marchand')).toHaveValue('MC42');

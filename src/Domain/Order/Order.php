@@ -31,6 +31,7 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Table(name: '`order`')]
 #[ORM\Index(name: 'order_workspace_placed_at_idx', columns: ['workspace_id', 'placed_at'])]
 #[ORM\UniqueConstraint(name: 'order_workspace_sum_up_transaction_code', columns: ['workspace_id', 'sum_up_transaction_code'])]
+#[ORM\UniqueConstraint(name: 'order_workspace_etsy_receipt_id', columns: ['workspace_id', 'etsy_receipt_id'])]
 class Order
 {
     private const int SUMUP_ROUNDING_TOLERANCE_CENTS = 2;
@@ -47,8 +48,8 @@ class Order
     private Workspace $workspace;
 
     #[ORM\ManyToOne(targetEntity: Event::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    private Event $event;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Event $event;
 
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
     private \DateTimeImmutable $placedAt;
@@ -70,13 +71,19 @@ class Order
     #[ORM\Column(length: 16, nullable: true, enumType: PaymentMethod::class)]
     private ?PaymentMethod $paymentMethod = null;
 
+    #[ORM\Column(length: 32, nullable: true)]
+    private ?string $etsyReceiptId = null;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'shipping_')]
+    private Money $shipping;
+
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts
      */
-    private function __construct(string $reference, Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, OrderSource $source)
+    private function __construct(string $reference, Workspace $workspace, ?Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, OrderSource $source)
     {
-        if (!$event->covers($placedAt)) {
+        if (null !== $event && !$event->covers($placedAt)) {
             throw InvalidOrder::outsideEvent($event->name(), $placedAt);
         }
         if ([] === $items) {
@@ -86,7 +93,8 @@ class Order
         $this->id = new Ulid();
         $this->reference = $reference;
         $this->event = $event;
-        $this->workspace = $event->workspace();
+        $this->workspace = $workspace;
+        $this->shipping = Money::zero();
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
@@ -104,7 +112,7 @@ class Order
      */
     public static function place(Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts): self
     {
-        return new self(self::generateReference($placedAt), $event, $placedAt, $items, $discounts, OrderSource::Manual);
+        return new self(self::generateReference($placedAt), $event->workspace(), $event, $placedAt, $items, $discounts, OrderSource::Manual);
     }
 
     /**
@@ -114,13 +122,32 @@ class Order
      */
     public static function importFromSumUp(string $transactionCode, Event $event, \DateTimeImmutable $placedAt, array $items, Money $amountPaid, ?PaymentMethod $paymentMethod = null, array $ruleDiscounts = []): self
     {
-        $order = new self($transactionCode, $event, $placedAt, $items, [], OrderSource::SumUp);
+        $order = new self($transactionCode, $event->workspace(), $event, $placedAt, $items, [], OrderSource::SumUp);
         $order->sumUpTransactionCode = $transactionCode;
         $order->paymentMethod = $paymentMethod;
 
         $gap = $order->subtotal()->subtract($amountPaid);
         if ($gap->isPositive()) {
             $order->applyDiscounts(self::sumUpDiscounts($gap, $ruleDiscounts));
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param list<OrderedItem> $items
+     */
+    public static function importFromEtsy(Workspace $workspace, string $receiptId, \DateTimeImmutable $placedAt, array $items, Money $discount, Money $shipping): self
+    {
+        $order = new self('ETSY-'.$receiptId, $workspace, null, $placedAt, $items, [], OrderSource::Etsy);
+        $order->etsyReceiptId = $receiptId;
+        $order->paymentMethod = PaymentMethod::Card;
+        if ($shipping->isNegative()) {
+            throw InvalidOrder::negativeShipping();
+        }
+        $order->shipping = $shipping;
+        if ($discount->isPositive()) {
+            $order->applyDiscounts([new AppliedDiscount('Remise Etsy', $discount)]);
         }
 
         return $order;
@@ -138,7 +165,17 @@ class Order
 
     public function total(): Money
     {
-        return $this->subtotal()->subtract($this->discountTotal());
+        return $this->subtotal()->subtract($this->discountTotal())->add($this->shipping);
+    }
+
+    public function shipping(): Money
+    {
+        return $this->shipping;
+    }
+
+    public function etsyReceiptId(): ?string
+    {
+        return $this->etsyReceiptId;
     }
 
     /**
@@ -159,7 +196,7 @@ class Order
         return $this->reference;
     }
 
-    public function event(): Event
+    public function event(): ?Event
     {
         return $this->event;
     }

@@ -19,6 +19,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [supplier-orders.md](supplier-orders.md) | Suppliers, supplier orders, reception into stock at the real unit cost |
 | [designs.md](designs.md) | Designs and collections declined onto gabarits, validated into products |
 | [accounting.md](accounting.md) | URSSAF declarations per month or quarter, CSV export of orders |
+| [etsy-import.md](etsy-import.md) | Etsy shop connection, paid receipts as orders without event, listings linked to products |
 | [sumup-import.md](sumup-import.md) | Importing products and orders from SumUp, idempotency, single error message |
 
 ## Glossary (UI term → code)

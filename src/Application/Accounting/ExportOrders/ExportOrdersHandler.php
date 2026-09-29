@@ -15,7 +15,7 @@ use App\Domain\Shared\Money;
 
 final readonly class ExportOrdersHandler
 {
-    private const array HEADER = ['Référence', 'Date', 'Heure', 'Source', 'Événement', 'Paiement', 'Articles', 'Détail', 'Sous-total', 'Remises', 'Total encaissé', "Coût d'achat", 'Marge'];
+    private const array HEADER = ['Référence', 'Date', 'Heure', 'Source', 'Événement', 'Paiement', 'Articles', 'Détail', 'Sous-total', 'Remises', 'Frais de port', 'Total encaissé', "Coût d'achat", 'Marge'];
 
     public function __construct(
         private OrderRepository $orders,
@@ -43,12 +43,13 @@ final readonly class ExportOrdersHandler
                 $placedAt->format('d/m/Y'),
                 $placedAt->format('H:i'),
                 self::source($order->source()),
-                $order->event()->name(),
+                $order->event()?->name() ?? '',
                 self::payment($order->paymentMethod()),
                 (string) $order->itemCount(),
                 implode(', ', array_map(static fn (OrderLine $line): string => \sprintf('%d × %s', $line->quantity(), $line->label()), $order->lines())),
                 self::amount($order->subtotal()),
                 self::amount($order->discountTotal()),
+                self::amount($order->shipping()),
                 self::amount($order->total()),
                 self::amount($order->costOfGoods()),
                 self::amount($order->total()->subtract($order->costOfGoods())),
@@ -80,6 +81,7 @@ final readonly class ExportOrdersHandler
         return match ($source) {
             OrderSource::Manual => 'Saisie',
             OrderSource::SumUp => 'SumUp',
+            OrderSource::Etsy => 'Etsy',
         };
     }
 

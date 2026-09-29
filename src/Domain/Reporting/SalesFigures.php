@@ -9,7 +9,7 @@ use App\Domain\Shared\Money;
 
 /**
  * Profitability figures of a set of orders and expenses (an event, a month, a year):
- *   turnover = gross sales − discounts
+ *   turnover = gross sales − discounts + shipping charged
  *   URSSAF   = 12.8 % × turnover
  *   result   = turnover − cost of goods − expenses − URSSAF
  */
@@ -19,6 +19,7 @@ final readonly class SalesFigures
         public int $orderCount,
         public Money $grossSales,
         public Money $discounts,
+        public Money $shipping,
         public Money $turnover,
         public Money $costOfGoods,
         public Money $expenses,
@@ -34,7 +35,8 @@ final readonly class SalesFigures
     {
         $grossSales = Money::sum(array_map(static fn (Order $order): Money => $order->subtotal(), $orders));
         $discounts = Money::sum(array_map(static fn (Order $order): Money => $order->discountTotal(), $orders));
-        $turnover = $grossSales->subtract($discounts);
+        $shipping = Money::sum(array_map(static fn (Order $order): Money => $order->shipping(), $orders));
+        $turnover = $grossSales->subtract($discounts)->add($shipping);
         $costOfGoods = Money::sum(array_map(static fn (Order $order): Money => $order->costOfGoods(), $orders));
         $urssaf = UrssafContribution::on($turnover);
 
@@ -42,6 +44,7 @@ final readonly class SalesFigures
             \count($orders),
             $grossSales,
             $discounts,
+            $shipping,
             $turnover,
             $costOfGoods,
             $expenses,
@@ -64,6 +67,7 @@ final readonly class SalesFigures
             $this->orderCount + $other->orderCount,
             $this->grossSales->add($other->grossSales),
             $this->discounts->add($other->discounts),
+            $this->shipping->add($other->shipping),
             $this->turnover->add($other->turnover),
             $this->costOfGoods->add($other->costOfGoods),
             $this->expenses->add($other->expenses),
@@ -73,7 +77,7 @@ final readonly class SalesFigures
     }
 
     /**
-     * @return array{orderCount: int, grossSales: int, discounts: int, turnover: int, costOfGoods: int, expenses: int, urssaf: int, result: int}
+     * @return array{orderCount: int, grossSales: int, discounts: int, shipping: int, turnover: int, costOfGoods: int, expenses: int, urssaf: int, result: int}
      */
     public function toArray(): array
     {
@@ -81,6 +85,7 @@ final readonly class SalesFigures
             'orderCount' => $this->orderCount,
             'grossSales' => $this->grossSales->amount(),
             'discounts' => $this->discounts->amount(),
+            'shipping' => $this->shipping->amount(),
             'turnover' => $this->turnover->amount(),
             'costOfGoods' => $this->costOfGoods->amount(),
             'expenses' => $this->expenses->amount(),

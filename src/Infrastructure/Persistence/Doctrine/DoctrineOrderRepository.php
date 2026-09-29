@@ -45,7 +45,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         $query = $this->entityManager->createQueryBuilder()
             ->select('o', 'l', 'e')
             ->from(Order::class, 'o')
-            ->join('o.event', 'e')
+            ->leftJoin('o.event', 'e')
             ->leftJoin('o.lines', 'l')
             ->where('o.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
@@ -70,6 +70,25 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->setParameter('product', $productId, UlidType::NAME)
             ->getQuery()
             ->getResult();
+    }
+
+    public function importedEtsyReceiptIds(array $receiptIds): array
+    {
+        if ([] === $receiptIds) {
+            return [];
+        }
+
+        $ids = $this->entityManager->createQueryBuilder()
+            ->select('o.etsyReceiptId')
+            ->from(Order::class, 'o')
+            ->where('o.etsyReceiptId IN (:ids)')
+            ->andWhere('o.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('ids', $receiptIds, ArrayParameterType::STRING)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        return array_values(array_map(static fn (mixed $id): string => \is_scalar($id) ? (string) $id : '', $ids));
     }
 
     public function importedSumUpTransactionCodes(array $transactionCodes): array

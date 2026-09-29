@@ -59,6 +59,16 @@ final class OrderTest extends TestCase
         self::assertSame(83, $order->lines()[0]->unitCost()->amount());
     }
 
+    public function testAnEtsyOrderHasNoEventAndItsShippingCountsInTheTotal(): void
+    {
+        $order = Order::importFromEtsy(TestWorkspace::get(), '310', self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null)->at(Money::cents(450)), 2)], Money::cents(100), Money::cents(290));
+
+        self::assertNull($order->event());
+        self::assertSame(OrderSource::Etsy, $order->source());
+        self::assertSame('ETSY-310', $order->reference());
+        self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
+    }
+
     public function testSameProductVariantTupleIsMerged(): void
     {
         $order = Order::place($this->event, self::at('2026-07-10 15:00'), [

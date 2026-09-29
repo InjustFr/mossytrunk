@@ -13,6 +13,7 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\ValidityPeriod;
+use App\Domain\Etsy\EtsyListing;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
 use App\Domain\Order\Order;
@@ -146,6 +147,7 @@ final class ConventionSeasonStory extends Story
 
         $this->purchase($prints, $others[0]);
         $this->designs($sticker, $print, $stickers[0]);
+        $this->etsy($stickers, $prints[0]);
 
         $this->entityManager->flush();
     }
@@ -166,6 +168,27 @@ final class ConventionSeasonStory extends Story
         $product->bought(Money::cents($buying));
 
         return $product;
+    }
+
+    /**
+     * @param list<Product> $stickers
+     */
+    private function etsy(array $stickers, Product $forest): void
+    {
+        foreach ([[-40, $stickers[0], 3, 0, 350], [-25, $forest, 1, 150, 490], [-6, $stickers[3], 2, 0, 350]] as [$daysAgo, $product, $quantity, $discount, $shipping]) {
+            $variant = $product->hasVariants() ? 'A4' : null;
+            $item = $product->sellable($variant);
+            $placedAt = new \DateTimeImmutable(\sprintf('%d days 14:00', $daysAgo));
+            $this->entityManager->persist(Order::importFromEtsy(
+                $this->workspace,
+                (string) (3_100_000_000 + abs($daysAgo)),
+                $placedAt,
+                [(new OrderedItem($item, $quantity))->costing($this->stockOf($product, $variant)->withdraw($quantity, $item->buyingPrice))],
+                Money::cents($discount),
+                Money::cents($shipping),
+            ));
+        }
+        $this->entityManager->persist(EtsyListing::seen($this->workspace, '1500000042', 'Tote bag brodé mousse forestière — coton bio', 'Noir', new \DateTimeImmutable('-6 days')));
     }
 
     private function designs(ProductType $sticker, ProductType $print, Product $moss): void

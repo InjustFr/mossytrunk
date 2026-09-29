@@ -1,11 +1,12 @@
 # Orders (Commandes)
 
-An **order** is a sale made during an event.
+An **order** is a sale made during an event, or online on Etsy (then without event, see [etsy-import.md](etsy-import.md)).
 
 | Field | Meaning |
 |---|---|
 | `reference` | `CMD-YYYYMMDD-XXXXXX` for manual orders; the SumUp transaction code for imports |
-| `event` | The event the sale happened at (required) |
+| `event` | The event the sale happened at (required, except for Etsy orders) |
+| `shipping` | Shipping charged to the customer (Etsy), part of the total |
 | `placedAt` | Date-time of the sale (stored with time zone, displayed in Europe/Paris) |
 | `lines` | `(product ULID, variant)` tuple + quantity, with **snapshots** of product name, unit selling price and the **cost** of the units taken from stock |
 | `appliedDiscounts` | Snapshot list of `{label, amount, ruleId}` (`ruleId` null for « Remise SumUp » and older orders) |
@@ -19,7 +20,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`, `OrderS
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| O1 | An order always belongs to an event, and its date must fall within the event's days | `Order::__construct()` (`Event::covers()`) | `OrderTest` |
+| O1 | A manual or SumUp order always belongs to an event, and its date must fall within the event's days; an Etsy order has none | `Order::__construct()` (`Event::covers()`) | `OrderTest` |
 | O2 | **The event is deduced from the date** (events never overlap). No event at that date → the order is refused with « Aucun événement le … Créez d'abord l'événement » | `PlaceOrderHandler` (`EventRepository::findCovering()`) | `OrderUseCasesTest` |
 | O3 | At least one line; quantities ≥ 1 | `Order`, `OrderLine`, `OrderPricing::items()` | `OrderTest`, `OrderUseCasesTest` |
 | O4 | Each line is a valid (product, variant) tuple: variant mandatory for products with variants, forbidden for unique products | `Product::sellable()` via `OrderPricing` | `ProductTest`, `OrderUseCasesTest` |

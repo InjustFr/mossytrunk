@@ -14,6 +14,11 @@ const props = defineProps({
 
 const dayKey = (order) => `${order.placedAt.slice(0, 10)}|${order.eventId}`;
 
+const grouped = computed(() => [...props.orders].sort((a, b) => b.placedAt.slice(0, 10).localeCompare(a.placedAt.slice(0, 10))
+    || Number(a.eventId === null) - Number(b.eventId === null)
+    || (a.eventName ?? '').localeCompare(b.eventName ?? '')
+    || b.placedAt.localeCompare(a.placedAt)));
+
 const days = computed(() => {
     const totals = new Map();
     for (const order of props.orders) {
@@ -32,7 +37,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <template>
     <EmptyState v-if="orders.length === 0">Aucune commande.</EmptyState>
-    <DataTable v-else :items="orders" class="order-list">
+    <DataTable v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
                 <th>Heure</th>
@@ -48,7 +53,8 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                 <tr v-if="day" class="order-list__day">
                     <th scope="rowgroup" colspan="3">
                         <span class="order-list__date">{{ formatDay(order.placedAt) }}</span>
-                        <a class="order-list__event" :href="`/evenements/${order.eventId}`">{{ order.eventName }}</a>
+                        <a v-if="order.eventId" class="order-list__event" :href="`/evenements/${order.eventId}`">{{ order.eventName }}</a>
+                        <span v-else class="order-list__event order-list__event--online">Boutique Etsy</span>
                     </th>
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
                     <td class="order-list__day-count" colspan="2">{{ plural(day.count, 'commande') }}</td>
@@ -65,6 +71,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="order-list__reference">
                         <a :href="`/commandes/${order.id}`">{{ order.reference }}</a>
                         <span v-if="order.source === 'sumup'" class="order-list__badge">SumUp</span>
+                        <span v-else-if="order.source === 'etsy'" class="order-list__badge order-list__badge--etsy">Etsy</span>
                     </td>
                 </tr>
             </template>
@@ -110,4 +117,6 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
     from { background: var(--color-accent-soft); }
     to { background: transparent; }
 }
+.order-list__event--online { color: var(--color-muted); }
+.order-list__badge--etsy { background: var(--color-warning-soft); color: var(--color-warning); }
 </style>

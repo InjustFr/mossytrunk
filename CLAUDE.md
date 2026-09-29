@@ -1,6 +1,6 @@
 # MossyTrunk — project guide for Claude
 
-Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability), then **Stock** (FIFO lots, inventory after events), **Supplier orders** (ordered → received into stock) and **Designs** (declined onto gabarits, validated into products).
+Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, SumUp import, event profitability), then **Stock** (FIFO lots, inventory after events), **Supplier orders** (ordered → received into stock), **Designs** (declined onto gabarits, validated into products), **Accounting** (URSSAF declarations, CSV export) and **Etsy** sync (orders without event).
 UI language: **French**. Code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.
@@ -92,7 +92,7 @@ catalogue with variants, discount rules, past events with expenses and orders (d
 
 - Unit test (`tests/Unit`) every business rule (entities, value objects, domain services).
 - Functional test (`tests/Functional`) for every use-case handler (real DB, KernelTestCase) and API endpoints (WebTestCase).
-- Playwright (`e2e/tests`) for user journeys. In `test` env `SumUpGateway` is bound to `FakeSumUpGateway`.
+- Playwright (`e2e/tests`) for user journeys. In `test` env `SumUpGateway` is bound to `FakeSumUpGateway` and `EtsyGateway` to `FakeEtsyGateway` (fixture `tests/Fixtures/etsy/receipts.json`, fake OAuth that redirects straight to the callback).
 
 ## Git
 

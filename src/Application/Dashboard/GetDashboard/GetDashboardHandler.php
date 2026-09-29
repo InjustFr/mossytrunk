@@ -105,7 +105,10 @@ final readonly class GetDashboardHandler
     {
         $ordersByEvent = [];
         foreach ($orders as $order) {
-            $ordersByEvent[(string) $order->event()->id()][] = $order;
+            $event = $order->event();
+            if (null !== $event) {
+                $ordersByEvent[(string) $event->id()][] = $order;
+            }
         }
 
         $rows = [];

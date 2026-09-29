@@ -24,11 +24,16 @@ services:
 
     # SumUp: real API everywhere, fixture-based fake in the test env (PHPUnit + Playwright).
     App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\SumUpApiGateway'
+    App\Application\Etsy\EtsyGateway: '@App\Infrastructure\Etsy\EtsyApiGateway'
 
 when@test:
     services:
         App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\FakeSumUpGateway'
         App\Infrastructure\SumUp\FakeSumUpGateway:
+            autowire: true
+            public: true
+        App\Application\Etsy\EtsyGateway: '@App\Infrastructure\Etsy\FakeEtsyGateway'
+        App\Infrastructure\Etsy\FakeEtsyGateway:
             autowire: true
             public: true
         App\Tests\Support\EndToEndSessionStorageFactory:
