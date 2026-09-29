@@ -38,7 +38,7 @@ async function onSubmit() {
 <template>
     <form class="collection-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField label="Nom de la série" :error="errors.name">
+            <FormField label="Nom de la collection" :error="errors.name">
                 <input v-model="form.name" type="text">
             </FormField>
             <FormField label="Description" :error="errors.description">
@@ -46,7 +46,7 @@ async function onSubmit() {
             </FormField>
             <div class="collection-form__actions">
                 <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ collection ? 'Enregistrer' : 'Créer la série' }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ collection ? 'Enregistrer' : 'Créer la collection' }}</BaseButton>
             </div>
         </fieldset>
     </form>

@@ -53,7 +53,7 @@ async function onDesignSaved({ name, id }) {
 
 async function onCollectionSaved(name) {
     collectionOpen.value = false;
-    toast.success(editingCollection.value ? `Série « ${name} » mise à jour.` : `Série « ${name} » créée.`);
+    toast.success(editingCollection.value ? `Collection « ${name} » mise à jour.` : `Collection « ${name} » créée.`);
     await load();
 }
 
@@ -65,7 +65,7 @@ async function onBenchToggled(collection, current) {
 async function onValidateCollection(collection) {
     try {
         const { productsCreated } = await validateCollection(collection.id);
-        toast.success(`Série « ${collection.name} » sortie de l'atelier : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
+        toast.success(`Collection « ${collection.name} » sortie de l'atelier : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
         await load();
     } catch (error) {
         toast.error(error.message);
@@ -84,7 +84,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
     <AppLayout title="Créations">
         <template #actions>
             <BaseButton variant="secondary" @click="gabaritsOpen = true">Gabarits</BaseButton>
-            <BaseButton variant="secondary" @click="openCollection()">Nouvelle série</BaseButton>
+            <BaseButton variant="secondary" @click="openCollection()">Nouvelle collection</BaseButton>
             <BaseButton @click="newDesign()">Nouveau design</BaseButton>
         </template>
 
@@ -108,14 +108,14 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                         Sur l'établi
                     </label>
                 </header>
-                <DesignRows :designs="collection.designs" empty="Aucun design dans cette série." />
+                <DesignRows :designs="collection.designs" empty="Aucun design dans cette collection." />
                 <footer class="designs-page__collection-actions">
                     <BaseButton variant="ghost" @click="openCollection(collection)">Modifier</BaseButton>
                     <BaseButton variant="secondary" @click="newDesign(collection.id)">Ajouter un design</BaseButton>
                     <ConfirmButton
                         v-if="readyToValidate(collection)"
                         variant="primary"
-                        label="Sortir la série de l'atelier"
+                        label="Sortir la collection de l'atelier"
                         confirm-label="Valider"
                         :message="`Les ${plural(openDesigns(collection).length, 'design en cours', 'designs en cours')} de « ${collection.name} » deviennent des produits.`"
                         @confirm="onValidateCollection(collection)"
@@ -123,15 +123,15 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                 </footer>
             </BaseCard>
 
-            <BaseCard title="Hors série">
-                <DesignRows :designs="board.standalone" empty="Aucun design hors série." />
+            <BaseCard title="Sans collection">
+                <DesignRows :designs="board.standalone" empty="Aucun design sans collection." />
             </BaseCard>
         </div>
 
         <BaseModal v-model:open="designOpen" title="Nouveau design">
             <DesignForm :collections="collections" :gabarits="gabarits" :collection-id="designCollectionId" :submit="createDesign" @saved="onDesignSaved" @cancel="designOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="collectionOpen" :title="editingCollection ? 'Modifier la série' : 'Nouvelle série'">
+        <BaseModal v-model:open="collectionOpen" :title="editingCollection ? 'Modifier la collection' : 'Nouvelle collection'">
             <CollectionForm :collection="editingCollection" :submit="(payload) => saveCollection(editingCollection?.id, payload)" @saved="onCollectionSaved" @cancel="collectionOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="gabaritsOpen" title="Gabarits">

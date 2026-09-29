@@ -18,7 +18,7 @@ const form = reactive({ name: '', collectionId: '', notes: '', gabaritIds: [] })
 const errors = ref({});
 const saving = ref(false);
 
-const collectionOptions = computed(() => [{ value: '', label: 'Hors série' }, ...props.collections.map((c) => ({ value: c.id, label: c.name }))]);
+const collectionOptions = computed(() => [{ value: '', label: 'Sans collection' }, ...props.collections.map((c) => ({ value: c.id, label: c.name }))]);
 
 watch(() => [props.design, props.collectionId], () => {
     Object.assign(form, props.design
@@ -50,8 +50,8 @@ async function onSubmit() {
             <FormField label="Nom du design" :error="errors.name" hint="Il devient le nom des produits créés.">
                 <input v-model="form.name" type="text">
             </FormField>
-            <FormField as="group" label="Série" :error="errors.collectionId">
-                <BaseSelect v-model="form.collectionId" :options="collectionOptions" aria-label="Série" />
+            <FormField as="group" label="Collection" :error="errors.collectionId">
+                <BaseSelect v-model="form.collectionId" :options="collectionOptions" aria-label="Collection" />
             </FormField>
             <FormField v-if="!design && gabarits.length" as="group" label="Décliner sur" hint="Vous pourrez en ajouter ou en retirer ensuite.">
                 <ToggleGroupRoot v-model="form.gabaritIds" type="multiple" class="design-form__gabarits" aria-label="Gabarits">

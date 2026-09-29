@@ -47,7 +47,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Fournisseur | `Domain\Purchasing\Supplier` | Who products are bought from |
 | Commande fournisseur | `Domain\Purchasing\SupplierOrder` | Purchase from a supplier: ordered, then received into stock |
 | Gabarit | `Domain\Design\Gabarit` | Generic support (tirage 15×15, sticker brillant…) with default prices and adaptations |
-| Design / Série | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on (« sur l'établi »), alone or in a series; « sorti de l'atelier » once validated |
+| Design / Collection | `Domain\Design\Design`, `DesignCollection` | Illustration being worked on (« sur l'établi »), alone or in a collection; « sorti de l'atelier » once validated |
 | Déclinaison | `Domain\Design\Declination` | A design on a gabarit; becomes a product on validation |
 | Déclaration URSSAF | `Domain\Accounting\UrssafDeclaration` | A month or quarter marked declared, with the turnover declared |
 | Service connecté | `Domain\Integration\ServiceConnection` | An external service (SumUp, Etsy…) added to the workspace, with its access and import options |

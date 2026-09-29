@@ -209,7 +209,7 @@ final class ConventionSeasonStory extends Story
         $glossy = $this->gabarit('Sticker brillant', $sticker, 400, [], ['Détourage', 'Contour de découpe']);
         $this->gabarit('Sticker mat', $sticker, 450, [], ['Détourage', 'Contour de découpe', 'Contraste renforcé']);
 
-        $undergrowth = $this->persisted(DesignCollection::start($this->workspace, 'Sous-bois', 'Série d\'automne : champignons, lichens, fougères.'));
+        $undergrowth = $this->persisted(DesignCollection::start($this->workspace, 'Sous-bois', 'Collection d\'automne : champignons, lichens, fougères.'));
         $lichen = $this->persisted(Design::start($this->workspace, 'Lichen', $undergrowth, 'Palette vert-de-gris, texture papier.'));
         $lichenPrint = $lichen->decline($square);
         $lichen->tick($lichenPrint->id(), 'Recadrage carré', true);

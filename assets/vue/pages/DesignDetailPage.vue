@@ -99,8 +99,8 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
 
         <div v-if="design" class="design-page">
             <div class="design-page__meta">
-                <span v-if="design.collection">Série <strong>{{ design.collection.name }}</strong></span>
-                <span v-else>Hors série</span>
+                <span v-if="design.collection">Collection <strong>{{ design.collection.name }}</strong></span>
+                <span v-else>Sans collection</span>
                 <StatusBadge v-if="validated" tone="success">Sorti de l'atelier le {{ formatDateTime(design.validatedAt) }}</StatusBadge>
                 <label v-if="!validated" class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> Sur l'établi</label>
             </div>

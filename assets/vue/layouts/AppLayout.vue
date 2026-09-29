@@ -66,8 +66,8 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                         </NavigationMenuList>
                     </NavigationMenuRoot>
                     <div v-if="session" class="app-layout__account">
-                        <p class="app-layout__workspace">{{ session.workspace }}</p>
-                        <p class="app-layout__email">{{ session.email }}</p>
+                        <p class="app-layout__workspace" :title="session.workspace">{{ session.workspace }}</p>
+                        <p class="app-layout__email" :title="session.email">{{ session.email }}</p>
                         <form method="post" action="/deconnexion" data-turbo="false">
                             <input type="hidden" name="_csrf_token" :value="session.logoutToken">
                             <button type="submit" class="app-layout__logout">
@@ -140,6 +140,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     font-weight: 500;
     color: var(--color-muted);
     text-decoration: none;
+    white-space: nowrap;
     transition: color var(--transition), background var(--transition), border-color var(--transition);
 }
 
@@ -161,8 +162,10 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     font-size: 0.8rem;
 }
 
+.app-layout__workspace,
+.app-layout__email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .app-layout__workspace { margin: 0; font-weight: 600; color: var(--color-ink); }
-.app-layout__email { margin: 0 0 var(--space-2); color: var(--color-subtle); overflow-wrap: anywhere; }
+.app-layout__email { margin: 0 0 var(--space-2); color: var(--color-subtle); }
 
 .app-layout__logout {
     display: inline-flex;
