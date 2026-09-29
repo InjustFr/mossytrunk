@@ -131,6 +131,17 @@ class DiscountRule
         }
     }
 
+    public function withdrawProduct(Product $product): void
+    {
+        if (!$this->eligibleProducts->contains($product)) {
+            return;
+        }
+        if (1 === $this->eligibleProducts->count() && $this->eligibleTypes->isEmpty()) {
+            throw InvalidDiscountRule::onlyEligibleProduct($this->name, $product->displayName());
+        }
+        $this->eligibleProducts->removeElement($product);
+    }
+
     public function activate(): void
     {
         $this->active = true;

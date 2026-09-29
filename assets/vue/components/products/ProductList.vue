@@ -1,10 +1,11 @@
 <script setup>
 import { computed, toRef } from 'vue';
 import { VisuallyHidden } from 'reka-ui';
-import { FolderInput, Pencil, TriangleAlert } from '@lucide/vue';
+import { FolderInput, Pencil, Trash2, TriangleAlert } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
+import ConfirmButton from '../ui/ConfirmButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import SortableHeader from '../ui/SortableHeader.vue';
@@ -18,7 +19,7 @@ const props = defineProps({
     allSelected: { type: Boolean, default: false },
     typeColors: { type: Map, required: true },
 });
-const emit = defineEmits(['edit', 'move', 'toggle-all']);
+const emit = defineEmits(['edit', 'move', 'remove', 'toggle-all']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
 const knownCost = (product) => product.buyingPrice > 0;
@@ -105,6 +106,12 @@ function setChecked(id, checked) {
                 <td class="data-table__cell--actions">
                     <IconButton :icon="FolderInput" :label="product.variants.length ? `Déplacer une variante de ${product.displayName}` : `Faire de ${product.displayName} une variante`" @click="emit('move', product)" />
                     <IconButton :icon="Pencil" :label="`Modifier ${product.displayName}`" @click="emit('edit', product)" />
+                    <ConfirmButton
+                        :icon="Trash2"
+                        :label="`Supprimer ${product.displayName}`"
+                        message="Il disparaît du catalogue et des remises. Les commandes passées gardent leurs lignes."
+                        @confirm="emit('remove', product)"
+                    />
                 </td>
             </tr>
         </template>

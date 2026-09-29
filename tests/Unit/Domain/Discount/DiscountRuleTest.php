@@ -82,4 +82,18 @@ final class DiscountRuleTest extends TestCase
         self::assertSame([$new], $rule->eligibleProducts());
         self::assertSame([$other], $untouched->eligibleProducts());
     }
+
+    public function testAProductCanBeWithdrawnUnlessItIsTheOnlyOneTargeted(): void
+    {
+        $sticker = Product::create(TestWorkspace::get(), 'STI', 'Sticker', Money::cents(400));
+        $pin = Product::create(TestWorkspace::get(), 'PIN', 'Pin', Money::cents(400));
+        $both = DiscountRule::create(TestWorkspace::get(), '3 pour 10', [$sticker, $pin], 3, Money::cents(1_000));
+        $alone = DiscountRule::create(TestWorkspace::get(), '2 pins', [$pin], 2, Money::cents(700));
+
+        $both->withdrawProduct($pin);
+        self::assertSame([$sticker], $both->eligibleProducts());
+
+        $this->expectExceptionObject(InvalidDiscountRule::onlyEligibleProduct('2 pins', 'Pin'));
+        $alone->withdrawProduct($pin);
+    }
 }

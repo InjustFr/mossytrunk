@@ -7,6 +7,7 @@ namespace App\Presentation\Api\Product;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
+use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
@@ -66,5 +67,13 @@ final class ProductController extends AbstractController
     public function moveVariant(string $id, #[MapRequestPayload] MoveVariantPayload $payload, MoveVariantHandler $moveVariant): JsonResponse
     {
         return $this->json(['targetProductId' => (string) $moveVariant($payload->toCommand($id))]);
+    }
+
+    #[Route('/{id}', name: 'api_products_delete', requirements: ['id' => Requirement::ULID], methods: ['DELETE'])]
+    public function delete(string $id, DeleteProductHandler $deleteProduct): Response
+    {
+        $deleteProduct($id);
+
+        return new Response(status: Response::HTTP_NO_CONTENT);
     }
 }

@@ -17,7 +17,7 @@ import { useToast } from '../composables/useToast.js';
 import { plural } from '../composables/usePlural.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
-const { products, load, create, update, batchUpdate, moveVariant } = useProducts();
+const { products, load, create, update, batchUpdate, moveVariant, remove } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
@@ -55,6 +55,17 @@ async function onMoved({ variant, target }) {
     await load();
 }
 
+async function onRemove(product) {
+    try {
+        await remove(product.id);
+        toast.success(`Produit « ${product.displayName} » supprimé.`);
+        filters.selectedIds.value = filters.selectedIds.value.filter((id) => id !== product.id);
+        await load();
+    } catch (error) {
+        toast.error(error.message);
+    }
+}
+
 async function onBatchSaved(count) {
     toast.success(`${plural(count, 'produit mis à jour', 'produits mis à jour')}.`);
     batchOpen.value = false;
@@ -89,6 +100,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 @toggle-all="filters.toggleAllVisible"
                 @edit="openEdit"
                 @move="moving = $event"
+                @remove="onRemove"
             />
         </BaseCard>
 

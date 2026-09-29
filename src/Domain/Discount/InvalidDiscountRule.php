@@ -18,6 +18,11 @@ final class InvalidDiscountRule extends DomainException
         return new self('Choisissez au moins un type ou un produit concerné par la remise.');
     }
 
+    public static function onlyEligibleProduct(string $ruleName, string $productName): self
+    {
+        return new self(\sprintf('La remise « %s » ne concerne que « %s » : modifiez ou supprimez-la avant de supprimer le produit.', $ruleName, $productName));
+    }
+
     public static function bundleTooSmall(): self
     {
         return new self('Un lot doit contenir au moins 2 articles.');

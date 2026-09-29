@@ -138,3 +138,15 @@ test('the dashboard leads to the products whose buying price is missing', async 
     await expect(row).toContainText('6,00');
     await expect(row).toContainText('60 %');
 });
+
+test('delete a product', async ({ page, request }) => {
+    const doomed = await createProduct(request, { name: unique('Obsolète') });
+
+    await page.goto('/produits');
+    await page.getByLabel('Rechercher un produit').fill(doomed.name);
+    await page.getByRole('button', { name: `Supprimer ${doomed.name}` }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer ?' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText(`Produit « ${doomed.name} » supprimé.`);
+    await expect(page.getByRole('row').filter({ hasText: doomed.name })).toHaveCount(0);
+});
