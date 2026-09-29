@@ -21,7 +21,7 @@ Fill `.env`:
 
 | Variable | Value |
 |---|---|
-| `IMAGE` / `TAG` | Image to run, e.g. `docker.io/injustfr/mossytrunk` / `latest` or a commit tag |
+| `IMAGE` / `TAG` | Image to run, e.g. `docker.io/injust/mossytrunk` / `latest` or a commit tag |
 | `APP_PORT` | Host port the app listens on (the proxy targets it) |
 | `APP_BIND` | `0.0.0.0` when the proxy is on another machine, `127.0.0.1` when it runs on this server |
 | `TRUSTED_PROXIES` | Who may set `X-Forwarded-*`: the proxy IP/CIDR (e.g. `203.0.113.10`), `private_ranges`, or `REMOTE_ADDR` (trust whoever connects — only when a firewall lets nothing but the proxy reach `APP_PORT`) |
@@ -82,11 +82,21 @@ server {
 
 ## Update / rollback
 
+Every push to `main` publishes `docker.io/injust/mossytrunk:<short sha>` and `:latest` (GitHub Actions, [`.github/workflows/image.yml`](../.github/workflows/image.yml)). The image is public: the server pulls it without `docker login`.
+
+From a dev machine, once the Actions run for the commit is green:
+
+```bash
+make deploy DEPLOY_HOST=user@server DEPLOY_DIR=/path/to/mossytrunk      # add REMOTE_DOCKER="sudo -n docker" when docker needs sudo
+```
+
+It writes `IMAGE` and `TAG` (the current commit, override with `TAG=<sha>`) into the server `.env`, pulls the image and restarts the app. By hand on the server:
+
 ```bash
 TAG=<tag> docker compose pull app && TAG=<tag> docker compose up -d
 ```
 
-or set `TAG` in `.env`. `latest` is the most recent push; rolling back means starting a previous tag. Migrations only move forward: restore a backup before rolling back across a schema change.
+`latest` is the most recent push; rolling back means starting a previous tag. Migrations only move forward: restore a backup before rolling back across a schema change.
 
 ## Operations
 

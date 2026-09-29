@@ -1,44 +1,76 @@
 # MossyTrunk
 
-Small-business management app — module 1: **Order Management** (products, events & expenses, orders, bundle discounts, SumUp import, event profitability).
+Back-office for a small creative business that sells prints, stickers and illustrations at conventions and markets, and on Etsy. It follows the whole path of an item: from a design on the workbench to a product in the catalogue, into stock, sold at an event or online, and finally declared to the URSSAF.
 
-Symfony 8.1 · PHP 8.5 (FrankenPHP) · PostgreSQL 18 · Vue 3 via Symfony UX · PHPUnit · Playwright — all in Docker.
+The interface is in French; code, commits and documentation are in English.
+
+[![Image](https://github.com/InjustFr/mossytrunk/actions/workflows/image.yml/badge.svg)](https://github.com/InjustFr/mossytrunk/actions/workflows/image.yml)
+[![Docker Hub](https://img.shields.io/docker/v/injust/mossytrunk?label=docker.io%2Finjust%2Fmossytrunk&sort=date)](https://hub.docker.com/r/injust/mossytrunk)
+
+## Features
+
+| Area | What it does |
+|---|---|
+| **Designs** | Illustrations and series declined onto gabarits (print 15×15, glossy sticker…), validated into products |
+| **Catalogue** | Products, product types and variants, buying price taken from the last purchase |
+| **Events** | Conventions and markets with their period, location and expenses |
+| **Orders** | Order entry during or after an event, automatic bundle discounts, cost of goods and margin |
+| **Stock** | FIFO lots per sellable item, low-stock alerts, inventory after an event that flags probable missing orders |
+| **Supplier orders** | Ordered, then received into stock at the real unit cost |
+| **Reporting** | Profitability per event, results per month and per year |
+| **Accounting** | URSSAF declarations per month or quarter, CSV export of orders |
+| **Imports** | SumUp card payments and paid Etsy receipts turned into orders |
+| **Workspaces** | Invitation-only accounts, each business sees only its own data, API keys encrypted at rest |
+
+Business rules, with where they are modelled and which tests cover them: [`docs/business/`](docs/business/README.md).
+
+## Stack
+
+Symfony 8.1 · PHP 8.5 on FrankenPHP · Doctrine ORM 3 · PostgreSQL 18 · Vue 3 mounted by Symfony UX, Turbo Drive, Reka UI · PHPUnit 13 · Playwright · PHPStan level 10 · Deptrac. Everything runs in Docker.
+
+The backend follows an onion architecture (`Domain` → `Application` → `Infrastructure` / `Presentation`), enforced by Deptrac. Conventions are described in [`CLAUDE.md`](CLAUDE.md).
 
 ## Getting started
 
+Requirements: Docker with the Compose plugin, and `make`.
+
 ```bash
-make build up        # http://localhost:8080 (HTTP_PORT to change)
-make install         # composer + npm (first run)
-make fixtures        # database + mock data
+make build up        # http://localhost:8080 (set HTTP_PORT to change it)
+make install         # composer + npm, first run only
+make fixtures        # dev database with a season of mock data
 ```
 
-Sign in with `demo@mossytrunk.local` / `mossytrunk`. Other users: `docker compose exec php php bin/console app:user:create <email> --workspace=<name>` sends an invitation (emails: Mailpit on http://localhost:8025).
+Sign in with `demo@mossytrunk.local` / `mossytrunk` (workspace « Atelier Mousse »). A second workspace, `autre@mossytrunk.local` / `mossytrunk`, shows that data stays isolated.
 
-SumUp import: set the merchant code and API key in « Paramètres » (stored encrypted with `APP_ENCRYPTION_KEY`; generate one with `php bin/console app:encryption:generate-key`).
+New users are invited, there is no sign-up page:
+
+```bash
+docker compose exec php php bin/console app:user:create you@example.com --workspace="My shop"
+```
+
+Emails (invitations, password resets) land in Mailpit: http://localhost:8025.
+
+SumUp and Etsy keys are entered per workspace in « Paramètres » and stored encrypted with `APP_ENCRYPTION_KEY` (`php bin/console app:encryption:generate-key`).
 
 ## Quality
 
 ```bash
-make test      # PHPUnit unit + functional
-make deptrac   # onion layer rules
-make e2e       # Playwright (dedicated app container, fake SumUp)
-make qa        # all of the above
+make test        # PHPUnit, unit + functional
+make phpstan     # static analysis, level 10
+make deptrac     # onion layer rules
+make cs          # PHP-CS-Fixer (make cs-fix to apply)
+make e2e         # Playwright against a dedicated app container with fake SumUp and Etsy
+make qa          # all of the above
 ```
 
-## Deploy
+## Production image
 
-The `prod` target of the `Dockerfile` builds a self-contained image (vendor without dev deps, production assets, migrations run at boot). It is published on Docker Hub and run on the server with [`deploy/compose.yaml`](deploy/compose.yaml) + PostgreSQL.
+The `prod` stage of the [`Dockerfile`](Dockerfile) builds a self-contained image: vendor without dev dependencies, compiled assets, migrations run at boot. GitHub Actions publishes it on every push to `main` as `docker.io/injust/mossytrunk:<short sha>` and `:latest`.
+
+A server only needs [`deploy/`](deploy/): a Compose file running the image with PostgreSQL, and an `.env`. Setup, reverse proxy and backups: [`deploy/README.md`](deploy/README.md).
 
 ```bash
-docker login
-make push                                   # build linux/amd64 and push IMAGE:<git sha> + :latest
-make deploy DEPLOY_HOST=user@server         # push, copy deploy/ to ~/mossytrunk, pull and restart
-make image PLATFORM=linux/arm64             # local build only
+make deploy DEPLOY_HOST=user@server DEPLOY_DIR=/path/to/mossytrunk   # run the current commit's image on the server
+make image                                                            # build the production image locally
+make push                                                             # build and push by hand (docker login first)
 ```
-
-`IMAGE`, `TAG`, `PLATFORM`, `DEPLOY_DIR` are overridable. Server setup, port choice and reverse proxy: [`deploy/README.md`](deploy/README.md).
-
-## Documentation
-
-- Business rules: [`docs/business/`](docs/business/README.md)
-- Architecture & conventions: [`CLAUDE.md`](CLAUDE.md)

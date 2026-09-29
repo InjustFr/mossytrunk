@@ -1,6 +1,6 @@
 services:
   app:
-    image: ${IMAGE:-docker.io/injustfr/mossytrunk}:${TAG:-latest}
+    image: ${IMAGE:-docker.io/injust/mossytrunk}:${TAG:-latest}
     restart: unless-stopped
     depends_on:
       database:

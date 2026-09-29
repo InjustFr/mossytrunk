@@ -2,11 +2,12 @@ DC = docker compose
 PHP = $(DC) exec php
 CONSOLE = $(PHP) php bin/console
 
-IMAGE ?= docker.io/injustfr/mossytrunk
-TAG ?= $(shell git rev-parse --short HEAD)
+IMAGE ?= docker.io/injust/mossytrunk
+TAG ?= $(shell git rev-parse --short=7 HEAD)
 PLATFORM ?= linux/amd64
 DEPLOY_HOST ?=
 DEPLOY_DIR ?= mossytrunk
+REMOTE_DOCKER ?= docker
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
 .PHONY: up down build install assets db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e qa image push deploy deploy-files
@@ -76,7 +77,7 @@ qa: cs phpstan deptrac test e2e
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .
 
-push: ## Build and push the production image (run docker login first)
+push: ## Build and push the production image by hand (CI does it on every push to main; run docker login first)
 	$(BUILD) --push .
 
 deploy-files: ## Copy deploy/ (compose, env template, README) to DEPLOY_HOST:DEPLOY_DIR
@@ -84,6 +85,13 @@ deploy-files: ## Copy deploy/ (compose, env template, README) to DEPLOY_HOST:DEP
 	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
 	scp deploy/compose.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
 
-deploy: push deploy-files ## Push the image, then pull and restart it on DEPLOY_HOST
-	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_DIR) && test -f .env || { echo "Create $(DEPLOY_DIR)/.env from .env.dist first (see README.md)"; exit 1; }'
-	ssh $(DEPLOY_HOST) 'cd $(DEPLOY_DIR) && TAG=$(TAG) docker compose pull app && TAG=$(TAG) docker compose up -d'
+deploy: ## Run IMAGE:TAG (published by CI) on DEPLOY_HOST: write them to .env, pull, restart
+	@test -n "$(DEPLOY_HOST)" || { echo "Set DEPLOY_HOST=user@server"; exit 1; }
+	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
+		test -f .env || { echo "Create $(DEPLOY_DIR)/.env from .env.dist first (see README.md)"; exit 1; }; \
+		for pair in IMAGE=$(IMAGE) TAG=$(TAG); do \
+			key=$${pair%%=*}; \
+			if grep -q "^$$key=" .env; then sed -i "s|^$$key=.*|$$pair|" .env; else echo "$$pair" >> .env; fi; \
+		done; \
+		$(REMOTE_DOCKER) compose pull app; \
+		$(REMOTE_DOCKER) compose up -d'
