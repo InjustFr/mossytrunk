@@ -55,7 +55,7 @@ Enforced by `deptrac.yaml`. Rules:
 ## Accounts & security
 
 - Users (`Domain\Identity\User`) belong to one `Workspace`; no registration: `docker compose exec php php bin/console app:user:create <email> --workspace=<name>` emails an invitation link. Emails land in Mailpit: http://localhost:8025.
-- Symfony Security stays out of the Domain: `Infrastructure\Security\SecurityUser` wraps the domain user, `UserProvider` loads it. Session firewall with `form_login` on `/connexion`, CSRF-protected logout on `/deconnexion`, password pages under `/mot-de-passe`.
+- Symfony Security stays out of the Domain: `Infrastructure\Security\SecurityUser` wraps the domain user, `UserProvider` loads it. Session firewall with `form_login` on `/connexion` (sessions stored in PostgreSQL table `sessions` by `PdoSessionHandler` on the Doctrine connection, so deploys keep users signed in), CSRF-protected logout on `/deconnexion`, password pages under `/mot-de-passe`.
 - Auth pages are plain HTML POST forms (`data-turbo="false"`) rendered by Vue pages with `AuthLayout`; the signed-in user is exposed to `AppLayout` through `#app-session` (`composables/useSession.js`).
 - The JSON API uses the session cookie: `/api` answers 401 when signed out (`useApi` then goes to `/connexion`) and `SameOriginGuard` rejects cross-site writes.
 - **Workspace scoping**: every aggregate root (Product, ProductType, Event, DiscountRule) is created with a `Workspace` (`Order` takes its event's). Every Doctrine repository query filters on `WorkspaceContext::current()` (Application port, `SecurityWorkspaceContext` reads the signed-in user) — a new repository method must too. Unique constraints are per workspace.

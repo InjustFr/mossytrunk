@@ -26,6 +26,11 @@ services:
     App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\SumUpApiGateway'
     App\Application\Etsy\EtsyGateway: '@App\Infrastructure\Etsy\EtsyApiGateway'
 
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            - !service { class: PDO, factory: ['@doctrine.dbal.default_connection', 'getNativeConnection'] }
+            - { lock_mode: !php/const Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler::LOCK_ADVISORY }
+
 when@test:
     services:
         App\Application\SumUp\SumUpGateway: '@App\Infrastructure\SumUp\FakeSumUpGateway'
