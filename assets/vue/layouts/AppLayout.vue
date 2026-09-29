@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
+import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
 import ToastHost from '../components/ui/ToastHost.vue';
 import { useSession } from '../composables/useSession.js';
@@ -8,15 +8,26 @@ defineProps({
     title: { type: String, required: true },
 });
 
-const links = [
-    { href: '/tableau-de-bord', label: 'Tableau de bord', icon: LayoutDashboard },
-    { href: '/commandes', label: 'Commandes', icon: Receipt },
-    { href: '/evenements', label: 'Événements', icon: CalendarDays },
-    { href: '/creations', label: 'Créations', icon: Palette },
-    { href: '/produits', label: 'Produits', icon: Tag },
-    { href: '/commandes-fournisseurs', label: 'Fournisseurs', icon: Truck },
-    { href: '/remises', label: 'Remises', icon: Percent },
-    { href: '/parametres', label: 'Paramètres', icon: Settings },
+const groups = [
+    { label: null, links: [{ href: '/tableau-de-bord', label: 'Tableau de bord', icon: LayoutDashboard }] },
+    {
+        label: 'Ventes',
+        links: [
+            { href: '/commandes', label: 'Commandes', icon: Receipt },
+            { href: '/evenements', label: 'Événements', icon: CalendarDays },
+            { href: '/remises', label: 'Remises', icon: Percent },
+        ],
+    },
+    {
+        label: 'Atelier',
+        links: [
+            { href: '/creations', label: 'Créations', icon: Palette },
+            { href: '/produits', label: 'Produits', icon: Tag },
+            { href: '/commandes-fournisseurs', label: 'Fournisseurs', icon: Truck },
+        ],
+    },
+    { label: 'Gestion', links: [{ href: '/comptabilite', label: 'Comptabilité', icon: Landmark }] },
+    { label: null, bottom: true, links: [{ href: '/parametres', label: 'Paramètres', icon: Settings }] },
 ];
 
 const session = useSession();
@@ -33,15 +44,24 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                     <a class="app-layout__brand" href="/">mossytrunk</a>
                     <NavigationMenuRoot class="app-layout__menu" orientation="vertical" aria-label="Navigation principale">
                         <NavigationMenuList class="app-layout__nav">
-                            <NavigationMenuItem v-for="link in links" :key="link.href">
-                                <NavigationMenuLink
-                                    :href="link.href"
-                                    :active="isActive(link.href)"
-                                    :class="['app-layout__link', { 'app-layout__link--active': isActive(link.href) }]"
-                                >
-                                    <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
-                                    {{ link.label }}
-                                </NavigationMenuLink>
+                            <NavigationMenuItem
+                                v-for="(group, index) in groups"
+                                :key="group.label ?? index"
+                                :class="['app-layout__group', { 'app-layout__group--bottom': group.bottom }]"
+                            >
+                                <span v-if="group.label" :id="`nav-group-${index}`" class="app-layout__group-label">{{ group.label }}</span>
+                                <ul class="app-layout__group-links" :aria-labelledby="group.label ? `nav-group-${index}` : undefined">
+                                    <li v-for="link in group.links" :key="link.href">
+                                        <NavigationMenuLink
+                                            :href="link.href"
+                                            :active="isActive(link.href)"
+                                            :class="['app-layout__link', { 'app-layout__link--active': isActive(link.href) }]"
+                                        >
+                                            <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
+                                            {{ link.label }}
+                                        </NavigationMenuLink>
+                                    </li>
+                                </ul>
                             </NavigationMenuItem>
                         </NavigationMenuList>
                     </NavigationMenuRoot>
@@ -103,7 +123,13 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     text-decoration: none;
 }
 
-.app-layout__sidebar :deep(.app-layout__nav) { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.app-layout__menu { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.app-layout__menu :deep(> div) { display: flex; flex: 1; flex-direction: column; }
+.app-layout__sidebar :deep(.app-layout__nav) { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+.app-layout__group { display: flex; flex-direction: column; gap: var(--space-1); }
+.app-layout__group--bottom { margin-top: auto; }
+.app-layout__group-label { padding: 0 var(--space-3); color: var(--color-subtle); font-size: 0.75rem; font-weight: 600; }
+.app-layout__group-links { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 
 .app-layout__link {
     display: flex;
@@ -130,7 +156,6 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__link--active .app-layout__icon { color: var(--color-accent); }
 
 .app-layout__account {
-    margin-top: auto;
     padding: var(--space-4) var(--space-3) 0;
     border-top: 0.0625rem solid var(--color-border);
     font-size: 0.8rem;
@@ -191,7 +216,11 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     }
 
     .app-layout__menu { grid-column: 1 / -1; grid-row: 2; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-    .app-layout__sidebar :deep(.app-layout__nav) { flex-direction: row; flex-wrap: nowrap; }
+    .app-layout__sidebar :deep(.app-layout__nav) { flex-direction: row; flex-wrap: nowrap; gap: var(--space-1); }
+    .app-layout__group,
+    .app-layout__group-links { flex-direction: row; }
+    .app-layout__group--bottom { margin-top: 0; }
+    .app-layout__group-label { display: none; }
     .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); white-space: nowrap; }
     .app-layout__link--active { border-bottom-color: var(--color-accent); }
     .app-layout__account { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: var(--space-3); margin-top: 0; padding: 0; border-top: none; }
