@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Product\Product;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
@@ -59,6 +60,25 @@ class Declination
         $this->createdAt = new \DateTimeImmutable();
         $this->adaptations = $gabarit->adaptations();
         $this->adjust($design->name(), $gabarit->sellingPrice(), $gabarit->variants());
+    }
+
+    public function adopt(Product $product): void
+    {
+        $this->adjust($product->name(), $product->sellingPrice(), $product->variants());
+        $this->doneAdaptations = $this->adaptations;
+        $this->productId = $product->id();
+    }
+
+    public function isProduced(): bool
+    {
+        return null !== $this->productId;
+    }
+
+    public function assertEditable(): void
+    {
+        if ($this->isProduced()) {
+            throw InvalidDesign::declinationProduced($this->displayName());
+        }
     }
 
     /**

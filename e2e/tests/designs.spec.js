@@ -25,7 +25,7 @@ test('create a gabarit, decline a design on it, tick its adaptations and validat
     await page.getByRole('button', { name: 'Valider le design' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Créer les produits' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 produit créé');
-    await expect(card).toContainText('Produit créé');
+    await expect(card.getByRole('link', { name: 'Voir le produit' })).toBeVisible();
 
     await page.goto('/produits');
     await page.getByLabel('Rechercher un produit').fill(design);

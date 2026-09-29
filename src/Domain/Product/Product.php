@@ -7,6 +7,8 @@ namespace App\Domain\Product;
 use App\Domain\Identity\Workspace;
 use App\Domain\Shared\InvalidMoney;
 use App\Domain\Shared\Money;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -60,6 +62,11 @@ class Product
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    /** @var Collection<int, SellingPriceChange> */
+    #[ORM\OneToMany(targetEntity: SellingPriceChange::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['since' => 'ASC'])]
+    private Collection $priceHistory;
+
     #[ORM\Column(options: ['default' => self::DEFAULT_LOW_STOCK_THRESHOLD])]
     private int $lowStockThreshold = self::DEFAULT_LOW_STOCK_THRESHOLD;
 
@@ -71,6 +78,7 @@ class Product
         $this->id = $id;
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
+        $this->priceHistory = new ArrayCollection();
         $reference = trim($reference);
         if ('' === $reference) {
             throw InvalidProduct::emptyReference();
@@ -114,7 +122,20 @@ class Product
             throw InvalidMoney::mustNotBeNegative('Le prix de vente');
         }
 
+        if (isset($this->sellingPrice) && $this->sellingPrice->equals($sellingPrice)) {
+            return;
+        }
+
         $this->sellingPrice = $sellingPrice;
+        $this->priceHistory->add(new SellingPriceChange($this, $sellingPrice, new \DateTimeImmutable()));
+    }
+
+    /**
+     * @return list<SellingPriceChange>
+     */
+    public function priceHistory(): array
+    {
+        return array_values($this->priceHistory->toArray());
     }
 
     public function bought(Money $unitCost): void

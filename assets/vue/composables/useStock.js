@@ -9,6 +9,13 @@ export const LOT_ORIGINS = {
     return: 'Retour de commande',
 };
 
+export const MOVEMENTS = {
+    ...LOT_ORIGINS,
+    correction: 'Inventaire (surplus)',
+    sale: 'Vente',
+    loss: 'Inventaire (manquant)',
+};
+
 export function useStock() {
     const api = useApi();
 

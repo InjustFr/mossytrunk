@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Design;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Product\Product;
 use App\Domain\Shared\Money;
 use App\Domain\Shared\NotFound;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -84,25 +85,48 @@ class Design
         $this->current = $current && !$this->isValidated();
     }
 
+    public static function fromProduct(Workspace $workspace, Product $product, Gabarit $gabarit, ?DesignCollection $collection, \DateTimeImmutable $at): self
+    {
+        $design = new self($workspace, $product->name(), $collection, null);
+        $design->adopt($product, $gabarit, $at);
+
+        return $design;
+    }
+
     public function decline(Gabarit $gabarit): Declination
     {
-        $this->assertInProgress();
-        foreach ($this->declinations as $declination) {
-            if ($declination->isOn($gabarit)) {
-                throw InvalidDesign::alreadyDeclined($gabarit->name());
-            }
-        }
+        $this->assertNotDeclinedOn($gabarit);
 
         $declination = new Declination($this, $gabarit);
         $this->declinations->add($declination);
+        $this->status = DesignStatus::InProgress;
+        $this->current = true;
+
+        return $declination;
+    }
+
+    public function adopt(Product $product, Gabarit $gabarit, \DateTimeImmutable $at): Declination
+    {
+        $this->assertNotDeclinedOn($gabarit);
+
+        $declination = new Declination($this, $gabarit);
+        $declination->adopt($product);
+        $this->declinations->add($declination);
+        if ([] === $this->pendingDeclinations()) {
+            $this->markValidated($at);
+        }
 
         return $declination;
     }
 
     public function withdraw(Ulid $declinationId): void
     {
-        $this->assertInProgress();
-        $this->declinations->removeElement($this->declination($declinationId));
+        $declination = $this->declination($declinationId);
+        $declination->assertEditable();
+        $this->declinations->removeElement($declination);
+        if ([] === $this->pendingDeclinations() && [] !== $this->declinations()) {
+            $this->status = DesignStatus::Validated;
+        }
     }
 
     /**
@@ -110,14 +134,16 @@ class Design
      */
     public function adjust(Ulid $declinationId, string $productName, Money $sellingPrice, array $variants): void
     {
-        $this->assertInProgress();
-        $this->declination($declinationId)->adjust($productName, $sellingPrice, $variants);
+        $declination = $this->declination($declinationId);
+        $declination->assertEditable();
+        $declination->adjust($productName, $sellingPrice, $variants);
     }
 
     public function tick(Ulid $declinationId, string $adaptation, bool $done): void
     {
-        $this->assertInProgress();
-        $this->declination($declinationId)->tick($adaptation, $done);
+        $declination = $this->declination($declinationId);
+        $declination->assertEditable();
+        $declination->tick($adaptation, $done);
     }
 
     /**
@@ -125,30 +151,58 @@ class Design
      */
     public function validate(\DateTimeImmutable $validatedAt): array
     {
-        $this->assertInProgress();
-        $declinations = $this->declinations();
-        if ([] === $declinations) {
+        $pending = $this->pendingDeclinations();
+        if ([] === $pending) {
             throw InvalidDesign::nothingToValidate($this->name);
         }
 
         $names = [];
-        foreach ($declinations as $declination) {
-            $pending = \count($declination->pendingAdaptations());
-            if ($pending > 0) {
-                throw InvalidDesign::adaptationsPending($declination->displayName(), $pending);
-            }
+        foreach ($this->declinations() as $declination) {
             $key = mb_strtolower($declination->displayName());
             if (isset($names[$key])) {
                 throw InvalidDesign::sameProductTwice($declination->displayName());
             }
             $names[$key] = true;
         }
+        foreach ($pending as $declination) {
+            $count = \count($declination->pendingAdaptations());
+            if ($count > 0) {
+                throw InvalidDesign::adaptationsPending($declination->displayName(), $count);
+            }
+        }
 
+        $this->markValidated($validatedAt);
+
+        return $pending;
+    }
+
+    /**
+     * @return list<Declination>
+     */
+    public function pendingDeclinations(): array
+    {
+        return array_values(array_filter($this->declinations(), static fn (Declination $declination): bool => !$declination->isProduced()));
+    }
+
+    public function hasProducts(): bool
+    {
+        return \count($this->pendingDeclinations()) < \count($this->declinations());
+    }
+
+    private function markValidated(\DateTimeImmutable $at): void
+    {
         $this->status = DesignStatus::Validated;
-        $this->validatedAt = $validatedAt;
+        $this->validatedAt = $at;
         $this->current = false;
+    }
 
-        return $declinations;
+    private function assertNotDeclinedOn(Gabarit $gabarit): void
+    {
+        foreach ($this->declinations as $declination) {
+            if ($declination->isOn($gabarit)) {
+                throw InvalidDesign::alreadyDeclined($gabarit->name());
+            }
+        }
     }
 
     public function declination(Ulid $declinationId): Declination
@@ -165,13 +219,6 @@ class Design
     public function isValidated(): bool
     {
         return DesignStatus::Validated === $this->status;
-    }
-
-    private function assertInProgress(): void
-    {
-        if ($this->isValidated()) {
-            throw InvalidDesign::alreadyValidated($this->name);
-        }
     }
 
     public function id(): Ulid

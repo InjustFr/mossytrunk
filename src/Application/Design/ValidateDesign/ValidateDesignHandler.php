@@ -38,7 +38,7 @@ final readonly class ValidateDesignHandler
     {
         $created = 0;
         foreach ($this->designs->inCollection(Ulid::fromString($collectionId)) as $design) {
-            if (!$design->isValidated()) {
+            if ([] !== $design->pendingDeclinations()) {
                 $created += $this->produce($design);
             }
         }

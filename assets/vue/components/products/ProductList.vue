@@ -79,7 +79,7 @@ function setChecked(id, checked) {
                     />
                 </td>
                 <td class="product-list__name">
-                    {{ product.displayName }}
+                    <a :href="`/produits/${product.id}`">{{ product.displayName }}</a>
                     <span class="product-list__reference">{{ product.reference }}</span>
                 </td>
                 <td>

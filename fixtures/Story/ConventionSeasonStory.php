@@ -145,7 +145,7 @@ final class ConventionSeasonStory extends Story
         ]));
 
         $this->purchase($prints, $others[0]);
-        $this->designs($sticker, $print);
+        $this->designs($sticker, $print, $stickers[0]);
 
         $this->entityManager->flush();
     }
@@ -168,7 +168,7 @@ final class ConventionSeasonStory extends Story
         return $product;
     }
 
-    private function designs(ProductType $sticker, ProductType $print): void
+    private function designs(ProductType $sticker, ProductType $print, Product $moss): void
     {
         $gabarit = fn (string $name, ProductType $type, int $selling, array $variants, array $adaptations): Gabarit => $this->persisted(
             Gabarit::create($this->workspace, $name, $type, Money::cents($selling), $variants, $adaptations),
@@ -188,6 +188,7 @@ final class ConventionSeasonStory extends Story
         $cepe->tick($cepeSticker->id(), 'Contour de découpe', true);
 
         $this->persisted(Design::start($this->workspace, 'Héron', null, 'Idée de la brocante de Lyon.'))->workOn(false);
+        $this->persisted(Design::fromProduct($this->workspace, $moss, $glossy, $undergrowth, new \DateTimeImmutable('-30 days')));
     }
 
     /**

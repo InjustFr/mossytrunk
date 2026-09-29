@@ -6,6 +6,8 @@ namespace App\Tests\Functional\Application\Design;
 
 use App\Application\Design\AdjustDeclination\AdjustDeclination;
 use App\Application\Design\AdjustDeclination\AdjustDeclinationHandler;
+use App\Application\Design\DeclineDesign\DeclineDesignHandler;
+use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Design\DesignView;
 use App\Application\Design\GetDesign\GetDesignHandler;
 use App\Application\Design\ListDesigns\ListDesignsHandler;
@@ -18,16 +20,19 @@ use App\Application\Design\TickAdaptation\TickAdaptationHandler;
 use App\Application\Design\ValidateDesign\ValidateDesignHandler;
 use App\Application\Design\WorkOn\WorkOnHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Domain\Design\InvalidDesign;
 use App\Domain\Shared\NotFound;
 use App\Tests\Support\ActsAsUser;
+use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DesignUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
+    use CreatesProducts;
     private string $print;
     private string $sticker;
 
@@ -104,6 +109,28 @@ final class DesignUseCasesTest extends KernelTestCase
         $board = self::getContainer()->get(ListDesignsHandler::class)();
         self::assertFalse($board->standalone[0]->current);
         self::assertFalse($board->collections[0]['current']);
+    }
+
+    public function testAnExistingProductGetsItsDesignThenANewDeclination(): void
+    {
+        $productId = self::createProduct('Héron', 400, 60, ['5 cm']);
+        $designProduct = self::getContainer()->get(DesignProductHandler::class);
+
+        $designId = (string) $designProduct->create($productId, $this->sticker);
+        $this->clear();
+
+        self::assertSame(['id' => $designId, 'name' => 'Héron'], self::getContainer()->get(GetProductHandler::class)($productId)->design);
+        self::assertSame('validated', $this->view($designId)->status);
+
+        self::getContainer()->get(DeclineDesignHandler::class)($designId, $this->print);
+        $print = $this->view($designId)->declinations[1];
+        self::getContainer()->get(TickAdaptationHandler::class)($designId, $print['id'], 'Recadrage carré', true);
+        self::assertSame(1, self::getContainer()->get(ValidateDesignHandler::class)($designId));
+        $this->clear();
+
+        self::assertContains('Print Héron', array_map(static fn (ProductView $product): string => $product->displayName, self::getContainer()->get(ListProductsHandler::class)()));
+        $this->expectException(InvalidDesign::class);
+        $designProduct->create($productId, $this->print);
     }
 
     public function testDesignsBelongToTheWorkspace(): void

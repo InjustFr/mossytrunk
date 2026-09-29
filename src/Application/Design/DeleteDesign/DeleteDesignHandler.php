@@ -20,8 +20,8 @@ final readonly class DeleteDesignHandler
     public function __invoke(string $designId): void
     {
         $design = $this->designs->get(Ulid::fromString($designId));
-        if ($design->isValidated()) {
-            throw InvalidDesign::alreadyValidated($design->name());
+        if ($design->hasProducts()) {
+            throw InvalidDesign::designHasProducts($design->name());
         }
         $this->designs->remove($design);
         $this->transaction->commit();

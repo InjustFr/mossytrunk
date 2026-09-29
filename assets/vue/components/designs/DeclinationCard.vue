@@ -51,7 +51,7 @@ async function onSubmit() {
                 <h3 class="declination__gabarit">{{ declination.gabarit.name }}</h3>
                 <p class="declination__product">{{ declination.displayName }}</p>
             </div>
-            <StatusBadge v-if="declination.productId" tone="success">Produit créé</StatusBadge>
+            <a v-if="declination.productId" :href="`/produits/${declination.productId}`" class="declination__product-link">Voir le produit</a>
             <StatusBadge v-else-if="declination.ready" tone="success">Prête</StatusBadge>
             <StatusBadge v-else tone="warning">{{ declination.adaptations.length - declination.doneAdaptations.length }} à adapter</StatusBadge>
             <ConfirmButton
@@ -104,6 +104,7 @@ async function onSubmit() {
 .declination__checklist { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
 .declination__adaptation { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; }
 .declination__adaptation--done { color: var(--color-muted); text-decoration: line-through; }
+.declination__product-link { font-size: 0.85rem; white-space: nowrap; }
 .declination__none { margin: 0; color: var(--color-subtle); font-size: 0.85rem; }
 .declination__form { display: flex; flex-direction: column; gap: var(--space-3); }
 .declination__actions { display: flex; justify-content: flex-end; }

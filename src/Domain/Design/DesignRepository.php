@@ -14,6 +14,8 @@ interface DesignRepository
 
     public function remove(Design $design): void;
 
+    public function findByProduct(Ulid $productId): ?Design;
+
     /**
      * @return list<Design>
      */

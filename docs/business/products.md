@@ -63,6 +63,7 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | P15 | A product that is the **only condition** of a discount cannot be deleted: change or delete that discount first | `InvalidDiscountRule::onlyEligibleProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
 
 | P16 | Every product of the workspace can be deleted at once, like P14. Discounts with product conditions only are deleted with them; those also having type conditions keep those | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
+| P17 | Every selling price a product has had is kept with its date (creation, then each change; setting the same price records nothing). Products that existed before the history start with their current price at their creation date | `Product::reprice()`, `SellingPriceChange` | `ProductTest`, `GetProductTest` |
 
 UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` — « Zone de danger »: delete every product, behind a warning and a confirmation.
 
@@ -73,6 +74,8 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 | `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, variants[], lowStockThreshold?}` |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
+| `GetProduct` | `GET /api/products/{id}` → product figures, all-time sales, stock per variant with lots, movements (purchases, supplier receptions, returns, inventory surplus, sales, inventory losses; newest first), selling price history, design |
+| `DesignProduct` | `POST /api/products/{id}/design` `{gabaritId, designId?, collectionId?}` → `{designId}` (see [designs.md](designs.md) D8) |
 | `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
 | `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
@@ -83,3 +86,5 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 
 UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with a colour mark, one colour per type in alphabetical order), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
 Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).
+
+**Product page** `/produits/{id}` (`ProductDetailPage.vue`, product names in the list link to it): key figures (reference, type, variants, selling price, stock cost, margin, stock with badge, units sold this year and ever), « Stock » (lots per variant, oldest sold first), « Mouvements » (paginated timeline, links to the order, supplier order or event), « Prix de vente » (history, current price first with the change from the previous one) and « Design » (link to its design, or « Créer son design » / « Rattacher à un design »). Header: « Modifier », « Réapprovisionner ».

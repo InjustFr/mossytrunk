@@ -28,8 +28,10 @@ const editOpen = ref(false);
 
 const validated = computed(() => design.value?.status === 'validated');
 const available = computed(() => gabarits.value.filter((gabarit) => !design.value?.declinations.some((d) => d.gabarit.id === gabarit.id)));
-const ready = computed(() => design.value && design.value.declinations.length > 0 && design.value.declinations.every((d) => d.ready));
-const productNames = computed(() => design.value?.declinations.map((d) => d.displayName).join(', ') ?? '');
+const pending = computed(() => design.value?.declinations.filter((d) => !d.productId) ?? []);
+const hasProducts = computed(() => (design.value?.declinations.length ?? 0) > pending.value.length);
+const ready = computed(() => pending.value.length > 0 && pending.value.every((d) => d.ready));
+const productNames = computed(() => pending.value.map((d) => d.displayName).join(', '));
 
 async function run(action, success) {
     try {
@@ -81,15 +83,15 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
     <AppLayout :title="design?.name ?? 'Design'">
         <template #back><a class="back-link" href="/creations"><ArrowLeft size="0.875rem" aria-hidden="true" /> Créations</a></template>
         <template #actions>
-            <template v-if="design && !validated">
-                <ConfirmButton variant="ghost" label="Supprimer" :message="`Le design « ${design.name} » et ses déclinaisons seront supprimés.`" @confirm="onRemove" />
+            <template v-if="design">
+                <ConfirmButton v-if="!hasProducts" variant="ghost" label="Supprimer" :message="`Le design « ${design.name} » et ses déclinaisons seront supprimés.`" @confirm="onRemove" />
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
                 <ConfirmButton
                     v-if="ready"
                     variant="primary"
-                    label="Valider le design"
+                    :label="hasProducts ? 'Créer les nouveaux produits' : 'Valider le design'"
                     confirm-label="Créer les produits"
-                    :message="`Produits créés : ${productNames}. Les déclinaisons ne pourront plus changer.`"
+                    :message="`Produits créés : ${productNames}. Ces déclinaisons ne pourront plus changer.`"
                     @confirm="onValidate"
                 />
             </template>
@@ -100,11 +102,11 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
                 <span v-if="design.collection">Collection <strong>{{ design.collection.name }}</strong></span>
                 <span v-else>Design seul</span>
                 <StatusBadge v-if="validated" tone="success">Validé le {{ formatDateTime(design.validatedAt) }}</StatusBadge>
-                <label v-else class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> Sur l'établi</label>
+                <label v-if="!validated" class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> Sur l'établi</label>
             </div>
             <p v-if="design.notes" class="design-page__notes">{{ design.notes }}</p>
 
-            <div v-if="!validated" class="design-page__decline">
+            <div class="design-page__decline">
                 <span class="design-page__decline-label">Décliner sur</span>
                 <BaseButton v-for="gabarit in available" :key="gabarit.id" variant="secondary" @click="onDecline(gabarit)">
                     <Plus size="0.875rem" aria-hidden="true" /> {{ gabarit.name }}
@@ -119,7 +121,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
                     v-for="declination in design.declinations"
                     :key="declination.id"
                     :declination="declination"
-                    :locked="validated"
+                    :locked="Boolean(declination.productId)"
                     @tick="(adaptation, done) => onTick(declination, adaptation, done)"
                     :submit="(payload) => submitAdjustment(declination, payload)"
                     @withdraw="onWithdraw(declination)"

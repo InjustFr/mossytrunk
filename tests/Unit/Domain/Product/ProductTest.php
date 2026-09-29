@@ -112,4 +112,24 @@ final class ProductTest extends TestCase
         $this->expectException(InvalidProduct::class);
         $product->sellable('Blue');
     }
+
+    public function testSellingPriceChangesAreKeptInTheHistory(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+
+        $product->reprice(Money::cents(400));
+        $product->reprice(Money::cents(450));
+
+        self::assertSame([400, 450], array_map(static fn ($change): int => $change->price()->amount(), $product->priceHistory()));
+    }
+
+    public function testBuyingPriceStartsUnknownAndFollowsPurchases(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+        self::assertTrue($product->buyingPrice()->isZero());
+
+        $product->bought(Money::cents(90));
+
+        self::assertSame(90, $product->buyingPrice()->amount());
+    }
 }

@@ -21,4 +21,9 @@ interface StockCheckRepository
      * @return list<StockCheck>
      */
     public function withUnexplainedUnits(): array;
+
+    /**
+     * @return list<StockCheck>
+     */
+    public function counting(Ulid $productId): array;
 }

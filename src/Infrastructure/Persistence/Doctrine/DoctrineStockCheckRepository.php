@@ -53,6 +53,15 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
             ->getResult();
     }
 
+    public function counting(Ulid $productId): array
+    {
+        return $this->checks()
+            ->andWhere('EXISTS (SELECT 1 FROM '.StockCheck::class.' p JOIN p.lines pl WHERE p = c AND pl.productId = :product)')
+            ->setParameter('product', $productId, UlidType::NAME)
+            ->getQuery()
+            ->getResult();
+    }
+
     private function checks(): QueryBuilder
     {
         return $this->entityManager->createQueryBuilder()

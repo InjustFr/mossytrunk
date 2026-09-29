@@ -8,13 +8,16 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\DeleteAllProducts\DeleteAllProductsHandler;
+use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
+use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -47,6 +50,26 @@ final class ProductController extends AbstractController
     public function batch(#[MapRequestPayload] BatchProductsPayload $payload, BatchUpdateProductsHandler $batchUpdate): JsonResponse
     {
         return $this->json(['updated' => $batchUpdate($payload->toCommand())]);
+    }
+
+    #[Route('/{id}', name: 'api_products_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+    public function show(string $id, GetProductHandler $getProduct): JsonResponse
+    {
+        return $this->json($getProduct($id));
+    }
+
+    #[Route('/{id}/design', name: 'api_products_design', requirements: ['id' => Requirement::ULID], methods: ['POST'])]
+    public function design(string $id, Request $request, DesignProductHandler $designProduct): JsonResponse
+    {
+        $payload = $request->getPayload();
+        $gabaritId = (string) $payload->get('gabaritId');
+        $designId = $payload->get('designId');
+
+        $design = null === $designId || '' === $designId
+            ? $designProduct->create($id, $gabaritId, $payload->get('collectionId') ?: null)
+            : $designProduct->attach($id, (string) $designId, $gabaritId);
+
+        return $this->json(['designId' => (string) $design], Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'api_products_update', requirements: ['id' => Requirement::ULID], methods: ['PUT'])]

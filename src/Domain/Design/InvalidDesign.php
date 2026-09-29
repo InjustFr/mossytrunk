@@ -38,14 +38,24 @@ final class InvalidDesign extends DomainException
         return new self(\sprintf('Adaptation inconnue « %s ».', $adaptation));
     }
 
-    public static function alreadyValidated(string $design): self
+    public static function productAlreadyDesigned(string $product, string $design): self
     {
-        return new self(\sprintf('Le design « %s » est validé : ses déclinaisons ne changent plus.', $design));
+        return new self(\sprintf('« %s » appartient déjà au design « %s ».', $product, $design));
     }
 
     public static function nothingToValidate(string $design): self
     {
-        return new self(\sprintf('Déclinez « %s » sur au moins un gabarit avant de le valider.', $design));
+        return new self(\sprintf('Déclinez « %s » sur un nouveau gabarit avant de le valider.', $design));
+    }
+
+    public static function declinationProduced(string $declination): self
+    {
+        return new self(\sprintf('« %s » est déjà un produit : sa déclinaison ne change plus.', $declination));
+    }
+
+    public static function designHasProducts(string $design): self
+    {
+        return new self(\sprintf('« %s » a déjà donné des produits : il ne peut pas être supprimé.', $design));
     }
 
     public static function adaptationsPending(string $declination, int $count): self

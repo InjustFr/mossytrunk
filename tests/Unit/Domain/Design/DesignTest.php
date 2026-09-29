@@ -8,10 +8,12 @@ use App\Domain\Design\Design;
 use App\Domain\Design\DesignStatus;
 use App\Domain\Design\Gabarit;
 use App\Domain\Design\InvalidDesign;
+use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class DesignTest extends TestCase
 {
@@ -75,17 +77,50 @@ final class DesignTest extends TestCase
         Design::start(TestWorkspace::get(), 'Forêt')->validate(new \DateTimeImmutable());
     }
 
-    public function testValidatedDesignIsFrozenAndNoLongerCurrent(): void
+    public function testValidationFreezesTheProducedDeclinationsAndLeavesTheBench(): void
     {
         $design = $this->readyDesign();
 
         $declinations = $design->validate(new \DateTimeImmutable());
+        foreach ($declinations as $declination) {
+            $declination->linkProduct(new Ulid());
+        }
 
         self::assertCount(2, $declinations);
         self::assertSame(DesignStatus::Validated, $design->status());
         self::assertFalse($design->isCurrent());
         $this->expectException(InvalidDesign::class);
-        $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::cents(300)));
+        $design->tick($declinations[0]->id(), 'Recadrage carré', false);
+    }
+
+    public function testAValidatedDesignCanBeDeclinedAgainAndOnlyTheNewDeclinationIsProduced(): void
+    {
+        $design = $this->readyDesign();
+        foreach ($design->validate(new \DateTimeImmutable()) as $declination) {
+            $declination->linkProduct(new Ulid());
+        }
+
+        $card = $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::cents(300)));
+
+        self::assertSame(DesignStatus::InProgress, $design->status());
+        self::assertTrue($design->isCurrent());
+        self::assertSame([$card], $design->validate(new \DateTimeImmutable()));
+    }
+
+    public function testAnExistingProductBecomesAFinishedDesign(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STI-FORET', 'Forêt', Money::cents(450), ['5 cm'], $this->glossy->type());
+
+        $design = Design::fromProduct(TestWorkspace::get(), $product, $this->glossy, null, new \DateTimeImmutable());
+
+        self::assertSame('Forêt', $design->name());
+        self::assertSame(DesignStatus::Validated, $design->status());
+        self::assertFalse($design->isCurrent());
+        $declination = $design->declinations()[0];
+        self::assertTrue($declination->productId()->equals($product->id()));
+        self::assertSame(450, $declination->sellingPrice()->amount());
+        self::assertSame([], $declination->pendingAdaptations());
+        self::assertTrue($design->hasProducts());
     }
 
     public function testTwoDeclinationsCannotMakeTheSameProduct(): void

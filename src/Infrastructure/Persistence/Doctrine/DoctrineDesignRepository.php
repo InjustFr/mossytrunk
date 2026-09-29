@@ -41,6 +41,23 @@ final readonly class DoctrineDesignRepository implements DesignRepository
             ?? throw NotFound::entity('Design', (string) $id);
     }
 
+    public function findByProduct(Ulid $productId): ?Design
+    {
+        $id = $this->entityManager->createQueryBuilder()
+            ->select('d.id')
+            ->from(Design::class, 'd')
+            ->join('d.declinations', 'x')
+            ->where('d.workspace = :workspace')
+            ->andWhere('x.productId = :product')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('product', $productId, UlidType::NAME)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return null === $id ? null : $this->get($id['id']);
+    }
+
     public function inCollection(Ulid $collectionId): array
     {
         return $this->designs()
