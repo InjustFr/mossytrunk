@@ -52,6 +52,7 @@ final readonly class GetDashboardHandler
         }
 
         $sales = SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->ranked();
+        $typeNames = $this->typeNamesOf($sales);
 
         return new DashboardView(
             $year,
@@ -63,10 +64,11 @@ final readonly class GetDashboardHandler
             array_map(static fn (ProductSales $product): array => [
                 'id' => (string) $product->productId,
                 'name' => $product->productName,
+                'typeName' => $typeNames[(string) $product->productId] ?? null,
                 'quantity' => $product->quantity,
                 'sales' => $product->sales->amount(),
             ], \array_slice($sales, 0, self::TOP_PRODUCTS)),
-            $this->salesByType($sales),
+            $this->salesByType($sales, $typeNames),
             \count(array_filter($this->products->all(), static fn (Product $product): bool => $product->buyingPrice()->isZero())),
         );
     }
@@ -106,15 +108,26 @@ final readonly class GetDashboardHandler
     /**
      * @param list<ProductSales> $sales
      *
-     * @return list<array{name: ?string, quantity: int, sales: int}>
+     * @return array<string, string|null> type name by product id
      */
-    private function salesByType(array $sales): array
+    private function typeNamesOf(array $sales): array
     {
         $typeNames = [];
         foreach ($this->products->findByIds(array_map(static fn (ProductSales $product) => $product->productId, $sales)) as $product) {
             $typeNames[(string) $product->id()] = $product->type()?->name();
         }
 
+        return $typeNames;
+    }
+
+    /**
+     * @param list<ProductSales>         $sales
+     * @param array<string, string|null> $typeNames
+     *
+     * @return list<array{name: ?string, quantity: int, sales: int}>
+     */
+    private function salesByType(array $sales, array $typeNames): array
+    {
         $types = [];
         foreach ($sales as $product) {
             $name = $typeNames[(string) $product->productId] ?? null;

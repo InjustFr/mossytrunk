@@ -1,13 +1,17 @@
 <script setup>
+import { useId } from 'vue';
+
+const titleId = useId();
+
 defineProps({
     title: { type: String, default: null },
 });
 </script>
 
 <template>
-    <section class="card">
+    <section class="card" :aria-labelledby="title ? titleId : null">
         <header v-if="title || $slots.actions" class="card__header">
-            <h2 v-if="title" class="card__title">{{ title }}</h2>
+            <h2 v-if="title" :id="titleId" class="card__title">{{ title }}</h2>
             <div class="card__actions"><slot name="actions" /></div>
         </header>
         <slot />
@@ -33,8 +37,6 @@ defineProps({
 
 .card__title {
     margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
     color: var(--color-ink);
 }
 

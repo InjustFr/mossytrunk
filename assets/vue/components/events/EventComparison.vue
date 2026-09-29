@@ -13,6 +13,7 @@ const props = defineProps({
 
 const margin = (event) => (event.turnover ? event.result / event.turnover : null);
 const perDay = (event) => Math.round(event.result / event.days);
+const keptShare = (event) => (event.turnover > 0 ? Math.max(0, Math.min(1, event.result / event.turnover)) * 100 : 0);
 
 const columns = {
     name: (event) => event.name,
@@ -60,7 +61,14 @@ const headers = [
                 <td class="data-table__cell--number"><MoneyAmount :cents="event.turnover" /></td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="event.expensesTotal" /></td>
                 <td class="data-table__cell--number event-comparison__result"><MoneyAmount :cents="event.result" signed :data-test="`event-result-${event.id}`" /></td>
-                <td class="data-table__cell--number">{{ formatRatio(event.result, event.turnover) }}</td>
+                <td class="data-table__cell--number">
+                    <span class="event-comparison__margin">
+                        <span :class="['event-comparison__track', { 'event-comparison__track--loss': event.result < 0 }]" aria-hidden="true">
+                            <span class="event-comparison__kept" :style="{ width: `${keptShare(event)}%` }" />
+                        </span>
+                        {{ formatRatio(event.result, event.turnover) }}
+                    </span>
+                </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="perDay(event)" /></td>
             </tr>
         </template>
@@ -71,4 +79,8 @@ const headers = [
 .event-comparison__location { display: block; color: var(--color-muted); font-size: 0.8rem; }
 .event-comparison__date { white-space: nowrap; }
 .event-comparison__result { font-weight: 600; }
+.event-comparison__margin { display: inline-flex; align-items: center; gap: var(--space-2); }
+.event-comparison__track { display: flex; width: 5rem; height: 0.375rem; overflow: hidden; border-radius: 0.1875rem; background: var(--color-border); }
+.event-comparison__track--loss { background: var(--color-danger-soft); box-shadow: inset 0 0 0 0.0625rem var(--color-danger); }
+.event-comparison__kept { background: var(--color-accent); }
 </style>

@@ -13,7 +13,7 @@ const emit = defineEmits(['delete-orders', 'delete-products']);
         </p>
         <div class="delete-all-data__row">
             <div>
-                <p class="delete-all-data__title">Toutes les commandes</p>
+                <h3 class="delete-all-data__title">Toutes les commandes</h3>
                 <p class="delete-all-data__detail">Le chiffre d'affaires et les marges des événements repartent de zéro. Un import SumUp pourra ramener les ventes SumUp.</p>
             </div>
             <ConfirmButton
@@ -26,7 +26,7 @@ const emit = defineEmits(['delete-orders', 'delete-products']);
         </div>
         <div class="delete-all-data__row">
             <div>
-                <p class="delete-all-data__title">Tous les produits</p>
+                <h3 class="delete-all-data__title">Tous les produits</h3>
                 <p class="delete-all-data__detail">Les commandes passées gardent leurs lignes. Les remises par lot qui ne listent que des produits sont supprimées aussi.</p>
             </div>
             <ConfirmButton
@@ -61,6 +61,6 @@ const emit = defineEmits(['delete-orders', 'delete-products']);
     padding-top: var(--space-4);
     border-top: 0.0625rem solid var(--color-border);
 }
-.delete-all-data__title { margin: 0; font-weight: 600; }
+.delete-all-data__title { margin: 0; }
 .delete-all-data__detail { margin: var(--space-1) 0 0; max-width: 36rem; color: var(--color-muted); font-size: 0.9rem; }
 </style>

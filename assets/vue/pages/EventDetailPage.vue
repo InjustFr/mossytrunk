@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
-import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import EventForm from '../components/events/EventForm.vue';
 import EventHeader from '../components/events/EventHeader.vue';
@@ -12,12 +11,14 @@ import ExpenseForm from '../components/events/ExpenseForm.vue';
 import ExpenseList from '../components/events/ExpenseList.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useToast } from '../composables/useToast.js';
+import { useTypeColors } from '../composables/useTypeColor.js';
 
 const props = defineProps({
     eventId: { type: String, required: true },
 });
 
 const { event, report, load, update, addExpense, reviseExpense, removeExpense } = useEvent(props.eventId);
+const { colors: typeColors, load: loadTypes } = useTypeColors();
 const toast = useToast();
 const editOpen = ref(false);
 const expenseOpen = ref(false);
@@ -48,7 +49,7 @@ async function onExpenseRemoved(expense) {
     await load();
 }
 
-onMounted(load);
+onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>
@@ -64,11 +65,14 @@ onMounted(load);
         <div v-if="event" class="event-detail-page">
             <EventHeader :event="event" />
 
-            <EventReport v-if="report" :report="report" :event-id="event.id" :upcoming="event.timing === 'upcoming'" />
-
-            <BaseCard title="Dépenses" class="event-detail-page__expenses">
-                <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
-            </BaseCard>
+            <EventReport :report="report" :event-id="event.id" :upcoming="event.timing === 'upcoming'" :type-colors="typeColors">
+                <template #aside>
+                    <section class="event-detail-page__expenses" aria-labelledby="event-expenses">
+                        <h3 id="event-expenses" class="event-detail-page__expenses-title">Dépenses</h3>
+                        <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
+                    </section>
+                </template>
+            </EventReport>
         </div>
 
         <BaseModal v-model:open="editOpen" title="Modifier l'événement">
@@ -82,5 +86,5 @@ onMounted(load);
 
 <style scoped>
 .event-detail-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.event-detail-page__expenses { max-width: 40rem; }
+.event-detail-page__expenses-title { margin: 0 0 var(--space-2); font-size: 1.2rem; color: var(--color-muted); }
 </style>

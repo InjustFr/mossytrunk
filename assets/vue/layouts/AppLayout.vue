@@ -29,7 +29,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
             <div class="app-layout">
                 <aside class="app-layout__sidebar">
                     <a class="app-layout__brand" href="/">mossytrunk</a>
-                    <NavigationMenuRoot orientation="vertical" aria-label="Navigation principale">
+                    <NavigationMenuRoot class="app-layout__menu" orientation="vertical" aria-label="Navigation principale">
                         <NavigationMenuList class="app-layout__nav">
                             <NavigationMenuItem v-for="link in links" :key="link.href">
                                 <NavigationMenuLink
@@ -179,19 +179,21 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     .app-layout__sidebar {
         position: static;
         height: auto;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
-        flex-wrap: wrap;
-        gap: var(--space-3);
-        padding: var(--space-3) var(--space-4);
+        gap: var(--space-2) var(--space-3);
+        padding: var(--space-3) var(--space-4) 0;
         border-right: none;
         border-bottom: 0.0625rem solid var(--color-border);
     }
 
-    .app-layout__sidebar :deep(.app-layout__nav) { flex-direction: row; flex-wrap: wrap; }
-    .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); }
+    .app-layout__menu { grid-column: 1 / -1; grid-row: 2; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .app-layout__sidebar :deep(.app-layout__nav) { flex-direction: row; flex-wrap: nowrap; }
+    .app-layout__link { border-left: none; border-bottom: 0.125rem solid transparent; padding: var(--space-2); white-space: nowrap; }
     .app-layout__link--active { border-bottom-color: var(--color-accent); }
-    .app-layout__account { margin-top: 0; margin-left: auto; padding: 0; border-top: none; }
+    .app-layout__account { grid-column: 2; grid-row: 1; display: flex; align-items: center; gap: var(--space-3); margin-top: 0; padding: 0; border-top: none; }
+    .app-layout__workspace,
     .app-layout__email { display: none; }
     .app-layout__main { padding: var(--space-4); }
 }

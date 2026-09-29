@@ -9,6 +9,7 @@ const props = defineProps({
     report: { type: Object, required: true },
     eventId: { type: String, required: true },
     upcoming: { type: Boolean, default: false },
+    typeColors: { type: Map, required: true },
 });
 
 const rate = (value) => `${String(value).replace('.', ',')} %`;
@@ -26,6 +27,7 @@ const lines = computed(() => [
         <h2 class="event-report__title">Dépenses engagées</h2>
         <p class="event-report__committed"><MoneyAmount :cents="report.total.expenses" /></p>
         <p class="event-report__summary">Pas encore de ventes. Le bilan se remplira avec les commandes de l'événement.</p>
+        <div class="event-report__aside"><slot name="aside" /></div>
     </section>
     <ResultReceipt
         v-else
@@ -41,6 +43,7 @@ const lines = computed(() => [
                 <template v-if="report.orders.count > 0">{{ plural(report.orders.count, 'commande') }}</template>
                 <template v-else>Aucune commande.</template>
             </p>
+            <div class="event-report__aside"><slot name="aside" /></div>
         </template>
 
         <template #detail-turnover>
@@ -48,7 +51,7 @@ const lines = computed(() => [
                 <div class="event-report__line"><dt>Ventes brutes</dt><dd><MoneyAmount :cents="report.orders.grossSales" /></dd></div>
                 <div class="event-report__line"><dt>Remises accordées</dt><dd><MoneyAmount :cents="report.orders.discounts ? -report.orders.discounts : 0" /></dd></div>
             </dl>
-            <OrderRecap :groups="report.orders.groups" />
+            <OrderRecap :groups="report.orders.groups" :type-colors="typeColors" />
             <p class="event-report__more"><a :href="`/commandes?event=${eventId}`">Voir les commandes</a></p>
         </template>
     </ResultReceipt>
@@ -56,6 +59,8 @@ const lines = computed(() => [
 
 <style scoped>
 .event-report__summary { margin: 0; color: var(--color-muted); }
+.event-report__aside { margin-top: var(--space-6); }
+.event-report__aside:empty { display: none; }
 
 .event-report--upcoming {
     padding: var(--space-6);
@@ -64,7 +69,7 @@ const lines = computed(() => [
     border-radius: var(--radius);
 }
 
-.event-report__title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-muted); }
+.event-report__title { margin: 0; font-size: 1.2rem; color: var(--color-muted); }
 .event-report__committed { margin: var(--space-1) 0; font-family: var(--font-display); font-size: 2.5rem; line-height: 1.1; }
 
 .event-report__figures { display: flex; flex-direction: column; gap: var(--space-1); margin: 0 0 var(--space-2); padding: 0; }

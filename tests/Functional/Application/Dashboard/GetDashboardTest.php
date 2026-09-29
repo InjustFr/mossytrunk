@@ -52,7 +52,7 @@ final class GetDashboardTest extends KernelTestCase
         self::assertSame(3_000, $dashboard->byYear[1]['turnover']);
         self::assertSame(['Japan Expo'], array_column($dashboard->events, 'name'));
         self::assertSame($dashboard->total['result'], $dashboard->events[0]['result']);
-        self::assertSame([['id' => $print, 'name' => 'Print', 'quantity' => 10, 'sales' => 15_000]], $dashboard->products);
+        self::assertSame([['id' => $print, 'name' => 'Print', 'typeName' => null, 'quantity' => 10, 'sales' => 15_000]], $dashboard->products);
         self::assertSame([['name' => null, 'quantity' => 10, 'sales' => 15_000]], $dashboard->types);
     }
 

@@ -4,9 +4,11 @@ import { ChevronRight, TriangleAlert } from '@lucide/vue';
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import TypeMark from '../ui/TypeMark.vue';
 
 defineProps({
     groups: { type: Array, required: true },
+    typeColors: { type: Map, required: true },
 });
 
 const STORAGE_KEY = 'mossytrunk.orderRecap.visible';
@@ -39,7 +41,7 @@ watch(visible, (value) => {
                 <CollapsibleRoot v-for="group in groups" :key="group.type" class="order-recap__group">
                     <CollapsibleTrigger class="order-recap__row order-recap__row--group">
                         <ChevronRight class="order-recap__chevron" size="0.875rem" aria-hidden="true" />
-                        <span class="order-recap__label">{{ group.type }}</span>
+                        <span class="order-recap__label order-recap__label--type"><TypeMark :color="typeColors.get(group.type)" />{{ group.type }}</span>
                         <span class="order-recap__quantity">{{ group.quantity }} art.</span>
                         <MoneyAmount class="order-recap__amount" :cents="group.sales" />
                     </CollapsibleTrigger>
@@ -108,6 +110,7 @@ button.order-recap__row:hover { background: #fafaf8; }
 button.order-recap__row:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 
 .order-recap__row--group { font-weight: 600; }
+.order-recap__label--type { display: inline-flex; align-items: center; gap: var(--space-2); }
 .order-recap__row--product { padding-left: var(--space-4); }
 .order-recap__row--leaf { grid-template-columns: minmax(0, 1fr) 4.375rem 6.25rem; padding-left: calc(var(--space-4) + 0.9375rem + var(--space-2)); }
 .order-recap__row--variant { grid-template-columns: minmax(0, 1fr) 4.375rem 6.25rem; padding-left: calc(var(--space-6) + 0.9375rem + var(--space-2)); color: var(--color-muted); }

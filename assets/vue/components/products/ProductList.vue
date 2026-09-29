@@ -9,7 +9,7 @@ import ConfirmButton from '../ui/ConfirmButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import SortableHeader from '../ui/SortableHeader.vue';
-import TypeMark from './TypeMark.vue';
+import TypeMark from '../ui/TypeMark.vue';
 import { formatRatio } from '../../composables/useMoney.js';
 import { useSort } from '../../composables/useSort.js';
 
@@ -75,7 +75,7 @@ function setChecked(id, checked) {
                         @update:model-value="setChecked(product.id, $event)"
                     />
                 </td>
-                <td>
+                <td class="product-list__name">
                     {{ product.displayName }}
                     <span class="product-list__reference">{{ product.reference }}</span>
                 </td>
@@ -84,7 +84,7 @@ function setChecked(id, checked) {
                 </td>
                 <td>
                     <span v-if="product.variants.length === 0" class="product-list__muted">Unique</span>
-                    <span v-else>{{ product.variants.join(', ') }}</span>
+                    <span v-else class="product-list__variants" :title="product.variants.join(', ')">{{ product.variants.join(', ') }}</span>
                 </td>
                 <td class="data-table__cell--number">
                     <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" aria-label="Prix d'achat à renseigner" role="img" />
@@ -122,6 +122,10 @@ function setChecked(id, checked) {
 .product-list__row { transition: background var(--transition); }
 .product-list__row--selected { background: var(--color-accent-soft); }
 .product-list__check { width: 2rem; }
+.data-table.product-list :deep(th),
+.data-table.product-list :deep(td) { padding-left: var(--space-2); padding-right: var(--space-2); }
+.product-list__name { min-width: 11rem; }
+.product-list__variants { display: block; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product-list__reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .product-list__type { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .product-list__muted { color: var(--color-subtle); }

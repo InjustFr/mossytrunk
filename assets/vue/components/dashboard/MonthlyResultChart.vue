@@ -9,8 +9,21 @@ const props = defineProps({
 
 const hovered = ref(null);
 
+const active = (month) => month.result !== 0 || month.turnover !== 0;
+
+const visibleMonths = computed(() => {
+    const first = props.months.findIndex(active);
+    if (first === -1) {
+        return props.months;
+    }
+    const last = props.months.findLastIndex(active);
+    return props.months.slice(first, last + 1);
+});
+
+const columns = computed(() => ({ gridTemplateColumns: `repeat(${visibleMonths.value.length}, minmax(0, 1fr))` }));
+
 const scale = computed(() => {
-    const values = props.months.map((m) => m.result);
+    const values = visibleMonths.value.map((m) => m.result);
     const max = Math.max(0, ...values);
     const min = Math.min(0, ...values);
     const span = max - min || 1;
@@ -28,10 +41,10 @@ const barStyle = (result) => {
 
 <template>
     <figure class="monthly-chart" aria-label="Résultat par mois">
-        <div class="monthly-chart__plot" role="list">
+        <div class="monthly-chart__plot" role="list" :style="columns">
             <div class="monthly-chart__zero" :style="{ top: `${scale.zero}%` }" aria-hidden="true" />
             <div
-                v-for="month in months"
+                v-for="month in visibleMonths"
                 :key="month.month"
                 class="monthly-chart__slot"
                 role="listitem"
@@ -56,8 +69,8 @@ const barStyle = (result) => {
                 </div>
             </div>
         </div>
-        <div class="monthly-chart__axis" aria-hidden="true">
-            <span v-for="month in months" :key="month.month">{{ MONTHS[month.month - 1] }}</span>
+        <div class="monthly-chart__axis" aria-hidden="true" :style="columns">
+            <span v-for="month in visibleMonths" :key="month.month">{{ MONTHS[month.month - 1] }}</span>
         </div>
     </figure>
 </template>
@@ -68,7 +81,6 @@ const barStyle = (result) => {
 .monthly-chart__plot {
     position: relative;
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
     gap: var(--space-2);
     height: 12.5rem;
     margin-bottom: var(--space-5);
@@ -81,7 +93,7 @@ const barStyle = (result) => {
 .monthly-chart__slot:focus-visible { background: var(--color-bg); }
 .monthly-chart__slot:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
-.monthly-chart__bar { position: absolute; left: 22%; right: 22%; }
+.monthly-chart__bar { position: absolute; left: 50%; width: min(56%, 3.5rem); transform: translateX(-50%); }
 .monthly-chart__bar--gain { background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }
 .monthly-chart__bar--loss { background: var(--color-danger); border-radius: 0 0 0.25rem 0.25rem; }
 
@@ -117,7 +129,6 @@ const barStyle = (result) => {
 
 .monthly-chart__axis {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
     gap: var(--space-2);
     text-align: center;
     font-size: 0.75rem;

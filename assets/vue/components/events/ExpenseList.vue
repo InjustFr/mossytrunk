@@ -42,3 +42,7 @@ const emit = defineEmits(['edit', 'remove']);
         </template>
     </DataTable>
 </template>
+
+<style scoped>
+.expense-list :deep(.data-table__table) { min-width: 0; }
+</style>

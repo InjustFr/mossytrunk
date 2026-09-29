@@ -41,8 +41,8 @@ defineProps({
 .button--primary { background: var(--color-accent); color: #fff; }
 .button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }
 
-.button--secondary { background: var(--color-surface); border-color: var(--color-ink); color: var(--color-ink); }
-.button--secondary:hover:not(:disabled) { background: var(--color-ink); color: #fff; }
+.button--secondary { background: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-ink); }
+.button--secondary:hover:not(:disabled) { border-color: var(--color-ink); }
 
 .button--danger { background: var(--color-surface); border-color: var(--color-danger); color: var(--color-danger); }
 .button--danger:hover:not(:disabled) { background: var(--color-danger-soft); }

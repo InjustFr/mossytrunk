@@ -68,7 +68,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
 }
 
 .receipt__summary { display: flex; flex-direction: column; gap: var(--space-1); }
-.receipt__title { margin: 0; font-size: 1rem; font-weight: 600; color: var(--color-muted); }
+.receipt__title { margin: 0; font-size: 1.2rem; color: var(--color-muted); }
 
 .receipt__result {
     margin: 0;
@@ -99,7 +99,6 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
     color: inherit;
     font: inherit;
     text-align: left;
-    font-variant-numeric: tabular-nums;
 }
 
 .receipt--expandable .receipt__line { grid-template-columns: 1rem minmax(0, 1fr) 1.25rem 7.5rem; }
@@ -112,7 +111,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
 
 .receipt__hint { margin-left: var(--space-2); color: var(--color-muted); font-size: 0.85rem; }
 .receipt__sign { color: var(--color-muted); text-align: center; }
-.receipt__amount { text-align: right; white-space: nowrap; }
+.receipt__amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .receipt__amount--loss { color: var(--color-danger); }
 
 .receipt__detail { padding: var(--space-2) 0 var(--space-4) var(--space-5); border-bottom: 0.0625rem dashed var(--color-border-strong); }

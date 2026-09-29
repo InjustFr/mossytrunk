@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { TriangleAlert } from '@lucide/vue';
-import TypeMark from './TypeMark.vue';
+import TypeMark from '../ui/TypeMark.vue';
 import { UNTYPED } from '../../composables/useProductFilters.js';
 import { plural } from '../../composables/usePlural.js';
 
@@ -30,6 +30,7 @@ const selectedChip = computed({
 
 <template>
     <div class="product-filters">
+        <input v-model="search" class="product-filters__search" type="search" placeholder="Rechercher…" aria-label="Rechercher un produit">
         <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" aria-label="Filtrer par type">
             <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="product-filters__chip">
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
@@ -39,13 +40,12 @@ const selectedChip = computed({
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ plural(missingCostCount, 'prix d\'achat à renseigner', 'prix d\'achat à renseigner') }}
         </Toggle>
-        <input v-model="search" class="product-filters__search" type="search" placeholder="Rechercher…" aria-label="Rechercher un produit">
     </div>
 </template>
 
 <style scoped>
-.product-filters { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
-.product-filters__chips { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.product-filters { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.product-filters__chips { display: flex; flex: 1 1 auto; gap: var(--space-2); flex-wrap: wrap; }
 
 .product-filters__chip {
     display: inline-flex;

@@ -1,15 +1,17 @@
 <script setup>
+import TypeMark from '../ui/TypeMark.vue';
 import { formatCents } from '../../composables/useMoney.js';
 import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
     types: { type: Array, required: true },
+    typeColors: { type: Map, required: true },
 });
 
 const groups = [
-    { key: 'products', title: 'Produits', rows: () => props.products.map((product) => ({ key: product.id, name: product.name, ...product })) },
-    { key: 'types', title: 'Types', rows: () => props.types.map((type) => ({ key: type.name ?? '', ...type, name: type.name ?? 'Sans type' })) },
+    { key: 'products', title: 'Produits', rows: () => props.products.map((product) => ({ key: product.id, ...product, color: props.typeColors.get(product.typeName) })) },
+    { key: 'types', title: 'Types', rows: () => props.types.map((type) => ({ key: type.name ?? '', ...type, name: type.name ?? 'Sans type', color: props.typeColors.get(type.name) })) },
 ];
 
 const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.sales))) * 100}%`;
@@ -21,10 +23,10 @@ const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.
             <h3 :id="`best-sellers-${group.key}`" class="best-sellers__heading">{{ group.title }}</h3>
             <ol class="best-sellers__list">
                 <li v-for="row in group.rows()" :key="row.key" class="best-sellers__item">
-                    <span class="best-sellers__name">{{ row.name }}</span>
+                    <span class="best-sellers__name"><TypeMark :color="row.color" />{{ row.name }}</span>
                     <span class="best-sellers__quantity">{{ plural(row.quantity, 'vendu', 'vendus') }}</span>
                     <span class="best-sellers__sales">{{ formatCents(row.sales) }}</span>
-                    <span class="best-sellers__bar" :style="{ width: share(row.sales, group.rows()) }" aria-hidden="true" />
+                    <span class="best-sellers__bar" :style="{ width: share(row.sales, group.rows()), background: row.color }" aria-hidden="true" />
                 </li>
             </ol>
         </section>
@@ -34,7 +36,7 @@ const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.
 <style scoped>
 .best-sellers { display: flex; flex-direction: column; gap: var(--space-5); }
 
-.best-sellers__heading { margin: 0 0 var(--space-2); font-size: 0.875rem; font-weight: 500; color: var(--color-muted); }
+.best-sellers__heading { margin: 0 0 var(--space-2); color: var(--color-muted); }
 .best-sellers__list { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 
 .best-sellers__item {
@@ -45,8 +47,8 @@ const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.
     row-gap: 0.1875rem;
 }
 
-.best-sellers__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.best-sellers__name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .best-sellers__quantity { color: var(--color-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
 .best-sellers__sales { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
-.best-sellers__bar { grid-column: 1 / -1; height: 0.25rem; border-radius: 0.125rem; background: var(--color-accent); opacity: 0.55; }
+.best-sellers__bar { grid-column: 1 / -1; height: 0.25rem; border-radius: 0.125rem; background: var(--color-border-strong); }
 </style>

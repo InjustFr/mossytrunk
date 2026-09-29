@@ -2,6 +2,7 @@
 import { computed, onMounted } from 'vue';
 import { TriangleAlert } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
+import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSelect from '../components/ui/BaseSelect.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
@@ -11,10 +12,14 @@ import ResultsTable from '../components/dashboard/ResultsTable.vue';
 import ResultBars from '../components/reporting/ResultBars.vue';
 import ResultReceipt from '../components/reporting/ResultReceipt.vue';
 import { MONTHS, useDashboard } from '../composables/useDashboard.js';
+import { useTypeColors } from '../composables/useTypeColor.js';
 import { formatDate } from '../composables/useDate.js';
+import { visit } from '../composables/useNavigation.js';
 import { plural } from '../composables/usePlural.js';
 
 const { dashboard, load } = useDashboard();
+const { colors: typeColors, load: loadTypes } = useTypeColors();
+const isEmpty = computed(() => dashboard.value !== null && dashboard.value.byYear.length === 0 && dashboard.value.events.length === 0);
 const yearOptions = computed(() => (dashboard.value?.years ?? []).map((year) => ({ value: year, label: String(year) })));
 
 const receiptLines = computed(() => {
@@ -36,16 +41,26 @@ const eventBars = computed(() => dashboard.value.events.map((event) => ({
     href: `/evenements/${event.id}`,
 })));
 
-onMounted(() => load());
+onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>
     <AppLayout title="Tableau de bord">
         <template #actions>
-            <BaseSelect v-if="dashboard" :model-value="dashboard.year" :options="yearOptions" size="small" aria-label="Année" @update:model-value="load" />
+            <BaseSelect v-if="dashboard && !isEmpty" :model-value="dashboard.year" :options="yearOptions" size="small" aria-label="Année" @update:model-value="load" />
         </template>
 
-        <div v-if="dashboard" class="dashboard-page">
+        <section v-if="isEmpty" class="dashboard-page__welcome" aria-labelledby="dashboard-welcome">
+            <h2 id="dashboard-welcome" class="dashboard-page__welcome-title">Pas encore de ventes</h2>
+            <p class="dashboard-page__welcome-text">
+                Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis SumUp.
+            </p>
+            <div class="dashboard-page__welcome-actions">
+                <BaseButton @click="visit('/evenements?nouveau')">Créer un événement</BaseButton>
+            </div>
+        </section>
+
+        <div v-else-if="dashboard" class="dashboard-page">
             <p v-if="dashboard.productsWithoutCost > 0" class="dashboard-page__check" role="status">
                 <TriangleAlert size="1rem" aria-hidden="true" />
                 <span>
@@ -71,7 +86,7 @@ onMounted(() => load());
                     <EmptyState v-else>Aucun événement en {{ dashboard.year }}.</EmptyState>
                 </BaseCard>
                 <BaseCard title="Meilleures ventes">
-                    <BestSellers v-if="dashboard.products.length" :products="dashboard.products" :types="dashboard.types" />
+                    <BestSellers v-if="dashboard.products.length" :products="dashboard.products" :types="dashboard.types" :type-colors="typeColors" />
                     <EmptyState v-else>Aucune vente en {{ dashboard.year }}.</EmptyState>
                 </BaseCard>
             </div>
@@ -111,5 +126,16 @@ onMounted(() => load());
 
 .dashboard-page__check svg { flex-shrink: 0; margin-top: 0.1875rem; color: var(--color-warning); }
 .dashboard-page__summary { color: var(--color-muted); }
+.dashboard-page__welcome {
+    max-width: 36rem;
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.dashboard-page__welcome-title { margin: 0 0 var(--space-2); }
+.dashboard-page__welcome-text { margin: 0 0 var(--space-5); color: var(--color-muted); }
+.dashboard-page__welcome-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .dashboard-page__note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: 0.85rem; }
 </style>

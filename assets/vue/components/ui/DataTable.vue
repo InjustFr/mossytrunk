@@ -63,7 +63,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
     background: var(--color-border-strong);
 }
 
-.data-table__table { width: 100%; border-collapse: collapse; }
+.data-table__table { width: 100%; min-width: 40rem; border-collapse: collapse; }
 
 .data-table :deep(th),
 .data-table :deep(td) {
