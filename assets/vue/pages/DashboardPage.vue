@@ -32,6 +32,7 @@ const eventBars = computed(() => dashboard.value.events.map((event) => ({
     label: event.name,
     meta: formatDate(event.startDate),
     value: event.result,
+    turnover: event.turnover,
     href: `/evenements/${event.id}`,
 })));
 

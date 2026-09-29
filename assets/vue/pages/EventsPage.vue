@@ -19,7 +19,7 @@ const modalOpen = ref(false);
 
 const resultBars = computed(() => [...past.value]
     .sort((a, b) => b.result - a.result)
-    .map((event) => ({ id: event.id, label: event.name, meta: formatDate(event.startDate), value: event.result, href: `/evenements/${event.id}` })));
+    .map((event) => ({ id: event.id, label: event.name, meta: formatDate(event.startDate), value: event.result, turnover: event.turnover, href: `/evenements/${event.id}` })));
 
 async function onSaved(name) {
     toast.success(`Événement « ${name} » créé.`);
