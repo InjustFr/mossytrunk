@@ -27,7 +27,7 @@ test('a type owns its variants: rename one everywhere, then filter products by v
     const edit = page.getByRole('dialog', { name: `Modifier le type ${print}` });
     await edit.getByRole('button', { name: 'Renommer A4', exact: true }).click();
     await edit.getByRole('textbox', { name: 'Nouveau nom de A4' }).fill('A4+');
-    await edit.getByRole('textbox', { name: 'Nouveau nom de A4' }).press('Enter');
+    await edit.getByRole('textbox', { name: 'Nouveau nom de A4' }).press('Tab');
     await expect(page.getByTestId('toast').last()).toContainText('Variante « A4 » renommée « A4+ »');
     await expect(edit.getByRole('button', { name: 'Renommer A4+' })).toBeVisible();
     await expect(edit.getByRole('button', { name: 'Renommer A4', exact: true })).toHaveCount(0);
