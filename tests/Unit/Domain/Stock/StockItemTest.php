@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Stock;
 
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Shared\Money;
-use App\Domain\Stock\InvalidStock;
+use App\Domain\Stock\Exception\InvalidStock;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockItem;
 use App\Tests\Support\Costs;

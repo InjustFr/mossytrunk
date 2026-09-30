@@ -6,7 +6,7 @@ namespace App\Application\Product\CreateProductType;
 
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\TypeAlreadyExists;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
 
@@ -37,7 +37,7 @@ final readonly class CreateProductTypeHandler
     public function create(string $name, ?string $color = null): ProductType
     {
         if (null !== $this->types->findByName($name)) {
-            throw InvalidProduct::typeAlreadyExists(trim($name));
+            throw new TypeAlreadyExists(trim($name));
         }
 
         $base = ProductType::codeFor($name);

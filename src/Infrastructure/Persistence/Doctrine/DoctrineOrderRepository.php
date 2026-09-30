@@ -9,7 +9,7 @@ use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Shared\DateRange;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,7 +37,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     public function get(Ulid $id): Order
     {
         return $this->entityManager->getRepository(Order::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Commande', (string) $id);
+            ?? throw new NotFound('Commande', (string) $id);
     }
 
     public function list(?Ulid $eventId = null): array

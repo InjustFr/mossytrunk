@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Integration;
 
+use App\Application\Integration\Exception\ServiceNotConfigured;
+use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Transaction;
 use App\Application\Workspace\WorkspaceSecrets;
 use App\Domain\Identity\SecretName;
@@ -35,7 +37,7 @@ final readonly class ConnectionSession
         }
         foreach ($description->fields as $field) {
             if ($field->required && !isset($values[$field->name])) {
-                throw ServiceUnavailable::notConfigured($description->label);
+                throw new ServiceNotConfigured($description->label);
             }
         }
 
@@ -55,7 +57,7 @@ final readonly class ConnectionSession
         $refresh = $this->secrets->reveal($workspace, $this->secretName($connection, self::REFRESH_TOKEN));
         $expiresAt = $connection->tokenExpiresAt();
         if (null === $access || null === $refresh || null === $expiresAt || !$connection->isAuthorized()) {
-            throw ServiceUnavailable::notConnected($connector->describe()->label);
+            throw new ServiceNotConnected($connector->describe()->label);
         }
 
         $authorized = new Credentials($credentials->values, $access, $refresh, $connection->accountId());

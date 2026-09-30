@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Event;
 
+use App\Domain\Event\Exception\EmptyEventLocation;
+use App\Domain\Event\Exception\EmptyEventName;
+use App\Domain\Event\Exception\UnknownExpense;
 use App\Domain\Identity\Workspace;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
@@ -67,10 +70,10 @@ class Event
         $location = trim($location);
 
         if ('' === $name) {
-            throw InvalidEvent::emptyName();
+            throw new EmptyEventName();
         }
         if ('' === $location) {
-            throw InvalidEvent::emptyLocation();
+            throw new EmptyEventLocation();
         }
 
         $this->name = $name;
@@ -111,7 +114,7 @@ class Event
             }
         }
 
-        throw InvalidEvent::unknownExpense((string) $expenseId);
+        throw new UnknownExpense((string) $expenseId);
     }
 
     public function covers(\DateTimeImmutable $moment): bool

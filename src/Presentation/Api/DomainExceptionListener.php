@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api;
 
-use App\Domain\Shared\DomainException;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\DomainException;
+use App\Domain\Shared\Exception\NotFound;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;

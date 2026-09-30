@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Product\UpdateProductType;
 
 use App\Application\Transaction;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\TypeAlreadyExists;
 use App\Domain\Product\ProductTypeRepository;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,7 +23,7 @@ final readonly class UpdateProductTypeHandler
 
         $sameName = $this->types->findByName($name);
         if (null !== $sameName && !$sameName->id()->equals($type->id())) {
-            throw InvalidProduct::typeAlreadyExists(trim($name));
+            throw new TypeAlreadyExists(trim($name));
         }
 
         $type->rename($name);

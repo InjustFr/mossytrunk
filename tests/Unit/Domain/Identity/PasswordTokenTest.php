@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Identity;
 
-use App\Domain\Identity\InvalidPasswordToken;
+use App\Domain\Identity\Exception\PasswordTokenAlreadyUsed;
+use App\Domain\Identity\Exception\PasswordTokenExpired;
+use App\Domain\Identity\Exception\UnknownPasswordToken;
 use App\Domain\Identity\PasswordToken;
 use App\Domain\Identity\PasswordTokenPurpose;
 use App\Domain\Identity\User;
@@ -31,7 +33,7 @@ final class PasswordTokenTest extends TestCase
 
         $token->consume('secret', $now);
 
-        $this->expectExceptionObject(InvalidPasswordToken::alreadyUsed());
+        $this->expectExceptionObject(new PasswordTokenAlreadyUsed());
         $token->consume('secret', $now);
     }
 
@@ -39,7 +41,7 @@ final class PasswordTokenTest extends TestCase
     {
         $now = new \DateTimeImmutable('2030-01-01 10:00');
 
-        $this->expectExceptionObject(InvalidPasswordToken::invalid());
+        $this->expectExceptionObject(new UnknownPasswordToken());
         $this->token(PasswordTokenPurpose::Reset, $now)->verify('guess', $now);
     }
 
@@ -48,7 +50,7 @@ final class PasswordTokenTest extends TestCase
     {
         $token = $this->token(PasswordTokenPurpose::Reset, new \DateTimeImmutable('2030-01-01 10:00'));
 
-        $this->expectExceptionObject(InvalidPasswordToken::expired());
+        $this->expectExceptionObject(new PasswordTokenExpired());
         $token->verify('secret', new \DateTimeImmutable($moment));
     }
 

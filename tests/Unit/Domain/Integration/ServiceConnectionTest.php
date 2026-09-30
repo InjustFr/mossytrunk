@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Integration;
 
-use App\Domain\Integration\InvalidConnection;
+use App\Domain\Integration\Exception\InvalidConnection;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\UnknownItems;

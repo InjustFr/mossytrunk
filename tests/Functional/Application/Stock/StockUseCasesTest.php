@@ -29,7 +29,7 @@ use App\Application\Stock\TakeStockCheck\CountedItem;
 use App\Application\Stock\TakeStockCheck\TakeStockCheck;
 use App\Application\Stock\TakeStockCheck\TakeStockCheckHandler;
 use App\Domain\Order\Order;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;

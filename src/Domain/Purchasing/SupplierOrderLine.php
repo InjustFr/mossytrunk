@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Purchasing;
 
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Purchasing\Exception\NegativeReceivedQuantity;
+use App\Domain\Purchasing\Exception\NonPositiveOrderedQuantity;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -52,10 +54,10 @@ class SupplierOrderLine
     public function __construct(SupplierOrder $order, PurchasedItem $purchased, int $position)
     {
         if ($purchased->quantity < 1) {
-            throw InvalidPurchase::quantityMustBePositive();
+            throw new NonPositiveOrderedQuantity();
         }
         if ($purchased->totalPrice->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix payé');
+            throw new NegativeAmount('Le prix payé');
         }
 
         $this->id = new Ulid();
@@ -84,7 +86,7 @@ class SupplierOrderLine
     public function receive(int $quantity): void
     {
         if ($quantity < 0) {
-            throw InvalidPurchase::receivedQuantityNegative($this->label);
+            throw new NegativeReceivedQuantity($this->label);
         }
 
         $this->receivedQuantity = $quantity;

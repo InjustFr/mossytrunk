@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\ProductType;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -72,10 +73,10 @@ class Gabarit
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidDesign::emptyName('du gabarit');
+            throw new EmptyDesignName('du gabarit');
         }
         if ($sellingPrice->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix');
+            throw new NegativeAmount('Le prix');
         }
 
         $this->name = $name;

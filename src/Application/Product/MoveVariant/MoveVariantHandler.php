@@ -9,7 +9,8 @@ use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRuleRepository;
 use App\Domain\Order\OrderRepository;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\SoldWithoutVariant;
+use App\Domain\Product\Exception\VariantMovedOntoItself;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
@@ -36,13 +37,13 @@ final readonly class MoveVariantHandler
 
         $target = null === $command->targetProductId ? $this->newProductLike($source, (string) $command->newProductName) : $this->products->get(Ulid::fromString($command->targetProductId));
         if ($target === $source) {
-            throw InvalidProduct::movedOntoItself();
+            throw new VariantMovedOntoItself();
         }
 
         $targetVariant = self::blankToNull($command->targetVariant);
         if (null !== $targetVariant && !$target->hasVariant($targetVariant)) {
             if (!$target->hasVariants() && [] !== $this->orders->selling($target->id())) {
-                throw InvalidProduct::soldWithoutVariant($target->displayName());
+                throw new SoldWithoutVariant($target->displayName());
             }
             $target->addVariant($targetVariant);
         }

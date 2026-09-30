@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\ServiceConnectionRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class DoctrineServiceConnectionRepository implements ServiceConnectionRepository
@@ -35,7 +35,7 @@ final readonly class DoctrineServiceConnectionRepository implements ServiceConne
 
     public function get(string $service): ServiceConnection
     {
-        return $this->find($service) ?? throw NotFound::entity('Service', $service);
+        return $this->find($service) ?? throw new NotFound('Service', $service);
     }
 
     public function all(): array

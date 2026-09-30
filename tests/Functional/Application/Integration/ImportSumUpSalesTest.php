@@ -8,9 +8,9 @@ use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
+use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ImportSales\ImportReport;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
-use App\Application\Integration\ServiceUnavailable;
 use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
@@ -40,7 +40,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
     {
         self::actAsMemberOf('Sans SumUp');
 
-        $this->expectExceptionObject(ServiceUnavailable::notAdded('SumUp'));
+        $this->expectExceptionObject(new ServiceNotAdded('SumUp'));
         $this->import();
     }
 

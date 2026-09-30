@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Accounting;
 
+use App\Domain\Accounting\Exception\DeclarationPeriodNotOver;
 use App\Domain\Identity\Workspace;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
@@ -36,7 +37,7 @@ class UrssafDeclaration
     private function __construct(Workspace $workspace, DeclarationPeriod $period, Money $turnover, \DateTimeImmutable $declaredAt)
     {
         if (!$period->isOverOn($declaredAt)) {
-            throw InvalidDeclaration::periodNotOver($period->key());
+            throw new DeclarationPeriodNotOver($period->key());
         }
 
         $this->id = new Ulid();

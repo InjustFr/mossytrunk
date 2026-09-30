@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Stock;
 
 use App\Domain\Shared\Money;
+use App\Domain\Stock\Exception\NothingToResolve;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -70,7 +71,7 @@ class StockCheckLine
     public function dismiss(): void
     {
         if (0 === $this->unexplained) {
-            throw InvalidStock::nothingToResolve();
+            throw new NothingToResolve();
         }
 
         $this->unexplained = 0;

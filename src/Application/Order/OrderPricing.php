@@ -8,7 +8,7 @@ use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Discount\BasketLine;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRuleRepository;
-use App\Domain\Order\InvalidOrder;
+use App\Domain\Order\Exception\InvalidOrderQuantity;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Product\ProductRepository;
 use Symfony\Component\Uid\Ulid;
@@ -35,7 +35,7 @@ final readonly class OrderPricing
     {
         return array_map(function (RequestedLine $line): OrderedItem {
             if ($line->quantity < 1) {
-                throw InvalidOrder::invalidQuantity();
+                throw new InvalidOrderQuantity();
             }
 
             $product = $this->products->get(Ulid::fromString($line->productId));

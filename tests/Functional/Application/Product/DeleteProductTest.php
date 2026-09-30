@@ -14,7 +14,7 @@ use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
-use App\Domain\Discount\InvalidDiscountRule;
+use App\Domain\Discount\Exception\OnlyEligibleProduct;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
@@ -54,7 +54,7 @@ final class DeleteProductTest extends KernelTestCase
         $pin = $this->product('Pin');
         self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('2 pins', 700, DiscountRules::product($pin, 2)));
 
-        $this->expectExceptionObject(InvalidDiscountRule::onlyEligibleProduct('2 pins', 'Pin'));
+        $this->expectExceptionObject(new OnlyEligibleProduct('2 pins', 'Pin'));
         self::getContainer()->get(DeleteProductHandler::class)($pin);
     }
 

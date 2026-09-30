@@ -14,7 +14,7 @@ use App\Application\Integration\ListExternalItems\ListExternalItemsHandler;
 use App\Application\Integration\ListServices\ListServicesHandler;
 use App\Application\Integration\RemoveConnection\RemoveConnectionHandler;
 use App\Application\Integration\ServiceDescription;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -105,7 +105,7 @@ final class ServicesController extends AbstractController
     private function description(string $service): ServiceDescription
     {
         if (!$this->connectors->has($service)) {
-            throw NotFound::entity('Service', $service);
+            throw new NotFound('Service', $service);
         }
 
         return $this->connectors->get($service)->describe();

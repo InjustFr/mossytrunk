@@ -7,7 +7,8 @@ namespace App\Application\Integration\Authorize;
 use App\Application\Integration\AuthorizingConnector;
 use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
-use App\Application\Integration\ServiceUnavailable;
+use App\Application\Integration\Exception\ServiceNotAdded;
+use App\Application\Integration\Exception\ServiceNotAuthorizing;
 use App\Application\Transaction;
 use App\Domain\Integration\ServiceConnectionRepository;
 
@@ -24,7 +25,7 @@ final readonly class AuthorizeHandler
     public function authorizationUrl(string $service, string $redirectUri, string $state, string $codeChallenge): string
     {
         $connector = $this->connector($service);
-        $connection = $this->connections->find($service) ?? throw ServiceUnavailable::notAdded($connector->describe()->label);
+        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($connector->describe()->label);
 
         return $connector->authorizationUrl($this->session->configured($connection), $redirectUri, $state, $codeChallenge);
     }
@@ -32,7 +33,7 @@ final readonly class AuthorizeHandler
     public function complete(string $service, string $code, string $codeVerifier, string $redirectUri): string
     {
         $connector = $this->connector($service);
-        $connection = $this->connections->find($service) ?? throw ServiceUnavailable::notAdded($connector->describe()->label);
+        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($connector->describe()->label);
 
         $authorization = $connector->authorize($this->session->configured($connection), $code, $codeVerifier, $redirectUri);
         $this->session->keepTokens($connection, $authorization->tokens);
@@ -52,7 +53,7 @@ final readonly class AuthorizeHandler
     {
         $connector = $this->connectors->get($service);
         if (!$connector instanceof AuthorizingConnector) {
-            throw ServiceUnavailable::notAuthorizing($connector->describe()->label);
+            throw new ServiceNotAuthorizing($connector->describe()->label);
         }
 
         return $connector;

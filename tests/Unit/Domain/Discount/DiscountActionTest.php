@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Discount;
 
 use App\Domain\Discount\DiscountAction;
-use App\Domain\Discount\InvalidDiscountRule;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Discount\Exception\InvalidDiscountRule;
+use App\Domain\Shared\Exception\InvalidMoney;
 use App\Domain\Shared\Money;
 use PHPUnit\Framework\TestCase;
 

@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Integration\ExternalItem;
 use App\Domain\Integration\ExternalItemRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -27,7 +27,7 @@ final readonly class DoctrineExternalItemRepository implements ExternalItemRepos
     public function get(Ulid $id): ExternalItem
     {
         return $this->entityManager->getRepository(ExternalItem::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Article', (string) $id);
+            ?? throw new NotFound('Article', (string) $id);
     }
 
     public function ofService(string $service): array

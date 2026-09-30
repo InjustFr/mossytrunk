@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Infrastructure\Connector;
 
-use App\Application\Integration\ServiceUnavailable;
+use App\Application\Integration\Exception\ServiceUnavailable;
 use App\Infrastructure\Connector\SumUp\SumUpApiGateway;
 use App\Infrastructure\Connector\SumUp\SumUpCredentials;
 use App\Infrastructure\Connector\SumUp\SumUpPayloadMapper;

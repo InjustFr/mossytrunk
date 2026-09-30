@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Purchasing;
 
 use App\Domain\Product\Product;
-use App\Domain\Purchasing\InvalidPurchase;
+use App\Domain\Purchasing\Exception\InvalidPurchase;
 use App\Domain\Purchasing\PurchasedItem;
 use App\Domain\Purchasing\Supplier;
 use App\Domain\Purchasing\SupplierOrder;

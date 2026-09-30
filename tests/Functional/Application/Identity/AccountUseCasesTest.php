@@ -8,8 +8,10 @@ use App\Application\Identity\CreateUser\CreateUser;
 use App\Application\Identity\CreateUser\CreateUserHandler;
 use App\Application\Identity\RequestPasswordReset\RequestPasswordResetHandler;
 use App\Application\Identity\SetPassword\SetPasswordHandler;
-use App\Domain\Identity\InvalidAccount;
-use App\Domain\Identity\InvalidPasswordToken;
+use App\Domain\Identity\Exception\InvalidAccount;
+use App\Domain\Identity\Exception\InvalidPasswordToken;
+use App\Domain\Identity\Exception\PasswordTokenExpired;
+use App\Domain\Identity\Exception\UnknownPasswordToken;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
 use App\Infrastructure\Security\SecurityUser;
@@ -83,7 +85,7 @@ final class AccountUseCasesTest extends KernelTestCase
 
         $clock->sleep(3_600);
 
-        $this->expectExceptionObject(InvalidPasswordToken::expired());
+        $this->expectExceptionObject(new PasswordTokenExpired());
         self::getContainer()->get(SetPasswordHandler::class)($token, 'correct horse battery');
     }
 
@@ -94,7 +96,7 @@ final class AccountUseCasesTest extends KernelTestCase
 
         self::getContainer()->get(RequestPasswordResetHandler::class)('louis@example.com');
 
-        $this->expectExceptionObject(InvalidPasswordToken::invalid());
+        $this->expectExceptionObject(new UnknownPasswordToken());
         self::getContainer()->get(SetPasswordHandler::class)($invitation, 'correct horse battery');
     }
 

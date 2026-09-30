@@ -7,6 +7,10 @@ namespace App\Domain\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
+use App\Domain\Order\Exception\DiscountExceedsSubtotal;
+use App\Domain\Order\Exception\EmptyOrder;
+use App\Domain\Order\Exception\NegativeShippingCost;
+use App\Domain\Order\Exception\OrderOutsideEvent;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
@@ -73,10 +77,10 @@ class Order
     private function __construct(string $reference, Workspace $workspace, ?Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, string $source)
     {
         if (null !== $event && !$event->covers($placedAt)) {
-            throw InvalidOrder::outsideEvent($event->name(), $placedAt);
+            throw new OrderOutsideEvent($event->name(), $placedAt);
         }
         if ([] === $items) {
-            throw InvalidOrder::empty();
+            throw new EmptyOrder();
         }
 
         $this->id = new Ulid();
@@ -111,7 +115,7 @@ class Order
     public static function imported(Workspace $workspace, string $source, string $externalId, string $reference, ?Event $event, \DateTimeImmutable $placedAt, array $items, Money $charged, Money $shipping, ?PaymentMethod $paymentMethod, array $ruleDiscounts, string $discountLabel): self
     {
         if ($shipping->isNegative()) {
-            throw InvalidOrder::negativeShipping();
+            throw new NegativeShippingCost();
         }
 
         $order = new self($reference, $workspace, $event, $placedAt, $items, [], $source);
@@ -273,7 +277,7 @@ class Order
     {
         $total = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));
         if ($total->greaterThan($this->subtotal())) {
-            throw InvalidOrder::discountExceedsSubtotal();
+            throw new DiscountExceedsSubtotal();
         }
 
         $this->appliedDiscounts = array_map(static fn (AppliedDiscount $discount): array => $discount->toArray(), $discounts);

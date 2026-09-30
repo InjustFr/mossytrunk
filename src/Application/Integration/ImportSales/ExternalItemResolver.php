@@ -10,7 +10,7 @@ use App\Domain\Integration\ExternalItem;
 use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\UnknownItems;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\SellableItem;
 

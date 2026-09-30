@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Integration;
 
+use App\Application\Integration\Exception\MissingSetting;
+
 final readonly class Credentials
 {
     /**
@@ -19,6 +21,6 @@ final readonly class Credentials
 
     public function get(string $name): string
     {
-        return $this->values[$name] ?? throw ServiceUnavailable::missingSetting($name);
+        return $this->values[$name] ?? throw new MissingSetting($name);
     }
 }

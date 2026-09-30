@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -28,7 +28,7 @@ final readonly class DoctrineProductTypeRepository implements ProductTypeReposit
     public function get(Ulid $id): ProductType
     {
         return $this->entityManager->getRepository(ProductType::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Type de produit', (string) $id);
+            ?? throw new NotFound('Type de produit', (string) $id);
     }
 
     public function findByName(string $name): ?ProductType

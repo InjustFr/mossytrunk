@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Domain\Accounting;
 
 use App\Domain\Accounting\DeclarationPeriod;
 use App\Domain\Accounting\DeclarationPeriodicity;
-use App\Domain\Accounting\InvalidDeclaration;
+use App\Domain\Accounting\Exception\InvalidDeclaration;
 use App\Domain\Accounting\UrssafDeclaration;
 use App\Domain\Shared\Money;
 use App\Tests\Support\TestWorkspace;

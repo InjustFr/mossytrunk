@@ -11,7 +11,7 @@ interface ProductTypeRepository
     public function add(ProductType $type): void;
 
     /**
-     * @throws \App\Domain\Shared\NotFound
+     * @throws \App\Domain\Shared\Exception\NotFound
      */
     public function get(Ulid $id): ProductType;
 

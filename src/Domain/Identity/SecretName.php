@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
+use App\Domain\Identity\Exception\InvalidSecretName;
+
 final readonly class SecretName
 {
     private function __construct(public string $value)
@@ -18,7 +20,7 @@ final readonly class SecretName
     public static function named(string $value): self
     {
         if (1 !== preg_match('/^[a-z0-9]+_[a-z0-9_]+$/', $value) || \strlen($value) > 50) {
-            throw InvalidAccount::invalidSecretName($value);
+            throw new InvalidSecretName($value);
         }
 
         return new self($value);

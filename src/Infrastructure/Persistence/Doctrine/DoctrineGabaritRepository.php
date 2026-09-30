@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Design\Gabarit;
 use App\Domain\Design\GabaritRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -28,7 +28,7 @@ final readonly class DoctrineGabaritRepository implements GabaritRepository
     public function get(Ulid $id): Gabarit
     {
         return $this->entityManager->getRepository(Gabarit::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Gabarit', (string) $id);
+            ?? throw new NotFound('Gabarit', (string) $id);
     }
 
     public function findByName(string $name): ?Gabarit

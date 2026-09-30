@@ -6,7 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,7 +23,7 @@ final readonly class DoctrineUserRepository implements UserRepository
 
     public function get(Ulid $id): User
     {
-        return $this->entityManager->find(User::class, $id) ?? throw NotFound::entity('Utilisateur', (string) $id);
+        return $this->entityManager->find(User::class, $id) ?? throw new NotFound('Utilisateur', (string) $id);
     }
 
     public function findByEmail(string $email): ?User

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Workspace;
 
-use App\Domain\Identity\InvalidAccount;
+use App\Domain\Identity\Exception\EmptySecret;
 use App\Domain\Identity\SecretName;
 use App\Domain\Identity\Workspace;
 use App\Domain\Identity\WorkspaceSecret;
@@ -29,7 +29,7 @@ final readonly class WorkspaceSecrets
     {
         $plaintext = trim($plaintext);
         if ('' === $plaintext) {
-            throw InvalidAccount::emptySecret();
+            throw new EmptySecret();
         }
 
         $ciphertext = $this->cipher->encrypt($plaintext);

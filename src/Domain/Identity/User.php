@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
+use App\Domain\Identity\Exception\InvalidEmail;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -46,7 +47,7 @@ class User
     {
         $email = mb_strtolower(trim($email));
         if (false === filter_var($email, \FILTER_VALIDATE_EMAIL)) {
-            throw InvalidAccount::invalidEmail($email);
+            throw new InvalidEmail($email);
         }
 
         return $email;

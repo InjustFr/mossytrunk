@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Web;
 
 use App\Application\Integration\Authorize\AuthorizeHandler;
-use App\Domain\Shared\DomainException;
+use App\Domain\Shared\Exception\DomainException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;

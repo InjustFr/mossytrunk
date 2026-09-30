@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Discount\Exception\InvalidPercentage;
+use App\Domain\Shared\Exception\NonPositiveAmount;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -34,7 +35,7 @@ final readonly class DiscountAction
     public static function percentOff(int $basisPoints): self
     {
         if ($basisPoints <= 0 || $basisPoints > self::WHOLE) {
-            throw InvalidDiscountRule::invalidPercentage();
+            throw new InvalidPercentage();
         }
 
         return new self(DiscountActionKind::PercentOff, $basisPoints);
@@ -71,7 +72,7 @@ final readonly class DiscountAction
     private static function positive(Money $amount, string $label): int
     {
         if (!$amount->isPositive()) {
-            throw InvalidMoney::mustBePositive($label);
+            throw new NonPositiveAmount($label);
         }
 
         return $amount->amount();

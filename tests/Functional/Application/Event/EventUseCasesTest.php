@@ -17,7 +17,8 @@ use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Event\UpdateEvent\UpdateEvent;
 use App\Application\Event\UpdateEvent\UpdateEventHandler;
 use App\Domain\Event\EventRepository;
-use App\Domain\Event\InvalidEvent;
+use App\Domain\Event\Exception\InvalidEvent;
+use App\Domain\Event\Exception\OverlappingEvent;
 use App\Tests\Support\ActsAsUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
@@ -58,7 +59,7 @@ final class EventUseCasesTest extends KernelTestCase
     {
         $this->schedule('Japan Expo', '2026-07-09', '2026-07-12');
 
-        $this->expectExceptionObject(InvalidEvent::overlaps('Japan Expo'));
+        $this->expectExceptionObject(new OverlappingEvent('Japan Expo'));
         $this->schedule('Autre convention', '2026-07-12', '2026-07-13');
     }
 

@@ -13,7 +13,7 @@ interface ProductRepository
     public function remove(Product $product): void;
 
     /**
-     * @throws \App\Domain\Shared\NotFound
+     * @throws \App\Domain\Shared\Exception\NotFound
      */
     public function get(Ulid $id): Product;
 

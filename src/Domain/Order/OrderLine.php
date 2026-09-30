@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Order;
 
+use App\Domain\Order\Exception\InvalidOrderQuantity;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,7 +51,7 @@ class OrderLine
     public function __construct(Order $order, SellableItem $item, int $quantity, Money $cost)
     {
         if ($quantity < 1) {
-            throw InvalidOrder::invalidQuantity();
+            throw new InvalidOrderQuantity();
         }
 
         $this->id = new Ulid();
@@ -86,7 +87,7 @@ class OrderLine
     public function add(int $quantity, Money $cost): void
     {
         if ($quantity < 1) {
-            throw InvalidOrder::invalidQuantity();
+            throw new InvalidOrderQuantity();
         }
 
         $this->quantity += $quantity;

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Design\Exception\DuplicateAdaptation;
+use App\Domain\Design\Exception\EmptyAdaptation;
+
 final class TextList
 {
     /**
@@ -17,10 +20,10 @@ final class TextList
         foreach ($values as $value) {
             $value = trim($value);
             if ('' === $value) {
-                throw InvalidDesign::emptyAdaptation();
+                throw new EmptyAdaptation();
             }
             if (\in_array($value, $clean, true)) {
-                throw InvalidDesign::duplicateAdaptation($value);
+                throw new DuplicateAdaptation($value);
             }
             $clean[] = $value;
         }

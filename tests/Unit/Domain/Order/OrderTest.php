@@ -6,7 +6,7 @@ namespace App\Tests\Unit\Domain\Order;
 
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
-use App\Domain\Order\InvalidOrder;
+use App\Domain\Order\Exception\InvalidOrder;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\PaymentMethod;

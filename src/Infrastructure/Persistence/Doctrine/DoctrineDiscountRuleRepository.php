@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountRuleRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -32,7 +32,7 @@ final readonly class DoctrineDiscountRuleRepository implements DiscountRuleRepos
     public function get(Ulid $id): DiscountRule
     {
         return $this->entityManager->getRepository(DiscountRule::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Remise', (string) $id);
+            ?? throw new NotFound('Remise', (string) $id);
     }
 
     public function all(): array

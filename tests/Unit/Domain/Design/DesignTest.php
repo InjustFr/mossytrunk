@@ -6,8 +6,8 @@ namespace App\Tests\Unit\Domain\Design;
 
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignStatus;
+use App\Domain\Design\Exception\InvalidDesign;
 use App\Domain\Design\Gabarit;
-use App\Domain\Design\InvalidDesign;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;

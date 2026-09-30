@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Shared;
 
 use App\Domain\Shared\DateRange;
-use App\Domain\Shared\InvalidDateRange;
+use App\Domain\Shared\Exception\InvalidDateRange;
 use PHPUnit\Framework\TestCase;
 
 final class DateRangeTest extends TestCase

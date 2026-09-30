@@ -9,7 +9,7 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountStatus;
-use App\Domain\Discount\InvalidDiscountRule;
+use App\Domain\Discount\Exception\InvalidDiscountRule;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;

@@ -7,7 +7,7 @@ namespace App\Application\Identity\CreateUser;
 use App\Application\Identity\AccountMailer;
 use App\Application\Identity\PasswordTokenIssuer;
 use App\Application\Transaction;
-use App\Domain\Identity\InvalidAccount;
+use App\Domain\Identity\Exception\EmailAlreadyUsed;
 use App\Domain\Identity\PasswordTokenPurpose;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
@@ -29,7 +29,7 @@ final readonly class CreateUserHandler
     {
         $email = User::normalizeEmail($command->email);
         if (null !== $this->users->findByEmail($email)) {
-            throw InvalidAccount::emailAlreadyUsed($email);
+            throw new EmailAlreadyUsed($email);
         }
 
         $workspace = $this->workspaces->findByName($command->workspaceName);

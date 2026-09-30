@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -34,7 +34,7 @@ final readonly class DoctrineProductRepository implements ProductRepository
     {
         $product = $this->entityManager->find(Product::class, $id);
         if (null === $product || !$product->workspace()->id()->equals($this->workspace->current()->id())) {
-            throw NotFound::entity('Produit', (string) $id);
+            throw new NotFound('Produit', (string) $id);
         }
 
         return $product;

@@ -5,9 +5,20 @@ declare(strict_types=1);
 namespace App\Domain\Product;
 
 use App\Domain\Identity\Workspace;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Product\Exception\DuplicateVariant;
+use App\Domain\Product\Exception\EmptyProductName;
+use App\Domain\Product\Exception\EmptyProductReference;
+use App\Domain\Product\Exception\EmptyVariant;
+use App\Domain\Product\Exception\InvalidProduct;
+use App\Domain\Product\Exception\LastPriceKept;
+use App\Domain\Product\Exception\NegativeLowStockThreshold;
+use App\Domain\Product\Exception\PriceDatedInTheFuture;
+use App\Domain\Product\Exception\ProductHasNoVariants;
+use App\Domain\Product\Exception\UnknownVariant;
+use App\Domain\Product\Exception\VariantRequired;
+use App\Domain\Shared\Exception\NegativeAmount;
+use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
-use App\Domain\Shared\NotFound;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -82,7 +93,7 @@ class Product
         $this->priceHistory = new ArrayCollection();
         $reference = trim($reference);
         if ('' === $reference) {
-            throw InvalidProduct::emptyReference();
+            throw new EmptyProductReference();
         }
         $this->reference = $reference;
         $this->rename($name);
@@ -111,7 +122,7 @@ class Product
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidProduct::emptyName();
+            throw new EmptyProductName();
         }
 
         $this->name = $name;
@@ -120,7 +131,7 @@ class Product
     public function reprice(Money $sellingPrice): void
     {
         if ($sellingPrice->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix de vente');
+            throw new NegativeAmount('Le prix de vente');
         }
 
         if (isset($this->sellingPrice) && $this->sellingPrice->equals($sellingPrice)) {
@@ -148,7 +159,7 @@ class Product
     public function forgetPrice(Ulid $changeId): void
     {
         if (1 === $this->priceHistory->count()) {
-            throw InvalidProduct::lastPriceKept();
+            throw new LastPriceKept();
         }
 
         $this->priceHistory->removeElement($this->priceChange($changeId));
@@ -174,16 +185,16 @@ class Product
             }
         }
 
-        throw NotFound::entity('Prix', (string) $changeId);
+        throw new NotFound('Prix', (string) $changeId);
     }
 
     private function assertPastPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
     {
         if ($price->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix de vente');
+            throw new NegativeAmount('Le prix de vente');
         }
         if ($since > $now) {
-            throw InvalidProduct::priceDatedInTheFuture();
+            throw new PriceDatedInTheFuture();
         }
     }
 
@@ -199,7 +210,7 @@ class Product
     public function bought(Money $unitCost): void
     {
         if ($unitCost->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix d\'achat');
+            throw new NegativeAmount('Le prix d\'achat');
         }
 
         $this->buyingPrice = $unitCost;
@@ -208,7 +219,7 @@ class Product
     public function alertBelow(int $threshold): void
     {
         if ($threshold < 0) {
-            throw InvalidProduct::negativeLowStockThreshold();
+            throw new NegativeLowStockThreshold();
         }
 
         $this->lowStockThreshold = $threshold;
@@ -224,10 +235,10 @@ class Product
         $variant = trim($variant);
 
         if ('' === $variant) {
-            throw InvalidProduct::emptyVariant();
+            throw new EmptyVariant();
         }
         if ($this->hasVariant($variant)) {
-            throw InvalidProduct::duplicateVariant($variant);
+            throw new DuplicateVariant($variant);
         }
 
         $this->variants[] = $variant;
@@ -269,13 +280,13 @@ class Product
 
         if ($this->hasVariants()) {
             if (null === $variant) {
-                throw InvalidProduct::variantRequired($this->displayName());
+                throw new VariantRequired($this->displayName());
             }
             if (!$this->hasVariant($variant)) {
-                throw InvalidProduct::unknownVariant($this->displayName(), $variant);
+                throw new UnknownVariant($this->displayName(), $variant);
             }
         } elseif (null !== $variant) {
-            throw InvalidProduct::hasNoVariants($this->displayName());
+            throw new ProductHasNoVariants($this->displayName());
         }
 
         return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice, $this->type?->id());

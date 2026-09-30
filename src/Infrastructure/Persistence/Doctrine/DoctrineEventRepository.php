@@ -8,7 +8,7 @@ use App\Application\WorkspaceContext;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
 use App\Domain\Shared\DateRange;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -30,7 +30,7 @@ final readonly class DoctrineEventRepository implements EventRepository
     public function get(Ulid $id): Event
     {
         return $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Événement', (string) $id);
+            ?? throw new NotFound('Événement', (string) $id);
     }
 
     public function findCovering(\DateTimeImmutable $moment): ?Event

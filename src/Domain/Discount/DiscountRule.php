@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Discount\Exception\DiscountExpired;
+use App\Domain\Discount\Exception\DiscountNotRunning;
+use App\Domain\Discount\Exception\DuplicateConditionTarget;
+use App\Domain\Discount\Exception\EmptyDiscountName;
+use App\Domain\Discount\Exception\NoDiscountCondition;
+use App\Domain\Discount\Exception\OnlyEligibleProduct;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
@@ -65,17 +71,17 @@ class DiscountRule
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidDiscountRule::emptyName();
+            throw new EmptyDiscountName();
         }
         if ([] === $conditions) {
-            throw InvalidDiscountRule::noCondition();
+            throw new NoDiscountCondition();
         }
 
         $built = [];
         foreach ($conditions as $spec) {
             foreach ($built as $condition) {
                 if ($condition->targets($spec->target)) {
-                    throw InvalidDiscountRule::duplicateTarget($condition->targetName());
+                    throw new DuplicateConditionTarget($condition->targetName());
                 }
             }
             $built[] = $spec->target instanceof Product
@@ -116,7 +122,7 @@ class DiscountRule
             return;
         }
         if (1 === $this->conditions->count()) {
-            throw InvalidDiscountRule::onlyEligibleProduct($this->name, $product->displayName());
+            throw new OnlyEligibleProduct($this->name, $product->displayName());
         }
         $this->conditions->removeElement($condition);
     }
@@ -129,7 +135,7 @@ class DiscountRule
     public function withdrawEveryProduct(): void
     {
         if (!$this->listsTypes()) {
-            throw InvalidDiscountRule::noCondition();
+            throw new NoDiscountCondition();
         }
         foreach ($this->conditions->toArray() as $condition) {
             if ($condition instanceof ProductCondition) {
@@ -141,7 +147,7 @@ class DiscountRule
     public function startOn(\DateTimeImmutable $today): void
     {
         match ($this->statusOn($today)) {
-            DiscountStatus::Expired => throw InvalidDiscountRule::expired($this->name),
+            DiscountStatus::Expired => throw new DiscountExpired($this->name),
             DiscountStatus::Upcoming => $this->validity = $this->validity->startingOn($today),
             DiscountStatus::Running => null,
         };
@@ -150,7 +156,7 @@ class DiscountRule
     public function stopBefore(\DateTimeImmutable $today): void
     {
         if (DiscountStatus::Running !== $this->statusOn($today)) {
-            throw InvalidDiscountRule::notRunning($this->name);
+            throw new DiscountNotRunning($this->name);
         }
 
         $this->validity = $this->validity->endingBefore($today);

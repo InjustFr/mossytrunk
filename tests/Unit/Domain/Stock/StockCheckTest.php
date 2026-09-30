@@ -8,7 +8,7 @@ use App\Domain\Event\Event;
 use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
-use App\Domain\Stock\InvalidStock;
+use App\Domain\Stock\Exception\InvalidStock;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockCheck;
 use App\Domain\Stock\StockCount;

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Integration;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Integration\Exception\InvalidSetting;
+use App\Domain\Integration\Exception\UnknownService;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -56,7 +58,7 @@ class ServiceConnection
     private function __construct(Workspace $workspace, string $service, array $settings, SalesContext $salesContext, UnknownItems $unknownItems)
     {
         if (1 !== preg_match(self::SERVICE_PATTERN, $service) || 'manual' === $service) {
-            throw InvalidConnection::invalidService($service);
+            throw new UnknownService($service);
         }
 
         $this->id = new Ulid();
@@ -83,7 +85,7 @@ class ServiceConnection
         $cleaned = [];
         foreach ($settings as $name => $value) {
             if (1 !== preg_match('/^[a-z0-9_]{1,40}$/', $name)) {
-                throw InvalidConnection::invalidSetting($name);
+                throw new InvalidSetting($name);
             }
             $value = trim($value);
             if ('' !== $value) {

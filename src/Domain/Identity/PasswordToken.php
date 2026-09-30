@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Identity;
 
+use App\Domain\Identity\Exception\PasswordTokenAlreadyUsed;
+use App\Domain\Identity\Exception\PasswordTokenExpired;
+use App\Domain\Identity\Exception\UnknownPasswordToken;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -50,7 +53,7 @@ class PasswordToken
     public static function issue(User $user, PasswordTokenPurpose $purpose, string $selector, string $verifier, \DateTimeImmutable $now): self
     {
         if (self::SELECTOR_LENGTH !== \strlen($selector) || '' === $verifier) {
-            throw InvalidPasswordToken::invalid();
+            throw new UnknownPasswordToken();
         }
 
         return new self(new Ulid(), $user, $purpose, $selector, hash('sha256', $verifier), $now->add($purpose->lifetime()));
@@ -59,13 +62,13 @@ class PasswordToken
     public function verify(string $verifier, \DateTimeImmutable $now): void
     {
         if (!hash_equals($this->verifierHash, hash('sha256', $verifier))) {
-            throw InvalidPasswordToken::invalid();
+            throw new UnknownPasswordToken();
         }
         if (null !== $this->usedAt) {
-            throw InvalidPasswordToken::alreadyUsed();
+            throw new PasswordTokenAlreadyUsed();
         }
         if ($now >= $this->expiresAt) {
-            throw InvalidPasswordToken::expired();
+            throw new PasswordTokenExpired();
         }
     }
 

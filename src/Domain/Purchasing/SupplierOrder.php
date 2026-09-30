@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Purchasing;
 
 use App\Domain\Identity\Workspace;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Purchasing\Exception\DiscountExceedsLines;
+use App\Domain\Purchasing\Exception\EmptySupplierOrder;
+use App\Domain\Purchasing\Exception\OrderedTwice;
+use App\Domain\Purchasing\Exception\ReceivedQuantityMissing;
+use App\Domain\Purchasing\Exception\SupplierOrderAlreadyReceived;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -81,15 +86,15 @@ class SupplierOrder
     {
         $this->assertStillOrdered();
         if ([] === $items) {
-            throw InvalidPurchase::emptyOrder();
+            throw new EmptySupplierOrder();
         }
         $discount ??= Money::zero();
         $deliveryFees ??= Money::zero();
         if ($discount->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('La remise globale');
+            throw new NegativeAmount('La remise globale');
         }
         if ($deliveryFees->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Les frais de livraison');
+            throw new NegativeAmount('Les frais de livraison');
         }
 
         $this->supplier = $supplier;
@@ -98,7 +103,7 @@ class SupplierOrder
         foreach ($items as $position => $purchased) {
             foreach ($this->lines as $line) {
                 if ($line->isFor($purchased->item->productId, $purchased->item->variant)) {
-                    throw InvalidPurchase::orderedTwice($purchased->item->label());
+                    throw new OrderedTwice($purchased->item->label());
                 }
             }
             $this->lines->add(new SupplierOrderLine($this, $purchased, $position));
@@ -111,7 +116,7 @@ class SupplierOrder
     {
         $lines = $this->lines();
         if ($discount->greaterThan($this->subtotal())) {
-            throw InvalidPurchase::discountExceedsLines();
+            throw new DiscountExceedsLines();
         }
 
         $this->discount = $discount;
@@ -133,7 +138,7 @@ class SupplierOrder
         $this->assertStillOrdered();
 
         foreach ($this->lines() as $line) {
-            $quantity = $receivedQuantities[(string) $line->id()] ?? throw InvalidPurchase::receivedQuantityMissing($line->label());
+            $quantity = $receivedQuantities[(string) $line->id()] ?? throw new ReceivedQuantityMissing($line->label());
             $line->receive($quantity);
         }
         $this->status = SupplierOrderStatus::Received;
@@ -145,7 +150,7 @@ class SupplierOrder
     public function assertStillOrdered(): void
     {
         if (SupplierOrderStatus::Received === $this->status) {
-            throw InvalidPurchase::alreadyReceived($this->reference);
+            throw new SupplierOrderAlreadyReceived($this->reference);
         }
     }
 

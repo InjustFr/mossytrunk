@@ -18,7 +18,7 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;

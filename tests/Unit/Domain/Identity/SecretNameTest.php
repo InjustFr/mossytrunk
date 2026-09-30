@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Identity;
 
-use App\Domain\Identity\InvalidAccount;
+use App\Domain\Identity\Exception\InvalidAccount;
 use App\Domain\Identity\SecretName;
 use PHPUnit\Framework\TestCase;
 

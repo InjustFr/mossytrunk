@@ -8,7 +8,7 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Shared\Exception\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;

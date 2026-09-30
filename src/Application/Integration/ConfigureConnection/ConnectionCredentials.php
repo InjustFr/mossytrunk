@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ConfigureConnection;
 
+use App\Application\Integration\Exception\MissingSetting;
 use App\Application\Integration\ServiceDescription;
-use App\Application\Integration\ServiceUnavailable;
 use App\Application\Workspace\WorkspaceSecrets;
 use App\Domain\Identity\SecretName;
 use App\Domain\Integration\ServiceConnection;
@@ -43,7 +43,7 @@ final readonly class ConnectionCredentials
                 $known = $known || null !== $current;
             }
             if ($field->required && !$known) {
-                throw ServiceUnavailable::missingSetting($field->label);
+                throw new MissingSetting($field->label);
             }
         }
 

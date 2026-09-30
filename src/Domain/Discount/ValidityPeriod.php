@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Discount\Exception\DiscountStartedToday;
+use App\Domain\Discount\Exception\ValidityEndsBeforeStart;
 use App\Domain\Shared\DateRange;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -24,7 +26,7 @@ final readonly class ValidityPeriod
         $end = null === $end ? null : self::day($end);
 
         if (null !== $start && null !== $end && $end < $start) {
-            throw InvalidDiscountRule::endsBeforeStart();
+            throw new ValidityEndsBeforeStart();
         }
 
         return new self($start, $end);
@@ -63,7 +65,7 @@ final readonly class ValidityPeriod
     {
         $yesterday = self::day($moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE)))->modify('-1 day');
         if (null !== $this->start && $this->start > $yesterday) {
-            throw InvalidDiscountRule::startedToday();
+            throw new DiscountStartedToday();
         }
 
         return self::between($this->start, $yesterday);

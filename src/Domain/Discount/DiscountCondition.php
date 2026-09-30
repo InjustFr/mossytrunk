@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Discount\Exception\ConditionQuantityTooSmall;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -29,7 +30,7 @@ abstract class DiscountCondition
     protected function __construct(DiscountRule $rule, int $quantity)
     {
         if ($quantity < 1) {
-            throw InvalidDiscountRule::quantityTooSmall();
+            throw new ConditionQuantityTooSmall();
         }
         $this->id = new Ulid();
         $this->rule = $rule;

@@ -52,7 +52,7 @@ A product split per variant (« Mug Lichen », « Mug Fougère ») can be gather
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P10 | The moved part is one variant of the source, or the **whole source** when it has no variants. The target is an existing product (not the source) or a new product with the source's type and prices | `MoveVariantHandler` | `MoveVariantTest` |
-| P11 | The target variant is created when missing; left empty, sales merge into a target without variants. A target without variants that already has sales cannot get its first variant (those sales would have none) | `MoveVariantHandler`, `InvalidProduct::soldWithoutVariant()` | `MoveVariantTest` |
+| P11 | The target variant is created when missing; left empty, sales merge into a target without variants. A target without variants that already has sales cannot get its first variant (those sales would have none) | `MoveVariantHandler`, `SoldWithoutVariant` | `MoveVariantTest` |
 | P12 | Every order line of the moved (product, variant) now sells the target: name and variant change, **prices stay** as sold. A line merges into a line of the same order already selling the target at the same prices | `Order::moveSales()`, `OrderLine::reassign()` | `OrderTest`, `MoveVariantTest` |
 | P13 | A source left without anything to sell (whole product moved, or its last variant) is **deleted**; discount conditions on it target the product it went into instead (quantities added when that product already has a condition) | `MoveVariantHandler`, `DiscountRule::replaceProduct()` | `DiscountRuleTest`, `MoveVariantTest` |
 
@@ -63,7 +63,7 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P14 | A deleted product leaves the catalogue, and the discount conditions on it are removed. Past orders keep their lines (name and prices are snapshots); reports show them under « Sans type » | `DeleteProductHandler`, `DiscountRule::withdrawProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
-| P15 | A product that is the **only condition** of a discount cannot be deleted: change or delete that discount first | `InvalidDiscountRule::onlyEligibleProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
+| P15 | A product that is the **only condition** of a discount cannot be deleted: change or delete that discount first | `OnlyEligibleProduct` | `DeleteProductTest`, `DiscountRuleTest` |
 
 | P16 | Every product of the workspace can be deleted at once, like P14. Discounts with product conditions only are deleted with them; those also having type conditions keep those | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
 | P17 | Every selling price a product has had is kept with its date (creation, then each change; setting the same price records nothing). Products that existed before the history start with their current price at their creation date | `Product::reprice()`, `SellingPriceChange` | `ProductTest`, `GetProductTest` |

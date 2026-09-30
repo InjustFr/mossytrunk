@@ -9,8 +9,8 @@ use App\Application\WorkspaceContext;
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignCollectionRepository;
 use App\Domain\Design\DesignRepository;
+use App\Domain\Design\Exception\ProductAlreadyDesigned;
 use App\Domain\Design\GabaritRepository;
-use App\Domain\Design\InvalidDesign;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use Psr\Clock\ClockInterface;
@@ -60,7 +60,7 @@ final readonly class DesignProductHandler
         $product = $this->products->get(Ulid::fromString($productId));
         $existing = $this->designs->findByProduct($product->id());
         if (null !== $existing) {
-            throw InvalidDesign::productAlreadyDesigned($product->displayName(), $existing->name());
+            throw new ProductAlreadyDesigned($product->displayName(), $existing->name());
         }
 
         return $product;

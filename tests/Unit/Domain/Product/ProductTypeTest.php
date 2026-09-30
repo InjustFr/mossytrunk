@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Product;
 
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;

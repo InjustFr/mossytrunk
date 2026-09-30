@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Design\Exception\DeclinationAlreadyProduced;
+use App\Domain\Design\Exception\EmptyDesignName;
+use App\Domain\Design\Exception\UnknownAdaptation;
 use App\Domain\Product\Product;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -77,7 +80,7 @@ class Declination
     public function assertEditable(): void
     {
         if ($this->isProduced()) {
-            throw InvalidDesign::declinationProduced($this->displayName());
+            throw new DeclinationAlreadyProduced($this->displayName());
         }
     }
 
@@ -88,10 +91,10 @@ class Declination
     {
         $productName = trim($productName);
         if ('' === $productName) {
-            throw InvalidDesign::emptyName('du produit');
+            throw new EmptyDesignName('du produit');
         }
         if ($sellingPrice->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix');
+            throw new NegativeAmount('Le prix');
         }
 
         $this->productName = $productName;
@@ -102,7 +105,7 @@ class Declination
     public function tick(string $adaptation, bool $done): void
     {
         if (!\in_array($adaptation, $this->adaptations, true)) {
-            throw InvalidDesign::unknownAdaptation($adaptation);
+            throw new UnknownAdaptation($adaptation);
         }
 
         $remaining = array_values(array_filter($this->doneAdaptations, static fn (string $existing): bool => $existing !== $adaptation));

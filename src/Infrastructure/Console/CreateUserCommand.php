@@ -6,7 +6,7 @@ namespace App\Infrastructure\Console;
 
 use App\Application\Identity\CreateUser\CreateUser;
 use App\Application\Identity\CreateUser\CreateUserHandler;
-use App\Domain\Shared\DomainException;
+use App\Domain\Shared\Exception\DomainException;
 use Symfony\Component\Console\Attribute\Argument;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;

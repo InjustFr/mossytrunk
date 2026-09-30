@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Product;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Product\Exception\EmptyTypeName;
+use App\Domain\Product\Exception\InvalidTypeCode;
+use App\Domain\Product\Exception\InvalidTypeColor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -48,7 +51,7 @@ class ProductType
         $this->recolor($color);
 
         if (1 !== preg_match('/^[A-Z0-9]{1,8}$/', $code)) {
-            throw InvalidProduct::invalidTypeCode($code);
+            throw new InvalidTypeCode($code);
         }
         $this->code = $code;
     }
@@ -77,7 +80,7 @@ class ProductType
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidProduct::emptyTypeName();
+            throw new EmptyTypeName();
         }
 
         $this->name = $name;
@@ -87,7 +90,7 @@ class ProductType
     {
         $color = strtolower(trim($color));
         if (1 !== preg_match('/^#[0-9a-f]{6}$/', $color)) {
-            throw InvalidProduct::invalidTypeColor($color);
+            throw new InvalidTypeColor($color);
         }
 
         $this->color = $color;

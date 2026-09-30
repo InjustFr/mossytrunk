@@ -8,7 +8,7 @@ use App\Application\Identity\CheckPasswordToken\CheckPasswordTokenHandler;
 use App\Application\Identity\RequestPasswordReset\RequestPasswordResetHandler;
 use App\Application\Identity\SetPassword\SetPasswordHandler;
 use App\Domain\Identity\PasswordTokenPurpose;
-use App\Domain\Shared\DomainException;
+use App\Domain\Shared\Exception\DomainException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;

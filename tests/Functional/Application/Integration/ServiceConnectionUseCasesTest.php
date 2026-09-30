@@ -8,11 +8,12 @@ use App\Application\Integration\Authorize\AuthorizeHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\ConfigureConnection\ConnectionSettings;
 use App\Application\Integration\ConfigureConnection\UpdateConnectionHandler;
+use App\Application\Integration\Exception\ServiceNotRegistered;
+use App\Application\Integration\Exception\ServiceUnavailable;
 use App\Application\Integration\ListServices\ListServicesHandler;
 use App\Application\Integration\ListServices\ServiceView;
 use App\Application\Integration\RemoveConnection\RemoveConnectionHandler;
-use App\Application\Integration\ServiceUnavailable;
-use App\Domain\Integration\InvalidConnection;
+use App\Domain\Integration\Exception\ServiceAlreadyAdded;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
 use App\Tests\Support\ActsAsUser;
@@ -60,7 +61,7 @@ final class ServiceConnectionUseCasesTest extends KernelTestCase
     {
         $this->addSumUp('MCODE', 'sup_sk_first0001');
 
-        $this->expectExceptionObject(InvalidConnection::alreadyAdded('SumUp'));
+        $this->expectExceptionObject(new ServiceAlreadyAdded('SumUp'));
 
         $this->addSumUp('MCODE', 'sup_sk_first0001');
     }
@@ -74,7 +75,7 @@ final class ServiceConnectionUseCasesTest extends KernelTestCase
 
     public function testAnUnknownServiceCannotBeAdded(): void
     {
-        $this->expectExceptionObject(ServiceUnavailable::unknown('paypal'));
+        $this->expectExceptionObject(new ServiceNotRegistered('paypal'));
 
         ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'paypal', []);
     }

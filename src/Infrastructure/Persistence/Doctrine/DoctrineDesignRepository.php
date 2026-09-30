@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -39,7 +39,7 @@ final readonly class DoctrineDesignRepository implements DesignRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof Design ? $result : throw NotFound::entity('Design', (string) $id);
+        return $result instanceof Design ? $result : throw new NotFound('Design', (string) $id);
     }
 
     public function findByProduct(Ulid $productId): ?Design

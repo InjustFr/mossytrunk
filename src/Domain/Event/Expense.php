@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Event;
 
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Event\Exception\EmptyExpenseLabel;
+use App\Domain\Shared\Exception\NonPositiveAmount;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -52,10 +53,10 @@ class Expense
     {
         $label = trim($label);
         if ('' === $label) {
-            throw InvalidEvent::emptyExpenseLabel();
+            throw new EmptyExpenseLabel();
         }
         if (!$amount->isPositive()) {
-            throw InvalidMoney::mustBePositive('Le montant de la dépense');
+            throw new NonPositiveAmount('Le montant de la dépense');
         }
 
         $this->label = $label;

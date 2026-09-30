@@ -6,7 +6,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Domain\Identity\Workspace;
 use App\Domain\Identity\WorkspaceRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -23,7 +23,7 @@ final readonly class DoctrineWorkspaceRepository implements WorkspaceRepository
 
     public function get(Ulid $id): Workspace
     {
-        return $this->entityManager->find(Workspace::class, $id) ?? throw NotFound::entity('Espace de travail', (string) $id);
+        return $this->entityManager->find(Workspace::class, $id) ?? throw new NotFound('Espace de travail', (string) $id);
     }
 
     public function findByName(string $name): ?Workspace

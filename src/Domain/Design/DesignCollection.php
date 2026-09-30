@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Identity\Workspace;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -47,7 +48,7 @@ class DesignCollection
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidDesign::emptyName('de la collection');
+            throw new EmptyDesignName('de la collection');
         }
 
         $this->name = $name;

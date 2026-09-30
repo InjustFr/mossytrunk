@@ -8,7 +8,7 @@ use App\Application\Integration\Connectors;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Identity\WorkspaceRepository;
-use App\Domain\Integration\InvalidConnection;
+use App\Domain\Integration\Exception\ServiceAlreadyAdded;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\ServiceConnectionRepository;
 
@@ -28,7 +28,7 @@ final readonly class AddConnectionHandler
     {
         $description = $this->connectors->get($settings->service)->describe();
         if (null !== $this->connections->find($settings->service)) {
-            throw InvalidConnection::alreadyAdded($description->label);
+            throw new ServiceAlreadyAdded($description->label);
         }
 
         $connection = ServiceConnection::create(

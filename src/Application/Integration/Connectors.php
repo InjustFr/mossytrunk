@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Integration;
 
+use App\Application\Integration\Exception\ServiceNotRegistered;
 use App\Domain\Order\Order;
 
 final readonly class Connectors
@@ -26,7 +27,7 @@ final readonly class Connectors
 
     public function get(string $service): SalesConnector
     {
-        return $this->connectors[$service] ?? throw ServiceUnavailable::unknown($service);
+        return $this->connectors[$service] ?? throw new ServiceNotRegistered($service);
     }
 
     public function has(string $service): bool

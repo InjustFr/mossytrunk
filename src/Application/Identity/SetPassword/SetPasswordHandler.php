@@ -7,7 +7,7 @@ namespace App\Application\Identity\SetPassword;
 use App\Application\Identity\PasswordHasher;
 use App\Application\Identity\PasswordTokenIssuer;
 use App\Application\Transaction;
-use App\Domain\Identity\InvalidAccount;
+use App\Domain\Identity\Exception\PasswordTooShort;
 use App\Domain\Identity\PasswordTokenRepository;
 use App\Domain\Identity\User;
 
@@ -28,7 +28,7 @@ final readonly class SetPasswordHandler
         [$passwordToken, $verifier] = $this->issuer->resolve($token);
 
         if (mb_strlen($password) < self::MIN_LENGTH) {
-            throw InvalidAccount::passwordTooShort(self::MIN_LENGTH);
+            throw new PasswordTooShort(self::MIN_LENGTH);
         }
 
         $passwordToken->consume($verifier, $this->issuer->now());

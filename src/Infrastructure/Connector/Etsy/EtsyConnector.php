@@ -7,10 +7,10 @@ namespace App\Infrastructure\Connector\Etsy;
 use App\Application\Integration\Authorization;
 use App\Application\Integration\AuthorizingConnector;
 use App\Application\Integration\Credentials;
+use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Integration\LinePrices;
 use App\Application\Integration\ServiceDescription;
 use App\Application\Integration\ServiceField;
-use App\Application\Integration\ServiceUnavailable;
 use App\Application\Integration\Tokens;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
@@ -42,7 +42,7 @@ final readonly class EtsyConnector implements AuthorizingConnector
 
     public function sales(Credentials $credentials): iterable
     {
-        $shopId = $credentials->accountId ?? throw ServiceUnavailable::notConnected('Etsy');
+        $shopId = $credentials->accountId ?? throw new ServiceNotConnected('Etsy');
 
         return $this->gateway->paidReceipts(self::app($credentials), $this->accessToken($credentials), $shopId);
     }
@@ -63,12 +63,12 @@ final readonly class EtsyConnector implements AuthorizingConnector
 
     public function refresh(Credentials $credentials): Tokens
     {
-        return $this->gateway->refresh(self::app($credentials), $credentials->refreshToken ?? throw ServiceUnavailable::notConnected('Etsy'));
+        return $this->gateway->refresh(self::app($credentials), $credentials->refreshToken ?? throw new ServiceNotConnected('Etsy'));
     }
 
     private function accessToken(Credentials $credentials): string
     {
-        return $credentials->accessToken ?? throw ServiceUnavailable::notConnected('Etsy');
+        return $credentials->accessToken ?? throw new ServiceNotConnected('Etsy');
     }
 
     private static function app(Credentials $credentials): EtsyApp

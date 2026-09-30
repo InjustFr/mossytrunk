@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Identity;
 
-use App\Domain\Identity\InvalidPasswordToken;
+use App\Domain\Identity\Exception\UnknownPasswordToken;
 use App\Domain\Identity\PasswordToken;
 use App\Domain\Identity\PasswordTokenPurpose;
 use App\Domain\Identity\PasswordTokenRepository;
@@ -40,7 +40,7 @@ final readonly class PasswordTokenIssuer
 
         $passwordToken = '' === $verifier ? null : $this->tokens->findBySelector($selector);
         if (null === $passwordToken) {
-            throw InvalidPasswordToken::invalid();
+            throw new UnknownPasswordToken();
         }
         $passwordToken->verify($verifier, $this->now());
 

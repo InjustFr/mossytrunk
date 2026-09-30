@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Purchasing;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Purchasing\Exception\EmptySupplierName;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -48,7 +49,7 @@ class Supplier
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidPurchase::emptySupplierName();
+            throw new EmptySupplierName();
         }
 
         $this->name = $name;

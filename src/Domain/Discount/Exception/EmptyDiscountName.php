@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Discount\Exception;
+
+final class EmptyDiscountName extends InvalidDiscountRule
+{
+    public function __construct()
+    {
+        parent::__construct('Le nom de la remise est obligatoire.');
+    }
+}

@@ -6,8 +6,10 @@ namespace App\Domain\Stock;
 
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\Exception\NegativeCount;
+use App\Domain\Stock\Exception\NonPositiveStockQuantity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -61,10 +63,10 @@ class StockItem
     public function receive(int $quantity, Money $totalCost, LotOrigin $origin, \DateTimeImmutable $receivedAt, ?Ulid $sourceId = null): StockLot
     {
         if ($quantity < 1) {
-            throw InvalidStock::quantityMustBePositive();
+            throw new NonPositiveStockQuantity();
         }
         if ($totalCost->isNegative()) {
-            throw InvalidMoney::mustNotBeNegative('Le prix payé');
+            throw new NegativeAmount('Le prix payé');
         }
 
         $lot = new StockLot($this, $quantity, max(0, $quantity + min($this->onHand, 0)), $totalCost, $receivedAt, $origin, $sourceId);
@@ -80,7 +82,7 @@ class StockItem
     public function withdraw(int $quantity, Money $fallbackUnitCost): Money
     {
         if ($quantity < 1) {
-            throw InvalidStock::quantityMustBePositive();
+            throw new NonPositiveStockQuantity();
         }
 
         $consumption = $this->consume($quantity);
@@ -98,7 +100,7 @@ class StockItem
     public function correctTo(int $counted, Money $fallbackUnitCost, \DateTimeImmutable $countedAt): StockCorrection
     {
         if ($counted < 0) {
-            throw InvalidStock::countMustNotBeNegative();
+            throw new NegativeCount();
         }
 
         $expected = $this->onHand;

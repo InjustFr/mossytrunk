@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Purchasing\Supplier;
 use App\Domain\Purchasing\SupplierRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -28,7 +28,7 @@ final readonly class DoctrineSupplierRepository implements SupplierRepository
     public function get(Ulid $id): Supplier
     {
         return $this->entityManager->getRepository(Supplier::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Fournisseur', (string) $id);
+            ?? throw new NotFound('Fournisseur', (string) $id);
     }
 
     public function findByName(string $name): ?Supplier

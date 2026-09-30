@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Design\DesignCollectionRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -27,7 +27,7 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
     public function get(Ulid $id): DesignCollection
     {
         return $this->entityManager->getRepository(DesignCollection::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Collection', (string) $id);
+            ?? throw new NotFound('Collection', (string) $id);
     }
 
     public function all(): array

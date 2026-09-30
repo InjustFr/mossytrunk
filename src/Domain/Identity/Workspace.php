@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Identity;
 
 use App\Domain\Accounting\DeclarationPeriodicity;
+use App\Domain\Identity\Exception\EmptyWorkspaceName;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -42,7 +43,7 @@ class Workspace
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidAccount::emptyWorkspaceName();
+            throw new EmptyWorkspaceName();
         }
 
         $this->name = $name;

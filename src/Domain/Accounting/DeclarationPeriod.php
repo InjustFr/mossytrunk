@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Accounting;
 
+use App\Domain\Accounting\Exception\UnknownDeclarationPeriod;
 use App\Domain\Shared\DateRange;
 
 final readonly class DeclarationPeriod
@@ -42,7 +43,7 @@ final readonly class DeclarationPeriod
             return new self(DeclarationPeriodicity::Quarterly, (int) $quarter[1], (int) $quarter[2]);
         }
 
-        throw InvalidDeclaration::unknownPeriod($key);
+        throw new UnknownDeclarationPeriod($key);
     }
 
     public function key(): string

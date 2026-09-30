@@ -6,8 +6,8 @@ namespace App\Application\Integration\ImportSales;
 
 use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
+use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
-use App\Application\Integration\ServiceUnavailable;
 use App\Application\Order\OrderPricing;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Stock\StockKeeper;
@@ -49,7 +49,7 @@ final readonly class ImportSalesHandler
     {
         $connector = $this->connectors->get($service);
         $description = $connector->describe();
-        $connection = $this->connections->find($service) ?? throw ServiceUnavailable::notAdded($description->label);
+        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($description->label);
 
         $sales = [];
         foreach ($connector->sales($this->session->credentials($connection)) as $sale) {

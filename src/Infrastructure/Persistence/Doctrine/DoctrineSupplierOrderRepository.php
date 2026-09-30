@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine;
 use App\Application\WorkspaceContext;
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Purchasing\SupplierOrderRepository;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -33,7 +33,7 @@ final readonly class DoctrineSupplierOrderRepository implements SupplierOrderRep
     public function get(Ulid $id): SupplierOrder
     {
         return $this->entityManager->getRepository(SupplierOrder::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw NotFound::entity('Commande fournisseur', (string) $id);
+            ?? throw new NotFound('Commande fournisseur', (string) $id);
     }
 
     public function all(): array

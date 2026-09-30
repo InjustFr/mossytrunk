@@ -8,12 +8,12 @@ use App\Application\Accounting\ExportOrders\ExportOrdersHandler;
 use App\Application\Integration\Authorize\AuthorizeHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\ConnectionSession;
+use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
 use App\Application\Integration\LinkExternalItem\LinkExternalItemHandler;
 use App\Application\Integration\ListExternalItems\ListExternalItemsHandler;
 use App\Application\Integration\ListServices\ListServicesHandler;
 use App\Application\Integration\ListServices\ServiceView;
-use App\Application\Integration\ServiceUnavailable;
 use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
@@ -55,7 +55,7 @@ final class ImportEtsySalesTest extends KernelTestCase
 
     public function testImportIsRefusedUntilTheShopIsAuthorized(): void
     {
-        $this->expectExceptionObject(ServiceUnavailable::notConnected('Etsy'));
+        $this->expectExceptionObject(new ServiceNotConnected('Etsy'));
 
         $this->import();
     }
@@ -95,7 +95,7 @@ final class ImportEtsySalesTest extends KernelTestCase
         $this->import();
         $item = self::getContainer()->get(ListExternalItemsHandler::class)('etsy')[0];
 
-        $this->expectException(\App\Domain\Shared\NotFound::class);
+        $this->expectException(\App\Domain\Shared\Exception\NotFound::class);
 
         self::getContainer()->get(LinkExternalItemHandler::class)('sumup', $item->id, $this->print, 'A4');
     }

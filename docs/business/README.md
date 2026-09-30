@@ -63,5 +63,5 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 - **Money** is integer cents (`Domain\Shared\Money`); the API exchanges cents; the UI shows `12,50 €`.
 - **Dates**: business time zone is Europe/Paris (`DateRange::TIMEZONE`). Events are whole days; orders are stored with their time zone.
 - **Identifiers**: ULIDs everywhere (`symfony/uid`, stored as PostgreSQL `uuid`).
-- **Business rule violations** throw `Domain\Shared\DomainException` subclasses with French user-facing messages, returned as HTTP 422 (`404` for `NotFound`).
+- **Business rule violations** throw `Domain\Shared\Exception\DomainException` subclasses (one class per violation, under `<Context>/Exception/`) with French user-facing messages, returned as HTTP 422 (`404` for `NotFound`).
 - **Snapshots**: orders never depend on the current state of products or discount rules.

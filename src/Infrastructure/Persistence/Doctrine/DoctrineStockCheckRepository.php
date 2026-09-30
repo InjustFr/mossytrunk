@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
-use App\Domain\Shared\NotFound;
+use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Stock\StockCheck;
 use App\Domain\Stock\StockCheckRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,7 +34,7 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof StockCheck ? $result : throw NotFound::entity('Inventaire', (string) $id);
+        return $result instanceof StockCheck ? $result : throw new NotFound('Inventaire', (string) $id);
     }
 
     public function ofEvent(Ulid $eventId): array

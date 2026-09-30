@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Accounting\ExportOrders;
 
 use App\Application\Integration\Connectors;
-use App\Domain\Accounting\InvalidDeclaration;
+use App\Domain\Accounting\Exception\DeclarationPeriodEndsBeforeStart;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
@@ -29,7 +29,7 @@ final readonly class ExportOrdersHandler
         $start = new \DateTimeImmutable($from, $timezone);
         $end = new \DateTimeImmutable($to, $timezone);
         if ($end < $start) {
-            throw InvalidDeclaration::invalidRange();
+            throw new DeclarationPeriodEndsBeforeStart();
         }
         $range = DateRange::fromDates($start, $end);
 

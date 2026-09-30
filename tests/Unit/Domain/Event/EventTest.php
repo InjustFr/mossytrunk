@@ -6,9 +6,9 @@ namespace App\Tests\Unit\Domain\Event;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\EventTiming;
-use App\Domain\Event\InvalidEvent;
+use App\Domain\Event\Exception\InvalidEvent;
 use App\Domain\Shared\DateRange;
-use App\Domain\Shared\InvalidMoney;
+use App\Domain\Shared\Exception\InvalidMoney;
 use App\Domain\Shared\Money;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;

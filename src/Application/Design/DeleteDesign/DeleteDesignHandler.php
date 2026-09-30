@@ -6,7 +6,7 @@ namespace App\Application\Design\DeleteDesign;
 
 use App\Application\Transaction;
 use App\Domain\Design\DesignRepository;
-use App\Domain\Design\InvalidDesign;
+use App\Domain\Design\Exception\DesignHasProducts;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DeleteDesignHandler
@@ -21,7 +21,7 @@ final readonly class DeleteDesignHandler
     {
         $design = $this->designs->get(Ulid::fromString($designId));
         if ($design->hasProducts()) {
-            throw InvalidDesign::designHasProducts($design->name());
+            throw new DesignHasProducts($design->name());
         }
         $this->designs->remove($design);
         $this->transaction->commit();

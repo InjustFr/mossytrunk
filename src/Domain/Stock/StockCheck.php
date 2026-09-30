@@ -6,8 +6,10 @@ namespace App\Domain\Stock;
 
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
+use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
-use App\Domain\Shared\NotFound;
+use App\Domain\Stock\Exception\CountedTwice;
+use App\Domain\Stock\Exception\EmptyStockCheck;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -44,7 +46,7 @@ class StockCheck
     private function __construct(Event $event, \DateTimeImmutable $checkedAt, array $counts)
     {
         if ([] === $counts) {
-            throw InvalidStock::emptyCheck();
+            throw new EmptyStockCheck();
         }
 
         $this->id = new Ulid();
@@ -58,7 +60,7 @@ class StockCheck
             $key = $count->item->id()->toRfc4122();
             $label = $count->item->product()->sellable($count->item->variant())->label();
             if (isset($counted[$key])) {
-                throw InvalidStock::countedTwice($label);
+                throw new CountedTwice($label);
             }
             $counted[$key] = true;
             $correction = $count->item->correctTo($count->counted, $count->fallbackUnitCost, $checkedAt);
@@ -99,7 +101,7 @@ class StockCheck
             }
         }
 
-        throw NotFound::entity('Ligne d\'inventaire', (string) $lineId);
+        throw new NotFound('Ligne d\'inventaire', (string) $lineId);
     }
 
     public function unexplainedUnits(): int

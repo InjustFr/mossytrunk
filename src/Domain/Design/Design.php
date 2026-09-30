@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Design\Exception\AdaptationsPending;
+use App\Domain\Design\Exception\AlreadyDeclined;
+use App\Domain\Design\Exception\EmptyDesignName;
+use App\Domain\Design\Exception\NothingToValidate;
+use App\Domain\Design\Exception\SameProductTwice;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
+use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
-use App\Domain\Shared\NotFound;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -72,7 +77,7 @@ class Design
     {
         $name = trim($name);
         if ('' === $name) {
-            throw InvalidDesign::emptyName('du design');
+            throw new EmptyDesignName('du design');
         }
 
         $this->name = $name;
@@ -153,21 +158,21 @@ class Design
     {
         $pending = $this->pendingDeclinations();
         if ([] === $pending) {
-            throw InvalidDesign::nothingToValidate($this->name);
+            throw new NothingToValidate($this->name);
         }
 
         $names = [];
         foreach ($this->declinations() as $declination) {
             $key = mb_strtolower($declination->displayName());
             if (isset($names[$key])) {
-                throw InvalidDesign::sameProductTwice($declination->displayName());
+                throw new SameProductTwice($declination->displayName());
             }
             $names[$key] = true;
         }
         foreach ($pending as $declination) {
             $count = \count($declination->pendingAdaptations());
             if ($count > 0) {
-                throw InvalidDesign::adaptationsPending($declination->displayName(), $count);
+                throw new AdaptationsPending($declination->displayName(), $count);
             }
         }
 
@@ -200,7 +205,7 @@ class Design
     {
         foreach ($this->declinations as $declination) {
             if ($declination->isOn($gabarit)) {
-                throw InvalidDesign::alreadyDeclined($gabarit->name());
+                throw new AlreadyDeclined($gabarit->name());
             }
         }
     }
@@ -213,7 +218,7 @@ class Design
             }
         }
 
-        throw NotFound::entity('Déclinaison', (string) $declinationId);
+        throw new NotFound('Déclinaison', (string) $declinationId);
     }
 
     public function isValidated(): bool

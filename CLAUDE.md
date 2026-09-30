@@ -48,7 +48,7 @@ Production: `Dockerfile` stages `base` → `vendor`/`assets` → `prod` (the las
 Enforced by `deptrac.yaml`. Rules:
 - Doctrine mapping = **attributes on Domain entities** (accepted trade-off: no separate persistence models).
 - Entities change state only through intention-revealing methods (`reprice()`, `addExpense()`…). Named constructors (`Product::create()`), private constructor if useful.
-- Invariants throw subclasses of `App\Domain\Shared\DomainException` → returned as HTTP 422 `{detail}` by `Presentation\Api\DomainExceptionListener`.
+- Invariants throw subclasses of `App\Domain\Shared\Exception\DomainException` → returned as HTTP 422 `{detail}` by `Presentation\Api\DomainExceptionListener`. **One file per exception**: `<Context>/Exception/<Violation>.php` (`final class EmptyProductName extends InvalidProduct`, message built in the constructor, `throw new EmptyProductName()`), grouped under an abstract per-context base (`InvalidProduct`, `InvalidOrder`…). No static factory lists.
 - Money = `App\Domain\Shared\Money` (integer cents). The API exchanges **cents** as integers.
 - Handlers are plain invokable services (`__invoke(Command)`), called directly by controllers. They persist through repository interfaces and end with `App\Application\Transaction::commit()` (Doctrine flush).
 

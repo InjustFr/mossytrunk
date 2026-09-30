@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Event;
 
+use App\Domain\Event\Exception\OverlappingEvent;
 use App\Domain\Shared\DateRange;
 use Symfony\Component\Uid\Ulid;
 
@@ -21,7 +22,7 @@ final readonly class EventScheduler
         $overlapping = $this->events->findOverlapping($period, $except);
 
         if (null !== $overlapping) {
-            throw InvalidEvent::overlaps($overlapping->name());
+            throw new OverlappingEvent($overlapping->name());
         }
     }
 }

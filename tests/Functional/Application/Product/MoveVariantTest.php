@@ -15,7 +15,9 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\MoveVariant\MoveVariant;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\SoldWithoutVariant;
+use App\Domain\Product\Exception\UnknownVariant;
+use App\Domain\Product\Exception\VariantMovedOntoItself;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
@@ -83,7 +85,7 @@ final class MoveVariantTest extends KernelTestCase
         $mug = $this->product('Mug', 1_200);
         $this->order([[$mug, null, 1]]);
 
-        $this->expectExceptionObject(InvalidProduct::soldWithoutVariant('Mug'));
+        $this->expectExceptionObject(new SoldWithoutVariant('Mug'));
         $this->move(new MoveVariant($lichen, null, $mug, null, 'Lichen'));
     }
 
@@ -91,7 +93,7 @@ final class MoveVariantTest extends KernelTestCase
     {
         $shirt = $this->product('T-shirt', 2_000, ['S', 'M']);
 
-        $this->expectExceptionObject(InvalidProduct::movedOntoItself());
+        $this->expectExceptionObject(new VariantMovedOntoItself());
         $this->move(new MoveVariant($shirt, 'M', $shirt, null, 'L'));
     }
 
@@ -99,7 +101,7 @@ final class MoveVariantTest extends KernelTestCase
     {
         $shirt = $this->product('T-shirt', 2_000, ['S']);
 
-        $this->expectExceptionObject(InvalidProduct::unknownVariant('T-shirt', 'XL'));
+        $this->expectExceptionObject(new UnknownVariant('T-shirt', 'XL'));
         $this->move(new MoveVariant($shirt, 'XL', null, 'Tee', null));
     }
 

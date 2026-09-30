@@ -11,7 +11,7 @@ use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Application\Product\UpdateProductType\UpdateProductTypeHandler;
-use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\ProductType;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;

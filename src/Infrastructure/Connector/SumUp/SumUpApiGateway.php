@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Connector\SumUp;
 
-use App\Application\Integration\ServiceUnavailable;
+use App\Application\Integration\Exception\ServiceUnreachable;
 use App\Infrastructure\Http\Json;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
@@ -42,7 +42,7 @@ final readonly class SumUpApiGateway implements SumUpGateway
                 $query = self::nextPageQuery($page);
             }
         } catch (ExceptionInterface $exception) {
-            throw ServiceUnavailable::failed('SumUp', $exception->getMessage());
+            throw new ServiceUnreachable('SumUp', $exception->getMessage());
         }
     }
 
