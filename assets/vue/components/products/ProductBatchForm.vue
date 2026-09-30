@@ -31,9 +31,11 @@ const saving = ref(false);
 
 const changeType = computed(() => form.typeId !== UNCHANGED);
 const union = (lists) => [...new Set(lists.flat())];
+const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const everyProductHas = (variant) => props.products.every((product) => product.variants.some((existing) => same(existing, variant)));
 const addable = computed(() => (changeType.value
     ? variantsOf(form.typeId)
-    : union(props.products.map((product) => variantsOf(product.typeId)))));
+    : union(props.products.map((product) => variantsOf(product.typeId)))).filter((variant) => !everyProductHas(variant)));
 const removable = computed(() => union(props.products.map((product) => product.variants)));
 
 async function onSubmit() {

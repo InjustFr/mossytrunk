@@ -107,6 +107,12 @@ test('filter by type and edit the selection in batch', async ({ page, request })
         await expect(row).toContainText('5,00');
         await expect(row).toContainText('Brillant');
     }
+
+    await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
+    await page.getByRole('button', { name: 'Modifier la sélection' }).click();
+    const toAdd = batch.getByRole('group', { name: 'Variantes à ajouter' });
+    await expect(toAdd.getByRole('button', { name: 'Mat' })).toBeVisible();
+    await expect(toAdd.getByRole('button', { name: 'Brillant' })).toHaveCount(0);
 });
 
 test('long lists are paginated', async ({ page, request }) => {
