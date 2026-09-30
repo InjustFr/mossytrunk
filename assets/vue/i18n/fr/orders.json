@@ -65,7 +65,9 @@
         "payment": "Paiement",
         "reference": "Référence",
         "count": "{count} commande | {count} commandes",
-        "source": "Source"
+        "source": "Source",
+        "selectAll": "Tout sélectionner",
+        "select": "Sélectionner la commande {reference}"
     },
     "margin": {
         "collected": "Encaissé",
@@ -104,5 +106,12 @@
         "cancel": "Annuler",
         "submit": "Fusionner",
         "done": "Commande {reference} fusionnée dans celle-ci."
+    },
+    "selection": {
+        "count": "{count} commande sélectionnée | {count} commandes sélectionnées",
+        "delete": "Supprimer la sélection",
+        "confirmDelete": "Supprimer {count} commande ? | Supprimer {count} commandes ?",
+        "deleteMessage": "Ses articles reviennent en stock. Cette action est définitive. | Leurs articles reviennent en stock. Cette action est définitive.",
+        "deleted": "{count} commande supprimée. | {count} commandes supprimées."
     }
 }

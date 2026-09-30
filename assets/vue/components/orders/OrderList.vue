@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import BaseCheckbox from '../ui/BaseCheckbox.vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -11,6 +12,7 @@ const props = defineProps({
     orders: { type: Array, required: true },
     highlightId: { type: String, default: null },
 });
+const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
 const { t } = useI18n();
 
@@ -31,6 +33,16 @@ const days = computed(() => {
     return totals;
 });
 
+const allChecked = computed(() => props.orders.length > 0 && props.orders.every((order) => checkedIds.value.includes(order.id)));
+
+function checkAll(checked) {
+    checkedIds.value = checked ? props.orders.map((order) => order.id) : [];
+}
+
+function setChecked(id, checked) {
+    checkedIds.value = checked ? [...checkedIds.value, id] : checkedIds.value.filter((existing) => existing !== id);
+}
+
 const withDayHeaders = (rows) => rows.map((order, index) => ({
     order,
     day: index === 0 || dayKey(rows[index - 1]) !== dayKey(order) ? days.value.get(dayKey(order)) : null,
@@ -42,6 +54,9 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
     <DataTable v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
+                <th class="order-list__check">
+                    <BaseCheckbox :model-value="allChecked" :aria-label="t('orders.list.selectAll')" @update:model-value="checkAll" />
+                </th>
                 <th>{{ t('orders.list.reference') }}</th>
                 <th>{{ t('orders.list.time') }}</th>
                 <th class="data-table__cell--number">{{ t('orders.list.items') }}</th>
@@ -54,7 +69,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
         <template #default="{ rows }">
             <template v-for="{ order, day } in withDayHeaders(rows)" :key="order.id">
                 <tr v-if="day" class="order-list__day">
-                    <th scope="rowgroup" colspan="4">
+                    <th scope="rowgroup" colspan="5">
                         <span class="order-list__date">{{ formatDay(order.placedAt) }}</span>
                         <a v-if="order.eventId" class="order-list__event" :href="`/events/${order.eventId}`">{{ order.eventName }}</a>
                         <span v-else class="order-list__event order-list__event--online">{{ t('orders.shop', { source: order.sourceLabel }) }}</span>
@@ -63,6 +78,13 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="order-list__day-count" colspan="2">{{ t('orders.list.count', day.count) }}</td>
                 </tr>
                 <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]">
+                    <td class="order-list__check">
+                        <BaseCheckbox
+                            :model-value="checkedIds.includes(order.id)"
+                            :aria-label="t('orders.list.select', { reference: order.reference })"
+                            @update:model-value="setChecked(order.id, $event)"
+                        />
+                    </td>
                     <td class="order-list__reference"><a :href="`/orders/${order.id}`">{{ order.reference }}</a></td>
                     <td class="order-list__time">{{ formatTime(order.placedAt) }}</td>
                     <td class="data-table__cell--number">{{ order.itemCount }}</td>
@@ -84,12 +106,13 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <style scoped>
 .order-list :deep(.data-table__table) { table-layout: fixed; }
-.order-list :deep(th:nth-child(1)) { width: 17%; }
-.order-list :deep(th:nth-child(2)) { width: 9%; }
-.order-list :deep(th:nth-child(6)) { width: 12%; }
-.order-list :deep(th:nth-child(3)),
+.order-list :deep(th.order-list__check) { width: 2.5rem; }
+.order-list :deep(th:nth-child(2)) { width: 17%; }
+.order-list :deep(th:nth-child(3)) { width: 9%; }
+.order-list :deep(th:nth-child(7)) { width: 12%; }
 .order-list :deep(th:nth-child(4)),
-.order-list :deep(th:nth-child(5)) { width: 11%; }
+.order-list :deep(th:nth-child(5)),
+.order-list :deep(th:nth-child(6)) { width: 11%; }
 
 .order-list__day > * { padding-top: var(--space-4); background: var(--color-bg); border-bottom-color: var(--color-border-strong); }
 .order-list__day th { text-align: left; font-size: inherit; color: inherit; white-space: normal; }

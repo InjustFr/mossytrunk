@@ -1,20 +1,21 @@
 <script setup>
-import BaseButton from '../ui/BaseButton.vue';
 import { useI18n } from 'vue-i18n';
+import BaseButton from './BaseButton.vue';
 
 defineProps({
     count: { type: Number, required: true },
+    summary: { type: String, required: true },
 });
-const emit = defineEmits(['edit', 'clear']);
+const emit = defineEmits(['clear']);
 const { t } = useI18n();
 </script>
 
 <template>
     <Transition name="selection-bar">
-        <div v-if="count > 0" class="selection-bar" role="region" :aria-label="t('products.selection.label')">
-            <span class="selection-bar__count">{{ t('products.selection.count', count) }}</span>
-            <BaseButton @click="emit('edit')">{{ t('products.selection.edit') }}</BaseButton>
-            <BaseButton variant="ghost" @click="emit('clear')">{{ t('products.selection.clear') }}</BaseButton>
+        <div v-if="count > 0" class="selection-bar" role="region" :aria-label="t('ui.selection.label')">
+            <span class="selection-bar__count">{{ summary }}</span>
+            <slot />
+            <BaseButton variant="ghost" @click="emit('clear')">{{ t('ui.selection.clear') }}</BaseButton>
         </div>
     </Transition>
 </template>

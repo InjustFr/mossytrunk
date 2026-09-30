@@ -65,7 +65,9 @@
         "payment": "Payment",
         "reference": "Reference",
         "count": "{count} order | {count} orders",
-        "source": "Source"
+        "source": "Source",
+        "selectAll": "Select all",
+        "select": "Select order {reference}"
     },
     "margin": {
         "collected": "Collected",
@@ -104,5 +106,12 @@
         "cancel": "Cancel",
         "submit": "Merge",
         "done": "Order {reference} merged into this one."
+    },
+    "selection": {
+        "count": "{count} order selected | {count} orders selected",
+        "delete": "Delete selection",
+        "confirmDelete": "Delete {count} order? | Delete {count} orders?",
+        "deleteMessage": "Its items go back to stock. This cannot be undone. | Their items go back to stock. This cannot be undone.",
+        "deleted": "{count} order deleted. | {count} orders deleted."
     }
 }

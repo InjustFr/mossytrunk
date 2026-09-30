@@ -5,6 +5,8 @@ import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
+import ConfirmButton from '../components/ui/ConfirmButton.vue';
+import SelectionBar from '../components/ui/SelectionBar.vue';
 import EventFilter from '../components/orders/EventFilter.vue';
 import OrderForm from '../components/orders/OrderForm.vue';
 import OrderList from '../components/orders/OrderList.vue';
@@ -18,7 +20,7 @@ import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useToast } from '../composables/useToast.js';
 
-const { orders, eventFilter, load, place } = useOrders();
+const { orders, eventFilter, load, place, removeSelected } = useOrders();
 const { products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
 const services = useServices();
@@ -33,6 +35,14 @@ const linkerOpen = computed({
 });
 const formOpen = ref(false);
 const lastPlacedId = ref(null);
+const checkedIds = ref([]);
+
+async function deleteChecked() {
+    const { deleted } = await removeSelected(checkedIds.value);
+    toast.success(t('orders.selection.deleted', deleted));
+    checkedIds.value = [];
+    await load();
+}
 
 async function onPlaced(order) {
     toast.success(t('orders.page.placed', { reference: order.reference }));
@@ -58,7 +68,10 @@ async function reimport(importer) {
     }
 }
 
-watch(eventFilter, load);
+watch(eventFilter, () => {
+    checkedIds.value = [];
+    load();
+});
 onMounted(async () => {
     await Promise.all([load(), loadProducts(), loadEvents(), services.load()]);
     importers.value = services.added.value.map(useImport);
@@ -98,8 +111,17 @@ onMounted(async () => {
             <template #actions>
                 <EventFilter v-model="eventFilter" :events="events" />
             </template>
-            <OrderList :orders="orders" :highlight-id="lastPlacedId" />
+            <OrderList v-model:checked-ids="checkedIds" :orders="orders" :highlight-id="lastPlacedId" />
         </BaseCard>
+        <SelectionBar :count="checkedIds.length" :summary="t('orders.selection.count', checkedIds.length)" @clear="checkedIds = []">
+            <ConfirmButton
+                variant="danger"
+                :label="t('orders.selection.delete')"
+                :confirm-label="t('orders.selection.confirmDelete', checkedIds.length)"
+                :message="t('orders.selection.deleteMessage', checkedIds.length)"
+                @confirm="deleteChecked"
+            />
+        </SelectionBar>
 
         <BaseModal v-model:open="linkerOpen" :title="linking ? t('orders.page.serviceItems', { service: linking.service.label }) : t('orders.page.items')">
             <ExternalItemLinker

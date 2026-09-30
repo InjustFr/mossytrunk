@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Order\DeleteAllOrders;
 
-use App\Application\Stock\StockKeeper;
+use App\Application\Order\OrderDeletion;
 use App\Application\Transaction;
 use App\Domain\Order\OrderRepository;
 
@@ -12,7 +12,7 @@ final readonly class DeleteAllOrdersHandler
 {
     public function __construct(
         private OrderRepository $orders,
-        private StockKeeper $stock,
+        private OrderDeletion $deletion,
         private Transaction $transaction,
     ) {
     }
@@ -21,8 +21,7 @@ final readonly class DeleteAllOrdersHandler
     {
         $orders = $this->orders->list();
         foreach ($orders as $order) {
-            $this->stock->putBack($order);
-            $this->orders->remove($order);
+            $this->deletion->delete($order);
         }
         $this->transaction->commit();
 

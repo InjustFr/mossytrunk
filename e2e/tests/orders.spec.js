@@ -87,3 +87,29 @@ test('delete an order from its detail page', async ({ page, request }) => {
     await expect(page).toHaveURL(/\/orders$/);
     await expect(page.getByRole('row').filter({ hasText: order.reference })).toHaveCount(0);
 });
+
+test('delete several orders from the list', async ({ page, request }) => {
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+    const orders = [];
+    for (const time of ['10:00', '11:00', '12:00']) {
+        const response = await request.post('/api/orders', {
+            data: { placedAt: `${event.startDate}T${time}`, lines: [{ productId: sticker.id, variant: null, quantity: 1 }] },
+        });
+        orders.push(await response.json());
+    }
+    const [first, second, kept] = orders;
+
+    await page.goto(`/orders?event=${event.id}`);
+    await page.getByRole('checkbox', { name: `Sélectionner la commande ${first.reference}` }).check();
+    await page.getByRole('checkbox', { name: `Sélectionner la commande ${second.reference}` }).check();
+    await expect(page.getByRole('region', { name: 'Sélection' })).toContainText('2 commandes sélectionnées');
+    await page.getByRole('button', { name: 'Supprimer la sélection' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Supprimer 2 commandes ?' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText('2 commandes supprimées.');
+    await expect(page.getByRole('row').filter({ hasText: first.reference })).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: second.reference })).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: kept.reference })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Sélection' })).toHaveCount(0);
+});

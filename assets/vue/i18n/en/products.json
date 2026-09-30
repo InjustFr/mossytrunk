@@ -121,10 +121,8 @@
         "noProductVariants": "These products have no variants."
     },
     "selection": {
-        "label": "Selection",
         "count": "{count} product selected | {count} products selected",
-        "edit": "Edit selection",
-        "clear": "Deselect"
+        "edit": "Edit selection"
     },
     "move": {
         "variant": "Variant",

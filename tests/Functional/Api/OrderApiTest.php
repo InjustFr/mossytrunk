@@ -24,7 +24,8 @@ final class OrderApiTest extends WebTestCase
         self::assertStringStartsWith('CMD-20260710-', Json::string($order, 'reference'));
 
         $client->jsonRequest('GET', '/api/orders');
-        $orders = Json::decode((string) $client->getResponse()->getContent());
+        $listed = $client->getResponse();
+        $orders = Json::decode((string) $listed->getContent());
         self::assertSame(4_000, Json::at($orders, 0, 'total'));
         self::assertSame('Japan Expo', Json::at($orders, 0, 'eventName'));
 
@@ -78,6 +79,28 @@ final class OrderApiTest extends WebTestCase
 
         $client->jsonRequest('GET', '/api/orders');
         self::assertSame([], Json::decode((string) $client->getResponse()->getContent()));
+    }
+
+    public function testDeleteSelectedOrders(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $product = $this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)])['id'];
+        $place = fn (string $at): string => Json::string($this->post($client, '/api/orders', ['placedAt' => $at, 'lines' => [['productId' => $product, 'quantity' => 1]]]), 'id');
+        $first = $place('2026-07-10T15:30');
+        $second = $place('2026-07-10T15:31');
+        $kept = $place('2026-07-10T15:32');
+
+        $client->jsonRequest('POST', '/api/orders/deletion', ['orderIds' => []]);
+        self::assertResponseStatusCodeSame(422);
+        $client->jsonRequest('POST', '/api/orders/deletion', ['orderIds' => [$first, $second]]);
+        self::assertResponseIsSuccessful();
+        self::assertSame(['deleted' => 2], Json::decode((string) $client->getResponse()->getContent()));
+
+        $client->jsonRequest('GET', '/api/orders');
+        $listed = $client->getResponse();
+        $orders = Json::decode((string) $listed->getContent());
+        self::assertSame([$kept], array_map(static fn (mixed $order): string => Json::string($order, 'id'), $orders));
     }
 
     public function testLineViolationsAreReported(): void

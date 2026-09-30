@@ -14,7 +14,7 @@ import ProductList from '../components/products/ProductList.vue';
 import ProductTypesModal from '../components/products/ProductTypesModal.vue';
 import RestockForm from '../components/products/RestockForm.vue';
 import StockHistory from '../components/products/StockHistory.vue';
-import SelectionBar from '../components/products/SelectionBar.vue';
+import SelectionBar from '../components/ui/SelectionBar.vue';
 import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
@@ -154,7 +154,9 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             />
         </BaseCard>
 
-        <SelectionBar :count="filters.selectedIds.value.length" @edit="batchOpen = true" @clear="filters.clearSelection" />
+        <SelectionBar :count="filters.selectedIds.value.length" :summary="t('products.selection.count', filters.selectedIds.value.length)" @clear="filters.clearSelection">
+            <BaseButton @click="batchOpen = true">{{ t('products.selection.edit') }}</BaseButton>
+        </SelectionBar>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
             <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />

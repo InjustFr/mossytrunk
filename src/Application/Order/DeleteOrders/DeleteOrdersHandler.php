@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Order\DeleteOrder;
+namespace App\Application\Order\DeleteOrders;
 
 use App\Application\Order\OrderDeletion;
 use App\Application\Transaction;
 use App\Domain\Order\OrderRepository;
 use Symfony\Component\Uid\Ulid;
 
-final readonly class DeleteOrderHandler
+final readonly class DeleteOrdersHandler
 {
     public function __construct(
         private OrderRepository $orders,
@@ -18,9 +18,14 @@ final readonly class DeleteOrderHandler
     ) {
     }
 
-    public function __invoke(string $orderId): void
+    public function __invoke(DeleteOrders $command): int
     {
-        $this->deletion->delete($this->orders->get(Ulid::fromString($orderId)));
+        $ids = array_values(array_unique($command->orderIds));
+        foreach ($ids as $id) {
+            $this->deletion->delete($this->orders->get(Ulid::fromString($id)));
+        }
         $this->transaction->commit();
+
+        return \count($ids);
     }
 }

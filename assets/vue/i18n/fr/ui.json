@@ -36,5 +36,9 @@
     },
     "form": {
         "optional": "facultatif"
+    },
+    "selection": {
+        "label": "Sélection",
+        "clear": "Désélectionner"
     }
 }
