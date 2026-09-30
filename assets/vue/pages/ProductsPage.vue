@@ -151,8 +151,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseModal v-model:open="historyOpen" :title="t('products.page.stockTitle', { name: viewingStock?.displayName ?? '' })">
             <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
-        <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" @renamed="load" />
-        <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')">
+        <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" @renamed="load" @changed="load" />
+        <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')" :focus-field="false">
             <ProductBatchForm :count="filters.selectedIds.value.length" :products="selectedProducts" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>
     </AppLayout>

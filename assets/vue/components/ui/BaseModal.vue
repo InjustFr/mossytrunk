@@ -9,12 +9,18 @@ const { t } = useI18n();
 const props = defineProps({
     title: { type: String, required: true },
     variant: { type: String, default: 'dialog' },
+    focusField: { type: Boolean, default: true },
 });
 const open = defineModel('open', { type: Boolean, required: true });
 
 const modal = computed(() => props.variant === 'dialog');
 
 function focusFirstField(event) {
+    if (!props.focusField) {
+        event.preventDefault();
+        event.target.focus({ preventScroll: true });
+        return;
+    }
     const field = event.target.querySelector('.modal__body :is(input, textarea, button, [role="combobox"])');
     if (field) {
         event.preventDefault();

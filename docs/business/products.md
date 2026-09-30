@@ -43,7 +43,7 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 ## Filters & batch edit
 
 The product list can be filtered by type (chips) and text. When a type with variants is chosen, its variants appear as a second row of chips: picking some keeps the products having one of them, and the stock column then shows **only the stock of those variants**. Ticked products (« Tout sélectionner » ticks what is visible)
-can be edited together: selling price, type, variants to add (skipped when already present), variants to remove.
+can be edited together: selling price, type, variants to add (skipped when already present), variants to remove. The batch form opens without focusing a field, so a tablet does not pop its keyboard up when only the type or variants change.
 
 | # | Rule | Where | Tests |
 |---|---|---|---|

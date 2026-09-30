@@ -102,7 +102,19 @@ async function onSubmit() {
 
 <style scoped>
 .gabarit-manager { display: flex; flex-direction: column; gap: var(--space-5); }
-.gabarit-manager__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.gabarit-manager__list {
+    display: flex;
+    flex-direction: column;
+    max-height: 30vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+    list-style: none;
+    overscroll-behavior: contain;
+}
+.gabarit-manager__item:last-child { border-bottom: none; }
 .gabarit-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .gabarit-manager__item--editing { background: var(--color-accent-soft); }
 .gabarit-manager__summary { display: flex; flex-direction: column; }

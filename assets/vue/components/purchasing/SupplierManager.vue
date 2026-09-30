@@ -84,7 +84,19 @@ async function onSubmit() {
 
 <style scoped>
 .supplier-manager { display: flex; flex-direction: column; gap: var(--space-5); }
-.supplier-manager__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.supplier-manager__list {
+    display: flex;
+    flex-direction: column;
+    max-height: 30vh;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+    list-style: none;
+    overscroll-behavior: contain;
+}
+.supplier-manager__item:last-child { border-bottom: none; }
 .supplier-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .supplier-manager__item--editing { background: var(--color-accent-soft); }
 .supplier-manager__contact { display: block; color: var(--color-muted); font-size: 0.8125rem; }
