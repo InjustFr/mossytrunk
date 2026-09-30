@@ -36,11 +36,11 @@ make cs / make cs-fix # PHP-CS-Fixer (@Symfony + declare(strict_types=1) in ever
 make phpstan         # PHPStan level 10 (phpstan.dist.neon, Symfony/Doctrine/PHPUnit extensions) — keep it at 0 errors
 make e2e             # builds assets, boots php-e2e (APP_ENV=test, fake SumUp/Etsy gateways), runs Playwright
 docker compose exec php php bin/console …
-make deploy DEPLOY_HOST=user@server DEPLOY_DIR=…   # run the current commit's image (published by CI) on the server; make push = manual push
+make deploy DEPLOY_HOST=user@server DEPLOY_DIR=…   # run the current commit's image (published by CI) on the server; make push = manual push after `make qa`; `make deploy` refuses a commit whose image CI did not publish
 ```
 Host port overridable with `HTTP_PORT`. Postgres exposed on `5433` (compose.override.yaml).
 
-Production: `Dockerfile` stages `base` → `vendor`/`assets` → `prod` (the last stage `dev` is what `compose.yaml` builds). `docker/php/docker-entrypoint.sh` waits for the DB, migrates, warms the cache. GitHub Actions (`.github/workflows/image.yml`) pushes the `prod` image to Docker Hub (`docker.io/injust/mossytrunk:<short sha>` + `:latest`, public) on every push to `main`, using the `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repository secrets. Server files live in `deploy/` (see `deploy/README.md`); the port is `APP_PORT`, reverse-proxy trust via `SYMFONY_TRUSTED_PROXIES`/`SYMFONY_TRUSTED_HEADERS` env. A new env var must be added to `deploy/.env.dist`.
+Production: `Dockerfile` stages `base` → `vendor`/`assets` → `prod` (the last stage `dev` is what `compose.yaml` builds). `docker/php/docker-entrypoint.sh` waits for the DB, migrates, warms the cache. GitHub Actions (`.github/workflows/ci.yml`) runs the full suite (`make ci`: cs, PHPStan, deptrac, PHPUnit, Playwright) on every push and pull request, and only when it passes on `main` pushes the `prod` image to Docker Hub (`docker.io/injust/mossytrunk:<short sha>` + `:latest`, public) using the `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repository secrets. Server files live in `deploy/` (see `deploy/README.md`); the port is `APP_PORT`, reverse-proxy trust via `SYMFONY_TRUSTED_PROXIES`/`SYMFONY_TRUSTED_HEADERS` env. A new env var must be added to `deploy/.env.dist`.
 
 ## Backend architecture (Onion) — `src/`
 

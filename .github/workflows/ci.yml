@@ -1,19 +1,44 @@
-name: Image
+name: CI
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 concurrency:
-  group: image-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 env:
   IMAGE: docker.io/injust/mossytrunk
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - run: docker compose build php
+
+      - run: make ci
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
+          if-no-files-found: ignore
+
+      - if: always()
+        run: docker compose --profile e2e down --volumes
+
   publish:
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read

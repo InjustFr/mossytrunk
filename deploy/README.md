@@ -82,7 +82,7 @@ server {
 
 ## Update / rollback
 
-Every push to `main` publishes `docker.io/injust/mossytrunk:<short sha>` and `:latest` (GitHub Actions, [`.github/workflows/image.yml`](../.github/workflows/image.yml)). The image is public: the server pulls it without `docker login`.
+Every push to `main` runs the full test suite (`make ci`) and, only if it passes, publishes `docker.io/injust/mossytrunk:<short sha>` and `:latest` (GitHub Actions, [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). `make deploy` refuses a commit whose image is not published, so only tested commits reach the server. The image is public: the server pulls it without `docker login`.
 
 From a dev machine, once the Actions run for the commit is green:
 
