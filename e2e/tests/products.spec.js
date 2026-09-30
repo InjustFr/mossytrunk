@@ -192,6 +192,7 @@ test('create a product type with a colour and a suggested code, then rename it, 
     await expect(edit.getByRole('option', { name: 'Sarcelle' })).toHaveAttribute('aria-selected', 'true');
     await edit.getByRole('textbox', { name: /^Nom/ }).fill(renamed);
     await edit.getByRole('button', { name: 'Code et affichage' }).click();
+    await edit.getByRole('textbox', { name: /^Code/ }).clear();
     await edit.getByRole('textbox', { name: /^Code/ }).fill(code.toLowerCase());
     await edit.getByRole('button', { name: 'Couleur personnalisée' }).click();
     const custom = page.getByRole('dialog', { name: 'Couleur personnalisée' });
