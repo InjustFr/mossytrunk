@@ -29,6 +29,7 @@ export:
         filename: 'orders-{from}-to-{to}.csv'
         column:
             reference: 'Reference'
+            externalReferences: 'External references'
             date: 'Date'
             time: 'Time'
             source: 'Source'
@@ -45,5 +46,6 @@ export:
         payment:
             card: 'Card'
             cash: 'Cash'
+            mixed: 'Mixed'
 product_type:
     miscellaneous: 'Miscellaneous'

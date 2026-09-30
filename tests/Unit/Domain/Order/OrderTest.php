@@ -7,6 +7,8 @@ namespace App\Tests\Unit\Domain\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Order\Exception\InvalidOrder;
+use App\Domain\Order\Exception\OrdersNotMergeable;
+use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\PaymentMethod;
@@ -15,6 +17,7 @@ use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
+use App\Tests\Support\DomainExceptions;
 use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
@@ -67,9 +70,9 @@ final class OrderTest extends TestCase
 
         self::assertNull($order->event());
         self::assertSame('etsy', $order->source());
-        self::assertSame('310', $order->externalId());
+        self::assertSame([['310', 'ETSY-310']], array_map(static fn (ImportedSale $sale): array => [$sale->externalId(), $sale->reference()], $order->importedSales()));
         self::assertTrue($order->isImported());
-        self::assertSame('ETSY-310', $order->reference());
+        self::assertStringStartsWith('CMD-20261002-', $order->reference());
         self::assertEquals([new AppliedDiscount('Remise Etsy', Money::cents(100))], $order->appliedDiscounts());
         self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
     }
@@ -137,8 +140,7 @@ final class OrderTest extends TestCase
     {
         $order = $this->imported('TX123', 3, 1_000);
 
-        self::assertSame('TX123', $order->reference());
-        self::assertSame('TX123', $order->externalId());
+        self::assertSame([['sumup', 'TX123', 'TX123']], array_map(static fn (ImportedSale $sale): array => [$sale->source(), $sale->externalId(), $sale->reference()], $order->importedSales()));
         self::assertSame('sumup', $order->source());
         self::assertEquals([new AppliedDiscount('Remise SumUp', Money::cents(200))], $order->appliedDiscounts());
         self::assertSame(1_000, $order->total()->amount());
@@ -177,6 +179,36 @@ final class OrderTest extends TestCase
         $this->expectException(InvalidOrder::class);
 
         Order::imported(TestWorkspace::get(), 'etsy', '311', 'ETSY-311', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::cents(-1), PaymentMethod::Card, [], 'Remise Etsy');
+    }
+
+    public function testTwoSalesOfOneCustomerAreMergedIntoOneOrder(): void
+    {
+        $card = Order::imported(TestWorkspace::get(), 'sumup', 'TX-CARD', 'TX-CARD', $this->event, self::at('2026-07-10 15:02'), [
+            (new OrderedItem($this->sticker->sellable(null), 2))->costing(Money::cents(160)),
+            (new OrderedItem($this->tshirt->sellable('M'), 1))->costing(Money::cents(900)),
+        ], Money::cents(2_700), Money::zero(), PaymentMethod::Card, [], 'Remise SumUp');
+        $cash = Order::imported(TestWorkspace::get(), 'sumup', 'TX-CASH', 'TX-CASH', $this->event, self::at('2026-07-10 15:00'), [
+            (new OrderedItem($this->sticker->sellable(null), 1))->costing(Money::cents(80)),
+        ], Money::cents(400), Money::zero(), PaymentMethod::Cash, [], 'Remise SumUp');
+
+        $card->absorb($cash);
+
+        self::assertSame([['Sticker', 3, 240], ['T-shirt — M', 1, 900]], array_map(static fn ($line): array => [$line->label(), $line->quantity(), $line->cost()->amount()], $card->lines()));
+        self::assertSame([3_200, 100, 3_100], [$card->subtotal()->amount(), $card->discountTotal()->amount(), $card->total()->amount()]);
+        self::assertSame(['TX-CARD', 'TX-CASH'], array_map(static fn (ImportedSale $sale): string => $sale->reference(), $card->importedSales()));
+        self::assertSame(PaymentMethod::Mixed, $card->paymentMethod());
+        self::assertEquals(self::at('2026-07-10 15:00'), $card->placedAt());
+        self::assertSame([], $cash->importedSales());
+    }
+
+    public function testOrdersOfDifferentEventsOrSourcesAreNotMerged(): void
+    {
+        $other = Event::schedule(TestWorkspace::get(), 'Salon', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-08-01'), new \DateTimeImmutable('2026-08-01')));
+        $manual = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+
+        DomainExceptions::assertThrown(new OrdersNotMergeable('different_source'), fn () => $this->imported('TX1', 1, 400)->absorb($manual));
+        DomainExceptions::assertThrown(new OrdersNotMergeable('different_event'), fn () => Order::place($other, self::at('2026-08-01 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [])->absorb($manual));
+        DomainExceptions::assertThrown(new OrdersNotMergeable('same_order'), static fn () => $manual->absorb($manual));
     }
 
     /**

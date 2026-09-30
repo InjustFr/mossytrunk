@@ -29,6 +29,7 @@ export:
         filename: 'commandes-{from}-au-{to}.csv'
         column:
             reference: 'Référence'
+            externalReferences: 'Réf. externes'
             date: 'Date'
             time: 'Heure'
             source: 'Source'
@@ -45,5 +46,6 @@ export:
         payment:
             card: 'Carte'
             cash: 'Espèces'
+            mixed: 'Mixte'
 product_type:
     miscellaneous: 'Divers'

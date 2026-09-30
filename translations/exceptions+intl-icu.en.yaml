@@ -58,6 +58,7 @@ integration:
     service_already_added: '{service} is already added.'
     unknown_service: 'Unknown service “{service}”.'
 order:
+    not_mergeable: 'These orders cannot be merged: {reason, select, same_order {it is the same order} different_event {they are not from the same event} different_source {they do not come from the same source} other {{reason}}}.'
     line_already_identified: '“{label}” already has a product.'
     unknown_product_chosen: 'Choose a product from the catalogue.'
     discount_exceeds_subtotal: 'Discounts cannot exceed the order amount.'

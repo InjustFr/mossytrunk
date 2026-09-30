@@ -15,6 +15,8 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\IdentifyOrderLine\IdentifyOrderLine;
 use App\Application\Order\IdentifyOrderLine\IdentifyOrderLineHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
+use App\Application\Order\ListOrders\OrderSummaryView;
+use App\Application\Order\MergeOrders\MergeOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
@@ -61,7 +63,8 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(0, $report->ordersAlreadyImported);
 
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
-        self::assertSame(['TFAKE0002', 'TFAKE0001'], array_column($orders, 'reference'));
+        self::assertSame([['TFAKE0002'], ['TFAKE0001']], array_column($orders, 'externalReferences'));
+        self::assertStringStartsWith('CMD-20300315-', $orders[0]->reference);
         self::assertSame(['sumup', 'sumup'], array_column($orders, 'source'));
         self::assertSame(['cash', 'card'], array_column($orders, 'paymentMethod'));
         self::assertSame(1_000, $orders[1]->total, 'amount charged by SumUp');
@@ -134,7 +137,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
         $costs = [];
         foreach ($orders as $order) {
-            $costs[$order->reference] = self::getContainer()->get(GetOrderHandler::class)($order->id)->costOfGoods;
+            $costs[$order->externalReferences[0]] = self::getContainer()->get(GetOrderHandler::class)($order->id)->costOfGoods;
         }
         self::assertSame(['TX-LATE' => 400, 'TX-EARLY' => 100], $costs);
         $product = array_values(array_filter(self::getContainer()->get(ListProductsHandler::class)(), static fn ($view): bool => $view->id === $badge))[0];
@@ -175,7 +178,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
         $this->import();
 
-        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'id', 'reference');
+        $orders = array_map(static fn (OrderSummaryView $order): string => $order->id, self::ordersBySale());
         $discounts = static fn (string $reference): array => self::getContainer()->get(GetOrderHandler::class)($orders[$reference])->discounts;
         self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-RULE'));
         self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-ROUNDED'));
@@ -215,7 +218,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(2, $report->ordersImported);
         self::assertSame(0, $report->productsCreated);
         self::assertSame([], self::getContainer()->get(ListProductsHandler::class)());
-        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), null, 'reference');
+        $orders = self::ordersBySale();
         self::assertSame([700, 1_200], [$orders['TX-FREE1']->total, $orders['TX-FREE2']->total]);
         $lines = self::getContainer()->get(GetOrderHandler::class)($orders['TX-FREE2']->id)->lines;
         self::assertEqualsCanonicalizing([[null, 'Unknown product', 1_000], [null, 'Unknown product', 200]], array_map(static fn (array $line): array => [$line['productId'], $line['label'], $line['unitPrice']], $lines));
@@ -246,6 +249,26 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::getContainer()->get(IdentifyOrderLineHandler::class)(new IdentifyOrderLine($orderId, $lineId, $print, 'A4'));
     }
 
+    public function testTwoSalesMergedIntoOneOrderAreNotImportedAgain(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        self::createProduct('Zine', 1_000);
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-CARD', new \DateTimeImmutable('2030-03-14T12:01:00Z'), Money::cents(1_000), [ExternalSales::line('Zine', Money::cents(1_000), 1)]),
+            ExternalSales::sumUp('TX-CASH', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(1_000), [ExternalSales::line('Zine', Money::cents(1_000), 1)]),
+        ]);
+        $this->import();
+        $orders = self::ordersBySale();
+
+        self::getContainer()->get(MergeOrdersHandler::class)($orders['TX-CARD']->id, $orders['TX-CASH']->id);
+        $report = $this->import();
+
+        self::assertSame([0, 2], [$report->ordersImported, $report->ordersAlreadyImported]);
+        $merged = self::getContainer()->get(ListOrdersHandler::class)();
+        self::assertCount(1, $merged);
+        self::assertSame([$orders['TX-CARD']->reference, ['TX-CARD', 'TX-CASH'], 2, 2_000], [$merged[0]->reference, $merged[0]->externalReferences, $merged[0]->itemCount, $merged[0]->total]);
+    }
+
     public function testDiscountedLinesNeitherLowerTheProductPriceNorTheOrderTotal(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
@@ -265,7 +288,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $prices = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'sellingPrice', 'name');
         self::assertSame(300, $prices['Calcifer'], 'highest price SumUp charged');
         self::assertSame(283, $prices['Mousse'], 'existing products are not modified');
-        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), null, 'reference');
+        $orders = self::ordersBySale();
         self::assertSame(300, $orders['TX-SINGLE']->total);
         self::assertSame(300, $orders['TX-MOUSSE']->total, 'charged more than the catalogue price');
         self::assertSame(800, $orders['TX-BUNDLE']->total);
@@ -337,6 +360,19 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $types = array_map(static fn ($type): array => [$type->name, $type->code, $type->prefixesNames], self::getContainer()->get(ListProductTypesHandler::class)());
         self::assertSame([['Miscellaneous', 'MIS', false], ['Print', 'PRI', true]], $types);
         self::assertSame(['Badge' => 'Miscellaneous', 'Sticker Mousse' => 'Miscellaneous', 'Tote bag' => 'Miscellaneous', 'A4 (Fougère)' => 'Print'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'typeName', 'name'));
+    }
+
+    /**
+     * @return array<string, OrderSummaryView>
+     */
+    private static function ordersBySale(): array
+    {
+        $orders = [];
+        foreach (self::getContainer()->get(ListOrdersHandler::class)() as $order) {
+            $orders[$order->externalReferences[0]] = $order;
+        }
+
+        return $orders;
     }
 
     private function import(): ImportReport

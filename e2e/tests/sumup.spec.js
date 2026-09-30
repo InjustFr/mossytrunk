@@ -41,7 +41,7 @@ test('an amount typed on the terminal is imported without product, then linked t
 
     await page.goto('/orders');
     await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
-    await page.getByRole('row').filter({ hasText: 'TFAKE0002' }).getByRole('link', { name: 'TFAKE0002' }).click();
+    await page.getByRole('row').filter({ hasText: 'TFAKE0002' }).getByRole('link', { name: /^CMD-/ }).click();
     await expect(page.getByRole('row').filter({ hasText: 'Produit inconnu' })).toContainText('2,00');
 
     await page.getByRole('button', { name: 'Choisir le produit' }).click();
@@ -52,4 +52,26 @@ test('an amount typed on the terminal is imported without product, then linked t
     await expect(page.getByTestId('toast')).toContainText('Vente associée à « Tote bag ».');
     await expect(page.getByRole('row').filter({ hasText: 'Produit inconnu' })).toHaveCount(0);
     await expect(page.getByRole('row').filter({ hasText: 'Tote bag' })).toHaveCount(2);
+});
+
+test('two SumUp sales of one customer are merged into one order', async ({ page, request }) => {
+    await addSumUp(request);
+    await request.post('/api/events', { data: { name: 'Salon de printemps 2030', location: 'Lyon', startDate: '2030-03-14', endDate: '2030-03-15' } });
+    await request.post('/api/services/sumup/import');
+
+    await page.goto('/orders');
+    await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
+    await page.getByRole('row').filter({ hasText: 'TFAKE0001' }).getByRole('link', { name: /^CMD-/ }).click();
+    await page.getByRole('button', { name: 'Fusionner avec…' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Fusionner deux commandes' });
+    await dialog.getByRole('radio').filter({ hasText: 'TFAKE0002' }).click();
+    await dialog.getByRole('button', { name: 'Fusionner', exact: true }).click();
+
+    await expect(page.getByTestId('toast')).toContainText('fusionnée dans celle-ci');
+    await expect(page.getByText('TFAKE0001, TFAKE0002')).toBeVisible();
+    await expect(page.getByText('Mixte')).toBeVisible();
+
+    await page.goto('/orders');
+    await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
+    await expect(page.getByRole('row').filter({ hasText: /TFAKE000[12]/ })).toHaveCount(1);
 });

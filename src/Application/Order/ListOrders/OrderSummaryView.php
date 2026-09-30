@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Order\ListOrders;
 
+use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Shared\DateRange;
 
 final readonly class OrderSummaryView
 {
+    /**
+     * @param list<string> $externalReferences
+     */
     public function __construct(
         public string $id,
         public string $reference,
@@ -22,6 +26,7 @@ final readonly class OrderSummaryView
         public string $source,
         public string $sourceLabel,
         public ?string $paymentMethod,
+        public array $externalReferences,
     ) {
     }
 
@@ -40,6 +45,7 @@ final readonly class OrderSummaryView
             $order->source(),
             $sourceLabel,
             $order->paymentMethod()?->value,
+            array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales()),
         );
     }
 }

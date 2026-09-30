@@ -81,6 +81,23 @@ class OrderLine
         $this->productName = $item->productName;
     }
 
+    /**
+     * @internal the order absorbs another order
+     */
+    public function copyInto(Order $order): self
+    {
+        $copy = clone $this;
+        $copy->id = new Ulid();
+        $copy->order = $order;
+
+        return $copy;
+    }
+
+    public function sellsSameAs(self $other): bool
+    {
+        return null !== $this->productId && null !== $other->productId && $this->productId->equals($other->productId) && $this->variant === $other->variant;
+    }
+
     public function identify(SellableItem $item, Money $cost): void
     {
         if (!$this->sellsUnknownProduct()) {

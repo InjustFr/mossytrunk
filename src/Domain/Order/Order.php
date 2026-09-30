@@ -11,6 +11,7 @@ use App\Domain\Order\Exception\DiscountExceedsSubtotal;
 use App\Domain\Order\Exception\EmptyOrder;
 use App\Domain\Order\Exception\NegativeShippingCost;
 use App\Domain\Order\Exception\OrderOutsideEvent;
+use App\Domain\Order\Exception\OrdersNotMergeable;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
@@ -26,7 +27,6 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Table(name: '`order`')]
 #[ORM\Index(name: 'order_workspace_placed_at_idx', columns: ['workspace_id', 'placed_at'])]
 #[ORM\UniqueConstraint(name: 'order_workspace_reference', columns: ['workspace_id', 'reference'])]
-#[ORM\UniqueConstraint(name: 'order_workspace_source_external_id', columns: ['workspace_id', 'source', 'external_id'])]
 class Order
 {
     public const string MANUAL = 'manual';
@@ -62,8 +62,9 @@ class Order
     #[ORM\Column(length: 32)]
     private string $source;
 
-    #[ORM\Column(length: 64, nullable: true)]
-    private ?string $externalId = null;
+    /** @var Collection<int, ImportedSale> */
+    #[ORM\OneToMany(targetEntity: ImportedSale::class, mappedBy: 'order', cascade: ['persist'])]
+    private Collection $importedSales;
 
     #[ORM\Column(length: 16, nullable: true, enumType: PaymentMethod::class)]
     private ?PaymentMethod $paymentMethod = null;
@@ -92,6 +93,7 @@ class Order
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
+        $this->importedSales = new ArrayCollection();
 
         foreach ($items as $item) {
             $this->addItem($item);
@@ -119,8 +121,8 @@ class Order
             throw new NegativeShippingCost();
         }
 
-        $order = new self($reference, $workspace, $event, $placedAt, $items, [], $source);
-        $order->externalId = $externalId;
+        $order = new self(self::generateReference($placedAt), $workspace, $event, $placedAt, $items, [], $source);
+        $order->importedSales->add(new ImportedSale($order, $source, $externalId, $reference, $paymentMethod));
         $order->paymentMethod = $paymentMethod;
         $order->shipping = $shipping;
 
@@ -195,9 +197,55 @@ class Order
         return self::MANUAL !== $this->source;
     }
 
-    public function externalId(): ?string
+    /**
+     * @return list<ImportedSale>
+     */
+    public function importedSales(): array
     {
-        return $this->externalId;
+        return array_values($this->importedSales->toArray());
+    }
+
+    public function absorb(self $other): void
+    {
+        if ($other === $this) {
+            throw new OrdersNotMergeable('same_order');
+        }
+        if ($other->event !== $this->event) {
+            throw new OrdersNotMergeable('different_event');
+        }
+        if ($other->source !== $this->source) {
+            throw new OrdersNotMergeable('different_source');
+        }
+
+        foreach ($other->lines() as $line) {
+            $twin = $this->lineTwinOf($line);
+            if (null === $twin) {
+                $this->lines->add($line->copyInto($this));
+                continue;
+            }
+            $twin->add($line->quantity(), $line->cost());
+        }
+        foreach ($other->importedSales() as $sale) {
+            $sale->joinOrder($this);
+            $this->importedSales->add($sale);
+        }
+        $other->importedSales->clear();
+
+        $this->appliedDiscounts = [...$this->appliedDiscounts, ...$other->appliedDiscounts];
+        $this->shipping = $this->shipping->add($other->shipping);
+        $this->placedAt = min($this->placedAt, $other->placedAt);
+        $this->paymentMethod = PaymentMethod::combined($this->paymentMethod, $other->paymentMethod);
+    }
+
+    private function lineTwinOf(OrderLine $line): ?OrderLine
+    {
+        foreach ($this->lines as $candidate) {
+            if ($candidate->sellsSameAs($line) && $candidate->sameUnitAmountsAs($line)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     public function paymentMethod(): ?PaymentMethod

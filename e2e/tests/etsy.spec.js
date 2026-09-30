@@ -38,7 +38,7 @@ test('connect the Etsy shop, import its orders and link an unknown listing to a 
     await expect(page.getByTestId('toast').last()).toContainText('1 commande importée, 1 déjà importée');
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
-    await page.getByRole('link', { name: 'ETSY-3100000001' }).click();
+    await page.getByRole('row').filter({ hasText: 'ETSY-3100000001' }).getByRole('link', { name: /^CMD-/ }).click();
     await expect(page.getByText('Boutique Etsy · importée depuis Etsy')).toBeVisible();
     await expect(page.getByText('Frais de port')).toBeVisible();
     await expect(page.getByTestId('order-total')).toContainText('27,50');

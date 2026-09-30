@@ -18,7 +18,8 @@
         "importedFrom": "importée depuis {source}",
         "items": "Articles",
         "amount": "Montant",
-        "margin": "Marge"
+        "margin": "Marge",
+        "externalReferences": "réf. {source} {references}"
     },
     "eventFilter": {
         "label": "Événement",
@@ -78,7 +79,8 @@
     },
     "payment": {
         "card": "Carte",
-        "cash": "Espèces"
+        "cash": "Espèces",
+        "mixed": "Mixte"
     },
     "identify": {
         "title": "Choisir le produit",
@@ -90,5 +92,16 @@
         "cancel": "Annuler",
         "save": "Associer",
         "saved": "Vente associée à « {name} »."
+    },
+    "merge": {
+        "open": "Fusionner avec…",
+        "title": "Fusionner deux commandes",
+        "intro": "Une même vente enregistrée en deux commandes (payée moitié en espèces, moitié par carte…) : la commande choisie rejoint {reference}. Ses articles, remises et références sont repris, puis elle est supprimée.",
+        "choose": "Commande à fusionner",
+        "none": "Aucune autre commande du même événement et de la même source.",
+        "items": "{count} article | {count} articles",
+        "cancel": "Annuler",
+        "submit": "Fusionner",
+        "done": "Commande {reference} fusionnée dans celle-ci."
     }
 }

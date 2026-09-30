@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Order\GetOrder;
 
 use App\Domain\Discount\AppliedDiscount;
+use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Shared\DateRange;
@@ -14,6 +15,7 @@ final readonly class OrderView
     /**
      * @param list<array{id: string, productId: ?string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
      * @param array{id: string, name: string}|null                                                                                            $event
+     * @param list<array{reference: string, paymentMethod: ?string}>                                                                          $importedSales
      * @param list<array{label: string, amount: int, ruleId: ?string}>                                                                        $discounts
      */
     public function __construct(
@@ -32,6 +34,7 @@ final readonly class OrderView
         public int $total,
         public int $costOfGoods,
         public int $margin,
+        public array $importedSales,
     ) {
     }
 
@@ -62,6 +65,7 @@ final readonly class OrderView
             $order->total()->amount(),
             $order->costOfGoods()->amount(),
             $order->total()->subtract($order->costOfGoods())->amount(),
+            array_map(static fn (ImportedSale $sale): array => ['reference' => $sale->reference(), 'paymentMethod' => $sale->paymentMethod()?->value], $order->importedSales()),
         );
     }
 }

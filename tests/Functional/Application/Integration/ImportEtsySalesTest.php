@@ -79,7 +79,7 @@ final class ImportEtsySalesTest extends KernelTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
-        $receipt = array_values(array_filter($orders, static fn ($order): bool => 'ETSY-3100000001' === $order->reference))[0];
+        $receipt = array_values(array_filter($orders, static fn ($order): bool => ['ETSY-3100000001'] === $order->externalReferences))[0];
         self::assertSame(['etsy', 'Etsy', null], [$receipt->source, $receipt->sourceLabel, $receipt->eventName]);
         $order = self::getContainer()->get(GetOrderHandler::class)($receipt->id);
         self::assertSame([2_600, 100, 250, 2_750], [$order->subtotal, $order->discountTotal, $order->shipping, $order->total]);

@@ -46,6 +46,25 @@ final class OrderApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(422);
     }
 
+    public function testTwoOrdersOfTheEventAreMerged(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $product = $this->post($client, '/api/products', ['name' => 'Zine', 'sellingPrice' => 1_000, 'typeId' => ProductTypesApi::create($client)])['id'];
+        $place = fn (string $at): string => Json::string($this->post($client, '/api/orders', ['placedAt' => $at, 'lines' => [['productId' => $product, 'variant' => null, 'quantity' => 1]]]), 'id');
+        $first = $place('2026-07-10T15:30');
+        $second = $place('2026-07-10T15:31');
+
+        $client->jsonRequest('POST', "/api/orders/$first/merge", ['orderId' => $second]);
+        self::assertResponseStatusCodeSame(204);
+
+        $client->jsonRequest('GET', "/api/orders/$first");
+        $order = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([2, 2_000], [Json::at($order, 'lines', 0, 'quantity'), Json::at($order, 'total')]);
+        $client->jsonRequest('GET', "/api/orders/$second");
+        self::assertResponseStatusCodeSame(404);
+    }
+
     public function testDeleteAllOrders(): void
     {
         $client = self::signedInClient();

@@ -7,6 +7,7 @@ namespace App\Application\Accounting\ExportOrders;
 use App\Application\Integration\Connectors;
 use App\Application\Translator;
 use App\Domain\Accounting\Exception\DeclarationPeriodEndsBeforeStart;
+use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
@@ -16,7 +17,7 @@ use App\Domain\Shared\Money;
 
 final readonly class ExportOrdersHandler
 {
-    private const array COLUMNS = ['reference', 'date', 'time', 'source', 'event', 'payment', 'items', 'detail', 'subtotal', 'discounts', 'shipping', 'total', 'cost', 'margin'];
+    private const array COLUMNS = ['reference', 'externalReferences', 'date', 'time', 'source', 'event', 'payment', 'items', 'detail', 'subtotal', 'discounts', 'shipping', 'total', 'cost', 'margin'];
 
     public function __construct(
         private OrderRepository $orders,
@@ -43,6 +44,7 @@ final readonly class ExportOrdersHandler
             $placedAt = $order->placedAt()->setTimezone($timezone);
             $rows[] = [
                 $order->reference(),
+                implode(', ', array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales())),
                 $placedAt->format('d/m/Y'),
                 $placedAt->format('H:i'),
                 $this->connectors->labelOf($order->source()),

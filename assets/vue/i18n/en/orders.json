@@ -18,7 +18,8 @@
         "importedFrom": "imported from {source}",
         "items": "Items",
         "amount": "Amount",
-        "margin": "Margin"
+        "margin": "Margin",
+        "externalReferences": "{source} ref. {references}"
     },
     "eventFilter": {
         "label": "Event",
@@ -78,7 +79,8 @@
     },
     "payment": {
         "card": "Card",
-        "cash": "Cash"
+        "cash": "Cash",
+        "mixed": "Mixed"
     },
     "identify": {
         "title": "Choose the product",
@@ -90,5 +92,16 @@
         "cancel": "Cancel",
         "save": "Link",
         "saved": "Sale linked to “{name}”."
+    },
+    "merge": {
+        "open": "Merge with…",
+        "title": "Merge two orders",
+        "intro": "One sale recorded as two orders (paid half in cash, half by card…): the chosen order joins {reference}. Its items, discounts and references are kept, then it is deleted.",
+        "choose": "Order to merge",
+        "none": "No other order from the same event and source.",
+        "items": "{count} item | {count} items",
+        "cancel": "Cancel",
+        "submit": "Merge",
+        "done": "Order {reference} merged into this one."
     }
 }

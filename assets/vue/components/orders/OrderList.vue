@@ -72,6 +72,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__reference">
                         <a :href="`/orders/${order.id}`">{{ order.reference }}</a>
+                        <span v-if="order.externalReferences.length" class="order-list__external">{{ order.externalReferences.join(', ') }}</span>
                         <span v-if="order.source !== 'manual'" class="order-list__badge">{{ order.sourceLabel }}</span>
                     </td>
                 </tr>
@@ -102,6 +103,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 .order-list__reference { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .order-list__reference a { color: var(--color-muted); }
+.order-list__external { display: block; overflow: hidden; color: var(--color-subtle); font-size: 0.75rem; text-overflow: ellipsis; }
 
 .order-list__badge {
     margin-left: var(--space-2);

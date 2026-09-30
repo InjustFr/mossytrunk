@@ -6,6 +6,8 @@ import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import IdentifyLineForm from '../components/orders/IdentifyLineForm.vue';
+import MergeOrderForm from '../components/orders/MergeOrderForm.vue';
+import BaseButton from '../components/ui/BaseButton.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
@@ -22,7 +24,14 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { order, load, remove, identifyLine } = useOrder(props.orderId);
+const { order, load, remove, identifyLine, mergeWith, candidates } = useOrder(props.orderId);
+const mergeOpen = ref(false);
+
+async function onMerged(other) {
+    mergeOpen.value = false;
+    toast.success(t('orders.merge.done', { reference: other.reference }));
+    await load();
+}
 const { products, load: loadProducts } = useProducts();
 const toast = useToast();
 const identifying = ref(null);
@@ -46,6 +55,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
     <AppLayout :title="order ? t('orders.detail.title', { reference: order.reference }) : t('orders.detail.titleFallback')">
         <template #back><a class="back-link" href="/orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
         <template #actions>
+            <BaseButton v-if="order" variant="secondary" @click="mergeOpen = true">{{ t('orders.merge.open') }}</BaseButton>
             <ConfirmButton v-if="order" :label="t('orders.detail.delete')" :confirm-label="t('orders.detail.confirmDelete')" @confirm="onDelete" />
         </template>
 
@@ -56,6 +66,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
                 <template v-else>{{ t('orders.shop', { source: order.sourceLabel }) }}</template>
                 <span v-if="order.source !== 'manual'"> · {{ t('orders.detail.importedFrom', { source: order.sourceLabel }) }}</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
+                <template v-if="order.importedSales.length"> · {{ t('orders.detail.externalReferences', { source: order.sourceLabel, references: order.importedSales.map((sale) => sale.reference).join(', ') }) }}</template>
             </p>
             <div class="order-detail-page__grid">
                 <BaseCard :title="t('orders.detail.items')">
@@ -72,6 +83,9 @@ onMounted(() => Promise.all([load(), loadProducts()]));
             </div>
         </div>
 
+        <BaseModal v-model:open="mergeOpen" :title="t('orders.merge.title')">
+            <MergeOrderForm v-if="mergeOpen && order" :order="order" :candidates="candidates" :submit="mergeWith" @merged="onMerged" @cancel="mergeOpen = false" />
+        </BaseModal>
         <BaseModal v-model:open="identifyOpen" :title="t('orders.identify.title')">
             <IdentifyLineForm v-if="identifying" :line="identifying" :products="products" :submit="(payload) => identifyLine(identifying.id, payload)" @saved="onIdentified" @cancel="identifying = null" />
         </BaseModal>

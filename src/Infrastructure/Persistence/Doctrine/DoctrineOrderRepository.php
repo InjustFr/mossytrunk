@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
+use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
@@ -79,11 +80,11 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         }
 
         $ids = $this->entityManager->createQueryBuilder()
-            ->select('o.externalId')
-            ->from(Order::class, 'o')
-            ->where('o.externalId IN (:ids)')
-            ->andWhere('o.source = :source')
-            ->andWhere('o.workspace = :workspace')
+            ->select('s.externalId')
+            ->from(ImportedSale::class, 's')
+            ->where('s.externalId IN (:ids)')
+            ->andWhere('s.source = :source')
+            ->andWhere('s.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('source', $source)
             ->setParameter('ids', $externalIds, ArrayParameterType::STRING)

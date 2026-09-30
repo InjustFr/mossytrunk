@@ -28,6 +28,12 @@ export function useOrder(orderId) {
 
     const remove = () => api.del(`/api/orders/${orderId}`);
     const identifyLine = (lineId, payload) => api.put(`/api/orders/${orderId}/lines/${lineId}/product`, payload);
+    const mergeWith = (otherOrderId) => api.post(`/api/orders/${orderId}/merge`, { orderId: otherOrderId });
+    const candidates = async () => {
+        const query = order.value.event ? `?eventId=${encodeURIComponent(order.value.event.id)}` : '';
+        const orders = await api.get(`/api/orders${query}`);
+        return orders.filter((other) => other.id !== orderId && other.source === order.value.source && (other.eventId ?? null) === (order.value.event?.id ?? null));
+    };
 
-    return { order, load, remove, identifyLine };
+    return { order, load, remove, identifyLine, mergeWith, candidates };
 }
