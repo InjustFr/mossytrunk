@@ -15,6 +15,8 @@ final readonly class UpdateProductTypePayload
         #[Assert\NotBlank(message: 'Choisissez une couleur.')]
         #[Assert\Regex(pattern: '/^#[0-9a-fA-F]{6}$/', message: 'Choisissez une couleur.')]
         public string $color = '',
+        #[Assert\Regex(pattern: '/^\s*[A-Za-z0-9]{1,8}\s*$/', message: 'Le code fait 1 à 8 lettres ou chiffres.')]
+        public ?string $code = null,
     ) {
     }
 }

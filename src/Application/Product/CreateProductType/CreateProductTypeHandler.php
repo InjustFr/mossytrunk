@@ -15,9 +15,9 @@ final readonly class CreateProductTypeHandler
     ) {
     }
 
-    public function __invoke(string $name, ?string $color = null): ProductType
+    public function __invoke(string $name, ?string $color = null, ?string $code = null): ProductType
     {
-        $type = $this->creator->create($name, $color);
+        $type = $this->creator->create($name, $color, $code);
         $this->transaction->commit();
 
         return $type;

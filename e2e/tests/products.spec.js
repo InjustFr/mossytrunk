@@ -3,13 +3,17 @@ import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
 import { createProduct } from './support/api.js';
 
-test('create a product with variants, then change its selling price; its buying price comes from stock', async ({ page }) => {
+const uniqueCode = (prefix) => `${prefix}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toUpperCase();
+
+test('create a product with variants and a suggested reference, then change its selling price and reference; its buying price comes from stock', async ({ page }) => {
     const name = unique('T-shirt');
+    const reference = uniqueCode('TSH-');
 
     await page.goto('/produits');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await form.getByLabel('Nom').fill(name);
+    await expect(form.getByLabel('Référence')).toHaveValue(/^PRD-TSH/);
     await form.getByLabel('Prix de vente (€)').fill('20');
     await form.getByLabel('Nouvelle variante').fill('Mousse');
     await form.getByLabel('Nouvelle variante').press('Enter');
@@ -29,13 +33,15 @@ test('create a product with variants, then change its selling price; its buying 
     await row.getByRole('button', { name: `Modifier ${name}` }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier le produit' });
     await expect(edit.getByLabel('Nom')).toHaveValue(name);
-    await expect(edit.getByText(/Référence PRD-T-SHIRT/)).toBeVisible();
+    await expect(edit.getByLabel('Référence')).toHaveValue(/^PRD-TSH/);
     await expect(edit.getByText('Pas encore acheté')).toBeVisible();
+    await edit.getByLabel('Référence').fill(reference);
     await edit.getByLabel('Prix de vente (€)').fill('25');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('mis à jour');
     await expect(row).toContainText('25,00');
+    await expect(row).toContainText(reference);
 });
 
 test('shows validation errors inline', async ({ page }) => {
@@ -155,9 +161,10 @@ test('delete a product', async ({ page, request }) => {
     await expect(page.getByRole('row').filter({ hasText: doomed.name })).toHaveCount(0);
 });
 
-test('create a product type with a colour, then rename it and give it a custom colour offered to other types', async ({ page, request }) => {
+test('create a product type with a colour and a suggested code, then rename it, change its code and give it a custom colour offered to other types', async ({ page, request }) => {
     const name = unique('Carte');
     const renamed = unique('Affiche');
+    const code = uniqueCode('A').slice(0, 8);
 
     await page.goto('/produits');
     await page.getByRole('button', { name: 'Types de produit' }).click();
@@ -165,6 +172,7 @@ test('create a product type with a colour, then rename it and give it a custom c
     await types.getByRole('button', { name: 'Ajouter un type' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nouveau type de produit' });
     await dialog.getByLabel('Nom').fill(name);
+    await expect(dialog.getByRole('textbox', { name: /^Code / })).toHaveValue(/^CAR\d*$/);
     await dialog.getByRole('option', { name: 'Sarcelle' }).click();
     await dialog.getByRole('button', { name: 'Créer le type' }).click();
     await expect(page.getByTestId('toast')).toContainText(`Type « ${name} » créé.`);
@@ -174,6 +182,7 @@ test('create a product type with a colour, then rename it and give it a custom c
     const edit = page.getByRole('dialog', { name: `Modifier le type ${name}` });
     await expect(edit.getByRole('option', { name: 'Sarcelle' })).toHaveAttribute('aria-selected', 'true');
     await edit.getByLabel('Nom').fill(renamed);
+    await edit.getByRole('textbox', { name: /^Code / }).fill(code.toLowerCase());
     await edit.getByRole('button', { name: 'Couleur personnalisée' }).click();
     const custom = page.getByRole('dialog', { name: 'Couleur personnalisée' });
     await custom.getByLabel('Code hexadécimal').fill('#123abc');
@@ -186,6 +195,7 @@ test('create a product type with a colour, then rename it and give it a custom c
     await expect(types).toContainText(renamed);
     const saved = (await (await request.get('/api/product-types')).json()).find((type) => type.name === renamed);
     expect(saved.color).toBe('#123abc');
+    expect(saved.code).toBe(code);
 
     await types.getByRole('button', { name: 'Ajouter un type' }).click();
     await expect(page.getByRole('dialog', { name: 'Nouveau type de produit' }).getByRole('option', { name: 'Personnalisée #123ABC' })).toBeVisible();

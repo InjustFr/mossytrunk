@@ -8,6 +8,7 @@ use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
+use App\Application\Product\SuggestTypeCode\SuggestTypeCodeHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Application\Product\UpdateProductType\UpdateProductTypeHandler;
@@ -36,6 +37,41 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         $types = self::getContainer()->get(ListProductTypesHandler::class)();
 
         self::assertSame(['Pringles' => 'PRI2', 'Print' => 'PRI'], array_column($types, 'code', 'name'));
+    }
+
+    public function testCodeIsChosenAtCreationAndChangedLater(): void
+    {
+        $create = self::getContainer()->get(CreateProductTypeHandler::class);
+        $print = (string) $create('Print', code: 'aff')->id();
+        $create('Sticker');
+
+        self::getContainer()->get(UpdateProductTypeHandler::class)($print, 'Print', '#2f7f7a', 'PRT');
+
+        $types = self::getContainer()->get(ListProductTypesHandler::class)();
+        self::assertSame(['Print' => 'PRT', 'Sticker' => 'STI'], array_column($types, 'code', 'name'));
+    }
+
+    public function testChosenCodeIsUnique(): void
+    {
+        $create = self::getContainer()->get(CreateProductTypeHandler::class);
+        $create('Print');
+        $sticker = (string) $create('Sticker')->id();
+
+        try {
+            $create('Affiche', code: 'PRI');
+            self::fail('a used code is refused at creation');
+        } catch (InvalidProduct) {
+        }
+
+        $this->expectException(InvalidProduct::class);
+        self::getContainer()->get(UpdateProductTypeHandler::class)($sticker, 'Sticker', '#2f7f7a', 'pri');
+    }
+
+    public function testCodeSuggestionAvoidsTakenCodes(): void
+    {
+        self::getContainer()->get(CreateProductTypeHandler::class)('Print');
+
+        self::assertSame('PRI2', self::getContainer()->get(SuggestTypeCodeHandler::class)('Pringles'));
     }
 
     public function testColorIsChosenOrTakenFromThePalette(): void

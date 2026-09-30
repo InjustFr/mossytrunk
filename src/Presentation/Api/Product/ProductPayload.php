@@ -8,7 +8,8 @@ use App\Domain\Product\Product;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Request body for creating or updating a product. Prices are integer cents; the reference is generated.
+ * Request body for creating or updating a product. Prices are integer cents; a blank reference is suggested at creation
+ * and kept on update.
  */
 final readonly class ProductPayload
 {
@@ -28,6 +29,8 @@ final readonly class ProductPayload
         public ?string $typeId = null,
         #[Assert\PositiveOrZero(message: 'Le seuil de stock bas ne peut pas être négatif.')]
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
+        #[Assert\Length(max: Product::REFERENCE_MAX_LENGTH, maxMessage: 'La référence ne peut pas dépasser {{ limit }} caractères.')]
+        public ?string $reference = null,
     ) {
     }
 }

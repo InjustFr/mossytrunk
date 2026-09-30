@@ -4,7 +4,7 @@ A **product** is a real item sold at events: sticker, print, T-shirt, original a
 
 | Field | Meaning |
 |---|---|
-| `reference` | Unique business code **generated at creation** from type code + name (`PRI-FORET`, `PRD-…` when untyped, `-2` suffix if taken), then **fixed** |
+| `reference` | Unique business code, **suggested** from type code + first three letters of the name (`PRI-FOR`, `PRD-…` when untyped, `-2` suffix if taken); the user may type another one at creation and **change it later** |
 | `type` | Optional **product type** (Print, Sticker, T-shirt…) |
 | `name` | Specific name; the product is **displayed as « {type} {name} »** (type Print + name « Forêt » = « Print Forêt ») |
 | `sellingPrice` | Default price charged to customers (cents) |
@@ -16,8 +16,8 @@ Model: `src/Domain/Product/Product.php` (Doctrine entity), `ProductType.php`, `S
 
 ## Product types
 
-A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, derived from the name at creation and made unique `PRI2`…, and a `color`).
-Types are managed from `/produits` (header button « Types de produit »: list, « Ajouter un type », edit name and colour), created **inline from the product form** (« ＋ Créer un type… ») or by an import; the code never changes. Renaming a type renames how its products are displayed; past orders keep their snapshot.
+A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, and a `color`). The code prefixes the references suggested for its products; it is **suggested** from the first three letters of the name (made unique `PRI2`…), and the user may type another one at creation and change it later (existing product references do not change).
+Types are managed from `/produits` (header button « Types de produit »: list, « Ajouter un type », edit name, code and colour), created **inline from the product form** (« ＋ Créer un type… », suggested code) or by an import (suggested code). Renaming a type renames how its products are displayed; past orders keep their snapshot.
 
 The colour marks the type everywhere it is shown (product list and filters, dashboard best sellers, event order recap). It is picked from a palette of 12 colours, or chosen freely (« Couleur personnalisée »: colour area, hue slider, hex code); a custom colour used by a type is offered in the palette of every type of the workspace. A type created without a colour (import) takes the next palette colour.
 
@@ -26,11 +26,11 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P1 | Reference and name are required (trimmed) | `Product::__construct()`, `Product::rename()` | `ProductTest` |
-| P2 | Reference is generated as `{TYPE CODE or PRD}-{NAME SLUG}` (accents removed, max 40 chars), suffixed `-2`, `-3`… when taken; it never changes afterwards (renaming or re-typing keeps it) | `ProductReferenceGenerator`, `CreateProductHandler`, SumUp import (+ DB unique index on workspace + reference) | `ProductReferenceGeneratorTest`, `ProductUseCasesTest` |
+| P2 | The suggested reference is `{TYPE CODE or PRD}-{first 3 letters/digits of the name}` (accents removed, `X` when none), suffixed `-2`, `-3`… when taken. The product form fills it in while the name/type are typed, until the user types their own; a blank reference at creation takes the suggestion (imports and designs always do). A chosen reference (creation or edit, max 64 chars) must be unique in the workspace; renaming or re-typing a product never changes it | `ProductReferenceGenerator`, `Product::changeReference()`, `ReferenceAvailability`, `CreateProductHandler`, `UpdateProductHandler` (+ DB unique index on workspace + reference) | `ProductReferenceGeneratorTest`, `ProductTest`, `ProductUseCasesTest`, `ProductApiTest` |
 | P3 | Prices are never negative. Only the selling price is entered by the user; the buying price starts at 0 and changes only through purchases (`Product::bought()`: restock, supplier order reception, or copied when a variant moves to a new product). Editing a product never changes it | `Product::reprice()`, `Product::bought()` | `ProductTest`, `ProductUseCasesTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
-| P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `ProductTypeCreator`, `UpdateProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
+| P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 letters/digits (stored uppercase). The suggested code is the first three letters/digits of the name (`TYP` when none), suffixed `2`, `3`… when taken; a blank code at creation takes the suggestion | `ProductTypeCreator`, `TypeCodeGenerator`, `UpdateProductTypeHandler`, `ProductType::recode()` | `ProductTypeTest`, `ProductTypeUseCasesTest`, `ProductTypeApiTest` |
 | P19 | A type colour is a `#rrggbb` hex colour (stored lowercase). Without one, a new type takes palette colour n° (number of types) | `ProductType::recolor()`, `CreateProductTypeHandler` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
 | P5 | **What is sold is a (product ULID, variant) tuple.** A product with variants requires one of *its* variants; a unique product accepts no variant | `Product::sellable(?variant)` → `SellableItem` | `ProductTest` |
 
@@ -75,8 +75,9 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 
 | Use case | Endpoint |
 |---|---|
-| `CreateProduct` | `POST /api/products` `{typeId?, name, sellingPrice, variants[], lowStockThreshold?}` |
-| `UpdateProduct` | `PUT /api/products/{id}` (same body) |
+| `CreateProduct` | `POST /api/products` `{typeId?, name, reference?, sellingPrice, variants[], lowStockThreshold?}` (blank reference = suggestion) |
+| `UpdateProduct` | `PUT /api/products/{id}` (same body; no reference = unchanged) |
+| `SuggestProductReference` | `GET /api/products/reference-suggestion?name=&typeId=` → `{reference}` |
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `GetProduct` | `GET /api/products/{id}` → product figures, all-time sales, stock per variant with lots, movements (purchases, supplier receptions, returns, inventory surplus, sales, inventory losses; newest first), selling price history, design |
 | `RecordSellingPrice`, `AmendSellingPrice`, `ForgetSellingPrice` | `POST /api/products/{id}/prices`, `PUT` / `DELETE /api/products/{id}/prices/{changeId}` `{price, since: YYYY-MM-DD}` |
@@ -85,7 +86,8 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
 | `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
-| `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?}` / `PUT /{id}` `{name, color}` / `GET /api/product-types` → `{id, name, code, color}` |
+| `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?, code?}` / `PUT /{id}` `{name, color, code?}` / `GET /api/product-types` → `{id, name, code, color}` |
+| `SuggestTypeCode` | `GET /api/product-types/code-suggestion?name=` → `{code}` |
 
 `ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
 

@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Product;
 
 /**
- * Builds the reference of a new product from its type and name: "{TYPE CODE}-{NAME}", e.g. PRI-FORET
- * ("PRD-…" when untyped). A numeric suffix keeps it unique (PRI-FORET-2). The reference is then fixed.
+ * Suggests the reference of a product from its type and name: "{TYPE CODE}-{first three letters of the name}",
+ * e.g. PRI-FOR ("PRD-…" when untyped). A numeric suffix keeps it unique (PRI-FOR-2). The user may change it.
  */
 final class ProductReferenceGenerator
 {
-    private const int MAX_SLUG_LENGTH = 40;
-
     /** @var array<string, true> references handed out during this request but maybe not flushed yet */
     private array $reserved = [];
 
@@ -21,7 +19,7 @@ final class ProductReferenceGenerator
 
     public function generate(?ProductType $type, string $name): string
     {
-        $base = \sprintf('%s-%s', $type?->code() ?? 'PRD', self::slug($name));
+        $base = \sprintf('%s-%s', $type?->code() ?? 'PRD', Abbreviation::of($name, 'X'));
         $reference = $base;
 
         for ($i = 2; isset($this->reserved[$reference]) || null !== $this->products->findByReference($reference); ++$i) {
@@ -31,13 +29,5 @@ final class ProductReferenceGenerator
         $this->reserved[$reference] = true;
 
         return $reference;
-    }
-
-    public static function slug(string $name): string
-    {
-        $ascii = (string) iconv('UTF-8', 'ASCII//TRANSLIT', $name);
-        $slug = trim((string) preg_replace('/[^A-Z0-9]+/', '-', strtoupper($ascii)), '-');
-
-        return '' === $slug ? 'X' : rtrim(substr($slug, 0, self::MAX_SLUG_LENGTH), '-');
     }
 }

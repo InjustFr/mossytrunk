@@ -33,6 +33,29 @@ final class ProductTest extends TestCase
         Product::create(TestWorkspace::get(), 'STK-01', '   ', Money::cents(400));
     }
 
+    public function testReferenceCanBeChanged(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+
+        $product->changeReference(' STK-MOUSSE ');
+
+        self::assertSame('STK-MOUSSE', $product->reference());
+    }
+
+    public function testChangedReferenceIsRequiredAndShort(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400));
+
+        try {
+            $product->changeReference('  ');
+            self::fail('a blank reference is refused');
+        } catch (InvalidProduct) {
+        }
+
+        $this->expectException(InvalidProduct::class);
+        $product->changeReference(str_repeat('A', Product::REFERENCE_MAX_LENGTH + 1));
+    }
+
     public function testReferenceIsRequired(): void
     {
         $this->expectException(InvalidProduct::class);

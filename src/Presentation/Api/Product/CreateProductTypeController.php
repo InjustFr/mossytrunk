@@ -17,6 +17,6 @@ final class CreateProductTypeController extends AbstractController
 {
     public function __invoke(#[MapRequestPayload] ProductTypePayload $payload, CreateProductTypeHandler $createType): JsonResponse
     {
-        return $this->json(ProductTypeView::fromType($createType($payload->name, $payload->color)), Response::HTTP_CREATED);
+        return $this->json(ProductTypeView::fromType($createType($payload->name, $payload->color, $payload->code)), Response::HTTP_CREATED);
     }
 }

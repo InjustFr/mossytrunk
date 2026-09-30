@@ -67,7 +67,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $sticker = $products[$index];
         self::assertSame(400, $sticker->sellingPrice);
         self::assertSame(0, $sticker->buyingPrice);
-        self::assertSame('PRD-STICKER-MOUSSE', $sticker->reference);
+        self::assertSame('PRD-STI', $sticker->reference);
     }
 
     public function testOrdersWithoutEventAreNotImportedAndReportedOnce(): void
@@ -191,7 +191,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $products = self::getContainer()->get(ListProductsHandler::class)();
         self::assertSame(['Print Forêt', 'Print Rivière'], array_column($products, 'displayName'));
         self::assertSame(['Forêt', 'Rivière'], array_column($products, 'name'));
-        self::assertSame(['PRI-FORET', 'PRI-RIVIERE'], array_column($products, 'reference'));
+        self::assertSame(['PRI-FOR', 'PRI-RIV'], array_column($products, 'reference'));
     }
 
     public function testLinesWithoutNameAreSoldAsAFreeAmountAtTheirOwnPrice(): void

@@ -14,17 +14,9 @@ use PHPUnit\Framework\TestCase;
 
 final class ProductReferenceGeneratorTest extends TestCase
 {
-    public function testSlug(): void
+    public function testTypeCodeThenFirstThreeLettersOfTheNameWithAUniqueSuffix(): void
     {
-        self::assertSame('FORET-D-AUTOMNE', ProductReferenceGenerator::slug("Forêt d'automne"));
-        self::assertSame('CLAIRIERE', ProductReferenceGenerator::slug('« Clairière »'));
-        self::assertSame('X', ProductReferenceGenerator::slug('!!'));
-        self::assertSame(40, \strlen(ProductReferenceGenerator::slug(str_repeat('a', 60))));
-    }
-
-    public function testTypeCodePrefixAndUniqueSuffix(): void
-    {
-        $existing = ['PRI-FORET' => true];
+        $existing = ['PRI-FOR' => true];
         $repository = $this->createStub(ProductRepository::class);
         $repository->method('findByReference')->willReturnCallback(
             static fn (string $reference): ?Product => isset($existing[$reference]) ? Product::create(TestWorkspace::get(), $reference, 'x', Money::zero()) : null,
@@ -32,8 +24,9 @@ final class ProductReferenceGeneratorTest extends TestCase
         $generator = new ProductReferenceGenerator($repository);
         $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
 
-        self::assertSame('PRI-FORET-2', $generator->generate($print, 'Forêt'));
-        self::assertSame('PRI-FORET-3', $generator->generate($print, 'Forêt'), 'references handed out earlier in the request are reserved');
-        self::assertSame('PRD-FORET', $generator->generate(null, 'Forêt'));
+        self::assertSame('PRI-FOR-2', $generator->generate($print, 'Forêt'));
+        self::assertSame('PRI-FOR-3', $generator->generate($print, "Forêt d'automne"), 'references handed out earlier in the request are reserved');
+        self::assertSame('PRD-CLA', $generator->generate(null, '« Clairière »'));
+        self::assertSame('PRI-X', $generator->generate($print, '!!'));
     }
 }

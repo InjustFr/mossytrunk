@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\UpdateProduct;
 
+use App\Application\Product\ReferenceAvailability;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Product\ProductRepository;
@@ -16,6 +17,7 @@ final readonly class UpdateProductHandler
     public function __construct(
         private ProductRepository $products,
         private ProductTypeRepository $types,
+        private ReferenceAvailability $availability,
         private StockKeeper $stock,
         private Transaction $transaction,
     ) {
@@ -25,6 +27,10 @@ final readonly class UpdateProductHandler
     {
         $product = $this->products->get(Ulid::fromString($command->productId));
 
+        if (null !== $command->reference) {
+            $this->availability->assertAvailable($command->reference, $product);
+            $product->changeReference($command->reference);
+        }
         $product->rename($command->name);
         $product->reprice(Money::cents($command->sellingPriceCents));
         $product->replaceVariants($command->variants);

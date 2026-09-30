@@ -22,9 +22,14 @@ export function useProducts() {
     const remove = (id) => api.del(`/api/products/${id}`);
     const removeAll = () => api.del('/api/products');
     const get = (id) => api.get(`/api/products/${id}`);
+    const suggestReference = async (name, typeId) => {
+        if (name.trim() === '') return '';
+        const query = new URLSearchParams({ name, typeId: typeId ?? '' });
+        return (await api.peek(`/api/products/reference-suggestion?${query}`)).reference;
+    };
     const designProduct = (id, payload) => api.post(`/api/products/${id}/design`, payload);
     const savePrice = (id, changeId, payload) => (changeId ? api.put(`/api/products/${id}/prices/${changeId}`, payload) : api.post(`/api/products/${id}/prices`, payload));
     const forgetPrice = (id, changeId) => api.del(`/api/products/${id}/prices/${changeId}`);
 
-    return { products, loading, load, create, update, batchUpdate, moveVariant, remove, removeAll, get, designProduct, savePrice, forgetPrice };
+    return { products, loading, load, create, update, batchUpdate, moveVariant, remove, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
 }

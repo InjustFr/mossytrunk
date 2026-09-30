@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Application\Product\CreateProduct;
 
+use App\Application\Product\ReferenceAvailability;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
@@ -19,6 +21,7 @@ final readonly class CreateProductHandler
         private ProductRepository $products,
         private ProductTypeRepository $types,
         private ProductReferenceGenerator $references,
+        private ReferenceAvailability $availability,
         private Transaction $transaction,
         private WorkspaceContext $workspace,
     ) {
@@ -30,7 +33,7 @@ final readonly class CreateProductHandler
 
         $product = Product::create(
             $this->workspace->current(),
-            $this->references->generate($type, $command->name),
+            $this->referenceOf($command, $type),
             $command->name,
             Money::cents($command->sellingPriceCents),
             $command->variants,
@@ -42,5 +45,16 @@ final readonly class CreateProductHandler
         $this->transaction->commit();
 
         return $product->id();
+    }
+
+    private function referenceOf(CreateProduct $command, ?ProductType $type): string
+    {
+        if (null === $command->reference || '' === trim($command->reference)) {
+            return $this->references->generate($type, $command->name);
+        }
+
+        $this->availability->assertAvailable($command->reference);
+
+        return $command->reference;
     }
 }

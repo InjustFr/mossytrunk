@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, toRef, watch } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
@@ -8,6 +8,8 @@ import FormField from '../ui/FormField.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantsInput from './VariantsInput.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
+import { useProducts } from '../../composables/useProducts.js';
+import { useSuggestion } from '../../composables/useSuggestion.js';
 
 const props = defineProps({
     product: { type: Object, default: null },
@@ -15,13 +17,20 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const emptyForm = () => ({ typeId: '', name: '', sellingPrice: null, variants: [], lowStockThreshold: 10 });
+const emptyForm = () => ({ typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10 });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
 
 const isEditing = computed(() => props.product !== null);
 const { types } = useProductTypes();
+const { suggestReference } = useProducts();
+const referenceSuggestion = useSuggestion(
+    toRef(form, 'reference'),
+    () => [form.name, form.typeId],
+    ([name, typeId]) => suggestReference(name, typeId || null),
+    { follow: props.product === null },
+);
 
 // Products are shown as "{type} {name}" everywhere, e.g. type Print + name "Forêt" = "Print Forêt".
 const displayName = computed(() => {
@@ -34,12 +43,14 @@ watch(() => props.product, (product) => {
         ? {
             typeId: product.typeId ?? '',
             name: product.name,
+            reference: product.reference,
             sellingPrice: product.sellingPrice,
             variants: [...product.variants],
             lowStockThreshold: product.lowStockThreshold,
         }
         : emptyForm());
     errors.value = {};
+    referenceSuggestion.reset(!product);
 }, { immediate: true });
 
 async function onSubmit() {
@@ -49,6 +60,7 @@ async function onSubmit() {
         await props.submit({
             typeId: form.typeId || null,
             name: form.name,
+            reference: form.reference.trim() === '' && !isEditing.value ? null : form.reference,
             sellingPrice: form.sellingPrice ?? -1,
             variants: form.variants,
             lowStockThreshold: form.lowStockThreshold ?? 0,
@@ -56,6 +68,7 @@ async function onSubmit() {
         emit('saved', displayName.value);
         if (!isEditing.value) {
             Object.assign(form, emptyForm());
+            referenceSuggestion.reset(true);
         }
     } catch (error) {
         errors.value = error.fieldErrors ?? {};
@@ -73,14 +86,16 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-            <p v-if="isEditing" class="product-form__reference">Référence <strong>{{ product.reference }}</strong></p>
-
             <FormField as="group" label="Type" :error="errors.typeId">
                 <TypeSelect v-model="form.typeId" />
             </FormField>
 
-            <FormField label="Nom" :error="errors.name" :hint="displayName ? `Affiché « ${displayName} » — la référence est générée automatiquement` : 'Ex. « Forêt » pour un Print Forêt'">
+            <FormField label="Nom" :error="errors.name" :hint="displayName ? `Affiché « ${displayName} »` : 'Ex. « Forêt » pour un Print Forêt'">
                 <input v-model="form.name" type="text" required>
+            </FormField>
+
+            <FormField label="Référence" :error="errors.reference" :hint="isEditing ? 'Unique dans l\'atelier.' : 'Proposée d\'après le type, modifiable.'">
+                <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited()">
             </FormField>
 
             <div class="product-form__row">
@@ -118,7 +133,6 @@ async function onSubmit() {
 .product-form__cost-label { font-weight: 500; }
 .product-form__cost-unknown { color: var(--color-muted); }
 .product-form__cost-hint { color: var(--color-muted); font-size: 0.8rem; }
-.product-form__reference { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .product-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .product-form__error {
     margin: 0;

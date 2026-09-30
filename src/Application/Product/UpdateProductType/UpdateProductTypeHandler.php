@@ -6,6 +6,8 @@ namespace App\Application\Product\UpdateProductType;
 
 use App\Application\Transaction;
 use App\Domain\Product\Exception\TypeAlreadyExists;
+use App\Domain\Product\Exception\TypeCodeAlreadyUsed;
+use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
 use Symfony\Component\Uid\Ulid;
 
@@ -17,7 +19,7 @@ final readonly class UpdateProductTypeHandler
     ) {
     }
 
-    public function __invoke(string $typeId, string $name, string $color): void
+    public function __invoke(string $typeId, string $name, string $color, ?string $code = null): void
     {
         $type = $this->types->get(Ulid::fromString($typeId));
 
@@ -28,6 +30,19 @@ final readonly class UpdateProductTypeHandler
 
         $type->rename($name);
         $type->recolor($color);
+        if (null !== $code) {
+            $this->recode($type, $code);
+        }
         $this->transaction->commit();
+    }
+
+    private function recode(ProductType $type, string $code): void
+    {
+        $code = strtoupper(trim($code));
+        if ($code !== $type->code() && $this->types->codeExists($code)) {
+            throw new TypeCodeAlreadyUsed($code);
+        }
+
+        $type->recode($code);
     }
 }

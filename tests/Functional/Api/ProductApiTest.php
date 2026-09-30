@@ -28,6 +28,26 @@ final class ProductApiTest extends WebTestCase
         self::assertSame(['S', 'M'], Json::at($products, 0, 'variants'));
     }
 
+    public function testReferenceIsSuggestedThenChosen(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/product-types', ['name' => 'Print']);
+        $print = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Forêt', 'sellingPrice' => 1_500, 'typeId' => $print]);
+
+        $client->jsonRequest('GET', '/api/products/reference-suggestion?'.http_build_query(['name' => 'Fougère', 'typeId' => $print]));
+        self::assertSame('PRI-FOU', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'reference'));
+        $client->jsonRequest('GET', '/api/products/reference-suggestion?'.http_build_query(['name' => 'Forêt', 'typeId' => $print]));
+        self::assertSame('PRI-FOR-2', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'reference'));
+
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Fougère', 'sellingPrice' => 1_500, 'reference' => 'PRI-FOUGERE']);
+        self::assertResponseStatusCodeSame(201);
+        $id = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+
+        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'Fougère', 'sellingPrice' => 1_500, 'reference' => 'PRI-FOR']);
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testDeleteAllProducts(): void
     {
         $client = self::signedInClient();

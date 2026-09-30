@@ -1,8 +1,10 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive, ref, toRef } from 'vue';
 import BaseButton from '../ui/BaseButton.vue';
 import FormField from '../ui/FormField.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
+import { useProductTypes } from '../../composables/useProductTypes.js';
+import { useSuggestion } from '../../composables/useSuggestion.js';
 
 const props = defineProps({
     type: { type: Object, default: null },
@@ -11,15 +13,23 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const form = reactive({ name: props.type?.name ?? '', color: props.type?.color ?? props.defaultColor });
+const form = reactive({ name: props.type?.name ?? '', color: props.type?.color ?? props.defaultColor, code: props.type?.code ?? '' });
 const errors = ref({});
 const saving = ref(false);
+
+const { suggestCode } = useProductTypes();
+const codeSuggestion = useSuggestion(toRef(form, 'code'), () => form.name, suggestCode, { follow: !props.type });
+
+function onCodeInput() {
+    form.code = form.code.toUpperCase();
+    codeSuggestion.edited();
+}
 
 async function onSubmit() {
     saving.value = true;
     errors.value = {};
     try {
-        await props.submit({ name: form.name, color: form.color });
+        await props.submit({ name: form.name, color: form.color, code: form.code });
         emit('saved', form.name.trim());
     } catch (error) {
         errors.value = error.fieldErrors ?? {};
@@ -37,8 +47,12 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-type-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField label="Nom" :error="errors.name" :hint="type ? `Code ${type.code} (fixe)` : 'Ex. Print, Sticker…'">
+            <FormField label="Nom" :error="errors.name" hint="Ex. Print, Sticker…">
                 <input v-model="form.name" type="text" maxlength="100">
+            </FormField>
+
+            <FormField label="Code" :error="errors.code" hint="Préfixe des références suggérées pour ses produits (1 à 8 lettres ou chiffres). Les références existantes ne changent pas.">
+                <input v-model="form.code" type="text" maxlength="8" autocomplete="off" class="product-type-form__code" @input="onCodeInput">
             </FormField>
 
             <FormField as="group" label="Couleur" :error="errors.color">
@@ -56,5 +70,6 @@ async function onSubmit() {
 <style scoped>
 .product-type-form { display: flex; flex-direction: column; gap: var(--space-3); }
 .product-type-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
+.product-type-form__code { text-transform: uppercase; }
 .product-type-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

@@ -66,7 +66,7 @@ final class DesignUseCasesTest extends KernelTestCase
         $sticker = array_values(array_filter($products, static fn (ProductView $product): bool => 'Sticker Forêt' === $product->displayName))[0];
         self::assertSame(450, $sticker->sellingPrice);
         self::assertSame(['8 cm'], $sticker->variants);
-        self::assertSame('STI-FORET', $sticker->reference);
+        self::assertSame('STI-FOR', $sticker->reference);
         self::assertContains('Print Forêt', array_map(static fn (ProductView $product): string => $product->displayName, $products));
     }
 

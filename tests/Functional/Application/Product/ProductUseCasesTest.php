@@ -9,11 +9,13 @@ use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
+use App\Domain\Product\Exception\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -75,8 +77,37 @@ final class ProductUseCasesTest extends KernelTestCase
 
         $references = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference', 'displayName');
 
-        self::assertSame('PRD-CLAIRIERE', $references['Clairière']);
-        self::assertEqualsCanonicalizing(['PRD-CLAIRIERE', 'PRI-FORET', 'PRI-FORET-2'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference'));
+        self::assertSame('PRD-CLA', $references['Clairière']);
+        self::assertEqualsCanonicalizing(['PRD-CLA', 'PRI-FOR', 'PRI-FOR-2'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference'));
+    }
+
+    public function testReferenceIsChosenAtCreationAndChangedLater(): void
+    {
+        $create = self::getContainer()->get(CreateProductHandler::class);
+        $id = $create(new CreateProduct('Forêt', 1_500, reference: 'FORET-A4'));
+
+        self::assertSame('FORET-A4', self::getContainer()->get(ListProductsHandler::class)()[0]->reference);
+
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $id, 'Forêt', 1_500, [], reference: 'FORET-A3'));
+        self::getContainer()->get('doctrine')->getManager()->clear();
+
+        self::assertSame('FORET-A3', self::getContainer()->get(ListProductsHandler::class)()[0]->reference);
+    }
+
+    public function testReferenceIsUnique(): void
+    {
+        $create = self::getContainer()->get(CreateProductHandler::class);
+        $create(new CreateProduct('Forêt', 1_500, reference: 'FORET'));
+        $river = $create(new CreateProduct('Rivière', 1_500));
+
+        try {
+            $create(new CreateProduct('Forêt bis', 1_500, reference: 'FORET'));
+            self::fail('a used reference is refused at creation');
+        } catch (InvalidProduct) {
+        }
+
+        $this->expectException(InvalidProduct::class);
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $river, 'Rivière', 1_500, [], reference: 'FORET'));
     }
 
     public function testUpdateKeepsTheReference(): void
@@ -87,7 +118,7 @@ final class ProductUseCasesTest extends KernelTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $product = self::getContainer()->get(ListProductsHandler::class)()[0];
-        self::assertSame('PRD-T-SHIRT', $product->reference);
+        self::assertSame('PRD-TSH', $product->reference);
         self::assertSame('T-shirt bio', $product->name);
         self::assertSame(2_500, $product->sellingPrice);
         self::assertSame(900, $product->buyingPrice, 'editing a product never changes its buying price');

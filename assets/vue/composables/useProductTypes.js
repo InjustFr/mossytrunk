@@ -13,16 +13,21 @@ export function useProductTypes() {
         types.value = await api.get('/api/product-types');
     }
 
-    async function create(name, color) {
-        const type = await api.post('/api/product-types', { name, color });
+    async function create(name, color, code = null) {
+        const type = await api.post('/api/product-types', { name, color, code });
         types.value = [...types.value, type].sort(byName);
         return type;
     }
 
-    async function update(id, { name, color }) {
-        await api.put(`/api/product-types/${id}`, { name, color });
-        types.value = types.value.map((type) => (type.id === id ? { ...type, name: name.trim(), color } : type)).sort(byName);
+    async function update(id, { name, color, code }) {
+        await api.put(`/api/product-types/${id}`, { name, color, code });
+        types.value = types.value.map((type) => (type.id === id ? { ...type, name: name.trim(), color, code: code.trim().toUpperCase() } : type)).sort(byName);
     }
 
-    return { types, load, create, update };
+    async function suggestCode(name) {
+        if (name.trim() === '') return '';
+        return (await api.peek(`/api/product-types/code-suggestion?${new URLSearchParams({ name })}`)).code;
+    }
+
+    return { types, load, create, update, suggestCode };
 }

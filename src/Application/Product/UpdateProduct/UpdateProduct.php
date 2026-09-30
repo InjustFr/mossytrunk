@@ -6,9 +6,6 @@ namespace App\Application\Product\UpdateProduct;
 
 use App\Domain\Product\Product;
 
-/**
- * The reference is not part of it: it is fixed at creation.
- */
 final readonly class UpdateProduct
 {
     /**
@@ -21,6 +18,7 @@ final readonly class UpdateProduct
         public array $variants,
         public ?string $typeId = null,
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
+        public ?string $reference = null,
     ) {
     }
 }

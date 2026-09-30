@@ -16,7 +16,7 @@ final class UpdateProductTypeController extends AbstractController
 {
     public function __invoke(string $id, #[MapRequestPayload] UpdateProductTypePayload $payload, UpdateProductTypeHandler $updateType): Response
     {
-        $updateType($id, $payload->name, $payload->color);
+        $updateType($id, $payload->name, $payload->color, $payload->code);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

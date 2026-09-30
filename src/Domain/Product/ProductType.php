@@ -14,7 +14,7 @@ use Symfony\Component\Uid\Ulid;
 
 /**
  * Kind of product (Print, Sticker, T-shirt…). Used to name products ("Print Forêt"), build their
- * references, filter the catalogue, edit products in batch and target discounts.
+ * reference suggestions, filter the catalogue, edit products in batch and target discounts.
  * Name and code are unique (checked by the use cases).
  */
 #[ORM\Entity]
@@ -36,7 +36,7 @@ class ProductType
     #[ORM\Column(length: 100)]
     private string $name;
 
-    /** Short uppercase code used as reference prefix, e.g. PRI for Print. Fixed at creation. */
+    /** Short uppercase code prefixing the suggested references of its products, e.g. PRI for Print. */
     #[ORM\Column(length: 8)]
     private string $code;
 
@@ -49,11 +49,7 @@ class ProductType
         $this->workspace = $workspace;
         $this->rename($name);
         $this->recolor($color);
-
-        if (1 !== preg_match('/^[A-Z0-9]{1,8}$/', $code)) {
-            throw new InvalidTypeCode($code);
-        }
-        $this->code = $code;
+        $this->recode($code);
     }
 
     public static function create(Workspace $workspace, string $name, string $code, string $color = self::PALETTE[0]): self
@@ -71,9 +67,17 @@ class ProductType
      */
     public static function codeFor(string $name): string
     {
-        $ascii = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', (string) iconv('UTF-8', 'ASCII//TRANSLIT', $name)));
+        return Abbreviation::of($name, 'TYP');
+    }
 
-        return '' === $ascii ? 'TYP' : substr($ascii, 0, 3);
+    public function recode(string $code): void
+    {
+        $code = strtoupper(trim($code));
+        if (1 !== preg_match('/^[A-Z0-9]{1,8}$/', $code)) {
+            throw new InvalidTypeCode($code);
+        }
+
+        $this->code = $code;
     }
 
     public function rename(string $name): void

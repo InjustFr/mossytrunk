@@ -28,6 +28,22 @@ final class ProductTypeApiTest extends WebTestCase
         self::assertSame(['Affiche', 'PRI', '#c29a2e'], [$type['name'], $type['code'], $type['color']]);
     }
 
+    public function testCodeIsSuggestedThenChosen(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/product-types', ['name' => 'Print']);
+
+        $client->jsonRequest('GET', '/api/product-types/code-suggestion?name=Pringles');
+        self::assertSame('PRI2', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'code'));
+
+        $client->jsonRequest('POST', '/api/product-types', ['name' => 'Pringles', 'code' => 'chips']);
+        self::assertResponseStatusCodeSame(201);
+        self::assertSame('CHIPS', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'code'));
+
+        $client->jsonRequest('POST', '/api/product-types', ['name' => 'Affiche', 'code' => 'PRI']);
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testColorMustBeAHexColor(): void
     {
         $client = self::signedInClient();

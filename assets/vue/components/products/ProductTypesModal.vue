@@ -25,7 +25,7 @@ const title = computed(() => {
     return editing.value === NEW ? 'Nouveau type de produit' : `Modifier le type ${editing.value.name}`;
 });
 
-const submit = (payload) => (editing.value === NEW ? create(payload.name, payload.color) : update(editing.value.id, payload));
+const submit = (payload) => (editing.value === NEW ? create(payload.name, payload.color, payload.code) : update(editing.value.id, payload));
 
 function onSaved(name) {
     emit('saved', name, editing.value === NEW);

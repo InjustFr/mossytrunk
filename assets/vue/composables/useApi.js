@@ -54,6 +54,7 @@ async function send(method, url, body) {
 export function useApi() {
     return {
         get: (url) => request('GET', url),
+        peek: (url) => send('GET', url),
         post: (url, body = {}) => request('POST', url, body),
         put: (url, body = {}) => request('PUT', url, body),
         patch: (url, body = {}) => request('PATCH', url, body),

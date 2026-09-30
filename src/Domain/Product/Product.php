@@ -14,6 +14,7 @@ use App\Domain\Product\Exception\LastPriceKept;
 use App\Domain\Product\Exception\NegativeLowStockThreshold;
 use App\Domain\Product\Exception\PriceDatedInTheFuture;
 use App\Domain\Product\Exception\ProductHasNoVariants;
+use App\Domain\Product\Exception\ProductReferenceTooLong;
 use App\Domain\Product\Exception\UnknownVariant;
 use App\Domain\Product\Exception\VariantRequired;
 use App\Domain\Shared\Exception\NegativeAmount;
@@ -29,8 +30,8 @@ use Symfony\Component\Uid\Ulid;
  * A real-world product sold at events.
  *
  * Rules (see docs/business/products.md):
- * - reference and name are required; the reference is unique, generated at creation
- *   ({@see ProductReferenceGenerator}) and never changes afterwards.
+ * - reference and name are required; the reference is unique, suggested at creation
+ *   ({@see ProductReferenceGenerator}) and can be changed later.
  * - prices are never negative; the buying price is the last purchase price, set by restocking only (0 = unknown).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
@@ -42,6 +43,7 @@ use Symfony\Component\Uid\Ulid;
 class Product
 {
     public const int DEFAULT_LOW_STOCK_THRESHOLD = 10;
+    public const int REFERENCE_MAX_LENGTH = 64;
 
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
@@ -51,7 +53,7 @@ class Product
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Workspace $workspace;
 
-    #[ORM\Column(length: 64)]
+    #[ORM\Column(length: self::REFERENCE_MAX_LENGTH)]
     private string $reference;
 
     #[ORM\Column(length: 255)]
@@ -91,11 +93,7 @@ class Product
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
         $this->priceHistory = new ArrayCollection();
-        $reference = trim($reference);
-        if ('' === $reference) {
-            throw new EmptyProductReference();
-        }
-        $this->reference = $reference;
+        $this->changeReference($reference);
         $this->rename($name);
         $this->type = $type;
         $this->reprice($sellingPrice);
@@ -111,6 +109,19 @@ class Product
     public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, array $variants = [], ?ProductType $type = null): self
     {
         return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $variants, $type);
+    }
+
+    public function changeReference(string $reference): void
+    {
+        $reference = trim($reference);
+        if ('' === $reference) {
+            throw new EmptyProductReference();
+        }
+        if (mb_strlen($reference) > self::REFERENCE_MAX_LENGTH) {
+            throw new ProductReferenceTooLong(self::REFERENCE_MAX_LENGTH);
+        }
+
+        $this->reference = $reference;
     }
 
     public function classify(?ProductType $type): void

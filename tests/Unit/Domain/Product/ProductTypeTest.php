@@ -46,6 +46,23 @@ final class ProductTypeTest extends TestCase
         ProductType::create(TestWorkspace::get(), 'Print', 'pri-1');
     }
 
+    public function testCodeCanBeChangedAndIsUppercased(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+
+        $print->recode(' aff2 ');
+
+        self::assertSame('AFF2', $print->code());
+    }
+
+    public function testChangedCodeKeepsItsFormat(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+
+        $this->expectException(InvalidProduct::class);
+        $print->recode('AFFICHES1');
+    }
+
     public function testColorIsNormalized(): void
     {
         $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI', ' #4F6D8F ');

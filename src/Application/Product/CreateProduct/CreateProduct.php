@@ -17,6 +17,7 @@ final readonly class CreateProduct
         public array $variants = [],
         public ?string $typeId = null,
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
+        public ?string $reference = null,
     ) {
     }
 }
