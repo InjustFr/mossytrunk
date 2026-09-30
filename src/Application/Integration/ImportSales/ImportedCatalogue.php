@@ -34,6 +34,8 @@ final class ImportedCatalogue
 
     private int $typesCreated = 0;
 
+    private ?ProductType $miscellaneousType = null;
+
     public function __construct(
         private readonly ProductRepository $products,
         private readonly ProductReferenceGenerator $references,
@@ -79,7 +81,7 @@ final class ImportedCatalogue
     public function createFor(string $name, ?string $category, Money $sellingPrice): Product
     {
         if (null === $category || '' === trim($category)) {
-            return $this->create($name, $sellingPrice, $this->miscellaneous->get());
+            return $this->create($name, $sellingPrice, $this->miscellaneousType ??= $this->miscellaneous->get());
         }
         $type = $this->type(trim($category));
 

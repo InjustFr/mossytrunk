@@ -18,4 +18,9 @@ interface ExternalItemRepository
     public function ofService(string $service): array;
 
     public function unlinkedCount(string $service): int;
+
+    /**
+     * @return list<ExternalItem>
+     */
+    public function linkedTo(Ulid $productId): array;
 }

@@ -6,6 +6,7 @@ namespace App\Domain\Integration;
 
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\SellableItem;
+use App\Domain\Product\VariantLabel;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -80,6 +81,17 @@ class ExternalItem
     {
         $this->productId = $item->productId;
         $this->variant = $item->variant;
+    }
+
+    public function unlink(): void
+    {
+        $this->productId = null;
+        $this->variant = null;
+    }
+
+    public function isLinkedTo(Ulid $productId, ?string $variant): bool
+    {
+        return null !== $this->productId && $this->productId->equals($productId) && VariantLabel::same($this->variant, $variant);
     }
 
     public function isLinked(): bool

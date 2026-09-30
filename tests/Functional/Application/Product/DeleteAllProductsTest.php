@@ -44,7 +44,7 @@ final class DeleteAllProductsTest extends KernelTestCase
         $container->get('doctrine')->getManager()->clear();
 
         self::assertCount(0, $container->get(ListProductsHandler::class)());
-        self::assertCount(1, $container->get(ListProductTypesHandler::class)());
+        self::assertCount(2, $container->get(ListProductTypesHandler::class)(), 'Print and the miscellaneous type stay');
         $rules = $container->get(ListDiscountRulesHandler::class)();
         self::assertSame(['Prints et pins'], array_column($rules, 'name'));
         self::assertSame(['Print'], array_column($rules[0]->conditions, 'name'));

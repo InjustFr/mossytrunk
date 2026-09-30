@@ -8,6 +8,7 @@ use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRuleRepository;
+use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Exception\SoldWithoutVariant;
 use App\Domain\Product\Exception\VariantMovedOntoItself;
@@ -22,6 +23,7 @@ final readonly class MoveVariantHandler
         private ProductRepository $products,
         private OrderRepository $orders,
         private DiscountRuleRepository $discountRules,
+        private ExternalItemRepository $externalItems,
         private ProductReferenceGenerator $references,
         private StockKeeper $stock,
         private Transaction $transaction,
@@ -53,6 +55,11 @@ final readonly class MoveVariantHandler
             $order->moveSales($source->id(), $variant, $to);
         }
         $this->stock->move($source, $variant, $target, $targetVariant);
+        foreach ($this->externalItems->linkedTo($source->id()) as $item) {
+            if ($item->isLinkedTo($source->id(), $variant)) {
+                $item->link($to);
+            }
+        }
 
         if (null !== $variant) {
             $source->removeVariant($variant);

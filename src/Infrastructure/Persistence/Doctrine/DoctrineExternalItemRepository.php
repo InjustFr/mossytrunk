@@ -35,6 +35,11 @@ final readonly class DoctrineExternalItemRepository implements ExternalItemRepos
         return $this->entityManager->getRepository(ExternalItem::class)->findBy(['workspace' => $this->workspace->current(), 'service' => $service], ['seenAt' => 'DESC']);
     }
 
+    public function linkedTo(Ulid $productId): array
+    {
+        return $this->entityManager->getRepository(ExternalItem::class)->findBy(['workspace' => $this->workspace->current(), 'productId' => $productId]);
+    }
+
     public function unlinkedCount(string $service): int
     {
         return $this->entityManager->getRepository(ExternalItem::class)->count(['workspace' => $this->workspace->current(), 'service' => $service, 'productId' => null]);

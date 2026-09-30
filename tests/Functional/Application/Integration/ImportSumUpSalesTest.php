@@ -19,8 +19,13 @@ use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Order\ListOrders\OrderSummaryView;
 use App\Application\Order\MergeOrders\MergeOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\DeleteProduct\DeleteProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
+use App\Application\Product\MoveVariant\MoveVariant;
+use App\Application\Product\MoveVariant\MoveVariantHandler;
+use App\Application\Product\UpdateProduct\UpdateProduct;
+use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Order\Exception\LineAlreadyIdentified;
@@ -387,6 +392,51 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(1, $this->import()->productsCreated);
     }
 
+    public function testARenamedProductKeepsReceivingItsSumUpSales(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker', variants: ['mat'])->id();
+        $product = self::createProduct('Black kitties Vase Sticker', 300, 0, ['mat'], $sticker);
+        $this->sellZines('Black kitties Vase Sticker', 'TX-1');
+        $this->import();
+
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($product, 'Chat noir au vase', 300, ['mat'], $sticker));
+        $this->sellZines('Black kitties Vase Sticker', 'TX-1', 'TX-2');
+        $report = $this->import();
+
+        self::assertSame([1, 0], [$report->ordersImported, $report->productsCreated]);
+        self::assertSame(['Sticker Chat noir au vase'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'displayName'));
+    }
+
+    public function testMovingAnImportedProductTakesItsSumUpItemAlong(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $fanzine = self::createProduct('Fanzine', 1_000);
+        $this->sellZines('Zine', 'TX-1');
+        $this->import();
+
+        self::getContainer()->get(MoveVariantHandler::class)(new MoveVariant($this->productNamed('Zine'), null, $fanzine, null, null));
+        $this->sellZines('Zine', 'TX-1', 'TX-2');
+        $report = $this->import();
+
+        self::assertSame([1, 0], [$report->ordersImported, $report->productsCreated]);
+        self::assertSame(['Fanzine'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'name'));
+    }
+
+    public function testAnItemLinkedToADeletedProductIsResolvedAgain(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $this->sellZines('Zine', 'TX-1');
+        $this->import();
+
+        self::getContainer()->get(DeleteProductHandler::class)($this->productNamed('Zine'));
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        $this->sellZines('Zine', 'TX-1', 'TX-2');
+        $report = $this->import();
+
+        self::assertSame([1, 1, 0], [$report->ordersImported, $report->productsCreated, $report->itemsToLink]);
+    }
+
     public function testTypedProductsAreMatchedByDisplayName(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
@@ -421,6 +471,24 @@ final class ImportSumUpSalesTest extends KernelTestCase
         }
 
         return $orders;
+    }
+
+    private function sellZines(string $name, string ...$codes): void
+    {
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn(array_values(array_map(
+            static fn (string $code): ExternalSale => ExternalSales::sumUp($code, new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(1_000), [ExternalSales::line($name, Money::cents(1_000), 1)]),
+            $codes,
+        )));
+    }
+
+    private function productNamed(string $name): string
+    {
+        foreach (self::getContainer()->get(ListProductsHandler::class)() as $product) {
+            if ($product->name === $name) {
+                return $product->id;
+            }
+        }
+        self::fail("no product named $name");
     }
 
     private function import(): ImportReport

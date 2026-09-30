@@ -43,11 +43,16 @@ final class ExternalItemResolver
         $remembered = $this->remembered[ExternalItem::keyOf($line->externalRef, $variant)] ?? null;
 
         $item = null !== $remembered && $remembered->isLinked() ? $this->linked($remembered, $line) : null;
+        if (null === $item) {
+            $remembered?->unlink();
+        }
         $item ??= $this->matched($name, $variant, $line);
         if (UnknownItems::CreateProduct === $this->connection->unknownItems()) {
             $item ??= $this->created($name, $variant, $line);
         }
         if (null !== $item) {
+            $this->remember($remembered, $name, $variant, $line)->link($item);
+
             return $item;
         }
 
@@ -171,17 +176,19 @@ final class ExternalItemResolver
         return $line->unitPrice->greaterThan($item->sellingPrice) ? $item->at($line->unitPrice) : $item;
     }
 
-    private function remember(?ExternalItem $remembered, string $name, ?string $variant, ExternalLine $line): void
+    private function remember(?ExternalItem $remembered, string $name, ?string $variant, ExternalLine $line): ExternalItem
     {
         if (null !== $remembered) {
             $remembered->seenAgain($name, $this->now);
 
-            return;
+            return $remembered;
         }
 
         $item = ExternalItem::seen($this->connection->workspace(), $this->connection->service(), $line->externalRef, $name, $variant, $this->now);
         $this->items->add($item);
         $this->remembered[$item->itemKey()] = $item;
+
+        return $item;
     }
 
     private static function matchingVariant(Product $product, string $label): ?string
