@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/password/forgot', name: 'password_forgot', methods: ['GET', 'POST'])]
 final class ForgotPasswordController extends AbstractController
@@ -22,6 +23,7 @@ final class ForgotPasswordController extends AbstractController
         private readonly VuePage $page,
         private readonly CsrfTokenManagerInterface $csrfTokens,
         private readonly Flashes $flashes,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -34,7 +36,7 @@ final class ForgotPasswordController extends AbstractController
             $email = trim((string) $request->request->get('email'));
 
             if (!$this->isCsrfTokenValid(self::CSRF_ID, (string) $request->request->get('_csrf_token'))) {
-                return $this->form($email, 'Votre session a expiré, réessayez.');
+                return $this->form($email, $this->translator->trans('session.expired'));
             }
 
             if ('' !== $email && $forgotPasswordLimiter->create(mb_strtolower($email).'|'.$request->getClientIp())->consume()->isAccepted()) {
@@ -52,7 +54,7 @@ final class ForgotPasswordController extends AbstractController
 
     private function form(string $email, ?string $error = null, bool $sent = false): Response
     {
-        return $this->page->render('ForgotPasswordPage', 'Mot de passe oublié', [
+        return $this->page->render('ForgotPasswordPage', 'forgotPassword', [
             'email' => $email,
             'sent' => $sent,
             'error' => $error,

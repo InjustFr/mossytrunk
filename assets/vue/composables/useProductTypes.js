@@ -1,10 +1,11 @@
 import { ref } from 'vue';
+import { intlLocale } from '../i18n/locale.js';
 import { useApi } from './useApi.js';
 
 // Module-level: every component of the page shares the same list (a type created in a form shows up in filters).
 const types = ref([]);
 
-const byName = (a, b) => a.name.localeCompare(b.name, 'fr');
+const byName = (a, b) => a.name.localeCompare(b.name, intlLocale());
 
 export function useProductTypes() {
     const api = useApi();

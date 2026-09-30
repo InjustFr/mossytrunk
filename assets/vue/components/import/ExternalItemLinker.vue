@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import ExternalItemRow from './ExternalItemRow.vue';
@@ -13,6 +14,7 @@ const props = defineProps({
     canImport: { type: Boolean, default: true },
 });
 const emit = defineEmits(['linked', 'reimport']);
+const { t } = useI18n();
 
 const unlinked = computed(() => props.items.filter((item) => !item.linkedTo));
 const linked = computed(() => props.items.filter((item) => item.linkedTo));
@@ -20,26 +22,27 @@ const linked = computed(() => props.items.filter((item) => item.linkedTo));
 
 <template>
     <div class="item-linker">
-        <p class="item-linker__intro">
-            {{ label }} ne connaît pas vos produits : indiquez ce que vend chaque article, une fois pour toutes. Astuce : quand le SKU de l'article est la référence du produit (ex. <code>STI-MOUSSE</code>), l'association est automatique.
-        </p>
+        <I18nT keypath="import.linker.intro" tag="p" class="item-linker__intro">
+            <template #service>{{ label }}</template>
+            <template #example><code>STI-MOUSSE</code></template>
+        </I18nT>
 
-        <section v-if="unlinked.length" aria-label="Articles à associer">
+        <section v-if="unlinked.length" :aria-label="t('import.linker.unlinked')">
             <ul class="item-linker__list">
                 <ExternalItemRow v-for="item in unlinked" :key="item.id" :item="item" :products="products" :submit="submit" @linked="emit('linked', $event)" />
             </ul>
         </section>
-        <EmptyState v-else>Tous les articles vus sur {{ label }} sont associés.</EmptyState>
+        <EmptyState v-else>{{ t('import.linker.allLinked', { service: label }) }}</EmptyState>
 
         <details v-if="linked.length" class="item-linker__linked">
-            <summary>Articles déjà associés ({{ linked.length }})</summary>
+            <summary>{{ t('import.linker.linked', { count: linked.length }) }}</summary>
             <ul class="item-linker__list">
                 <ExternalItemRow v-for="item in linked" :key="item.id" :item="item" :products="products" :submit="submit" @linked="emit('linked', $event)" />
             </ul>
         </details>
 
         <div v-if="canImport" class="item-linker__actions">
-            <BaseButton :loading="importing" :disabled="unlinked.length > 0" @click="emit('reimport')">Relancer l'import {{ label }}</BaseButton>
+            <BaseButton :loading="importing" :disabled="unlinked.length > 0" @click="emit('reimport')">{{ t('import.linker.reimport', { service: label }) }}</BaseButton>
         </div>
     </div>
 </template>

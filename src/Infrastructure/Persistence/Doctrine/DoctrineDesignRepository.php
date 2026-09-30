@@ -39,7 +39,7 @@ final readonly class DoctrineDesignRepository implements DesignRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof Design ? $result : throw new NotFound('Design', (string) $id);
+        return $result instanceof Design ? $result : throw new NotFound('design', (string) $id);
     }
 
     public function findByProduct(Ulid $productId): ?Design

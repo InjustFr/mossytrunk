@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TriangleAlert, PackageMinus } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -11,12 +12,12 @@ import MonthlyResultChart from '../components/dashboard/MonthlyResultChart.vue';
 import ResultsTable from '../components/dashboard/ResultsTable.vue';
 import ResultBars from '../components/reporting/ResultBars.vue';
 import ResultReceipt from '../components/reporting/ResultReceipt.vue';
-import { MONTHS, useDashboard } from '../composables/useDashboard.js';
+import { monthName, useDashboard } from '../composables/useDashboard.js';
 import { useTypeColors } from '../composables/useTypeColor.js';
 import { formatDate } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
-import { plural } from '../composables/usePlural.js';
 
+const { t } = useI18n();
 const { dashboard, load } = useDashboard();
 const { colors: typeColors, load: loadTypes } = useTypeColors();
 const isEmpty = computed(() => dashboard.value !== null && dashboard.value.byYear.length === 0 && dashboard.value.events.length === 0);
@@ -25,10 +26,10 @@ const yearOptions = computed(() => (dashboard.value?.years ?? []).map((year) => 
 const receiptLines = computed(() => {
     const total = dashboard.value.total;
     return [
-        { key: 'turnover', label: "Chiffre d'affaires", amount: total.turnover },
-        { key: 'costOfGoods', label: "Coût d'achat", amount: total.costOfGoods, sign: '−' },
-        { key: 'expenses', label: 'Dépenses', amount: total.expenses, sign: '−' },
-        { key: 'urssaf', label: 'URSSAF', hint: '12,8 %', amount: total.urssaf, sign: '−' },
+        { key: 'turnover', label: t('dashboard.receipt.turnover'), amount: total.turnover },
+        { key: 'costOfGoods', label: t('dashboard.receipt.costOfGoods'), amount: total.costOfGoods, sign: '−' },
+        { key: 'expenses', label: t('dashboard.receipt.expenses'), amount: total.expenses, sign: '−' },
+        { key: 'urssaf', label: 'URSSAF', hint: t('dashboard.receipt.urssafRate'), amount: total.urssaf, sign: '−' },
     ];
 });
 
@@ -45,18 +46,18 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>
-    <AppLayout title="Carnet de bord">
+    <AppLayout :title="t('dashboard.title')">
         <template #actions>
-            <BaseSelect v-if="dashboard && !isEmpty" :model-value="dashboard.year" :options="yearOptions" size="small" aria-label="Année" @update:model-value="load" />
+            <BaseSelect v-if="dashboard && !isEmpty" :model-value="dashboard.year" :options="yearOptions" size="small" :aria-label="t('dashboard.year')" @update:model-value="load" />
         </template>
 
         <section v-if="isEmpty" class="dashboard-page__welcome" aria-labelledby="dashboard-welcome">
-            <h2 id="dashboard-welcome" class="dashboard-page__welcome-title">Pas encore de ventes</h2>
+            <h2 id="dashboard-welcome" class="dashboard-page__welcome-title">{{ t('dashboard.welcome.title') }}</h2>
             <p class="dashboard-page__welcome-text">
-                Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis un service connecté.
+                {{ t('dashboard.welcome.text') }}
             </p>
             <div class="dashboard-page__welcome-actions">
-                <BaseButton @click="visit('/events?new')">Créer un événement</BaseButton>
+                <BaseButton @click="visit('/events?new')">{{ t('dashboard.welcome.createEvent') }}</BaseButton>
             </div>
         </section>
 
@@ -64,54 +65,54 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             <p v-if="dashboard.productsWithoutCost > 0" class="dashboard-page__check" role="status">
                 <TriangleAlert size="1rem" aria-hidden="true" />
                 <span>
-                    {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} jamais été acheté{{ dashboard.productsWithoutCost > 1 ? 's' : '' }} : leur coût compte pour 0 €, le résultat est donc surestimé.
-                    <a href="/products?purchase-price=missing">Voir les produits sans coût d'achat</a>
+                    {{ t('dashboard.checks.withoutCost', dashboard.productsWithoutCost) }}
+                    <a href="/products?purchase-price=missing">{{ t('dashboard.checks.seeWithoutCost') }}</a>
                 </span>
             </p>
             <p v-if="dashboard.productsLowOnStock + dashboard.productsOutOfStock > 0" class="dashboard-page__check" role="status">
                 <PackageMinus size="1rem" aria-hidden="true" />
                 <span>
-                    <template v-if="dashboard.productsOutOfStock > 0">{{ plural(dashboard.productsOutOfStock, 'produit a', 'produits ont') }} un stock négatif. </template>
-                    <template v-if="dashboard.productsLowOnStock > 0">{{ plural(dashboard.productsLowOnStock, 'produit arrive', 'produits arrivent') }} sous leur seuil de stock bas. </template>
-                    <a href="/products?stock=low">Voir les produits à réapprovisionner</a>
+                    <template v-if="dashboard.productsOutOfStock > 0">{{ `${t('dashboard.checks.outOfStock', dashboard.productsOutOfStock)} ` }}</template>
+                    <template v-if="dashboard.productsLowOnStock > 0">{{ `${t('dashboard.checks.lowOnStock', dashboard.productsLowOnStock)} ` }}</template>
+                    <a href="/products?stock=low">{{ t('dashboard.checks.seeLowOnStock') }}</a>
                 </span>
             </p>
-            <ResultReceipt :title="`Résultat ${dashboard.year}`" :turnover="dashboard.total.turnover" :lines="receiptLines" :result="dashboard.total.result" result-test="year-result">
+            <ResultReceipt :title="t('dashboard.receipt.title', { year: dashboard.year })" :turnover="dashboard.total.turnover" :lines="receiptLines" :result="dashboard.total.result" result-test="year-result">
                 <template #summary>
                     <p class="dashboard-page__summary">
-                        {{ plural(dashboard.total.orderCount, 'commande') }} sur {{ plural(dashboard.events.length, 'événement') }}
+                        {{ t('dashboard.summary', { orders: t('dashboard.orderCount', dashboard.total.orderCount), events: t('dashboard.eventCount', dashboard.events.length) }) }}
                     </p>
                 </template>
             </ResultReceipt>
 
-            <BaseCard title="Résultat par mois">
+            <BaseCard :title="t('dashboard.byMonth')">
                 <MonthlyResultChart :months="dashboard.months" />
             </BaseCard>
 
             <div class="dashboard-page__pair">
-                <BaseCard title="Marchés & salons de l'année">
-                    <ResultBars v-if="eventBars.length" :items="eventBars" label="Résultat par événement, du meilleur au moins bon" />
-                    <EmptyState v-else>Aucun événement en {{ dashboard.year }}.</EmptyState>
+                <BaseCard :title="t('dashboard.events.title')">
+                    <ResultBars v-if="eventBars.length" :items="eventBars" :label="t('dashboard.events.label')" />
+                    <EmptyState v-else>{{ t('dashboard.events.empty', { year: dashboard.year }) }}</EmptyState>
                 </BaseCard>
-                <BaseCard title="Meilleures ventes">
+                <BaseCard :title="t('dashboard.bestSellers.title')">
                     <BestSellers v-if="dashboard.products.length" :products="dashboard.products" :types="dashboard.types" :type-colors="typeColors" />
-                    <EmptyState v-else>Aucune vente en {{ dashboard.year }}.</EmptyState>
+                    <EmptyState v-else>{{ t('dashboard.bestSellers.empty', { year: dashboard.year }) }}</EmptyState>
                 </BaseCard>
             </div>
 
-            <BaseCard title="Détail par mois">
+            <BaseCard :title="t('dashboard.monthlyDetail')">
                 <ResultsTable
                     :rows="dashboard.months"
-                    label-header="Mois"
-                    :label="(row) => MONTHS[row.month - 1]"
+                    :label-header="t('dashboard.month')"
+                    :label="(row) => monthName(row.month)"
                     :total="dashboard.total"
                     collapsible
                 />
-                <p class="dashboard-page__note">Les dépenses d'un événement comptent dans le mois où il commence.</p>
+                <p class="dashboard-page__note">{{ t('dashboard.expensesNote') }}</p>
             </BaseCard>
 
-            <BaseCard v-if="dashboard.byYear.length > 1" title="Comparaison des années">
-                <ResultsTable :rows="dashboard.byYear" label-header="Année" :label="(row) => String(row.year)" />
+            <BaseCard v-if="dashboard.byYear.length > 1" :title="t('dashboard.yearComparison')">
+                <ResultsTable :rows="dashboard.byYear" :label-header="t('dashboard.year')" :label="(row) => String(row.year)" />
             </BaseCard>
         </div>
     </AppLayout>

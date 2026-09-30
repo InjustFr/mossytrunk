@@ -14,10 +14,10 @@ final readonly class OrderPayload
      * @param list<OrderLinePayload> $lines
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'La date est obligatoire.')]
-        #[Assert\Regex('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/', message: 'Date invalide.')]
+        #[Assert\NotBlank(message: 'date.required')]
+        #[Assert\Regex('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/', message: 'date.invalid')]
         public string $placedAt = '',
-        #[Assert\Count(min: 1, minMessage: 'Ajoutez au moins un produit.')]
+        #[Assert\Count(min: 1, minMessage: 'products.atLeastOne')]
         #[Assert\Valid]
         public array $lines = [],
     ) {

@@ -1,30 +1,32 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { Check } from '@lucide/vue';
 import { formatWholeCents } from '../../composables/useMoney.js';
-import { PERIOD_STATUSES, periodLabel, periodShortLabel } from '../../composables/useAccounting.js';
+import { periodLabel, periodShortLabel, periodStatusLabel } from '../../composables/useAccounting.js';
 
 defineProps({
     periods: { type: Array, required: true },
     selectedKey: { type: String, default: null },
 });
 const emit = defineEmits(['select']);
+const { t } = useI18n();
 </script>
 
 <template>
-    <ol :class="['period-ledger', `period-ledger--${periods.length}`]" aria-label="Périodes de l'année">
+    <ol :class="['period-ledger', `period-ledger--${periods.length}`]" :aria-label="t('accounting.ledger.label')">
         <li v-for="period in periods" :key="period.key">
             <button
                 type="button"
                 :class="['period-ledger__cell', `period-ledger__cell--${period.status}`, { 'period-ledger__cell--selected': period.key === selectedKey }]"
                 :aria-pressed="period.key === selectedKey"
-                :aria-label="`${periodLabel(period)} : ${formatWholeCents(period.turnover)}, ${PERIOD_STATUSES[period.status].label}`"
+                :aria-label="t('accounting.ledger.cell', { period: periodLabel(period), amount: formatWholeCents(period.turnover), status: periodStatusLabel(period.status) })"
                 @click="emit('select', period)"
             >
                 <span class="period-ledger__label">{{ periodShortLabel(period) }}</span>
                 <span class="period-ledger__amount">{{ ['upcoming', 'inactive'].includes(period.status) ? '—' : formatWholeCents(period.turnover) }}</span>
                 <span class="period-ledger__status">
                     <Check v-if="period.status === 'declared'" size="0.75rem" :stroke-width="3" aria-hidden="true" />
-                    {{ PERIOD_STATUSES[period.status].label }}
+                    {{ periodStatusLabel(period.status) }}
                 </span>
             </button>
         </li>

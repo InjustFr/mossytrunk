@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import FormField from '../ui/FormField.vue';
@@ -10,6 +11,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ label: '', amount: null });
 const errors = ref({});
@@ -38,15 +40,15 @@ async function onSubmit() {
 <template>
     <form class="expense-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField label="Libellé" :error="errors.label">
-                <input v-model="form.label" type="text" placeholder="Stand, train, hôtel…">
+            <FormField :label="t('events.expenseForm.label')" :error="errors.label">
+                <input v-model="form.label" type="text" :placeholder="t('events.expenseForm.labelPlaceholder')">
             </FormField>
-            <FormField label="Montant (€)" :error="errors.amount">
+            <FormField :label="t('events.expenseForm.amount')" :error="errors.amount">
                 <BaseMoneyField v-model="form.amount" />
             </FormField>
             <div class="expense-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ expense ? 'Enregistrer' : 'Ajouter la dépense' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('events.expenseForm.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ expense ? t('events.expenseForm.save') : t('events.expenseForm.add') }}</BaseButton>
             </div>
         </fieldset>
     </form>

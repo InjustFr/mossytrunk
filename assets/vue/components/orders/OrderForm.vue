@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import FormField from '../ui/FormField.vue';
@@ -14,13 +15,14 @@ const props = defineProps({
 });
 const emit = defineEmits(['placed']);
 
+const { t } = useI18n();
 const draft = useOrderDraft();
 const saving = ref(false);
 const error = ref(null);
 
 async function onSubmit() {
     if (draft.lines.length === 0) {
-        error.value = 'Ajoutez au moins un produit.';
+        error.value = t('orders.form.noLines');
         return;
     }
     saving.value = true;
@@ -40,15 +42,15 @@ async function onSubmit() {
 <template>
     <form class="order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField as="group" label="Date">
+            <FormField as="group" :label="t('orders.form.date')">
                 <BaseDatePicker v-model="draft.placedAt.value" with-time />
             </FormField>
 
             <p v-if="draft.preview.value?.event" class="order-form__event">
-                Rattachée à <strong>{{ draft.preview.value.event.name }}</strong>
+                <i18n-t keypath="orders.form.attachedTo" scope="global"><template #event><strong>{{ draft.preview.value.event.name }}</strong></template></i18n-t>
             </p>
             <p v-else-if="draft.preview.value" class="order-form__event order-form__event--missing" role="alert">
-                Aucun événement à cette date. <a href="/events">Créer un événement</a>
+                {{ t('orders.form.noEvent') }} <a href="/events">{{ t('orders.form.createEvent') }}</a>
             </p>
 
             <OrderLinePicker :products="products" @add="draft.add" />
@@ -71,7 +73,7 @@ async function onSubmit() {
                     :total="draft.preview.value.total"
                 />
                 <div class="order-form__actions">
-                    <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">Enregistrer la commande</BaseButton>
+                    <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">{{ t('orders.form.submit') }}</BaseButton>
                 </div>
             </footer>
         </fieldset>

@@ -1,20 +1,23 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatDate, fromToday } from '../../composables/useDate.js';
 
 defineProps({
     events: { type: Array, required: true },
-    emptyMessage: { type: String, default: 'Aucun événement.' },
+    emptyMessage: { type: String, default: null },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <EmptyState v-if="events.length === 0">{{ emptyMessage }}</EmptyState>
+    <EmptyState v-if="events.length === 0">{{ emptyMessage ?? t('events.list.empty') }}</EmptyState>
     <ul v-else class="event-list">
         <li v-for="event in events" :key="event.id" class="event-list__item">
             <span :class="['event-list__when', { 'event-list__when--ongoing': event.timing === 'ongoing' }]">
-                {{ event.timing === 'ongoing' ? 'En cours' : fromToday(event.startDate) }}
+                {{ event.timing === 'ongoing' ? t('events.list.ongoing') : fromToday(event.startDate) }}
             </span>
             <a class="event-list__link" :href="`/events/${event.id}`">
                 <span class="event-list__name">{{ event.name }}</span>
@@ -24,11 +27,11 @@ defineProps({
             </a>
             <dl class="event-list__figures">
                 <div class="event-list__figure">
-                    <dt>Dépenses engagées</dt>
+                    <dt>{{ t('events.list.committedExpenses') }}</dt>
                     <dd><MoneyAmount :cents="event.expensesTotal" /></dd>
                 </div>
                 <div v-if="event.orderCount > 0" class="event-list__figure">
-                    <dt>Résultat</dt>
+                    <dt>{{ t('events.list.result') }}</dt>
                     <dd><MoneyAmount :cents="event.result" signed :data-test="`event-result-${event.id}`" /></dd>
                 </div>
             </dl>

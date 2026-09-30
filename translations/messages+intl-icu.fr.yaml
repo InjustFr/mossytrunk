@@ -1,0 +1,47 @@
+problem:
+    business_rule: 'Règle métier non respectée'
+    product_required: 'Choisissez un produit.'
+    unknown_periodicity: 'Périodicité inconnue.'
+    check_fields: 'Vérifiez les champs du formulaire.'
+    cross_origin:
+        title: 'Requête refusée'
+        detail: 'Requête d''une autre origine refusée.'
+    signed_out:
+        title: 'Non connecté'
+        detail: 'Votre session a expiré, reconnectez-vous.'
+session:
+    expired: 'Votre session a expiré, réessayez.'
+login:
+    bad_credentials: 'Email ou mot de passe incorrect.'
+    too_many_attempts: 'Trop de tentatives : réessayez dans quelques minutes.'
+    failed: 'Connexion impossible, réessayez.'
+password:
+    mismatch: 'Les deux mots de passe ne correspondent pas.'
+    saved: 'Mot de passe enregistré : vous pouvez vous connecter.'
+order:
+    source:
+        manual: 'Saisie'
+import:
+    free_amount: 'Montant libre'
+    discount: 'Remise {service}'
+export:
+    orders:
+        filename: 'commandes-{from}-au-{to}.csv'
+        column:
+            reference: 'Référence'
+            date: 'Date'
+            time: 'Heure'
+            source: 'Source'
+            event: 'Événement'
+            payment: 'Paiement'
+            items: 'Articles'
+            detail: 'Détail'
+            subtotal: 'Sous-total'
+            discounts: 'Remises'
+            shipping: 'Frais de port'
+            total: 'Total encaissé'
+            cost: 'Coût d''achat'
+            margin: 'Marge'
+        payment:
+            card: 'Carte'
+            cash: 'Espèces'

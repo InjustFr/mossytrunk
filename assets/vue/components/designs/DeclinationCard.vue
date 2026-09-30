@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Trash2 } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
@@ -16,6 +17,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['tick', 'withdraw']);
+const { t } = useI18n();
 
 const form = reactive({ productName: '', sellingPrice: null, variants: [] });
 const errors = ref({});
@@ -51,43 +53,43 @@ async function onSubmit() {
                 <h3 class="declination__gabarit">{{ declination.gabarit.name }}</h3>
                 <p class="declination__product">{{ declination.displayName }}</p>
             </div>
-            <a v-if="declination.productId" :href="`/products/${declination.productId}`" class="declination__product-link">Voir le produit</a>
-            <StatusBadge v-else-if="declination.ready" tone="success">Prête</StatusBadge>
-            <StatusBadge v-else tone="warning">{{ declination.adaptations.length - declination.doneAdaptations.length }} à adapter</StatusBadge>
+            <a v-if="declination.productId" :href="`/products/${declination.productId}`" class="declination__product-link">{{ t('designs.declination.seeProduct') }}</a>
+            <StatusBadge v-else-if="declination.ready" tone="success">{{ t('designs.declination.ready') }}</StatusBadge>
+            <StatusBadge v-else tone="warning">{{ t('designs.declination.toAdapt', { count: declination.adaptations.length - declination.doneAdaptations.length }) }}</StatusBadge>
             <ConfirmButton
                 v-if="!locked"
                 :icon="Trash2"
-                :label="`Retirer la déclinaison ${declination.gabarit.name}`"
-                message="Les adaptations cochées pour ce gabarit seront perdues."
+                :label="t('designs.declination.withdraw', { name: declination.gabarit.name })"
+                :message="t('designs.declination.withdrawMessage')"
                 @confirm="emit('withdraw')"
             />
         </header>
 
-        <section v-if="declination.adaptations.length" class="declination__checklist" :aria-label="`Adaptations ${declination.gabarit.name}`">
+        <section v-if="declination.adaptations.length" class="declination__checklist" :aria-label="t('designs.declination.checklist', { name: declination.gabarit.name })">
             <label v-for="adaptation in declination.adaptations" :key="adaptation" :class="['declination__adaptation', { 'declination__adaptation--done': done(adaptation) }]">
                 <BaseCheckbox :model-value="done(adaptation)" :disabled="locked" @update:model-value="emit('tick', adaptation, $event)" />
                 {{ adaptation }}
             </label>
         </section>
-        <p v-else class="declination__none">Aucune adaptation demandée par ce gabarit.</p>
+        <p v-else class="declination__none">{{ t('designs.declination.noAdaptations') }}</p>
 
         <dl v-if="locked" class="declination__facts">
-            <div><dt>Vente</dt><dd><MoneyAmount :cents="declination.sellingPrice" /></dd></div>
-            <div><dt>Variantes</dt><dd>{{ declination.variants.join(', ') || 'Unique' }}</dd></div>
+            <div><dt>{{ t('designs.declination.sale') }}</dt><dd><MoneyAmount :cents="declination.sellingPrice" /></dd></div>
+            <div><dt>{{ t('designs.declination.variants') }}</dt><dd>{{ declination.variants.join(', ') || t('designs.declination.single') }}</dd></div>
         </dl>
         <form v-else class="declination__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
-                <FormField label="Nom du produit" :error="errors.productName" :hint="typePrefix ? `Affiché « ${typePrefix} ${form.productName} »` : null">
+                <FormField :label="t('designs.declination.productName')" :error="errors.productName" :hint="typePrefix ? t('designs.declination.displayedAs', { name: `${typePrefix} ${form.productName}` }) : null">
                     <input v-model="form.productName" type="text">
                 </FormField>
-                <FormField label="Prix de vente (€)" :error="errors.sellingPrice" hint="Le prix d'achat viendra des réapprovisionnements.">
+                <FormField :label="t('designs.declination.sellingPrice')" :error="errors.sellingPrice" :hint="t('designs.declination.sellingPriceHint')">
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
-                <FormField as="group" label="Variantes" :error="errors.variants">
+                <FormField as="group" :label="t('designs.declination.variants')" :error="errors.variants">
                     <VariantsInput v-model="form.variants" />
                 </FormField>
                 <div v-if="dirty" class="declination__actions">
-                    <BaseButton type="submit" variant="secondary" :loading="saving">Enregistrer la déclinaison</BaseButton>
+                    <BaseButton type="submit" variant="secondary" :loading="saving">{{ t('designs.declination.save') }}</BaseButton>
                 </div>
             </fieldset>
         </form>

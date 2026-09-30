@@ -8,6 +8,6 @@ final class NegativeShippingCost extends InvalidOrder
 {
     public function __construct()
     {
-        parent::__construct('Les frais de port ne peuvent pas être négatifs.');
+        parent::__construct('order.negative_shipping_cost');
     }
 }

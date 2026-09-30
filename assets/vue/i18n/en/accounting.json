@@ -1,0 +1,65 @@
+{
+    "title": "Accounting",
+    "year": "Year",
+    "urssaf": "URSSAF declarations",
+    "periodicity": {
+        "label": "Declare to URSSAF",
+        "monthly": "Every month",
+        "quarterly": "Every quarter"
+    },
+    "pending": "{count} more period to declare: | {count} more periods to declare:",
+    "yearTotal": "{year}: {turnover} turnover, about {contribution} in contributions.",
+    "toast": {
+        "monthly": "Monthly declarations.",
+        "quarterly": "Quarterly declarations.",
+        "declared": "{period} marked as declared.",
+        "withdrawn": "Declaration for {period} withdrawn."
+    },
+    "status": {
+        "declared": "Declared",
+        "changed": "Amount changed",
+        "late": "Late",
+        "due": "To declare",
+        "current": "In progress",
+        "upcoming": "Upcoming",
+        "inactive": "Before activity"
+    },
+    "period": {
+        "firstQuarter": "Q1 {year}",
+        "quarter": "Q{index} {year}",
+        "shortQuarter": "Q{index}"
+    },
+    "ledger": {
+        "label": "Periods of the year",
+        "cell": "{period}: {amount}, {status}"
+    },
+    "slip": {
+        "label": "{period} declaration",
+        "dates": "From {from} to {to}",
+        "box": "Sales of goods (BIC)",
+        "boxHint": "Turnover to declare",
+        "orders": "Orders",
+        "contribution": "Estimated contributions ({rate}%)",
+        "deadline": "Declare before",
+        "changed": "Declared {amount} on {date}; the period's orders have changed since. Correct the declaration on urssaf.fr, then mark it again.",
+        "declaredOn": "Declared on {date}",
+        "inactive": "This period is before the first sale recorded in MossyTrunk.",
+        "current": "The period is not over yet: the amount may still change.",
+        "noSales": "No sales: still declare a turnover of €0.",
+        "withdraw": "Withdraw the declaration",
+        "withdrawConfirm": "Withdraw",
+        "withdrawMessage": "The period will go back to “to declare” in MossyTrunk. This changes nothing on urssaf.fr.",
+        "declare": "Mark as declared ({count} order) | Mark as declared ({count} orders)"
+    },
+    "export": {
+        "title": "Export orders",
+        "label": "Period to export",
+        "lastMonth": "Last month",
+        "lastQuarter": "Last quarter",
+        "thisYear": "This year",
+        "custom": "Custom period",
+        "summary": "All orders from {from} to {to}, one line per order.",
+        "chooseDates": "Choose the start and end dates.",
+        "download": "Download the CSV"
+    }
+}

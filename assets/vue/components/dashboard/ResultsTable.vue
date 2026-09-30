@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import DataTable from '../ui/DataTable.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -11,6 +12,8 @@ const props = defineProps({
     total: { type: Object, default: null },
     collapsible: { type: Boolean, default: false },
 });
+
+const { t } = useI18n();
 
 const isEmpty = (row) => row.orderCount === 0 && row.expenses === 0;
 const showAll = ref(false);
@@ -24,12 +27,12 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
             <template #head>
                 <tr>
                     <th>{{ labelHeader }}</th>
-                    <th class="data-table__cell--number">Commandes</th>
-                    <th class="data-table__cell--number">CA</th>
-                    <th class="data-table__cell--number">Coût d'achat</th>
-                    <th class="data-table__cell--number">Dépenses</th>
-                    <th class="data-table__cell--number">URSSAF</th>
-                    <th class="data-table__cell--number">Résultat</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.orders') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.turnover') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.costOfGoods') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.expenses') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.urssaf') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.result') }}</th>
                 </tr>
             </template>
             <template #default="{ rows: pageRows }">
@@ -45,7 +48,7 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
             </template>
             <template v-if="total" #foot>
                 <tr>
-                    <td>Total</td>
+                    <td>{{ t('dashboard.table.total') }}</td>
                     <td class="data-table__cell--number">{{ total.orderCount }}</td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.turnover" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.costOfGoods" /></td>
@@ -56,7 +59,7 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
             </template>
         </DataTable>
         <BaseButton v-if="collapsible && emptyCount > 0" variant="ghost" class="results-table__toggle" @click="showAll = !showAll">
-            {{ showAll ? 'Masquer les mois sans activité' : `Afficher les ${rows.length} mois` }}
+            {{ showAll ? t('dashboard.table.hideEmpty') : t('dashboard.table.showAll', { count: rows.length }) }}
         </BaseButton>
     </div>
 </template>

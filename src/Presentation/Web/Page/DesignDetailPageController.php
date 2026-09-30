@@ -20,6 +20,6 @@ final readonly class DesignDetailPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('DesignDetailPage', 'Design', ['designId' => $id]);
+        return $this->page->render('DesignDetailPage', 'design', ['designId' => $id]);
     }
 }

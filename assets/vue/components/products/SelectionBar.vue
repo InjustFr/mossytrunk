@@ -1,19 +1,20 @@
 <script setup>
 import BaseButton from '../ui/BaseButton.vue';
-import { plural } from '../../composables/usePlural.js';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     count: { type: Number, required: true },
 });
 const emit = defineEmits(['edit', 'clear']);
+const { t } = useI18n();
 </script>
 
 <template>
     <Transition name="selection-bar">
-        <div v-if="count > 0" class="selection-bar" role="region" aria-label="Sélection">
-            <span class="selection-bar__count">{{ plural(count, 'produit sélectionné', 'produits sélectionnés') }}</span>
-            <BaseButton @click="emit('edit')">Modifier la sélection</BaseButton>
-            <BaseButton variant="ghost" @click="emit('clear')">Désélectionner</BaseButton>
+        <div v-if="count > 0" class="selection-bar" role="region" :aria-label="t('products.selection.label')">
+            <span class="selection-bar__count">{{ t('products.selection.count', count) }}</span>
+            <BaseButton @click="emit('edit')">{{ t('products.selection.edit') }}</BaseButton>
+            <BaseButton variant="ghost" @click="emit('clear')">{{ t('products.selection.clear') }}</BaseButton>
         </div>
     </Transition>
 </template>

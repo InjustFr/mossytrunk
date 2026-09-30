@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { ChevronLeft, Plus } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseModal from '../ui/BaseModal.vue';
 import EmptyState from '../ui/EmptyState.vue';
@@ -12,6 +13,7 @@ import { nextTypeColor } from '../../composables/useTypeColor.js';
 const emit = defineEmits(['saved']);
 const open = defineModel('open', { type: Boolean, required: true });
 const { types, create, update } = useProductTypes();
+const { t } = useI18n();
 
 const NEW = 'new';
 const editing = ref(null);
@@ -21,8 +23,8 @@ watch(open, (isOpen) => {
 });
 
 const title = computed(() => {
-    if (!editing.value) return 'Types de produit';
-    return editing.value === NEW ? 'Nouveau type de produit' : `Modifier le type ${editing.value.name}`;
+    if (!editing.value) return t('products.page.types');
+    return editing.value === NEW ? t('products.types.new') : t('products.types.edit', { name: editing.value.name });
 });
 
 const submit = (payload) => (editing.value === NEW ? create(payload.name, payload.color, payload.code) : update(editing.value.id, payload));
@@ -37,16 +39,16 @@ function onSaved(name) {
     <BaseModal v-model:open="open" :title="title">
         <Transition name="product-types-modal__step" mode="out-in">
             <div v-if="!editing" key="list" class="product-types-modal__step">
-                <p class="product-types-modal__intro">Chaque produit s'affiche « Type Nom » ; la couleur repère le type dans les listes et les rapports.</p>
+                <p class="product-types-modal__intro">{{ t('products.types.intro') }}</p>
                 <ProductTypeList v-if="types.length" :types="types" @edit="editing = $event" />
-                <EmptyState v-else>Aucun type. Ajoutez Print, Sticker… pour classer vos produits.</EmptyState>
+                <EmptyState v-else>{{ t('products.types.empty') }}</EmptyState>
                 <div class="product-types-modal__actions">
-                    <BaseButton variant="secondary" @click="editing = NEW"><Plus size="1rem" aria-hidden="true" /> Ajouter un type</BaseButton>
+                    <BaseButton variant="secondary" @click="editing = NEW"><Plus size="1rem" aria-hidden="true" /> {{ t('products.types.add') }}</BaseButton>
                 </div>
             </div>
             <div v-else :key="editing === NEW ? NEW : editing.id" class="product-types-modal__step">
                 <button type="button" class="product-types-modal__back" @click="editing = null">
-                    <ChevronLeft size="1rem" aria-hidden="true" /> Tous les types
+                    <ChevronLeft size="1rem" aria-hidden="true" /> {{ t('products.types.all') }}
                 </button>
                 <ProductTypeForm
                     :type="editing === NEW ? null : editing"

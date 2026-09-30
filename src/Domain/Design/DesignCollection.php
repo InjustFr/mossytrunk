@@ -48,7 +48,7 @@ class DesignCollection
     {
         $name = trim($name);
         if ('' === $name) {
-            throw new EmptyDesignName('de la collection');
+            throw new EmptyDesignName('collection');
         }
 
         $this->name = $name;

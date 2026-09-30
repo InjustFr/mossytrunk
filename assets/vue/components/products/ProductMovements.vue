@@ -1,33 +1,35 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatDateTime } from '../../composables/useDate.js';
-import { MOVEMENTS } from '../../composables/useStock.js';
+import { movementLabel } from '../../composables/useStock.js';
 
 defineProps({
     movements: { type: Array, required: true },
 });
+const { t } = useI18n();
 </script>
 
 <template>
-    <EmptyState v-if="movements.length === 0">Aucun mouvement : ni achat, ni vente pour l'instant.</EmptyState>
+    <EmptyState v-if="movements.length === 0">{{ t('products.movements.empty') }}</EmptyState>
     <DataTable v-else :items="movements" class="product-movements">
         <template #head>
             <tr>
-                <th>Date</th>
-                <th>Mouvement</th>
-                <th>Variante</th>
-                <th class="data-table__cell--number">Quantité</th>
-                <th class="data-table__cell--number">Coût</th>
+                <th>{{ t('products.movements.date') }}</th>
+                <th>{{ t('products.movements.movement') }}</th>
+                <th>{{ t('products.movements.variant') }}</th>
+                <th class="data-table__cell--number">{{ t('products.movements.quantity') }}</th>
+                <th class="data-table__cell--number">{{ t('products.movements.cost') }}</th>
             </tr>
         </template>
         <template #default="{ rows }">
             <tr v-for="(movement, index) in rows" :key="`${movement.date}-${index}`">
                 <td class="product-movements__date">{{ formatDateTime(movement.date) }}</td>
                 <td>
-                    <a v-if="movement.link" :href="movement.link">{{ MOVEMENTS[movement.kind] }}</a>
-                    <template v-else>{{ MOVEMENTS[movement.kind] }}</template>
+                    <a v-if="movement.link" :href="movement.link">{{ movementLabel(movement.kind) }}</a>
+                    <template v-else>{{ movementLabel(movement.kind) }}</template>
                     <span v-if="movement.label" class="product-movements__label">{{ movement.label }}</span>
                 </td>
                 <td>{{ movement.variant ?? '—' }}</td>

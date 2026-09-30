@@ -1,11 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formatCents, formatWholeCents } from '../../composables/useMoney.js';
-import { MONTHS } from '../../composables/useDashboard.js';
+import { monthName } from '../../composables/useDashboard.js';
 
 const props = defineProps({
     months: { type: Array, required: true },
 });
+
+const { t } = useI18n();
 
 const hovered = ref(null);
 
@@ -40,7 +43,7 @@ const barStyle = (result) => {
 </script>
 
 <template>
-    <figure class="monthly-chart" aria-label="Résultat par mois">
+    <figure class="monthly-chart" :aria-label="t('dashboard.chart.label')">
         <div class="monthly-chart__plot" role="list" :style="columns">
             <div class="monthly-chart__zero" :style="{ top: `${scale.zero}%` }" aria-hidden="true" />
             <div
@@ -49,7 +52,7 @@ const barStyle = (result) => {
                 class="monthly-chart__slot"
                 role="listitem"
                 tabindex="0"
-                :aria-label="`${MONTHS[month.month - 1]} : résultat ${formatCents(month.result)}`"
+                :aria-label="t('dashboard.chart.slot', { month: monthName(month.month), result: formatCents(month.result) })"
                 @mouseenter="hovered = month"
                 @mouseleave="hovered = null"
                 @focus="hovered = month"
@@ -63,14 +66,14 @@ const barStyle = (result) => {
                     <span class="monthly-chart__value" aria-hidden="true">{{ formatWholeCents(month.result) }}</span>
                 </div>
                 <div v-if="hovered === month" class="monthly-chart__tooltip" role="tooltip">
-                    <strong>{{ MONTHS[month.month - 1] }}</strong>
-                    <span>CA {{ formatCents(month.turnover) }}</span>
-                    <span>Résultat {{ formatCents(month.result) }}</span>
+                    <strong>{{ monthName(month.month) }}</strong>
+                    <span>{{ t('dashboard.chart.turnover', { amount: formatCents(month.turnover) }) }}</span>
+                    <span>{{ t('dashboard.chart.result', { amount: formatCents(month.result) }) }}</span>
                 </div>
             </div>
         </div>
         <div class="monthly-chart__axis" aria-hidden="true" :style="columns">
-            <span v-for="month in visibleMonths" :key="month.month">{{ MONTHS[month.month - 1] }}</span>
+            <span v-for="month in visibleMonths" :key="month.month">{{ monthName(month.month) }}</span>
         </div>
     </figure>
 </template>

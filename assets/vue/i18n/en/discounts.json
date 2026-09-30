@@ -1,0 +1,70 @@
+{
+    "range": "{min} to {max}",
+    "page": {
+        "title": "Discounts",
+        "new": "New discount",
+        "edit": "Edit discount",
+        "intro": "A discount combines conditions (a quantity of a type or of a specific product) and an action: fixed price, amount off in € or percentage off. Discounts apply automatically to orders placed during their validity period, the most favorable first, and several discounts can stack on one order.",
+        "created": "Discount “{name}” created.",
+        "updated": "Discount “{name}” updated.",
+        "started": "Discount “{name}” started from today.",
+        "stopped": "Discount “{name}” stopped: it ended yesterday.",
+        "removed": "Discount “{name}” deleted.",
+        "notFound": "This discount no longer exists."
+    },
+    "form": {
+        "fixedPrice": "Fixed price",
+        "amountOff": "Amount off (€)",
+        "percentOff": "Percentage off",
+        "name": "Name",
+        "nameHint": "Shown on orders, e.g. “2 prints and 1 sticker for €15”",
+        "conditions": "Conditions",
+        "conditionsHint": "All conditions must be met. A product counts with all its variants.",
+        "conditionQuantity": "Quantity for condition {number}",
+        "conditionTarget": "Target of condition {number}",
+        "type": "Type",
+        "product": "Product",
+        "conditionType": "Type for condition {number}",
+        "conditionProduct": "Product for condition {number}",
+        "chooseType": "Choose a type…",
+        "searchProduct": "Search for a product…",
+        "removeCondition": "Remove condition {number}",
+        "addCondition": "Add a condition",
+        "action": "Action",
+        "actionKind": "Action type",
+        "percent": "Discount percentage",
+        "itemsPrice": "Price of the items",
+        "discountAmount": "Discount amount",
+        "pricing": "Regular price: {regular} → customer price: {customer}",
+        "startsOn": "Valid from",
+        "startsOnHint": "Empty: starting now",
+        "validFrom": "Start of validity",
+        "endsOn": "To",
+        "endsOnHint": "Empty: no end",
+        "validUntil": "End of validity",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Create discount"
+    },
+    "status": {
+        "running": "Running",
+        "upcoming": "Upcoming",
+        "expired": "Expired"
+    },
+    "list": {
+        "empty": "No discounts. Create one, e.g. “2 prints and 1 sticker for €15”.",
+        "between": "From {start} to {end}",
+        "from": "Starting {start}",
+        "until": "Until {end}",
+        "insteadOf": ", instead of {price}",
+        "customerSaving": "Customer saving",
+        "stop": "Stop: the discount ends yesterday",
+        "start": "Start: the discount begins today",
+        "edit": "Edit {name}",
+        "remove": "Delete {name}"
+    },
+    "action": {
+        "fixedPrice": "for {price}",
+        "percentOff": "−{percent}%"
+    }
+}

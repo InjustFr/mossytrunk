@@ -8,6 +8,6 @@ final class UnknownPasswordToken extends InvalidPasswordToken
 {
     public function __construct()
     {
-        parent::__construct('Ce lien n\'est pas valide.');
+        parent::__construct('identity.unknown_password_token');
     }
 }

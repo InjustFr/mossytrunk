@@ -19,6 +19,6 @@ final readonly class SupplierOrdersPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('SupplierOrdersPage', 'Commandes fournisseurs');
+        return $this->page->render('SupplierOrdersPage', 'supplierOrders');
     }
 }

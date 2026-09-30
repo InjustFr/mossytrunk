@@ -14,17 +14,17 @@ final readonly class GabaritPayload
      * @param list<string> $adaptations
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom du gabarit est obligatoire.')]
+        #[Assert\NotBlank(message: 'template.name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
-        #[Assert\Ulid(message: 'Type invalide.')]
+        #[Assert\Ulid(message: 'productType.invalid')]
         public ?string $typeId = null,
-        #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
+        #[Assert\PositiveOrZero(message: 'sellingPrice.negative')]
         public int $sellingPrice = 0,
-        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une variante ne peut pas être vide.')])]
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank')])]
         public array $variants = [],
-        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une adaptation ne peut pas être vide.')])]
-        #[Assert\Unique(message: 'Les adaptations doivent être uniques.')]
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'adaptation.blank')])]
+        #[Assert\Unique(message: 'adaptation.duplicate')]
         public array $adaptations = [],
     ) {
     }

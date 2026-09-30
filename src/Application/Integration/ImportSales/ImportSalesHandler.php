@@ -12,6 +12,7 @@ use App\Application\Order\OrderPricing;
 use App\Application\Product\CreateProductType\ProductTypeCreator;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
+use App\Application\Translator;
 use App\Domain\Event\EventRepository;
 use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\SalesContext;
@@ -42,6 +43,7 @@ final readonly class ImportSalesHandler
         private StockKeeper $stock,
         private ClockInterface $clock,
         private Transaction $transaction,
+        private Translator $translator,
     ) {
     }
 
@@ -58,7 +60,7 @@ final readonly class ImportSalesHandler
         uasort($sales, static fn (ExternalSale $a, ExternalSale $b): int => $a->placedAt <=> $b->placedAt);
         $alreadyImported = array_flip($this->orders->importedExternalIds($service, array_map(strval(...), array_keys($sales))));
 
-        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $connection->workspace());
+        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $connection->workspace(), $this->translator->trans('import.free_amount'));
         $resolver = new ExternalItemResolver($catalogue, $this->items, $connection, $description->linePrices, $this->clock->now());
         $atEvent = SalesContext::AtEvent === $connection->salesContext();
 
@@ -108,7 +110,7 @@ final readonly class ImportSalesHandler
                 $sale->shipping,
                 $sale->paymentMethod,
                 $atEvent ? $this->pricing->discounts($items, $sale->placedAt) : [],
-                'Remise '.$description->label,
+                $this->translator->trans('import.discount', ['service' => $description->label]),
             ));
             ++$imported;
         }

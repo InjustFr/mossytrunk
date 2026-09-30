@@ -2,13 +2,13 @@ import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 
 export const SALES_CONTEXTS = [
-    { value: 'at_event', label: 'Au marché du jour', description: 'Chaque vente rejoint le marché ou salon qui couvre sa date.' },
-    { value: 'online', label: 'En ligne', description: 'Les ventes n\'appartiennent à aucun marché.' },
+    { value: 'at_event', label: 'settings.salesContexts.atEvent.label', description: 'settings.salesContexts.atEvent.description' },
+    { value: 'online', label: 'settings.salesContexts.online.label', description: 'settings.salesContexts.online.description' },
 ];
 
 export const UNKNOWN_ITEMS = [
-    { value: 'create_product', label: 'Créer le produit', description: 'Au prix de vente du service, prix d\'achat à compléter.' },
-    { value: 'link_by_hand', label: 'Me demander', description: 'La commande attend que vous associez l\'article à un produit.' },
+    { value: 'create_product', label: 'settings.unknownItemPolicies.createProduct.label', description: 'settings.unknownItemPolicies.createProduct.description' },
+    { value: 'link_by_hand', label: 'settings.unknownItemPolicies.linkByHand.label', description: 'settings.unknownItemPolicies.linkByHand.description' },
 ];
 
 export function isReady(service) {

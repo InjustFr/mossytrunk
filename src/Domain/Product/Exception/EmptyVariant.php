@@ -8,6 +8,6 @@ final class EmptyVariant extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Une variante ne peut pas être vide.');
+        parent::__construct('product.empty_variant');
     }
 }

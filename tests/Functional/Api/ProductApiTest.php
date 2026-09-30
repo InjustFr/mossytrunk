@@ -96,9 +96,15 @@ final class ProductApiTest extends WebTestCase
         $client->jsonRequest('GET', '/api/products');
         $id = Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'id');
 
-        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 's ', 'S']]);
+        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'S ']]);
 
         self::assertResponseStatusCodeSame(422);
+        self::assertSame('The variant “S” already exists for this product.', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'detail'));
+
+        $client->jsonRequest('PUT', "/api/products/$id", ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'S ']], ['HTTP_ACCEPT_LANGUAGE' => 'fr']);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSame('La variante « S » existe déjà pour ce produit.', Json::string(Json::decode((string) $client->getResponse()->getContent()), 'detail'));
     }
 
     public function testProductsOfAnotherWorkspaceAreNotFound(): void

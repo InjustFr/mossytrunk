@@ -8,6 +8,6 @@ final class EmptySupplierName extends InvalidPurchase
 {
     public function __construct()
     {
-        parent::__construct('Le nom du fournisseur est obligatoire.');
+        parent::__construct('purchasing.empty_supplier_name');
     }
 }

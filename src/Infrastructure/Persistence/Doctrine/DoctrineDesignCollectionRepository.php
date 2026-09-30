@@ -27,7 +27,7 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
     public function get(Ulid $id): DesignCollection
     {
         return $this->entityManager->getRepository(DesignCollection::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Collection', (string) $id);
+            ?? throw new NotFound('collection', (string) $id);
     }
 
     public function all(): array

@@ -1,0 +1,12 @@
+{
+    "bars": {
+        "result": "Result",
+        "costs": "Costs",
+        "note": "of each event's turnover",
+        "ratio": "{ratio} of {turnover}"
+    },
+    "receipt": {
+        "ratio": "{ratio} of turnover",
+        "result": "Result"
+    }
+}

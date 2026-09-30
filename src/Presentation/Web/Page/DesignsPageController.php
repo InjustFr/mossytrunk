@@ -19,6 +19,6 @@ final readonly class DesignsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('DesignsPage', 'Créations');
+        return $this->page->render('DesignsPage', 'designs');
     }
 }

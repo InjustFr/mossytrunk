@@ -66,7 +66,7 @@ class StockItem
             throw new NonPositiveStockQuantity();
         }
         if ($totalCost->isNegative()) {
-            throw new NegativeAmount('Le prix payé');
+            throw new NegativeAmount('paid_price');
         }
 
         $lot = new StockLot($this, $quantity, max(0, $quantity + min($this->onHand, 0)), $totalCost, $receivedAt, $origin, $sourceId);

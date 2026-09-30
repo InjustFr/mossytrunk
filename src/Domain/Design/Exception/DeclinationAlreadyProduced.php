@@ -8,6 +8,6 @@ final class DeclinationAlreadyProduced extends InvalidDesign
 {
     public function __construct(string $declination)
     {
-        parent::__construct(\sprintf('« %s » est déjà un produit : sa déclinaison ne change plus.', $declination));
+        parent::__construct('design.adaptation_already_produced', ['name' => $declination]);
     }
 }

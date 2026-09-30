@@ -8,6 +8,6 @@ final class DuplicateAdaptation extends InvalidDesign
 {
     public function __construct(string $adaptation)
     {
-        parent::__construct(\sprintf('L\'adaptation « %s » est en double.', $adaptation));
+        parent::__construct('design.duplicate_adjustment', ['adjustment' => $adaptation]);
     }
 }

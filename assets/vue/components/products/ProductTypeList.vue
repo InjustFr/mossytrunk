@@ -1,5 +1,6 @@
 <script setup>
 import { Pencil } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import IconButton from '../ui/IconButton.vue';
 import TypeMark from '../ui/TypeMark.vue';
 
@@ -7,6 +8,7 @@ defineProps({
     types: { type: Array, required: true },
 });
 const emit = defineEmits(['edit']);
+const { t } = useI18n();
 </script>
 
 <template>
@@ -15,7 +17,7 @@ const emit = defineEmits(['edit']);
             <TypeMark :color="type.color" />
             <span class="product-type-list__name">{{ type.name }}</span>
             <span class="product-type-list__code">{{ type.code }}</span>
-            <IconButton :icon="Pencil" :label="`Modifier le type ${type.name}`" @click="emit('edit', type)" />
+            <IconButton :icon="Pencil" :label="t('products.types.edit', { name: type.name })" @click="emit('edit', type)" />
         </li>
     </ul>
 </template>

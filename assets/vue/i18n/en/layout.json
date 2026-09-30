@@ -1,0 +1,18 @@
+{
+    "nav": {
+        "label": "Main navigation",
+        "dashboard": "Dashboard",
+        "sales": "Sales",
+        "orders": "Orders",
+        "events": "Markets & fairs",
+        "discounts": "Discounts",
+        "workshop": "Workshop",
+        "designs": "Designs",
+        "products": "Products",
+        "suppliers": "Suppliers",
+        "office": "Office",
+        "accounting": "Accounting",
+        "settings": "Settings"
+    },
+    "signOut": "Sign out"
+}

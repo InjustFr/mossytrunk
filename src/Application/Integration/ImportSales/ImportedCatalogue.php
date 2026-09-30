@@ -16,8 +16,6 @@ use Symfony\Component\Uid\Ulid;
 
 final class ImportedCatalogue
 {
-    public const string FREE_AMOUNT = 'Montant libre';
-
     /** @var array<string, Product>|null */
     private ?array $byDisplayName = null;
 
@@ -35,6 +33,7 @@ final class ImportedCatalogue
         private readonly ProductTypeRepository $typeRepository,
         private readonly ProductTypeCreator $typeCreator,
         private readonly Workspace $workspace,
+        private readonly string $freeAmountName,
     ) {
     }
 
@@ -69,9 +68,9 @@ final class ImportedCatalogue
 
     public function freeAmount(Money $price): Product
     {
-        $product = $this->named(self::FREE_AMOUNT);
+        $product = $this->named($this->freeAmountName);
 
-        return null !== $product && !$product->hasVariants() ? $product : $this->create(self::FREE_AMOUNT, $price, null);
+        return null !== $product && !$product->hasVariants() ? $product : $this->create($this->freeAmountName, $price, null);
     }
 
     public function createdCount(): int

@@ -8,6 +8,6 @@ final class DeclarationPeriodEndsBeforeStart extends InvalidDeclaration
 {
     public function __construct()
     {
-        parent::__construct('La fin de la période doit suivre son début.');
+        parent::__construct('accounting.period_ends_before_start');
     }
 }

@@ -1,9 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { ChevronLeft } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseModal from '../ui/BaseModal.vue';
 import ServiceForm from './ServiceForm.vue';
 import ServicePicker from './ServicePicker.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     services: { type: Array, required: true },
@@ -24,8 +27,8 @@ watch(open, (isOpen) => {
 
 const service = computed(() => chosen.value);
 const title = computed(() => {
-    if (props.editing) return `Modifier ${props.editing.label}`;
-    return service.value ? `Ajouter ${service.value.label}` : 'Ajouter un service';
+    if (props.editing) return t('settings.modal.edit', { label: props.editing.label });
+    return service.value ? t('settings.modal.add', { label: service.value.label }) : t('settings.modal.addService');
 });
 
 function submit(payload) {
@@ -44,7 +47,7 @@ function onSaved() {
             <ServicePicker v-if="!service" key="picker" :services="services" @choose="chosen = $event" />
             <div v-else :key="service.key" class="service-modal__step">
                 <button v-if="!editing" type="button" class="service-modal__back" @click="chosen = null">
-                    <ChevronLeft size="1rem" aria-hidden="true" /> Autre service
+                    <ChevronLeft size="1rem" aria-hidden="true" /> {{ t('settings.modal.otherService') }}
                 </button>
                 <ServiceForm :service="service" :submit="submit" @saved="onSaved" @cancel="open = false" />
             </div>

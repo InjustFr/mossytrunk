@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Connector\Etsy;
 
+use App\Application\Integration\Exception\AccountWithoutShop;
 use App\Application\Integration\Exception\ServiceUnreachable;
 use App\Application\Integration\Tokens;
 use App\Infrastructure\Http\Json;
@@ -52,7 +53,7 @@ final readonly class EtsyApiGateway implements EtsyGateway
     {
         $shopId = Json::string($this->get($app, $accessToken, '/v3/application/users/me')['shop_id'] ?? '');
         if ('' === $shopId) {
-            throw new ServiceUnreachable('Etsy', 'ce compte Etsy n\'a pas de boutique.');
+            throw new AccountWithoutShop('Etsy');
         }
 
         return new EtsyShop($shopId, Json::string($this->get($app, $accessToken, '/v3/application/shops/'.rawurlencode($shopId))['shop_name'] ?? $shopId));

@@ -12,7 +12,7 @@ final readonly class ReceivedLinePayload
         #[Assert\NotBlank]
         #[Assert\Ulid]
         public string $lineId = '',
-        #[Assert\PositiveOrZero(message: 'La quantité reçue ne peut pas être négative.')]
+        #[Assert\PositiveOrZero(message: 'supplierOrder.received.negative')]
         public int $received = 0,
     ) {
     }

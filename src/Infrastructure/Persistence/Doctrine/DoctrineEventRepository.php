@@ -30,7 +30,7 @@ final readonly class DoctrineEventRepository implements EventRepository
     public function get(Ulid $id): Event
     {
         return $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Événement', (string) $id);
+            ?? throw new NotFound('event', (string) $id);
     }
 
     public function findCovering(\DateTimeImmutable $moment): ?Event

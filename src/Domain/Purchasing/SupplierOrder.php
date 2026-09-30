@@ -91,10 +91,10 @@ class SupplierOrder
         $discount ??= Money::zero();
         $deliveryFees ??= Money::zero();
         if ($discount->isNegative()) {
-            throw new NegativeAmount('La remise globale');
+            throw new NegativeAmount('overall_discount');
         }
         if ($deliveryFees->isNegative()) {
-            throw new NegativeAmount('Les frais de livraison');
+            throw new NegativeAmount('delivery_cost');
         }
 
         $this->supplier = $supplier;

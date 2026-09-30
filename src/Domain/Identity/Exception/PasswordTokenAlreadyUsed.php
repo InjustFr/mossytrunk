@@ -8,6 +8,6 @@ final class PasswordTokenAlreadyUsed extends InvalidPasswordToken
 {
     public function __construct()
     {
-        parent::__construct('Ce lien a déjà été utilisé.');
+        parent::__construct('identity.password_token_already_used');
     }
 }

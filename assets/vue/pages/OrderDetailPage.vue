@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
@@ -16,6 +17,7 @@ const props = defineProps({
     orderId: { type: String, required: true },
 });
 
+const { t } = useI18n();
 const { order, load, remove } = useOrder(props.orderId);
 
 async function onDelete() {
@@ -27,29 +29,29 @@ onMounted(load);
 </script>
 
 <template>
-    <AppLayout :title="order ? `Commande ${order.reference}` : 'Commande'">
-        <template #back><a class="back-link" href="/orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes</a></template>
+    <AppLayout :title="order ? t('orders.detail.title', { reference: order.reference }) : t('orders.detail.titleFallback')">
+        <template #back><a class="back-link" href="/orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
         <template #actions>
-            <ConfirmButton v-if="order" label="Supprimer la commande" confirm-label="Confirmer la suppression" @confirm="onDelete" />
+            <ConfirmButton v-if="order" :label="t('orders.detail.delete')" :confirm-label="t('orders.detail.confirmDelete')" @confirm="onDelete" />
         </template>
 
         <div v-if="order" class="order-detail-page">
             <p class="order-detail-page__meta">
                 {{ formatDateTime(order.placedAt) }} ·
                 <a v-if="order.event" :href="`/events/${order.event.id}`">{{ order.event.name }}</a>
-                <template v-else>Boutique {{ order.sourceLabel }}</template>
-                <span v-if="order.source !== 'manual'"> · importée depuis {{ order.sourceLabel }}</span>
+                <template v-else>{{ t('orders.shop', { source: order.sourceLabel }) }}</template>
+                <span v-if="order.source !== 'manual'"> · {{ t('orders.detail.importedFrom', { source: order.sourceLabel }) }}</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
             </p>
             <div class="order-detail-page__grid">
-                <BaseCard title="Articles">
+                <BaseCard :title="t('orders.detail.items')">
                     <OrderLines :lines="order.lines" />
                 </BaseCard>
                 <div class="order-detail-page__side">
-                    <BaseCard title="Montant">
+                    <BaseCard :title="t('orders.detail.amount')">
                         <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :shipping="order.shipping" :total="order.total" link-rules />
                     </BaseCard>
-                    <BaseCard title="Marge">
+                    <BaseCard :title="t('orders.detail.margin')">
                         <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :margin="order.margin" />
                     </BaseCard>
                 </div>

@@ -21,6 +21,9 @@ import {
     DateRangePickerRoot,
     DateRangePickerTrigger,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
     invalid: { type: Boolean, default: false },
@@ -51,7 +54,7 @@ const range = computed({
                 <DateRangePickerInput v-if="item.part === 'literal'" :part="item.part" type="end" class="date-picker__literal">{{ item.value }}</DateRangePickerInput>
                 <DateRangePickerInput v-else :part="item.part" type="end" class="date-picker__segment">{{ item.value }}</DateRangePickerInput>
             </template>
-            <DateRangePickerTrigger class="date-picker__trigger" aria-label="Ouvrir le calendrier">
+            <DateRangePickerTrigger class="date-picker__trigger" :aria-label="t('ui.datePicker.open')">
                 <CalendarDays size="1rem" aria-hidden="true" />
             </DateRangePickerTrigger>
         </DateRangePickerField>
@@ -59,9 +62,9 @@ const range = computed({
         <DateRangePickerContent class="date-picker__content" :side-offset="4" align="start">
             <DateRangePickerCalendar v-slot="{ weekDays, grid }">
                 <DateRangePickerHeader class="date-picker__header">
-                    <DateRangePickerPrev class="date-picker__nav" aria-label="Mois précédent"><ChevronLeft size="1rem" aria-hidden="true" /></DateRangePickerPrev>
+                    <DateRangePickerPrev class="date-picker__nav" :aria-label="t('ui.datePicker.previousMonth')"><ChevronLeft size="1rem" aria-hidden="true" /></DateRangePickerPrev>
                     <DateRangePickerHeading class="date-picker__heading" />
-                    <DateRangePickerNext class="date-picker__nav" aria-label="Mois suivant"><ChevronRight size="1rem" aria-hidden="true" /></DateRangePickerNext>
+                    <DateRangePickerNext class="date-picker__nav" :aria-label="t('ui.datePicker.nextMonth')"><ChevronRight size="1rem" aria-hidden="true" /></DateRangePickerNext>
                 </DateRangePickerHeader>
                 <DateRangePickerGrid v-for="month in grid" :key="month.value.toString()" class="date-picker__grid">
                     <DateRangePickerGridHead>

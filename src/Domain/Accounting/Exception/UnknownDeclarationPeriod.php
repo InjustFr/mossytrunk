@@ -8,6 +8,6 @@ final class UnknownDeclarationPeriod extends InvalidDeclaration
 {
     public function __construct(string $key)
     {
-        parent::__construct(\sprintf('Période de déclaration inconnue « %s ».', $key));
+        parent::__construct('accounting.unknown_period', ['period' => $key]);
     }
 }

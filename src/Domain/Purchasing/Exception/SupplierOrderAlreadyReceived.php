@@ -8,6 +8,6 @@ final class SupplierOrderAlreadyReceived extends InvalidPurchase
 {
     public function __construct(string $reference)
     {
-        parent::__construct(\sprintf('La commande %s est déjà réceptionnée : elle ne peut plus changer.', $reference));
+        parent::__construct('purchasing.supplier_order_already_received', ['reference' => $reference]);
     }
 }

@@ -8,6 +8,6 @@ final class LastPriceKept extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Le produit doit garder au moins un prix.');
+        parent::__construct('product.last_price_kept');
     }
 }

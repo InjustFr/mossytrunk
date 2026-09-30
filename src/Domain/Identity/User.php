@@ -30,6 +30,9 @@ class User
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    #[ORM\Column(length: 2, nullable: true, enumType: Language::class)]
+    private ?Language $language = null;
+
     private function __construct(Ulid $id, string $email, Workspace $workspace)
     {
         $this->id = $id;
@@ -56,6 +59,16 @@ class User
     public function changePassword(string $passwordHash): void
     {
         $this->passwordHash = $passwordHash;
+    }
+
+    public function speak(Language $language): void
+    {
+        $this->language = $language;
+    }
+
+    public function language(): ?Language
+    {
+        return $this->language;
     }
 
     public function hasPassword(): bool

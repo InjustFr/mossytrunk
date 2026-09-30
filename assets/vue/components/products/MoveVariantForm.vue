@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
@@ -12,6 +13,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['moved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ variant: '', mode: 'new', targetProductId: '', newProductName: '', targetVariant: '' });
 const errors = ref({});
@@ -79,37 +81,36 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="move-variant-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField v-if="hasVariants" as="group" label="Variante à déplacer">
-                <BaseSelect v-model="form.variant" :options="variantOptions" aria-label="Variante à déplacer" />
+            <FormField v-if="hasVariants" as="group" :label="t('products.move.variant')">
+                <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.move.variant')" />
             </FormField>
             <p v-else class="move-variant-form__intro">
-                « {{ product.displayName }} » devient une variante d'un autre produit, avec toutes ses ventes. Il disparaît ensuite du catalogue.
+                {{ t('products.move.intro', { name: product.displayName }) }}
             </p>
 
-            <ToggleGroupRoot :model-value="form.mode" type="single" class="move-variant-form__modes" aria-label="Destination" @update:model-value="(mode) => mode && (form.mode = mode)">
-                <ToggleGroupItem value="new" class="move-variant-form__mode">Nouveau produit</ToggleGroupItem>
-                <ToggleGroupItem value="existing" class="move-variant-form__mode">Produit existant</ToggleGroupItem>
+            <ToggleGroupRoot :model-value="form.mode" type="single" class="move-variant-form__modes" :aria-label="t('products.move.destination')" @update:model-value="(mode) => mode && (form.mode = mode)">
+                <ToggleGroupItem value="new" class="move-variant-form__mode">{{ t('products.move.newProduct') }}</ToggleGroupItem>
+                <ToggleGroupItem value="existing" class="move-variant-form__mode">{{ t('products.move.existingProduct') }}</ToggleGroupItem>
             </ToggleGroupRoot>
 
-            <FormField v-if="form.mode === 'new'" label="Nom du nouveau produit" :error="errors.newProductName" hint="Même type et mêmes prix que le produit d'origine.">
+            <FormField v-if="form.mode === 'new'" :label="t('products.move.newProductName')" :error="errors.newProductName" :hint="t('products.move.newProductHint')">
                 <input v-model="form.newProductName" type="text">
             </FormField>
-            <FormField v-else as="group" label="Produit de destination" :error="errors.targetProductId">
-                <BaseCombobox v-model="form.targetProductId" :options="productOptions" aria-label="Produit de destination" placeholder="Rechercher un produit…" />
+            <FormField v-else as="group" :label="t('products.move.targetProduct')" :error="errors.targetProductId">
+                <BaseCombobox v-model="form.targetProductId" :options="productOptions" :aria-label="t('products.move.targetProduct')" :placeholder="t('products.move.searchProduct')" />
             </FormField>
 
-            <FormField label="Variante dans le produit de destination" :error="errors.targetVariant" hint="Créée si elle n'existe pas. Laisser vide pour fusionner avec un produit unique.">
+            <FormField :label="t('products.move.targetVariant')" :error="errors.targetVariant" :hint="t('products.move.targetVariantHint')">
                 <input v-model="form.targetVariant" type="text">
             </FormField>
 
-            <p class="move-variant-form__summary">
-                Les ventes passées gardent leur prix et comptent désormais pour
-                <strong>{{ targetName || '…' }}<template v-if="form.targetVariant.trim()"> — {{ form.targetVariant.trim() }}</template></strong>.
-            </p>
+            <i18n-t keypath="products.move.summary" tag="p" class="move-variant-form__summary" scope="global">
+                <template #target><strong>{{ targetName || '…' }}<template v-if="form.targetVariant.trim()"> — {{ form.targetVariant.trim() }}</template></strong></template>
+            </i18n-t>
 
             <div class="move-variant-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">Déplacer</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t('products.move.submit') }}</BaseButton>
             </div>
         </fieldset>
     </form>

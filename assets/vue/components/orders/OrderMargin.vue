@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 defineProps({
@@ -6,15 +7,17 @@ defineProps({
     costOfGoods: { type: Number, required: true },
     margin: { type: Number, required: true },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
     <dl class="order-margin">
-        <div class="order-margin__row"><dt>Encaissé</dt><dd><MoneyAmount :cents="total" /></dd></div>
-        <div class="order-margin__row"><dt>Coût d'achat</dt><dd>− <MoneyAmount :cents="costOfGoods" /></dd></div>
-        <div class="order-margin__row order-margin__row--result"><dt>Marge brute</dt><dd><MoneyAmount :cents="margin" signed /></dd></div>
+        <div class="order-margin__row"><dt>{{ t('orders.margin.collected') }}</dt><dd><MoneyAmount :cents="total" /></dd></div>
+        <div class="order-margin__row"><dt>{{ t('orders.margin.buyingCost') }}</dt><dd>− <MoneyAmount :cents="costOfGoods" /></dd></div>
+        <div class="order-margin__row order-margin__row--result"><dt>{{ t('orders.margin.gross') }}</dt><dd><MoneyAmount :cents="margin" signed /></dd></div>
     </dl>
-    <p class="order-margin__note">Avant cotisations URSSAF et dépenses de l'événement.</p>
+    <p class="order-margin__note">{{ t('orders.margin.note') }}</p>
 </template>
 
 <style scoped>

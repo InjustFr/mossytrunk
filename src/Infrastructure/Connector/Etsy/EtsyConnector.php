@@ -28,15 +28,15 @@ final readonly class EtsyConnector implements AuthorizingConnector
         return new ServiceDescription(
             self::KEY,
             'Etsy',
-            'Commandes payées de votre boutique en ligne',
+            'services.etsy.summary',
             [
-                new ServiceField('keystring', 'Keystring', pattern: '/^[A-Za-z0-9]{1,64}$/', patternMessage: 'Lettres et chiffres uniquement.', maxLength: 64),
-                new ServiceField('shared_secret', 'Shared secret', secret: true, maxLength: 200),
+                new ServiceField('keystring', 'services.etsy.fields.keystring', pattern: '/^[A-Za-z0-9]{1,64}$/', patternMessage: 'services.fields.alphanumeric', maxLength: 64),
+                new ServiceField('shared_secret', 'services.etsy.fields.sharedSecret', secret: true, maxLength: 200),
             ],
             SalesContext::Online,
             UnknownItems::LinkByHand,
             LinePrices::Listed,
-            'Créez une application sur etsy.com/developers et déclarez-y cette adresse de retour.',
+            'services.etsy.instructions',
         );
     }
 

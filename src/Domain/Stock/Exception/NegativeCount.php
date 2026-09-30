@@ -8,6 +8,6 @@ final class NegativeCount extends InvalidStock
 {
     public function __construct()
     {
-        parent::__construct('La quantité comptée ne peut pas être négative.');
+        parent::__construct('stock.negative_count');
     }
 }

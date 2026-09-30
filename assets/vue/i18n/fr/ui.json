@@ -1,0 +1,37 @@
+{
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "combobox": {
+        "placeholder": "Rechercher…",
+        "empty": "Aucun résultat.",
+        "showChoices": "Afficher les choix"
+    },
+    "select": {
+        "placeholder": "Choisir…"
+    },
+    "datePicker": {
+        "open": "Ouvrir le calendrier",
+        "previousMonth": "Mois précédent",
+        "nextMonth": "Mois suivant"
+    },
+    "confirm": {
+        "action": "Confirmer ?",
+        "message": "Cette action est définitive."
+    },
+    "toast": {
+        "label": "Notification"
+    },
+    "pagination": {
+        "label": "Pagination",
+        "range": "{from}–{to} sur {total}",
+        "first": "Première page",
+        "previous": "Page précédente",
+        "next": "Page suivante",
+        "last": "Dernière page",
+        "perPage": "Par page"
+    },
+    "number": {
+        "decrement": "Diminuer",
+        "increment": "Augmenter"
+    }
+}

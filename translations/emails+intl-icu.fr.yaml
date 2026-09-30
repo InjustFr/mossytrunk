@@ -1,0 +1,15 @@
+greeting: 'Bonjour,'
+expiry_format: 'd/m/Y à H:i'
+layout:
+    copy_link: 'Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :'
+invitation:
+    subject: 'Bienvenue sur MossyTrunk'
+    intro: 'Un compte a été créé pour vous sur MossyTrunk, dans l''espace de travail {workspace}.'
+    instructions: 'Choisissez votre mot de passe pour vous connecter :'
+    button: 'Choisir mon mot de passe'
+    expiry: 'Ce lien est valable jusqu''au {expiresAt}.'
+password_reset:
+    subject: 'Réinitialisation de votre mot de passe'
+    intro: 'Vous avez demandé à réinitialiser votre mot de passe MossyTrunk.'
+    button: 'Choisir un nouveau mot de passe'
+    expiry: 'Ce lien est valable une heure, jusqu''au {expiresAt}. Si vous n''êtes pas à l''origine de cette demande, ignorez cet email : votre mot de passe reste inchangé.'

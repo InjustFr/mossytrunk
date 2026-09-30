@@ -73,10 +73,10 @@ class Gabarit
     {
         $name = trim($name);
         if ('' === $name) {
-            throw new EmptyDesignName('du gabarit');
+            throw new EmptyDesignName('template');
         }
         if ($sellingPrice->isNegative()) {
-            throw new NegativeAmount('Le prix');
+            throw new NegativeAmount('price');
         }
 
         $this->name = $name;

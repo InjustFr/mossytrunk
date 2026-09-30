@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { Plus } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -14,6 +15,8 @@ import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
 import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 
+const { t } = useI18n();
+
 const { settings, load } = useWorkspaceSettings();
 const services = useServices();
 const { removeAll: removeAllOrders } = useOrders();
@@ -23,21 +26,22 @@ const toast = useToast();
 const modalOpen = ref(false);
 const editing = ref(null);
 const allAdded = computed(() => services.services.value.every((service) => service.connection));
-const available = computed(() => services.services.value.map((service) => service.label).join(' ou '));
+const available = computed(() => services.services.value.map((service) => service.label).join(t('settings.services.or')));
 
 const CONNECTION_OUTCOMES = {
-    connected: ['success', (label) => `${label} connecté : ses commandes s'importent depuis la page Commandes.`],
-    refused: ['error', (label) => `La connexion à ${label} a été annulée.`],
-    error: ['error', (label) => `${label} n'a pas pu confirmer la connexion. Réessayez.`],
-    unavailable: ['error', (label) => `Complétez d'abord les accès de ${label}.`],
+    connected: 'success',
+    refused: 'error',
+    error: 'error',
+    unavailable: 'error',
 };
 
 function announceConnectionOutcome() {
     const params = new URLSearchParams(window.location.search);
-    const outcome = CONNECTION_OUTCOMES[params.get('connection')];
-    if (!outcome) return;
+    const outcome = params.get('connection');
+    const tone = CONNECTION_OUTCOMES[outcome];
+    if (!tone) return;
     const service = services.services.value.find((candidate) => candidate.key === params.get('service'));
-    toast[outcome[0]](outcome[1](service?.label ?? 'Le service'));
+    toast[tone](t(`settings.services.outcome.${outcome}`, { label: service?.label ?? t('settings.services.someService') }));
     params.delete('connection');
     params.delete('service');
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${params.size ? `?${params}` : ''}`);
@@ -54,7 +58,7 @@ function openEdit(service) {
 }
 
 async function onSaved(service, added) {
-    toast.success(`${service.label} ${added ? 'ajouté' : 'modifié'}.`);
+    toast.success(t(added ? 'settings.services.added' : 'settings.services.updated', { label: service.label }));
     await services.load();
 }
 
@@ -68,8 +72,8 @@ async function run(action, message) {
     await services.load();
 }
 
-const onRemove = (service) => run(() => services.remove(service.key), `${service.label} retiré.`);
-const onDisconnect = (service) => run(() => services.disconnect(service.key), `${service.label} déconnecté.`);
+const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
+const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
 async function deleteAll(removeAll, message) {
     try {
@@ -80,8 +84,8 @@ async function deleteAll(removeAll, message) {
     }
 }
 
-const ordersDeleted = (count) => `Commandes supprimées : ${count}.`;
-const productsDeleted = (count) => `Produits supprimés : ${count}.`;
+const ordersDeleted = (count) => t('settings.danger.orders.deleted', { count });
+const productsDeleted = (count) => t('settings.danger.products.deleted', { count });
 
 onMounted(async () => {
     await Promise.all([load(), services.load()]);
@@ -90,14 +94,14 @@ onMounted(async () => {
 </script>
 
 <template>
-    <AppLayout title="Paramètres">
+    <AppLayout :title="t('settings.title')">
         <div v-if="settings" class="settings-page">
-            <p class="settings-page__workspace">Espace de travail <strong>{{ settings.name }}</strong></p>
-            <BaseCard title="Services connectés">
+            <p class="settings-page__workspace">{{ t('settings.workspace') }} <strong>{{ settings.name }}</strong></p>
+            <BaseCard :title="t('settings.services.title')">
                 <template #actions>
-                    <BaseButton v-if="!allAdded" variant="secondary" @click="openAdd"><Plus size="1rem" aria-hidden="true" /> Ajouter un service</BaseButton>
+                    <BaseButton v-if="!allAdded" variant="secondary" @click="openAdd"><Plus size="1rem" aria-hidden="true" /> {{ t('settings.services.add') }}</BaseButton>
                 </template>
-                <p class="settings-page__intro">Vos ventes arrivent dans Commandes quand vous lancez un import.</p>
+                <p class="settings-page__intro">{{ t('settings.services.intro') }}</p>
                 <ConnectedServices
                     v-if="services.added.value.length"
                     :services="services.added.value"
@@ -105,9 +109,9 @@ onMounted(async () => {
                     @remove="onRemove"
                     @disconnect="onDisconnect"
                 />
-                <EmptyState v-else>Aucun service. Ajoutez {{ available }} pour importer vos ventes.</EmptyState>
+                <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>
-            <BaseCard title="Zone de danger">
+            <BaseCard :title="t('settings.danger.title')">
                 <DeleteAllData @delete-orders="deleteAll(removeAllOrders, ordersDeleted)" @delete-products="deleteAll(removeAllProducts, productsDeleted)" />
             </BaseCard>
         </div>

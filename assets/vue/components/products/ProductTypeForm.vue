@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref, toRef } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormField from '../ui/FormField.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
@@ -12,6 +13,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ name: props.type?.name ?? '', color: props.type?.color ?? props.defaultColor, code: props.type?.code ?? '' });
 const errors = ref({});
@@ -47,21 +49,21 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-type-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField label="Nom" :error="errors.name" hint="Ex. Print, Sticker…">
+            <FormField :label="t('products.types.name')" :error="errors.name" :hint="t('products.types.nameExample')">
                 <input v-model="form.name" type="text" maxlength="100">
             </FormField>
 
-            <FormField label="Code" :error="errors.code" hint="Préfixe des références suggérées pour ses produits (1 à 8 lettres ou chiffres). Les références existantes ne changent pas.">
+            <FormField :label="t('products.types.code')" :error="errors.code" :hint="t('products.types.codeHint')">
                 <input v-model="form.code" type="text" maxlength="8" autocomplete="off" class="product-type-form__code" @input="onCodeInput">
             </FormField>
 
-            <FormField as="group" label="Couleur" :error="errors.color">
+            <FormField as="group" :label="t('products.types.color')" :error="errors.color">
                 <TypeColorPicker v-model="form.color" />
             </FormField>
 
             <div class="product-type-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ type ? 'Enregistrer' : 'Créer le type' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t(type ? 'products.save' : 'products.types.create') }}</BaseButton>
             </div>
         </fieldset>
     </form>

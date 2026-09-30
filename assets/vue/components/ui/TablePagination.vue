@@ -11,8 +11,11 @@ import {
     PaginationPrev,
     PaginationRoot,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import BaseSelect from './BaseSelect.vue';
 import { PAGE_SIZES } from '../../composables/usePagination.js';
+
+const { t } = useI18n();
 
 const props = defineProps({
     page: { type: Number, required: true },
@@ -33,8 +36,8 @@ const current = computed({
 </script>
 
 <template>
-    <nav class="table-pagination" aria-label="Pagination">
-        <span class="table-pagination__range">{{ from }}–{{ to }} sur {{ total }}</span>
+    <nav class="table-pagination" :aria-label="t('ui.pagination.label')">
+        <span class="table-pagination__range">{{ t('ui.pagination.range', { from, to, total }) }}</span>
 
         <PaginationRoot
             v-model:page="current"
@@ -45,10 +48,10 @@ const current = computed({
             as="div"
         >
             <PaginationList v-slot="{ items }" class="table-pagination__pages">
-                <PaginationFirst class="table-pagination__button" aria-label="Première page">
+                <PaginationFirst class="table-pagination__button" :aria-label="t('ui.pagination.first')">
                     <ChevronsLeft size="1rem" aria-hidden="true" />
                 </PaginationFirst>
-                <PaginationPrev class="table-pagination__button" aria-label="Page précédente">
+                <PaginationPrev class="table-pagination__button" :aria-label="t('ui.pagination.previous')">
                     <ChevronLeft size="1rem" aria-hidden="true" />
                 </PaginationPrev>
                 <template v-for="(item, index) in items" :key="`${item.type}-${index}`">
@@ -59,18 +62,18 @@ const current = computed({
                     >{{ item.value }}</PaginationListItem>
                     <PaginationEllipsis v-else :index="index" class="table-pagination__gap">…</PaginationEllipsis>
                 </template>
-                <PaginationNext class="table-pagination__button" aria-label="Page suivante">
+                <PaginationNext class="table-pagination__button" :aria-label="t('ui.pagination.next')">
                     <ChevronRight size="1rem" aria-hidden="true" />
                 </PaginationNext>
-                <PaginationLast class="table-pagination__button" aria-label="Dernière page">
+                <PaginationLast class="table-pagination__button" :aria-label="t('ui.pagination.last')">
                     <ChevronsRight size="1rem" aria-hidden="true" />
                 </PaginationLast>
             </PaginationList>
         </PaginationRoot>
 
         <div class="table-pagination__size">
-            Par page
-            <BaseSelect v-model="pageSize" :options="sizeOptions" size="small" aria-label="Par page" />
+            {{ t('ui.pagination.perPage') }}
+            <BaseSelect v-model="pageSize" :options="sizeOptions" size="small" :aria-label="t('ui.pagination.perPage')" />
         </div>
     </nav>
 </template>

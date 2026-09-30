@@ -16,7 +16,7 @@ test('switch URSSAF periodicity and download the orders of a period as CSV', asy
     const href = await download.getAttribute('href');
     expect(href).toMatch(/^\/api\/accounting\/orders\.csv\?from=\d{4}-\d{2}-01&to=\d{4}-\d{2}-\d{2}$/);
 
-    const response = await page.request.get(href);
+    const response = await page.request.get(href, { headers: { 'Accept-Language': 'fr-FR' } });
     expect(response.status()).toBe(200);
     expect(response.headers()['content-type']).toContain('text/csv');
     expect(await response.text()).toContain('Référence;Date;Heure;Source;Événement');

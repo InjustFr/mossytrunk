@@ -1,9 +1,10 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import ResultReceipt from '../reporting/ResultReceipt.vue';
 import OrderRecap from './OrderRecap.vue';
-import { plural } from '../../composables/usePlural.js';
+import { intlLocale } from '../../i18n/locale.js';
 
 const props = defineProps({
     report: { type: Object, required: true },
@@ -12,27 +13,29 @@ const props = defineProps({
     typeColors: { type: Map, required: true },
 });
 
-const rate = (value) => `${String(value).replace('.', ',')} %`;
+const { t } = useI18n();
+
+const rate = (value) => t('events.report.rate', { rate: new Intl.NumberFormat(intlLocale()).format(value) });
 
 const lines = computed(() => [
-    { key: 'turnover', label: "Chiffre d'affaires", amount: props.report.total.turnover, open: props.report.orders.count > 0 },
-    { key: 'costOfGoods', label: "Coût d'achat", amount: props.report.total.costOfGoods, sign: '−' },
-    { key: 'expenses', label: 'Dépenses', amount: props.report.total.expenses, sign: '−' },
+    { key: 'turnover', label: t('events.report.turnover'), amount: props.report.total.turnover, open: props.report.orders.count > 0 },
+    { key: 'costOfGoods', label: t('events.report.buyingCost'), amount: props.report.total.costOfGoods, sign: '−' },
+    { key: 'expenses', label: t('events.report.expenses'), amount: props.report.total.expenses, sign: '−' },
     { key: 'urssaf', label: 'URSSAF', hint: rate(props.report.urssaf.rate), amount: props.report.total.urssaf, sign: '−' },
 ]);
 </script>
 
 <template>
-    <section v-if="upcoming && report.orders.count === 0" class="event-report event-report--upcoming" aria-label="Dépenses engagées">
-        <h2 class="event-report__title">Dépenses engagées</h2>
+    <section v-if="upcoming && report.orders.count === 0" class="event-report event-report--upcoming" :aria-label="t('events.report.committedExpenses')">
+        <h2 class="event-report__title">{{ t('events.report.committedExpenses') }}</h2>
         <p class="event-report__committed"><MoneyAmount :cents="report.total.expenses" /></p>
-        <p class="event-report__summary">Pas encore de ventes. Le bilan se remplira avec les commandes de l'événement.</p>
+        <p class="event-report__summary">{{ t('events.report.noSales') }}</p>
         <div class="event-report__aside"><slot name="aside" /></div>
     </section>
     <ResultReceipt
         v-else
         class="event-report"
-        title="Résultat"
+        :title="t('events.report.result')"
         :turnover="report.total.turnover"
         :lines="lines"
         :result="report.total.result"
@@ -40,19 +43,19 @@ const lines = computed(() => [
     >
         <template #summary>
             <p class="event-report__summary">
-                <template v-if="report.orders.count > 0">{{ plural(report.orders.count, 'commande') }}</template>
-                <template v-else>Aucune commande.</template>
+                <template v-if="report.orders.count > 0">{{ t('events.report.orderCount', report.orders.count) }}</template>
+                <template v-else>{{ t('events.report.noOrders') }}</template>
             </p>
             <div class="event-report__aside"><slot name="aside" /></div>
         </template>
 
         <template #detail-turnover>
             <dl class="event-report__figures">
-                <div class="event-report__line"><dt>Ventes brutes</dt><dd><MoneyAmount :cents="report.orders.grossSales" /></dd></div>
-                <div class="event-report__line"><dt>Remises accordées</dt><dd><MoneyAmount :cents="report.orders.discounts ? -report.orders.discounts : 0" /></dd></div>
+                <div class="event-report__line"><dt>{{ t('events.report.grossSales') }}</dt><dd><MoneyAmount :cents="report.orders.grossSales" /></dd></div>
+                <div class="event-report__line"><dt>{{ t('events.report.discountsGiven') }}</dt><dd><MoneyAmount :cents="report.orders.discounts ? -report.orders.discounts : 0" /></dd></div>
             </dl>
             <OrderRecap :groups="report.orders.groups" :type-colors="typeColors" />
-            <p class="event-report__more"><a :href="`/orders?event=${eventId}`">Voir les commandes</a></p>
+            <p class="event-report__more"><a :href="`/orders?event=${eventId}`">{{ t('events.report.seeOrders') }}</a></p>
         </template>
     </ResultReceipt>
 </template>

@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 defineProps({
@@ -8,12 +9,14 @@ defineProps({
     total: { type: Number, required: true },
     linkRules: { type: Boolean, default: false },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
     <dl class="order-totals">
         <div class="order-totals__row">
-            <dt>Sous-total</dt>
+            <dt>{{ t('orders.totals.subtotal') }}</dt>
             <dd><MoneyAmount :cents="subtotal" /></dd>
         </div>
         <TransitionGroup name="order-totals__discount">
@@ -26,11 +29,11 @@ defineProps({
             </div>
         </TransitionGroup>
         <div v-if="shipping > 0" class="order-totals__row">
-            <dt>Frais de port</dt>
+            <dt>{{ t('orders.totals.shipping') }}</dt>
             <dd><MoneyAmount :cents="shipping" /></dd>
         </div>
         <div class="order-totals__row order-totals__row--total">
-            <dt>Total</dt>
+            <dt>{{ t('orders.totals.total') }}</dt>
             <dd><MoneyAmount :cents="total" data-test="order-total" /></dd>
         </div>
     </dl>

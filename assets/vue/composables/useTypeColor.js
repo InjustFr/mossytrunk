@@ -1,22 +1,23 @@
 import { computed } from 'vue';
+import { t } from '../i18n/index.js';
 import { useProductTypes } from './useProductTypes.js';
 
 export const TYPE_COLORS = [
-    { value: '#5b7f3a', label: 'Mousse' },
-    { value: '#b5654a', label: 'Terre cuite' },
-    { value: '#4f6d8f', label: 'Ardoise' },
-    { value: '#c29a2e', label: 'Ocre' },
-    { value: '#8a6d8f', label: 'Lavande' },
-    { value: '#2f7f7a', label: 'Sarcelle' },
-    { value: '#7a5238', label: 'Noyer' },
-    { value: '#c07a8a', label: 'Rose poudré' },
-    { value: '#a3485a', label: 'Framboise' },
-    { value: '#6b7a2f', label: 'Olive' },
-    { value: '#3f5a4c', label: 'Sapin' },
-    { value: '#9c7b5b', label: 'Sable' },
+    { value: '#5b7f3a', name: 'moss' },
+    { value: '#b5654a', name: 'terracotta' },
+    { value: '#4f6d8f', name: 'slate' },
+    { value: '#c29a2e', name: 'ochre' },
+    { value: '#8a6d8f', name: 'lavender' },
+    { value: '#2f7f7a', name: 'teal' },
+    { value: '#7a5238', name: 'walnut' },
+    { value: '#c07a8a', name: 'dustyRose' },
+    { value: '#a3485a', name: 'raspberry' },
+    { value: '#6b7a2f', name: 'olive' },
+    { value: '#3f5a4c', name: 'fir' },
+    { value: '#9c7b5b', name: 'sand' },
 ];
 
-export const customColorLabel = (color) => `Personnalisée ${color.toUpperCase()}`;
+export const customColorLabel = (color) => t('products.colors.customNamed', { color: color.toUpperCase() });
 
 export function availableTypeColors(types, ...extra) {
     const known = new Set(TYPE_COLORS.map((color) => color.value));
@@ -25,7 +26,7 @@ export function availableTypeColors(types, ...extra) {
         .map((color) => color.toLowerCase())
         .filter((color) => !known.has(color) && known.add(color));
 
-    return [...TYPE_COLORS, ...custom.map((color) => ({ value: color, label: customColorLabel(color) }))];
+    return [...TYPE_COLORS.map(({ value, name }) => ({ value, label: t(`products.colors.${name}`) })), ...custom.map((color) => ({ value: color, label: customColorLabel(color) }))];
 }
 
 export const nextTypeColor = (types) => TYPE_COLORS[types.length % TYPE_COLORS.length].value;

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -15,6 +16,8 @@ import { visit } from '../composables/useNavigation.js';
 import { useProducts } from '../composables/useProducts.js';
 import { SUPPLIER_ORDER_STATUSES, useSupplierOrders, useSuppliers } from '../composables/usePurchasing.js';
 import { useToast } from '../composables/useToast.js';
+
+const { t } = useI18n();
 
 const props = defineProps({
     orderId: { type: String, required: true },
@@ -41,14 +44,14 @@ async function saveAndReload(id, payload) {
 
 async function onSaved() {
     editOpen.value = false;
-    toast.success(`Commande ${order.value.reference} mise à jour.`);
+    toast.success(t('purchasing.detail.updated', { reference: order.value.reference }));
     await load();
 }
 
 async function onRemove() {
     try {
         await remove(props.orderId);
-        toast.success(`Commande ${order.value.reference} supprimée.`);
+        toast.success(t('purchasing.detail.deleted', { reference: order.value.reference }));
         visit('/supplier-orders');
     } catch (error) {
         toast.error(error.message);
@@ -57,7 +60,7 @@ async function onRemove() {
 
 async function onReceived() {
     receiving.value = false;
-    toast.success(`Commande ${order.value.reference} déballée : la réserve est à jour.`);
+    toast.success(t('purchasing.detail.received', { reference: order.value.reference }));
     await load();
 }
 
@@ -65,26 +68,26 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
 </script>
 
 <template>
-    <AppLayout :title="order?.reference ?? 'Commande fournisseur'">
-        <template #back><a class="back-link" href="/supplier-orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes fournisseurs</a></template>
+    <AppLayout :title="order?.reference ?? t('purchasing.detail.title')">
+        <template #back><a class="back-link" href="/supplier-orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('purchasing.detail.back') }}</a></template>
         <template #actions>
             <template v-if="isOrdered && !receiving">
-                <ConfirmButton variant="ghost" label="Supprimer" :message="`La commande ${order.reference} sera supprimée définitivement.`" @confirm="onRemove" />
-                <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
-                <BaseButton @click="receiving = true">Déballer le colis</BaseButton>
+                <ConfirmButton variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('purchasing.detail.edit') }}</BaseButton>
+                <BaseButton @click="receiving = true">{{ t('purchasing.detail.unpack') }}</BaseButton>
             </template>
         </template>
 
         <div v-if="order" class="supplier-order-page">
             <dl class="supplier-order-page__facts">
-                <div><dt>Fournisseur</dt><dd>{{ order.supplier.name }}</dd></div>
-                <div><dt>Commandée le</dt><dd>{{ formatDate(order.orderedOn) }}</dd></div>
-                <div v-if="order.receivedAt"><dt>Reçue le</dt><dd>{{ formatDateTime(order.receivedAt) }}</dd></div>
-                <div><dt>Produits</dt><dd><MoneyAmount :cents="order.subtotal" /></dd></div>
-                <div v-if="order.discount"><dt>Remise globale</dt><dd>−<MoneyAmount :cents="order.discount" /></dd></div>
-                <div v-if="order.deliveryFees"><dt>Livraison</dt><dd><MoneyAmount :cents="order.deliveryFees" /></dd></div>
-                <div><dt>Total payé</dt><dd><MoneyAmount :cents="order.total" /></dd></div>
-                <div><dt>Statut</dt><dd><StatusBadge :tone="status.tone">{{ status.label }}</StatusBadge></dd></div>
+                <div><dt>{{ t('purchasing.detail.supplier') }}</dt><dd>{{ order.supplier.name }}</dd></div>
+                <div><dt>{{ t('purchasing.detail.orderedOn') }}</dt><dd>{{ formatDate(order.orderedOn) }}</dd></div>
+                <div v-if="order.receivedAt"><dt>{{ t('purchasing.detail.receivedAt') }}</dt><dd>{{ formatDateTime(order.receivedAt) }}</dd></div>
+                <div><dt>{{ t('purchasing.detail.products') }}</dt><dd><MoneyAmount :cents="order.subtotal" /></dd></div>
+                <div v-if="order.discount"><dt>{{ t('purchasing.detail.discount') }}</dt><dd>−<MoneyAmount :cents="order.discount" /></dd></div>
+                <div v-if="order.deliveryFees"><dt>{{ t('purchasing.detail.delivery') }}</dt><dd><MoneyAmount :cents="order.deliveryFees" /></dd></div>
+                <div><dt>{{ t('purchasing.detail.totalPaid') }}</dt><dd><MoneyAmount :cents="order.total" /></dd></div>
+                <div><dt>{{ t('purchasing.detail.status') }}</dt><dd><StatusBadge :tone="status.tone">{{ t(status.label) }}</StatusBadge></dd></div>
             </dl>
 
             <SupplierOrderReception v-if="receiving" :order="order" :submit="(lines) => receive(orderId, lines)" @received="onReceived" @cancel="receiving = false" />
@@ -93,13 +96,13 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
                 <table class="supplier-order-page__lines">
                     <thead>
                         <tr>
-                            <th>Produit</th>
-                            <th class="supplier-order-page__number">Commandé</th>
-                            <th class="supplier-order-page__number">Reçu</th>
-                            <th class="supplier-order-page__number">Prix</th>
-                            <th v-if="order.discount || order.deliveryFees" class="supplier-order-page__number">Remise / livraison</th>
-                            <th class="supplier-order-page__number">Coût total</th>
-                            <th class="supplier-order-page__number">Coût unitaire</th>
+                            <th>{{ t('purchasing.detail.product') }}</th>
+                            <th class="supplier-order-page__number">{{ t('purchasing.detail.ordered') }}</th>
+                            <th class="supplier-order-page__number">{{ t('purchasing.detail.receivedQuantity') }}</th>
+                            <th class="supplier-order-page__number">{{ t('purchasing.detail.price') }}</th>
+                            <th v-if="order.discount || order.deliveryFees" class="supplier-order-page__number">{{ t('purchasing.detail.shares') }}</th>
+                            <th class="supplier-order-page__number">{{ t('purchasing.detail.totalCost') }}</th>
+                            <th class="supplier-order-page__number">{{ t('purchasing.detail.unitCost') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,9 +126,9 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
                             <td class="supplier-order-page__number">
                                 <template v-if="line.unitCost !== null">
                                     <MoneyAmount :cents="line.unitCost" />
-                                    <span v-if="line.unitCost !== line.plannedUnitCost" class="supplier-order-page__planned">prévu <MoneyAmount :cents="line.plannedUnitCost" /></span>
+                                    <span v-if="line.unitCost !== line.plannedUnitCost" class="supplier-order-page__planned">{{ t('purchasing.detail.planned') }} <MoneyAmount :cents="line.plannedUnitCost" /></span>
                                 </template>
-                                <span v-else-if="line.receivedQuantity === 0" class="supplier-order-page__muted">Rien reçu</span>
+                                <span v-else-if="line.receivedQuantity === 0" class="supplier-order-page__muted">{{ t('purchasing.detail.nothingReceived') }}</span>
                                 <MoneyAmount v-else :cents="line.plannedUnitCost" />
                             </td>
                         </tr>
@@ -134,7 +137,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
             </BaseCard>
         </div>
 
-        <BaseModal v-model:open="editOpen" title="Modifier la commande fournisseur" variant="drawer">
+        <BaseModal v-model:open="editOpen" :title="t('purchasing.detail.editTitle')" variant="drawer">
             <SupplierOrderForm
                 v-if="order"
                 :order="order"

@@ -8,6 +8,6 @@ final class DateRangeEndsBeforeStart extends InvalidDateRange
 {
     public function __construct()
     {
-        parent::__construct('La date de fin doit être postérieure ou égale à la date de début.');
+        parent::__construct('shared.date_range_ends_before_start');
     }
 }

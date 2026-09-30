@@ -10,11 +10,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class OrderLinePayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Choisissez un produit.')]
-        #[Assert\Ulid(message: 'Produit invalide.')]
+        #[Assert\NotBlank(message: 'product.required')]
+        #[Assert\Ulid(message: 'product.invalid')]
         public string $productId = '',
         public ?string $variant = null,
-        #[Assert\Positive(message: 'La quantité doit être d\'au moins 1.')]
+        #[Assert\Positive(message: 'quantity.atLeastOne')]
         public int $quantity = 1,
     ) {
     }

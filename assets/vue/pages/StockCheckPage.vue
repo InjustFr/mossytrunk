@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -10,7 +11,6 @@ import { useEvent } from '../composables/useEvents.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { visit } from '../composables/useNavigation.js';
-import { plural } from '../composables/usePlural.js';
 
 const props = defineProps({
     eventId: { type: String, required: true },
@@ -19,6 +19,7 @@ const props = defineProps({
 const { event, load } = useEvent(props.eventId);
 const { stockSheet, takeStockCheck } = useStock();
 const toast = useToast();
+const { t } = useI18n();
 
 const sheet = ref([]);
 const counts = reactive({});
@@ -40,7 +41,7 @@ async function onSubmit() {
     error.value = null;
     try {
         await takeStockCheck(props.eventId, counted.value.map((line) => ({ productId: line.productId, variant: line.variant, counted: counts[keyOf(line)] })));
-        toast.success(`Inventaire enregistré : ${plural(counted.value.length, 'article compté', 'articles comptés')}.`);
+        toast.success(t('stock.check.saved', counted.value.length));
         visit(`/events/${props.eventId}`);
     } catch (exception) {
         error.value = exception.message;
@@ -56,22 +57,21 @@ onMounted(async () => {
 </script>
 
 <template>
-    <AppLayout title="Inventaire">
-        <template #back><a class="back-link" :href="`/events/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? 'Événement' }}</a></template>
+    <AppLayout :title="t('stock.check.title')">
+        <template #back><a class="back-link" :href="`/events/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? t('stock.check.eventFallback') }}</a></template>
         <template #actions>
-            <BaseButton :loading="saving" :disabled="counted.length === 0" @click="onSubmit">Enregistrer l'inventaire</BaseButton>
+            <BaseButton :loading="saving" :disabled="counted.length === 0" @click="onSubmit">{{ t('stock.check.save') }}</BaseButton>
         </template>
 
         <BaseCard>
             <p class="stock-check-page__intro">
-                Comptez ce qui reste après l'événement. Le stock est corrigé ; s'il manque des articles, une commande oubliée est signalée sur l'événement.
-                Les lignes laissées vides ne sont pas comptées.
+                {{ t('stock.check.intro') }}
             </p>
             <p v-if="error" class="stock-check-page__error" role="alert">{{ error }}</p>
             <div class="stock-check-page__filters">
-                <input v-model="search" class="stock-check-page__search" type="search" placeholder="Rechercher…" aria-label="Rechercher un article">
-                <label class="stock-check-page__sold-only"><BaseSwitch v-model="soldOnly" /> Seulement les articles vendus à l'événement</label>
-                <span class="stock-check-page__count">{{ plural(counted.length, 'article compté', 'articles comptés') }}</span>
+                <input v-model="search" class="stock-check-page__search" type="search" :placeholder="t('stock.check.searchPlaceholder')" :aria-label="t('stock.check.searchLabel')">
+                <label class="stock-check-page__sold-only"><BaseSwitch v-model="soldOnly" /> {{ t('stock.check.soldOnly') }}</label>
+                <span class="stock-check-page__count">{{ t('stock.check.counted', counted.length) }}</span>
             </div>
             <StockCountTable :lines="visible" :counts="counts" :key-of="keyOf" />
         </BaseCard>

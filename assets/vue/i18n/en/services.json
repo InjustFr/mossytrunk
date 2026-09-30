@@ -1,0 +1,21 @@
+{
+    "fields": {
+        "alphanumeric": "Letters and digits only."
+    },
+    "sumup": {
+        "summary": "Sales and products from the card terminal",
+        "fields": {
+            "merchantCode": "Merchant code",
+            "apiKey": "API key",
+            "apiKeyHint": "SumUp dashboard › API keys, starts with sup_sk_."
+        }
+    },
+    "etsy": {
+        "summary": "Paid orders from your online shop",
+        "instructions": "Create an app on etsy.com/developers and register this callback address in it.",
+        "fields": {
+            "keystring": "Keystring",
+            "sharedSecret": "Shared secret"
+        }
+    }
+}

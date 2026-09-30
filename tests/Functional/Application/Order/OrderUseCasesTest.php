@@ -18,12 +18,14 @@ use App\Application\Order\PreviewOrder\PreviewOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Domain\Event\Exception\InvalidEvent;
 use App\Domain\Order\Exception\InvalidOrder;
+use App\Domain\Order\Exception\NoEventOnOrderDate;
 use App\Domain\Product\Exception\InvalidProduct;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class OrderUseCasesTest extends KernelTestCase
 {
@@ -62,9 +64,13 @@ final class OrderUseCasesTest extends KernelTestCase
 
     public function testOrderOutsideAnyEventIsRejected(): void
     {
-        $this->expectExceptionMessage('Aucun événement le 13/07/2026');
-
-        $this->place('2026-07-13 10:00', [new RequestedLine($this->sticker, null, 1)]);
+        try {
+            $this->place('2026-07-13 10:00', [new RequestedLine($this->sticker, null, 1)]);
+            self::fail('An order outside any event must be rejected.');
+        } catch (NoEventOnOrderDate $exception) {
+            $message = self::getContainer()->get(TranslatorInterface::class)->trans($exception->getMessage(), $exception->parameters(), 'exceptions', 'fr');
+            self::assertStringStartsWith('Aucun événement le 13/07/2026.', $message);
+        }
     }
 
     public function testVariantIsRequiredForProductsWithVariants(): void

@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import AuthLayout from '../layouts/AuthLayout.vue';
 import AuthMessage from '../components/auth/AuthMessage.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -11,30 +12,32 @@ defineProps({
     notice: { type: String, default: null },
     csrfToken: { type: String, required: true },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <AuthLayout title="Connexion">
+    <AuthLayout :title="t('auth.login.title')">
         <AuthMessage v-if="notice" variant="success">{{ notice }}</AuthMessage>
         <AuthMessage v-if="error">{{ error }}</AuthMessage>
 
         <form class="login-form" method="post" action="/login" data-turbo="false">
             <input type="hidden" name="_csrf_token" :value="csrfToken">
-            <FormField label="Email">
+            <FormField :label="t('auth.email')">
                 <input type="email" name="email" :value="lastEmail" autocomplete="email" required autofocus>
             </FormField>
-            <FormField label="Mot de passe">
+            <FormField :label="t('auth.password')">
                 <input type="password" name="password" autocomplete="current-password" required>
             </FormField>
             <label class="login-form__remember">
                 <BaseCheckbox name="_remember_me" />
-                Se souvenir de moi
+                {{ t('auth.login.rememberMe') }}
             </label>
-            <BaseButton type="submit">Se connecter</BaseButton>
+            <BaseButton type="submit">{{ t('auth.login.submit') }}</BaseButton>
         </form>
 
         <template #footer>
-            <a href="/password/forgot">Mot de passe oublié ?</a>
+            <a href="/password/forgot">{{ t('auth.login.forgotPassword') }}</a>
         </template>
     </AuthLayout>
 </template>

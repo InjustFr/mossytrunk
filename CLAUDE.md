@@ -1,7 +1,7 @@
 # MossyTrunk — project guide for Claude
 
 Small-business management app. Module 1 = **Order Management** (products, events, orders, discount rules, imports from connected services, event profitability), then **Stock** (FIFO lots, inventory after events), **Supplier orders** (ordered → received into stock), **Designs** (declined onto gabarits, validated into products), **Accounting** (URSSAF declarations, CSV export) and connected services (SumUp, Etsy: added per workspace in Paramètres, see `docs/business/imports.md`).
-UI language: **French**. Code, comments, commits: **English**.
+UI languages: **French and English** (see « Translations » below). URLs, code, comments, commits: **English**.
 
 **Business rules live in [`docs/business/`](docs/business/README.md)** — read the relevant page before touching a domain concept, and update it in the same commit when a rule changes.
 
@@ -70,6 +70,13 @@ Enforced by `deptrac.yaml`. Rules:
 - **Connected services**: service-specific code lives only in `Infrastructure/Connector/<Service>/` — a `SalesConnector` (or `AuthorizingConnector` for OAuth) tagged `app.sales_connector` that describes its fields/defaults and maps its payloads to `ExternalSale`s. Application stays generic (`Application/Integration/`: `Connectors` registry, `ConnectionSession` for credentials/token refresh, `ImportSalesHandler`, `ExternalItemResolver`); a workspace adds a service as a `Domain\Integration\ServiceConnection` (one per service). Adding a service = a connector + a fake gateway bound in `when@test`; see `docs/business/imports.md`.
 - Fixtures log in as `demo@mossytrunk.local` / `mossytrunk` (workspace « Atelier Mousse ») or `autre@mossytrunk.local` / `mossytrunk` (« Autre atelier »).
 - Tests: `tests/Support/ActsAsUser` (`signedInClient()` for WebTestCase, `actAsMemberOf()` in `setUp()` for KernelTestCase); unit tests build entities with `TestWorkspace::get()`. E2E: `make e2e` creates `e2e@mossytrunk.local`, `auth.setup.js` sets its password from the Mailpit invitation and saves the session for all specs.
+
+## Translations
+
+- Language resolution and preference: `docs/business/accounts.md` (A12). `Presentation\LocaleListener` sets the request locale; `Domain\Identity\Language` lists the languages.
+- **Never hardcode a user-visible string.** Vue: `const { t } = useI18n()` (vue-i18n, composition API) with keys `<namespace>.<path>` from `assets/vue/i18n/<locale>/<namespace>.json` (auto-loaded, same keys in every locale); outside components `import { t } from '../i18n/index.js'`. Plurals with pipes (French counts 0 as singular). Formatters follow the language (`useMoney`, `useDate`, `intlLocale()` in `assets/vue/i18n/locale.js`) — never hardcode `fr-FR`.
+- Backend: Symfony translator, ICU files `translations/<domain>+intl-icu.<locale>.yaml` — `exceptions` (domain exceptions pass a key + parameters to `DomainException`, translated by `DomainExceptionListener`), `pages` (titles given to `VuePage`), `emails`, `messages`; validator messages are keys in `translations/validators.<locale>.yaml`. Domain/Application stay free of translated text: they carry keys or codes.
+- Playwright runs with a French browser (`locale: 'fr-FR'`), so specs look French texts up.
 
 ## Frontend — `assets/vue/`
 

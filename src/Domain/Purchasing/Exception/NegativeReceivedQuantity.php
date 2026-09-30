@@ -8,6 +8,6 @@ final class NegativeReceivedQuantity extends InvalidPurchase
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('La quantité reçue de « %s » ne peut pas être négative.', $label));
+        parent::__construct('purchasing.negative_received_quantity', ['item' => $label]);
     }
 }

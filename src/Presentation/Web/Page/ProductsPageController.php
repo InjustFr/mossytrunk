@@ -19,6 +19,6 @@ final readonly class ProductsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('ProductsPage', 'Produits');
+        return $this->page->render('ProductsPage', 'products');
     }
 }

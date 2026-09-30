@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
@@ -13,12 +14,13 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ name: '', collectionId: '', notes: '', gabaritIds: [] });
 const errors = ref({});
 const saving = ref(false);
 
-const collectionOptions = computed(() => [{ value: '', label: 'Sans collection' }, ...props.collections.map((c) => ({ value: c.id, label: c.name }))]);
+const collectionOptions = computed(() => [{ value: '', label: t('designs.noCollection') }, ...props.collections.map((c) => ({ value: c.id, label: c.name }))]);
 
 watch(() => [props.design, props.collectionId], () => {
     Object.assign(form, props.design
@@ -47,23 +49,23 @@ async function onSubmit() {
 <template>
     <form class="design-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField label="Nom du design" :error="errors.name" hint="Il devient le nom des produits créés.">
+            <FormField :label="t('designs.form.name')" :error="errors.name" :hint="t('designs.form.nameHint')">
                 <input v-model="form.name" type="text">
             </FormField>
-            <FormField as="group" label="Collection" :error="errors.collectionId">
-                <BaseSelect v-model="form.collectionId" :options="collectionOptions" aria-label="Collection" />
+            <FormField as="group" :label="t('designs.form.collection')" :error="errors.collectionId">
+                <BaseSelect v-model="form.collectionId" :options="collectionOptions" :aria-label="t('designs.form.collection')" />
             </FormField>
-            <FormField v-if="!design && gabarits.length" as="group" label="Décliner sur" hint="Vous pourrez en ajouter ou en retirer ensuite.">
-                <ToggleGroupRoot v-model="form.gabaritIds" type="multiple" class="design-form__gabarits" aria-label="Gabarits">
+            <FormField v-if="!design && gabarits.length" as="group" :label="t('designs.form.declineOn')" :hint="t('designs.form.declineOnHint')">
+                <ToggleGroupRoot v-model="form.gabaritIds" type="multiple" class="design-form__gabarits" :aria-label="t('designs.form.gabarits')">
                     <ToggleGroupItem v-for="gabarit in gabarits" :key="gabarit.id" :value="gabarit.id" class="design-form__gabarit">{{ gabarit.name }}</ToggleGroupItem>
                 </ToggleGroupRoot>
             </FormField>
-            <FormField label="Notes" :error="errors.notes">
-                <textarea v-model="form.notes" rows="3" placeholder="Idée, palette, références…" />
+            <FormField :label="t('designs.form.notes')" :error="errors.notes">
+                <textarea v-model="form.notes" rows="3" :placeholder="t('designs.form.notesPlaceholder')" />
             </FormField>
             <div class="design-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ design ? 'Enregistrer' : 'Commencer le design' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('designs.form.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ design ? t('designs.form.save') : t('designs.form.start') }}</BaseButton>
             </div>
         </fieldset>
     </form>

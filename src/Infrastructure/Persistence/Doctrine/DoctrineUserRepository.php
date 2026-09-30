@@ -23,7 +23,7 @@ final readonly class DoctrineUserRepository implements UserRepository
 
     public function get(Ulid $id): User
     {
-        return $this->entityManager->find(User::class, $id) ?? throw new NotFound('Utilisateur', (string) $id);
+        return $this->entityManager->find(User::class, $id) ?? throw new NotFound('user', (string) $id);
     }
 
     public function findByEmail(string $email): ?User

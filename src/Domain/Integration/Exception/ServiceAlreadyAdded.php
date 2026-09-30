@@ -8,6 +8,6 @@ final class ServiceAlreadyAdded extends InvalidConnection
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('%s est déjà ajouté.', $label));
+        parent::__construct('integration.service_already_added', ['service' => $label]);
     }
 }

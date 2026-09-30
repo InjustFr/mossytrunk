@@ -8,6 +8,6 @@ final class ServiceNotRegistered extends ServiceUnavailable
 {
     public function __construct(string $service)
     {
-        parent::__construct(\sprintf('Service inconnu « %s ».', $service));
+        parent::__construct('integration.service_not_registered', ['service' => $service]);
     }
 }

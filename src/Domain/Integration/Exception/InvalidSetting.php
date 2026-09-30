@@ -8,6 +8,6 @@ final class InvalidSetting extends InvalidConnection
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('Paramètre invalide « %s ».', $name));
+        parent::__construct('integration.invalid_setting', ['name' => $name]);
     }
 }

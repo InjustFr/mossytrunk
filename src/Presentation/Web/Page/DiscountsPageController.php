@@ -19,6 +19,6 @@ final readonly class DiscountsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('DiscountsPage', 'Remises');
+        return $this->page->render('DiscountsPage', 'discounts');
     }
 }

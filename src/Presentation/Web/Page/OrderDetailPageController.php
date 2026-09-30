@@ -20,6 +20,6 @@ final readonly class OrderDetailPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('OrderDetailPage', 'Commande', ['orderId' => $id]);
+        return $this->page->render('OrderDetailPage', 'order', ['orderId' => $id]);
     }
 }

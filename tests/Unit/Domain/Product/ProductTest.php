@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Product;
 
 use App\Domain\Product\Exception\InvalidProduct;
+use App\Domain\Product\Exception\VariantRequired;
 use App\Domain\Product\Product;
 use App\Domain\Shared\Exception\InvalidMoney;
 use App\Domain\Shared\Money;
@@ -112,7 +113,7 @@ final class ProductTest extends TestCase
         self::assertSame(800, $item->buyingPrice->amount());
         self::assertSame('T-shirt — Mousse', $item->label());
 
-        $this->expectExceptionMessage('Choisissez une variante pour « T-shirt ».');
+        $this->expectExceptionObject(new VariantRequired('T-shirt'));
         $product->sellable(null);
     }
 

@@ -8,6 +8,6 @@ final class UnknownService extends InvalidConnection
 {
     public function __construct(string $service)
     {
-        parent::__construct(\sprintf('Service inconnu « %s ».', $service));
+        parent::__construct('integration.unknown_service', ['service' => $service]);
     }
 }

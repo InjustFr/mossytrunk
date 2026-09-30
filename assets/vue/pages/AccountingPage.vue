@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -9,9 +10,9 @@ import DeclarationSlip from '../components/accounting/DeclarationSlip.vue';
 import OrdersExport from '../components/accounting/OrdersExport.vue';
 import PeriodLedger from '../components/accounting/PeriodLedger.vue';
 import { periodLabel, useAccounting } from '../composables/useAccounting.js';
-import { plural } from '../composables/usePlural.js';
 import { useToast } from '../composables/useToast.js';
 
+const { t } = useI18n();
 const { overview, load, setPeriodicity, declare, withdraw, exportUrl } = useAccounting();
 const toast = useToast();
 
@@ -37,7 +38,7 @@ async function onPeriodicity(periodicity) {
     if (!periodicity || periodicity === overview.value.periodicity) return;
     await setPeriodicity(periodicity);
     selectedKey.value = null;
-    toast.success(periodicity === 'monthly' ? 'Déclarations mensuelles.' : 'Déclarations trimestrielles.');
+    toast.success(periodicity === 'monthly' ? t('accounting.toast.monthly') : t('accounting.toast.quarterly'));
     await reload();
 }
 
@@ -45,7 +46,7 @@ async function onDeclare(period) {
     saving.value = true;
     try {
         await declare(period.key);
-        toast.success(`${periodLabel(period)} marquée comme déclarée.`);
+        toast.success(t('accounting.toast.declared', { period: periodLabel(period) }));
         selectedKey.value = null;
         await reload();
     } catch (error) {
@@ -57,7 +58,7 @@ async function onDeclare(period) {
 
 async function onWithdraw(period) {
     await withdraw(period.key);
-    toast.success(`Déclaration de ${periodLabel(period).toLowerCase()} annulée.`);
+    toast.success(t('accounting.toast.withdrawn', { period: periodLabel(period), periodLower: periodLabel(period).toLowerCase() }));
     await reload();
 }
 
@@ -65,36 +66,37 @@ onMounted(() => load());
 </script>
 
 <template>
-    <AppLayout title="Comptabilité">
+    <AppLayout :title="t('accounting.title')">
         <template #actions>
             <template v-if="overview">
-                <ToggleGroupRoot :model-value="overview.periodicity" type="single" class="accounting-page__periodicity" aria-label="Déclarer à l'URSSAF" @update:model-value="onPeriodicity">
-                    <ToggleGroupItem value="monthly" class="accounting-page__periodicity-item">Chaque mois</ToggleGroupItem>
-                    <ToggleGroupItem value="quarterly" class="accounting-page__periodicity-item">Chaque trimestre</ToggleGroupItem>
+                <ToggleGroupRoot :model-value="overview.periodicity" type="single" class="accounting-page__periodicity" :aria-label="t('accounting.periodicity.label')" @update:model-value="onPeriodicity">
+                    <ToggleGroupItem value="monthly" class="accounting-page__periodicity-item">{{ t('accounting.periodicity.monthly') }}</ToggleGroupItem>
+                    <ToggleGroupItem value="quarterly" class="accounting-page__periodicity-item">{{ t('accounting.periodicity.quarterly') }}</ToggleGroupItem>
                 </ToggleGroupRoot>
-                <BaseSelect :model-value="String(overview.year)" :options="yearOptions" aria-label="Année" size="small" @update:model-value="onYear" />
+                <BaseSelect :model-value="String(overview.year)" :options="yearOptions" :aria-label="t('accounting.year')" size="small" @update:model-value="onYear" />
             </template>
         </template>
 
         <div v-if="overview" class="accounting-page">
             <section class="accounting-page__urssaf" aria-labelledby="urssaf-title">
-                <h2 id="urssaf-title" class="accounting-page__heading">Déclarations URSSAF</h2>
+                <h2 id="urssaf-title" class="accounting-page__heading">{{ t('accounting.urssaf') }}</h2>
                 <p v-if="otherPending.length" class="accounting-page__pending" role="status">
-                    Encore {{ plural(otherPending.length, 'période', 'périodes') }} à déclarer :
+                    {{ t('accounting.pending', otherPending.length) }}
                     <button v-for="period in otherPending" :key="period.key" type="button" class="accounting-page__pending-link" @click="selectedKey = period.key">{{ periodLabel(period) }}</button>
                 </p>
                 <DeclarationSlip v-if="selected" :period="selected" :rate="overview.rate" :saving="saving" @declare="onDeclare" @withdraw="onWithdraw" />
 
                 <div class="accounting-page__year">
                     <PeriodLedger :periods="overview.periods" :selected-key="selected?.key ?? null" @select="selectedKey = $event.key" />
-                    <p class="accounting-page__year-total">
-                        {{ overview.year }} : <MoneyAmount :cents="overview.yearTurnover" /> de chiffre d'affaires,
-                        environ <MoneyAmount :cents="overview.yearContribution" /> de cotisations.
-                    </p>
+                    <I18nT keypath="accounting.yearTotal" tag="p" class="accounting-page__year-total">
+                        <template #year>{{ overview.year }}</template>
+                        <template #turnover><MoneyAmount :cents="overview.yearTurnover" /></template>
+                        <template #contribution><MoneyAmount :cents="overview.yearContribution" /></template>
+                    </I18nT>
                 </div>
             </section>
 
-            <BaseCard title="Exporter les commandes">
+            <BaseCard :title="t('accounting.export.title')">
                 <OrdersExport :url-for="exportUrl" />
             </BaseCard>
         </div>

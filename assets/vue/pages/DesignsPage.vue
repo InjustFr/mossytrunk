@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -15,13 +16,13 @@ import WorkbenchCard from '../components/designs/WorkbenchCard.vue';
 import { useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
-import { plural } from '../composables/usePlural.js';
 import { useToast } from '../composables/useToast.js';
 
 const { board, load, createDesign, saveCollection, workOnCollection, validateCollection } = useDesignBoard();
 const { gabarits, load: loadGabarits, save: saveGabarit } = useGabarits();
 const { load: loadTypes } = useProductTypes();
 const toast = useToast();
+const { t } = useI18n();
 
 const designOpen = ref(false);
 const designCollectionId = ref('');
@@ -47,13 +48,13 @@ function openCollection(collection = null) {
 
 async function onDesignSaved({ name, id }) {
     designOpen.value = false;
-    toast.success(`Design « ${name} » commencé.`);
+    toast.success(t('designs.page.started', { name }));
     visit(`/designs/${id}`);
 }
 
 async function onCollectionSaved(name) {
     collectionOpen.value = false;
-    toast.success(editingCollection.value ? `Collection « ${name} » mise à jour.` : `Collection « ${name} » créée.`);
+    toast.success(t(editingCollection.value ? 'designs.page.collectionUpdated' : 'designs.page.collectionCreated', { name }));
     await load();
 }
 
@@ -65,7 +66,7 @@ async function onBenchToggled(collection, current) {
 async function onValidateCollection(collection) {
     try {
         const { productsCreated } = await validateCollection(collection.id);
-        toast.success(`Collection « ${collection.name} » sortie de l'atelier : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
+        toast.success(t('designs.page.collectionValidated', { name: collection.name, count: productsCreated }, productsCreated));
         await load();
     } catch (error) {
         toast.error(error.message);
@@ -73,7 +74,7 @@ async function onValidateCollection(collection) {
 }
 
 async function onGabaritSaved(name) {
-    toast.success(`Gabarit « ${name} » enregistré.`);
+    toast.success(t('designs.page.gabaritSaved', { name }));
     await loadGabarits();
 }
 
@@ -81,20 +82,20 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 </script>
 
 <template>
-    <AppLayout title="Créations">
+    <AppLayout :title="t('designs.page.title')">
         <template #actions>
-            <BaseButton variant="secondary" @click="gabaritsOpen = true">Gabarits</BaseButton>
-            <BaseButton variant="secondary" @click="openCollection()">Nouvelle collection</BaseButton>
-            <BaseButton @click="newDesign()">Nouveau design</BaseButton>
+            <BaseButton variant="secondary" @click="gabaritsOpen = true">{{ t('designs.page.gabarits') }}</BaseButton>
+            <BaseButton variant="secondary" @click="openCollection()">{{ t('designs.page.newCollection') }}</BaseButton>
+            <BaseButton @click="newDesign()">{{ t('designs.page.newDesign') }}</BaseButton>
         </template>
 
         <div v-if="board" class="designs-page">
             <section class="designs-page__bench" aria-labelledby="bench-title">
-                <h2 id="bench-title" class="designs-page__heading">Sur l'établi</h2>
+                <h2 id="bench-title" class="designs-page__heading">{{ t('designs.onBench') }}</h2>
                 <div v-if="onBench.length" class="designs-page__cards">
                     <WorkbenchCard v-for="design in onBench" :key="design.id" :design="design" />
                 </div>
-                <EmptyState v-else>Rien en cours. Commencez un design, ou remettez-en un sur l'établi depuis sa page.</EmptyState>
+                <EmptyState v-else>{{ t('designs.page.benchEmpty') }}</EmptyState>
             </section>
 
             <BaseCard v-for="collection in collections" :key="collection.id" class="designs-page__collection">
@@ -105,36 +106,36 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                     </div>
                     <label class="designs-page__bench-switch">
                         <BaseSwitch :model-value="collection.current" @update:model-value="onBenchToggled(collection, $event)" />
-                        Sur l'établi
+                        {{ t('designs.onBench') }}
                     </label>
                 </header>
-                <DesignRows :designs="collection.designs" empty="Aucun design dans cette collection." />
+                <DesignRows :designs="collection.designs" :empty="t('designs.page.collectionEmpty')" />
                 <footer class="designs-page__collection-actions">
-                    <BaseButton variant="ghost" @click="openCollection(collection)">Modifier</BaseButton>
-                    <BaseButton variant="secondary" @click="newDesign(collection.id)">Ajouter un design</BaseButton>
+                    <BaseButton variant="ghost" @click="openCollection(collection)">{{ t('designs.page.edit') }}</BaseButton>
+                    <BaseButton variant="secondary" @click="newDesign(collection.id)">{{ t('designs.page.addDesign') }}</BaseButton>
                     <ConfirmButton
                         v-if="readyToValidate(collection)"
                         variant="primary"
-                        label="Sortir la collection de l'atelier"
-                        confirm-label="Valider"
-                        :message="`Les ${plural(openDesigns(collection).length, 'design en cours', 'designs en cours')} de « ${collection.name} » deviennent des produits.`"
+                        :label="t('designs.page.validateCollection')"
+                        :confirm-label="t('designs.page.validate')"
+                        :message="t('designs.page.validateCollectionMessage', { name: collection.name, count: openDesigns(collection).length }, openDesigns(collection).length)"
                         @confirm="onValidateCollection(collection)"
                     />
                 </footer>
             </BaseCard>
 
-            <BaseCard title="Sans collection">
-                <DesignRows :designs="board.standalone" empty="Aucun design sans collection." />
+            <BaseCard :title="t('designs.noCollection')">
+                <DesignRows :designs="board.standalone" :empty="t('designs.page.standaloneEmpty')" />
             </BaseCard>
         </div>
 
-        <BaseModal v-model:open="designOpen" title="Nouveau design">
+        <BaseModal v-model:open="designOpen" :title="t('designs.page.newDesign')">
             <DesignForm :collections="collections" :gabarits="gabarits" :collection-id="designCollectionId" :submit="createDesign" @saved="onDesignSaved" @cancel="designOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="collectionOpen" :title="editingCollection ? 'Modifier la collection' : 'Nouvelle collection'">
+        <BaseModal v-model:open="collectionOpen" :title="editingCollection ? t('designs.page.editCollection') : t('designs.page.newCollection')">
             <CollectionForm :collection="editingCollection" :submit="(payload) => saveCollection(editingCollection?.id, payload)" @saved="onCollectionSaved" @cancel="collectionOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="gabaritsOpen" title="Gabarits">
+        <BaseModal v-model:open="gabaritsOpen" :title="t('designs.page.gabarits')">
             <GabaritManager :gabarits="gabarits" :save="saveGabarit" @saved="onGabaritSaved" />
         </BaseModal>
     </AppLayout>

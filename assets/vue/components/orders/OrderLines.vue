@@ -1,20 +1,23 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import DataTable from '../ui/DataTable.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 defineProps({
     lines: { type: Array, required: true },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
     <DataTable :items="lines">
         <template #head>
             <tr>
-                <th>Produit</th>
-                <th class="data-table__cell--number">Qté</th>
-                <th class="data-table__cell--number">Prix unitaire</th>
-                <th class="data-table__cell--number">Total</th>
+                <th>{{ t('orders.lines.product') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.lines.quantity') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.lines.unitPrice') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.lines.total') }}</th>
             </tr>
         </template>
         <template #default="{ rows }">

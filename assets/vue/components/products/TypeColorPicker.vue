@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Check } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import { ColorSwatchPickerItem, ColorSwatchPickerItemIndicator, ColorSwatchPickerRoot } from 'reka-ui';
 import TypeCustomColor from './TypeCustomColor.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
@@ -8,13 +9,14 @@ import { availableTypeColors } from '../../composables/useTypeColor.js';
 
 const color = defineModel({ type: String, required: true });
 const { types } = useProductTypes();
+const { t } = useI18n();
 
 const colors = computed(() => availableTypeColors(types.value, color.value));
 </script>
 
 <template>
     <div class="type-color-picker">
-        <ColorSwatchPickerRoot v-model="color" selection-behavior="replace" class="type-color-picker__swatches" aria-label="Couleur du type">
+        <ColorSwatchPickerRoot v-model="color" selection-behavior="replace" class="type-color-picker__swatches" :aria-label="t('products.colors.label')">
             <ColorSwatchPickerItem
                 v-for="option in colors"
                 :key="option.value"

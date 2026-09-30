@@ -1,0 +1,49 @@
+{
+    "origin": {
+        "purchase": "Achat",
+        "supplierOrder": "Commande fournisseur",
+        "correction": "Inventaire",
+        "return": "Retour de commande"
+    },
+    "movement": {
+        "surplus": "Inventaire (surplus)",
+        "sale": "Vente",
+        "loss": "Inventaire (manquant)"
+    },
+    "lots": {
+        "describe": "{remaining} × {cost} — {origin} du {date}",
+        "bar": "Stock restant, du plus ancien au plus récent",
+        "soldFirst": "Vendu en premier",
+        "receivedLast": "Reçu en dernier"
+    },
+    "check": {
+        "title": "Inventaire",
+        "eventFallback": "Événement",
+        "save": "Enregistrer l'inventaire",
+        "intro": "Comptez ce qui reste après l'événement. Le stock est corrigé ; s'il manque des articles, une commande oubliée est signalée sur l'événement. Les lignes laissées vides ne sont pas comptées.",
+        "searchPlaceholder": "Rechercher…",
+        "searchLabel": "Rechercher un article",
+        "soldOnly": "Seulement les articles vendus à l'événement",
+        "counted": "{count} article compté | {count} articles comptés",
+        "saved": "Inventaire enregistré : {count} article compté. | Inventaire enregistré : {count} articles comptés."
+    },
+    "count": {
+        "empty": "Aucun article.",
+        "item": "Article",
+        "soldAtEvent": "Vendus à l'événement",
+        "expected": "Stock attendu",
+        "counted": "Compté",
+        "difference": "Écart",
+        "countedOf": "Quantité comptée de {label}",
+        "ok": "OK"
+    },
+    "discrepancies": {
+        "title": "Commande manquante probable : {count} article (≈ {amount} de ventes) | Commande manquante probable : {count} articles (≈ {amount} de ventes)",
+        "hint": "L'inventaire a trouvé moins d'articles que prévu. Ajoutez la commande oubliée pendant l'événement — le stock ne sera pas décompté une seconde fois — ou classez l'écart (casse, perte, cadeau).",
+        "line": "{label} : {count} manquant | {label} : {count} manquants",
+        "checkedAt": "inventaire du {date}",
+        "dismiss": "Classer l'écart",
+        "dismissMessage": "L'écart de « {label} » ne sera plus signalé comme une commande manquante.",
+        "dismissConfirm": "Classer"
+    }
+}

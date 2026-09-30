@@ -1,15 +1,16 @@
 <script setup>
 import { computed } from 'vue';
 import { PackageSearch } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatDateTime } from '../../composables/useDate.js';
-import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     checks: { type: Array, required: true },
 });
 const emit = defineEmits(['dismiss']);
+const { t } = useI18n();
 
 const open = computed(() => props.checks.flatMap((check) => check.lines
     .filter((line) => line.unexplained > 0)
@@ -22,21 +23,25 @@ const missedSales = computed(() => open.value.reduce((sum, line) => sum + line.m
     <section v-if="open.length" class="stock-discrepancies" role="alert" aria-labelledby="stock-discrepancies-title">
         <PackageSearch class="stock-discrepancies__icon" size="1.25rem" aria-hidden="true" />
         <div class="stock-discrepancies__content">
-            <h3 id="stock-discrepancies-title" class="stock-discrepancies__title">
-                Commande manquante probable : {{ plural(units, 'article', 'articles') }} (≈ <MoneyAmount :cents="missedSales" /> de ventes)
-            </h3>
+            <i18n-t id="stock-discrepancies-title" keypath="stock.discrepancies.title" :plural="units" tag="h3" class="stock-discrepancies__title" scope="global">
+                <template #count>{{ units }}</template>
+                <template #amount><MoneyAmount :cents="missedSales" /></template>
+            </i18n-t>
             <p class="stock-discrepancies__hint">
-                L'inventaire a trouvé moins d'articles que prévu. Ajoutez la commande oubliée pendant l'événement — le stock ne sera pas décompté une seconde fois — ou classez l'écart (casse, perte, cadeau).
+                {{ t('stock.discrepancies.hint') }}
             </p>
             <ul class="stock-discrepancies__lines">
                 <li v-for="line in open" :key="line.id" class="stock-discrepancies__line">
-                    <span><strong>{{ line.label }}</strong> : {{ plural(line.unexplained, 'manquant', 'manquants') }}</span>
-                    <span class="stock-discrepancies__date">inventaire du {{ formatDateTime(line.checkedAt) }}</span>
+                    <i18n-t keypath="stock.discrepancies.line" :plural="line.unexplained" tag="span" scope="global">
+                        <template #label><strong>{{ line.label }}</strong></template>
+                        <template #count>{{ line.unexplained }}</template>
+                    </i18n-t>
+                    <span class="stock-discrepancies__date">{{ t('stock.discrepancies.checkedAt', { date: formatDateTime(line.checkedAt) }) }}</span>
                     <ConfirmButton
                         variant="ghost"
-                        label="Classer l'écart"
-                        :message="`L'écart de « ${line.label} » ne sera plus signalé comme une commande manquante.`"
-                        confirm-label="Classer"
+                        :label="t('stock.discrepancies.dismiss')"
+                        :message="t('stock.discrepancies.dismissMessage', { label: line.label })"
+                        :confirm-label="t('stock.discrepancies.dismissConfirm')"
                         @confirm="emit('dismiss', line)"
                     />
                 </li>

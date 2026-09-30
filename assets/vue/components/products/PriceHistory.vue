@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { Pencil, Plus, Trash2 } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
@@ -16,6 +17,8 @@ const props = defineProps({
     save: { type: Function, required: true },
     forget: { type: Function, required: true },
 });
+
+const { t } = useI18n();
 
 const NEW = '__new__';
 const editing = ref(null);
@@ -51,17 +54,17 @@ async function onSubmit() {
         <ol class="price-history__list">
             <li v-for="(change, index) in history" :key="change.id" :class="['price-history__change', { 'price-history__change--current': index === 0 }]">
                 <form v-if="editing === change.id" class="price-history__form" novalidate @submit.prevent="onSubmit">
-                    <FormField label="Prix (€)" :error="errors.price">
+                    <FormField :label="t('products.prices.price')" :error="errors.price">
                         <BaseMoneyField v-model="form.price" />
                     </FormField>
-                    <FormField as="group" label="Depuis le" :error="errors.since">
-                        <BaseDatePicker v-model="form.since" aria-label="Depuis le" />
+                    <FormField as="group" :label="t('products.prices.since')" :error="errors.since">
+                        <BaseDatePicker v-model="form.since" :aria-label="t('products.prices.since')" />
                     </FormField>
-                    <p v-if="index === 0" class="price-history__hint">Corriger le prix actuel ne crée pas de nouvelle ligne.</p>
+                    <p v-if="index === 0" class="price-history__hint">{{ t('products.prices.currentHint') }}</p>
                     <p v-if="errors.form" class="price-history__error" role="alert">{{ errors.form }}</p>
                     <div class="price-history__actions">
-                        <BaseButton variant="ghost" @click="editing = null">Annuler</BaseButton>
-                        <BaseButton type="submit" :loading="saving">Enregistrer</BaseButton>
+                        <BaseButton variant="ghost" @click="editing = null">{{ t('products.cancel') }}</BaseButton>
+                        <BaseButton type="submit" :loading="saving">{{ t('products.save') }}</BaseButton>
                     </div>
                 </form>
                 <template v-else>
@@ -70,35 +73,35 @@ async function onSubmit() {
                         {{ formatSignedCents(change.price - history[index + 1].price) }}
                     </span>
                     <span class="price-history__tools">
-                        <IconButton :icon="Pencil" :label="`Modifier le prix du ${formatDate(change.since)}`" @click="edit(change)" />
+                        <IconButton :icon="Pencil" :label="t('products.prices.edit', { date: formatDate(change.since) })" @click="edit(change)" />
                         <ConfirmButton
                             v-if="history.length > 1"
                             :icon="Trash2"
-                            :label="`Supprimer le prix du ${formatDate(change.since)}`"
-                            :message="index === 0 ? 'Le prix précédent redevient le prix de vente.' : 'Cette ligne disparaît de l\'historique.'"
+                            :label="t('products.prices.remove', { date: formatDate(change.since) })"
+                            :message="t(index === 0 ? 'products.prices.removeCurrent' : 'products.prices.removePast')"
                             @confirm="forget(change.id)"
                         />
                     </span>
-                    <span class="price-history__since">{{ index === 0 ? 'depuis le' : 'le' }} {{ formatDate(change.since) }}</span>
+                    <span class="price-history__since">{{ t(index === 0 ? 'products.prices.sinceDate' : 'products.prices.onDate', { date: formatDate(change.since) }) }}</span>
                 </template>
             </li>
         </ol>
 
         <form v-if="editing === NEW" class="price-history__form price-history__form--new" novalidate @submit.prevent="onSubmit">
-            <FormField label="Prix (€)" :error="errors.price">
+            <FormField :label="t('products.prices.price')" :error="errors.price">
                 <BaseMoneyField v-model="form.price" />
             </FormField>
-            <FormField as="group" label="Depuis le" :error="errors.since">
-                <BaseDatePicker v-model="form.since" aria-label="Depuis le" />
+            <FormField as="group" :label="t('products.prices.since')" :error="errors.since">
+                <BaseDatePicker v-model="form.since" :aria-label="t('products.prices.since')" />
             </FormField>
-            <p class="price-history__hint">Le prix le plus récent devient le prix de vente.</p>
+            <p class="price-history__hint">{{ t('products.prices.newHint') }}</p>
             <p v-if="errors.form" class="price-history__error" role="alert">{{ errors.form }}</p>
             <div class="price-history__actions">
-                <BaseButton variant="ghost" @click="editing = null">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">Ajouter le prix</BaseButton>
+                <BaseButton variant="ghost" @click="editing = null">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t('products.prices.add') }}</BaseButton>
             </div>
         </form>
-        <BaseButton v-else variant="ghost" class="price-history__add" @click="edit()"><Plus size="0.875rem" aria-hidden="true" /> Ajouter un prix passé</BaseButton>
+        <BaseButton v-else variant="ghost" class="price-history__add" @click="edit()"><Plus size="0.875rem" aria-hidden="true" /> {{ t('products.prices.addPast') }}</BaseButton>
     </div>
 </template>
 

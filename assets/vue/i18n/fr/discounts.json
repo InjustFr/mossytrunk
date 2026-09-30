@@ -1,0 +1,70 @@
+{
+    "range": "{min} à {max}",
+    "page": {
+        "title": "Remises",
+        "new": "Nouvelle remise",
+        "edit": "Modifier la remise",
+        "intro": "Une remise combine des conditions (une quantité d'un type ou d'un produit précis) et une action : prix fixe, remise en € ou en %. Elles s'appliquent automatiquement aux commandes passées pendant leur période de validité, la plus avantageuse d'abord, et plusieurs remises peuvent se cumuler sur une commande.",
+        "created": "Remise « {name} » créée.",
+        "updated": "Remise « {name} » mise à jour.",
+        "started": "Remise « {name} » lancée à partir d'aujourd'hui.",
+        "stopped": "Remise « {name} » arrêtée : elle s'est terminée hier.",
+        "removed": "Remise « {name} » supprimée.",
+        "notFound": "Cette remise n'existe plus."
+    },
+    "form": {
+        "fixedPrice": "Prix fixe",
+        "amountOff": "Remise en €",
+        "percentOff": "Remise en %",
+        "name": "Nom",
+        "nameHint": "Affiché sur les commandes, ex. « 2 prints et 1 sticker pour 15 € »",
+        "conditions": "Conditions",
+        "conditionsHint": "Toutes les conditions doivent être réunies. Un produit compte avec toutes ses variantes.",
+        "conditionQuantity": "Quantité de la condition {number}",
+        "conditionTarget": "Cible de la condition {number}",
+        "type": "Type",
+        "product": "Produit",
+        "conditionType": "Type de la condition {number}",
+        "conditionProduct": "Produit de la condition {number}",
+        "chooseType": "Choisir un type…",
+        "searchProduct": "Rechercher un produit…",
+        "removeCondition": "Retirer la condition {number}",
+        "addCondition": "Ajouter une condition",
+        "action": "Action",
+        "actionKind": "Type d'action",
+        "percent": "Pourcentage de remise",
+        "itemsPrice": "Prix des articles",
+        "discountAmount": "Montant de la remise",
+        "pricing": "Prix normal : {regular} → prix client : {customer}",
+        "startsOn": "Valable du",
+        "startsOnHint": "Vide : dès maintenant",
+        "validFrom": "Début de validité",
+        "endsOn": "Au",
+        "endsOnHint": "Vide : sans fin",
+        "validUntil": "Fin de validité",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "create": "Créer la remise"
+    },
+    "status": {
+        "running": "En cours",
+        "upcoming": "À venir",
+        "expired": "Expirée"
+    },
+    "list": {
+        "empty": "Aucune remise. Créez-en une, ex. « 2 prints et 1 sticker pour 15 € ».",
+        "between": "Du {start} au {end}",
+        "from": "À partir du {start}",
+        "until": "Jusqu'au {end}",
+        "insteadOf": ", au lieu de {price}",
+        "customerSaving": "Économie client",
+        "stop": "Arrêter : la remise se termine hier",
+        "start": "Lancer : la remise commence aujourd'hui",
+        "edit": "Modifier {name}",
+        "remove": "Supprimer {name}"
+    },
+    "action": {
+        "fixedPrice": "pour {price}",
+        "percentOff": "−{percent} %"
+    }
+}

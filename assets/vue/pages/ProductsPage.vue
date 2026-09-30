@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { Tags } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -19,13 +20,13 @@ import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
-import { plural } from '../composables/usePlural.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
 const { products, load, create, update, batchUpdate, moveVariant, remove } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
+const { t } = useI18n();
 const { restock } = useStock();
 
 const colors = computed(() => typeColors(types.value));
@@ -40,7 +41,7 @@ const restockOpen = computed({ get: () => restocking.value !== null, set: (open)
 const viewingStock = ref(null);
 const historyOpen = computed({ get: () => viewingStock.value !== null, set: (open) => { if (!open) viewingStock.value = null; } });
 
-const modalTitle = computed(() => (editing.value ? 'Modifier le produit' : 'Nouveau produit'));
+const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : 'products.page.new'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
 const submitBatch = (changes) => batchUpdate({ productIds: filters.selectedIds.value, ...changes });
 
@@ -55,20 +56,20 @@ function openEdit(product) {
 }
 
 async function onSaved(name) {
-    toast.success(editing.value ? `Produit « ${name} » mis à jour.` : `Produit « ${name} » ajouté.`);
+    toast.success(t(editing.value ? 'products.toast.updated' : 'products.toast.added', { name }));
     modalOpen.value = false;
     await load();
 }
 
 async function onMoved({ variant, target }) {
-    toast.success(variant ? `Déplacé vers « ${target} — ${variant} ».` : `Déplacé vers « ${target} ».`);
+    toast.success(t(variant ? 'products.toast.movedToVariant' : 'products.toast.moved', { target, variant }));
     moving.value = null;
     await load();
 }
 
 async function onRestocked({ quantity, variant }) {
     const name = restocking.value.displayName;
-    toast.success(`${plural(quantity, 'unité ajoutée', 'unités ajoutées')} au stock de « ${variant ? `${name} — ${variant}` : name} ».`);
+    toast.success(t('products.toast.restockedInto', { name: variant ? `${name} — ${variant}` : name }, quantity));
     restocking.value = null;
     await load();
 }
@@ -76,7 +77,7 @@ async function onRestocked({ quantity, variant }) {
 async function onRemove(product) {
     try {
         await remove(product.id);
-        toast.success(`Produit « ${product.displayName} » supprimé.`);
+        toast.success(t('products.toast.removed', { name: product.displayName }));
         filters.selectedIds.value = filters.selectedIds.value.filter((id) => id !== product.id);
         await load();
     } catch (error) {
@@ -85,12 +86,12 @@ async function onRemove(product) {
 }
 
 async function onTypeSaved(name, created) {
-    toast.success(created ? `Type « ${name} » créé.` : `Type « ${name} » modifié.`);
+    toast.success(t(created ? 'products.toast.typeCreated' : 'products.toast.typeUpdated', { name }));
     await load();
 }
 
 async function onBatchSaved(count) {
-    toast.success(`${plural(count, 'produit mis à jour', 'produits mis à jour')}.`);
+    toast.success(t('products.toast.batchUpdated', count));
     batchOpen.value = false;
     filters.clearSelection();
     await load();
@@ -100,10 +101,10 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 </script>
 
 <template>
-    <AppLayout title="Produits">
+    <AppLayout :title="t('products.page.title')">
         <template #actions>
-            <BaseButton variant="secondary" @click="typesOpen = true"><Tags size="1rem" aria-hidden="true" /> Types de produit</BaseButton>
-            <BaseButton @click="openCreate">Nouveau produit</BaseButton>
+            <BaseButton variant="secondary" @click="typesOpen = true"><Tags size="1rem" aria-hidden="true" /> {{ t('products.page.types') }}</BaseButton>
+            <BaseButton @click="openCreate">{{ t('products.page.new') }}</BaseButton>
         </template>
 
         <BaseCard>
@@ -137,17 +138,17 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
             <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="moveOpen" :title="moving?.variants.length ? 'Déplacer une variante' : 'Faire une variante de ce produit'">
+        <BaseModal v-model:open="moveOpen" :title="t(moving?.variants.length ? 'products.page.moveVariantTitle' : 'products.page.makeVariantTitle')">
             <MoveVariantForm v-if="moving" :product="moving" :products="products" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
         </BaseModal>
-        <BaseModal v-model:open="restockOpen" :title="`Réapprovisionner ${restocking?.displayName ?? ''}`">
+        <BaseModal v-model:open="restockOpen" :title="t('products.page.restockTitle', { name: restocking?.displayName ?? '' })">
             <RestockForm v-if="restocking" :product="restocking" :submit="restock" @saved="onRestocked" @cancel="restocking = null" />
         </BaseModal>
-        <BaseModal v-model:open="historyOpen" :title="`Réserve de ${viewingStock?.displayName ?? ''}`">
+        <BaseModal v-model:open="historyOpen" :title="t('products.page.stockTitle', { name: viewingStock?.displayName ?? '' })">
             <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
         <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" />
-        <BaseModal v-model:open="batchOpen" title="Modifier la sélection">
+        <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')">
             <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>
     </AppLayout>

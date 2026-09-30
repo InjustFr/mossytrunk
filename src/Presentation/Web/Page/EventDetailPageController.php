@@ -20,6 +20,6 @@ final readonly class EventDetailPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('EventDetailPage', 'Événement', ['eventId' => $id]);
+        return $this->page->render('EventDetailPage', 'event', ['eventId' => $id]);
     }
 }

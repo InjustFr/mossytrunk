@@ -8,6 +8,6 @@ final class EmptyTypeName extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Le nom du type est obligatoire.');
+        parent::__construct('product.empty_type_name');
     }
 }

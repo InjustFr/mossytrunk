@@ -1,6 +1,10 @@
 <script setup>
 import { Minus, Plus } from '@lucide/vue';
 import { NumberFieldDecrement, NumberFieldIncrement, NumberFieldInput, NumberFieldRoot } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+import { intlLocale } from '../../i18n/locale.js';
+
+const { t } = useI18n();
 
 defineProps({
     label: { type: String, default: undefined },
@@ -8,10 +12,10 @@ defineProps({
 </script>
 
 <template>
-    <NumberFieldRoot locale="fr-FR" class="number-field">
+    <NumberFieldRoot :locale="intlLocale()" class="number-field">
         <NumberFieldInput class="number-field__input" :aria-label="label" />
-        <NumberFieldDecrement class="number-field__step number-field__step--decrement" aria-label="Diminuer"><Minus size="0.875rem" aria-hidden="true" /></NumberFieldDecrement>
-        <NumberFieldIncrement class="number-field__step" aria-label="Augmenter"><Plus size="0.875rem" aria-hidden="true" /></NumberFieldIncrement>
+        <NumberFieldDecrement class="number-field__step number-field__step--decrement" :aria-label="t('ui.number.decrement')"><Minus size="0.875rem" aria-hidden="true" /></NumberFieldDecrement>
+        <NumberFieldIncrement class="number-field__step" :aria-label="t('ui.number.increment')"><Plus size="0.875rem" aria-hidden="true" /></NumberFieldIncrement>
     </NumberFieldRoot>
 </template>
 

@@ -1,13 +1,14 @@
 <script setup>
 import { computed } from 'vue';
+import { I18nT, useI18n } from 'vue-i18n';
 import { CircleCheck } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { formatDate, formatDateTime, fromToday } from '../../composables/useDate.js';
-import { plural } from '../../composables/usePlural.js';
-import { PERIOD_STATUSES, periodLabel } from '../../composables/useAccounting.js';
+import { intlLocale } from '../../i18n/locale.js';
+import { PERIOD_STATUSES, periodLabel, periodStatusLabel } from '../../composables/useAccounting.js';
 
 const props = defineProps({
     period: { type: Object, required: true },
@@ -15,6 +16,7 @@ const props = defineProps({
     saving: { type: Boolean, default: false },
 });
 const emit = defineEmits(['declare', 'withdraw']);
+const { t } = useI18n();
 
 const status = computed(() => PERIOD_STATUSES[props.period.status]);
 const declarable = computed(() => ['due', 'late', 'changed'].includes(props.period.status));
@@ -22,53 +24,54 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
 </script>
 
 <template>
-    <section class="declaration-slip" :aria-label="`Déclaration ${periodLabel(period)}`">
+    <section class="declaration-slip" :aria-label="t('accounting.slip.label', { period: periodLabel(period) })">
         <header class="declaration-slip__header">
             <div>
                 <h2 class="declaration-slip__period">{{ periodLabel(period) }}</h2>
-                <p class="declaration-slip__dates">Du {{ formatDate(period.start) }} au {{ formatDate(period.end) }}</p>
+                <p class="declaration-slip__dates">{{ t('accounting.slip.dates', { from: formatDate(period.start), to: formatDate(period.end) }) }}</p>
             </div>
-            <StatusBadge :tone="status.tone">{{ status.label }}</StatusBadge>
+            <StatusBadge :tone="status.tone">{{ periodStatusLabel(period.status) }}</StatusBadge>
         </header>
 
         <div class="declaration-slip__line">
             <span class="declaration-slip__box">
-                <span class="declaration-slip__box-label">Ventes de marchandises (BIC)</span>
-                <span class="declaration-slip__box-hint">Chiffre d'affaires à déclarer</span>
+                <span class="declaration-slip__box-label">{{ t('accounting.slip.box') }}</span>
+                <span class="declaration-slip__box-hint">{{ t('accounting.slip.boxHint') }}</span>
             </span>
             <span class="declaration-slip__amount"><MoneyAmount :cents="period.turnover" /></span>
         </div>
 
         <dl class="declaration-slip__facts">
-            <div><dt>Commandes</dt><dd>{{ period.orderCount }}</dd></div>
-            <div><dt>Cotisations estimées ({{ String(rate).replace('.', ',') }} %)</dt><dd><MoneyAmount :cents="period.contribution" /></dd></div>
+            <div><dt>{{ t('accounting.slip.orders') }}</dt><dd>{{ period.orderCount }}</dd></div>
+            <div><dt>{{ t('accounting.slip.contribution', { rate: rate.toLocaleString(intlLocale()) }) }}</dt><dd><MoneyAmount :cents="period.contribution" /></dd></div>
             <div>
-                <dt>À déclarer avant le</dt>
+                <dt>{{ t('accounting.slip.deadline') }}</dt>
                 <dd>{{ formatDate(period.deadline) }} <span class="declaration-slip__relative">({{ fromToday(period.deadline) }})</span></dd>
             </div>
         </dl>
 
-        <p v-if="period.status === 'changed'" class="declaration-slip__notice" role="status">
-            Déclaré <MoneyAmount :cents="period.declaredTurnover" /> le {{ formatDateTime(period.declaredAt) }} ; les commandes de la période ont changé depuis. Corrigez la déclaration sur urssaf.fr puis marquez-la à nouveau.
-        </p>
+        <I18nT v-if="period.status === 'changed'" keypath="accounting.slip.changed" tag="p" class="declaration-slip__notice" role="status">
+            <template #amount><MoneyAmount :cents="period.declaredTurnover" /></template>
+            <template #date>{{ formatDateTime(period.declaredAt) }}</template>
+        </I18nT>
         <p v-else-if="period.status === 'declared'" class="declaration-slip__done">
-            <CircleCheck size="1rem" aria-hidden="true" /> Déclarée le {{ formatDateTime(period.declaredAt) }}
+            <CircleCheck size="1rem" aria-hidden="true" /> {{ t('accounting.slip.declaredOn', { date: formatDateTime(period.declaredAt) }) }}
         </p>
-        <p v-else-if="period.status === 'inactive'" class="declaration-slip__hint">Cette période précède la première vente enregistrée dans MossyTrunk.</p>
-        <p v-else-if="!over" class="declaration-slip__hint">La période n'est pas terminée : le montant peut encore évoluer.</p>
-        <p v-else-if="period.turnover === 0" class="declaration-slip__hint">Aucune vente : déclarez tout de même un chiffre d'affaires de 0 €.</p>
+        <p v-else-if="period.status === 'inactive'" class="declaration-slip__hint">{{ t('accounting.slip.inactive') }}</p>
+        <p v-else-if="!over" class="declaration-slip__hint">{{ t('accounting.slip.current') }}</p>
+        <p v-else-if="period.turnover === 0" class="declaration-slip__hint">{{ t('accounting.slip.noSales') }}</p>
 
         <footer class="declaration-slip__actions">
             <ConfirmButton
                 v-if="period.status === 'declared' || period.status === 'changed'"
                 variant="ghost"
-                label="Annuler la déclaration"
-                confirm-label="Annuler"
-                message="La période repassera « à déclarer » dans MossyTrunk. Cela ne change rien sur urssaf.fr."
+                :label="t('accounting.slip.withdraw')"
+                :confirm-label="t('accounting.slip.withdrawConfirm')"
+                :message="t('accounting.slip.withdrawMessage')"
                 @confirm="emit('withdraw', period)"
             />
             <BaseButton v-if="declarable" :loading="saving" @click="emit('declare', period)">
-                Marquer comme déclarée ({{ plural(period.orderCount, 'commande') }})
+                {{ t('accounting.slip.declare', period.orderCount) }}
             </BaseButton>
         </footer>
     </section>

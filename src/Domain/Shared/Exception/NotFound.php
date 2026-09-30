@@ -6,8 +6,8 @@ namespace App\Domain\Shared\Exception;
 
 final class NotFound extends DomainException
 {
-    public function __construct(string $label, string $id)
+    public function __construct(string $subject, string $id)
     {
-        parent::__construct(\sprintf('%s introuvable (%s).', $label, $id));
+        parent::__construct('shared.not_found', ['subject' => $subject, 'id' => $id]);
     }
 }

@@ -8,6 +8,6 @@ final class VariantRequired extends InvalidProduct
 {
     public function __construct(string $productName)
     {
-        parent::__construct(\sprintf('Choisissez une variante pour « %s ».', $productName));
+        parent::__construct('product.variant_required', ['name' => $productName]);
     }
 }

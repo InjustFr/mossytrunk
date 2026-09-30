@@ -1,0 +1,90 @@
+{
+    "page": {
+        "title": "Markets & fairs",
+        "new": "New market or fair",
+        "upcoming": "Upcoming",
+        "noUpcoming": "No upcoming events. Create one to attach orders to it.",
+        "past": "Past",
+        "noPast": "No past events.",
+        "created": "Event “{name}” created."
+    },
+    "detail": {
+        "titleFallback": "Event",
+        "back": "Markets & fairs",
+        "edit": "Edit",
+        "stockCheck": "Do a stock check",
+        "addExpense": "Add an expense",
+        "expenses": "Expenses",
+        "editTitle": "Edit event",
+        "editExpense": "Edit expense",
+        "newExpense": "New expense",
+        "updated": "Event “{name}” updated.",
+        "expenseAdded": "Expense “{label}” added.",
+        "expenseUpdated": "Expense “{label}” updated.",
+        "expenseRemoved": "Expense “{label}” deleted.",
+        "discrepancyDismissed": "Discrepancy for “{label}” dismissed."
+    },
+    "comparison": {
+        "event": "Event",
+        "date": "Date",
+        "days": "Days",
+        "orders": "Orders",
+        "turnover": "Turnover",
+        "expenses": "Expenses",
+        "result": "Result",
+        "margin": "Margin",
+        "perDay": "Per day",
+        "missingOrder": "Probably missing order ({units})"
+    },
+    "form": {
+        "name": "Name",
+        "location": "Location",
+        "dates": "Dates",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Create event"
+    },
+    "list": {
+        "empty": "No events.",
+        "ongoing": "Ongoing",
+        "committedExpenses": "Committed expenses",
+        "result": "Result"
+    },
+    "report": {
+        "committedExpenses": "Committed expenses",
+        "noSales": "No sales yet. The report will fill in with the event's orders.",
+        "result": "Result",
+        "orderCount": "{count} order | {count} orders",
+        "noOrders": "No orders.",
+        "turnover": "Turnover",
+        "buyingCost": "Buying cost",
+        "expenses": "Expenses",
+        "rate": "{rate}%",
+        "grossSales": "Gross sales",
+        "discountsGiven": "Discounts given",
+        "seeOrders": "See orders"
+    },
+    "expenseForm": {
+        "label": "Label",
+        "labelPlaceholder": "Stand, train, hotel…",
+        "amount": "Amount (€)",
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add expense"
+    },
+    "expenses": {
+        "empty": "No expenses recorded.",
+        "label": "Label",
+        "amount": "Amount",
+        "actions": "Actions",
+        "edit": "Edit {label}",
+        "remove": "Delete {label}",
+        "total": "Total"
+    },
+    "recap": {
+        "showItems": "Show item details",
+        "itemCount": "{count} items",
+        "unknownCost": "Unknown buying cost (€0)",
+        "untyped": "Untyped"
+    }
+}

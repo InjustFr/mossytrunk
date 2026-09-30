@@ -2,6 +2,9 @@
 import { computed } from 'vue';
 import { X } from '@lucide/vue';
 import { DialogClose, DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     title: { type: String, required: true },
@@ -27,7 +30,7 @@ function focusFirstField(event) {
                 <DialogContent class="modal__panel" :aria-describedby="undefined" @open-auto-focus="focusFirstField">
                     <header class="modal__header">
                         <DialogTitle class="modal__title">{{ title }}</DialogTitle>
-                        <DialogClose class="modal__close" aria-label="Fermer"><X size="1rem" aria-hidden="true" /></DialogClose>
+                        <DialogClose class="modal__close" :aria-label="t('ui.close')"><X size="1rem" aria-hidden="true" /></DialogClose>
                     </header>
                     <div class="modal__body"><slot /></div>
                 </DialogContent>

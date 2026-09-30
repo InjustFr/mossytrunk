@@ -10,9 +10,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class DiscountActionPayload
 {
     public function __construct(
-        #[Assert\Choice(callback: [self::class, 'kinds'], message: 'Action invalide.')]
+        #[Assert\Choice(callback: [self::class, 'kinds'], message: 'discount.action.invalid')]
         public string $kind = 'fixedPrice',
-        #[Assert\Positive(message: 'La valeur de la remise doit être supérieure à zéro.')]
+        #[Assert\Positive(message: 'discount.action.value.positive')]
         public int $value = 0,
     ) {
     }

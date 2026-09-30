@@ -48,7 +48,7 @@ final class EventReportTest extends KernelTestCase
         self::assertSame(12.8, $report->urssaf['rate']);
         self::assertSame(1_920, $report->urssaf['amount']);
         self::assertSame(15_000 - 5_000 - 10_000 - 1_920, $report->total['result']);
-        self::assertSame('Sans type', $report->orders['groups'][0]['type']);
+        self::assertNull($report->orders['groups'][0]['type']);
         self::assertSame(['Print'], array_column($report->orders['groups'][0]['products'], 'name'));
         self::assertSame(10, $report->orders['groups'][0]['products'][0]['quantity']);
     }

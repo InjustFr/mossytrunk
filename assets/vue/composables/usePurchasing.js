@@ -2,8 +2,8 @@ import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 
 export const SUPPLIER_ORDER_STATUSES = {
-    ordered: { label: 'Commandée', tone: 'warning' },
-    received: { label: 'Reçue', tone: 'success' },
+    ordered: { label: 'purchasing.status.ordered', tone: 'warning' },
+    received: { label: 'purchasing.status.received', tone: 'success' },
 };
 
 export function useSuppliers() {

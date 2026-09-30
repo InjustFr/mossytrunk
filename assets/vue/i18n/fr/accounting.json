@@ -1,0 +1,65 @@
+{
+    "title": "Comptabilité",
+    "year": "Année",
+    "urssaf": "Déclarations URSSAF",
+    "periodicity": {
+        "label": "Déclarer à l'URSSAF",
+        "monthly": "Chaque mois",
+        "quarterly": "Chaque trimestre"
+    },
+    "pending": "Encore {count} période à déclarer : | Encore {count} périodes à déclarer :",
+    "yearTotal": "{year} : {turnover} de chiffre d'affaires, environ {contribution} de cotisations.",
+    "toast": {
+        "monthly": "Déclarations mensuelles.",
+        "quarterly": "Déclarations trimestrielles.",
+        "declared": "{period} marquée comme déclarée.",
+        "withdrawn": "Déclaration de {periodLower} annulée."
+    },
+    "status": {
+        "declared": "Déclarée",
+        "changed": "Montant modifié",
+        "late": "En retard",
+        "due": "À déclarer",
+        "current": "En cours",
+        "upcoming": "À venir",
+        "inactive": "Avant l'activité"
+    },
+    "period": {
+        "firstQuarter": "1er trimestre {year}",
+        "quarter": "{index}e trimestre {year}",
+        "shortQuarter": "T{index}"
+    },
+    "ledger": {
+        "label": "Périodes de l'année",
+        "cell": "{period} : {amount}, {status}"
+    },
+    "slip": {
+        "label": "Déclaration {period}",
+        "dates": "Du {from} au {to}",
+        "box": "Ventes de marchandises (BIC)",
+        "boxHint": "Chiffre d'affaires à déclarer",
+        "orders": "Commandes",
+        "contribution": "Cotisations estimées ({rate} %)",
+        "deadline": "À déclarer avant le",
+        "changed": "Déclaré {amount} le {date} ; les commandes de la période ont changé depuis. Corrigez la déclaration sur urssaf.fr puis marquez-la à nouveau.",
+        "declaredOn": "Déclarée le {date}",
+        "inactive": "Cette période précède la première vente enregistrée dans MossyTrunk.",
+        "current": "La période n'est pas terminée : le montant peut encore évoluer.",
+        "noSales": "Aucune vente : déclarez tout de même un chiffre d'affaires de 0 €.",
+        "withdraw": "Annuler la déclaration",
+        "withdrawConfirm": "Annuler",
+        "withdrawMessage": "La période repassera « à déclarer » dans MossyTrunk. Cela ne change rien sur urssaf.fr.",
+        "declare": "Marquer comme déclarée ({count} commande) | Marquer comme déclarée ({count} commandes)"
+    },
+    "export": {
+        "title": "Exporter les commandes",
+        "label": "Période à exporter",
+        "lastMonth": "Mois dernier",
+        "lastQuarter": "Trimestre dernier",
+        "thisYear": "Cette année",
+        "custom": "Période personnalisée",
+        "summary": "Toutes les commandes du {from} au {to}, une ligne par commande.",
+        "chooseDates": "Choisissez les dates de début et de fin.",
+        "download": "Télécharger le CSV"
+    }
+}

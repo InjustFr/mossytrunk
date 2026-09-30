@@ -1,10 +1,13 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { formatCents, formatRatio } from '../../composables/useMoney.js';
 
 defineProps({
     items: { type: Array, required: true },
     label: { type: String, required: true },
 });
+
+const { t } = useI18n();
 
 const keptShare = (item) => (item.turnover > 0 ? Math.max(0, Math.min(1, item.value / item.turnover)) * 100 : 0);
 const isLoss = (item) => item.value < 0;
@@ -13,9 +16,9 @@ const isLoss = (item) => item.value < 0;
 <template>
     <div class="result-bars">
         <p class="result-bars__legend" aria-hidden="true">
-            <span class="result-bars__key result-bars__key--kept">Résultat</span>
-            <span class="result-bars__key result-bars__key--costs">Coûts</span>
-            <span class="result-bars__key-note">sur le chiffre d'affaires de chaque événement</span>
+            <span class="result-bars__key result-bars__key--kept">{{ t('reporting.bars.result') }}</span>
+            <span class="result-bars__key result-bars__key--costs">{{ t('reporting.bars.costs') }}</span>
+            <span class="result-bars__key-note">{{ t('reporting.bars.note') }}</span>
         </p>
         <ul class="result-bars__list" :aria-label="label">
             <li v-for="item in items" :key="item.id" class="result-bars__row">
@@ -29,7 +32,7 @@ const isLoss = (item) => item.value < 0;
                 </span>
                 <span class="result-bars__figures">
                     <span :class="['result-bars__value', { 'result-bars__value--loss': isLoss(item) }]">{{ formatCents(item.value) }}</span>
-                    <span class="result-bars__ratio">{{ formatRatio(item.value, item.turnover) }} de {{ formatCents(item.turnover) }}</span>
+                    <span class="result-bars__ratio">{{ t('reporting.bars.ratio', { ratio: formatRatio(item.value, item.turnover), turnover: formatCents(item.turnover) }) }}</span>
                 </span>
             </li>
         </ul>

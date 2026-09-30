@@ -1,5 +1,6 @@
 <script setup>
 import { VisuallyHidden } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import { Pencil, Trash2 } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
@@ -11,16 +12,17 @@ defineProps({
     total: { type: Number, required: true },
 });
 const emit = defineEmits(['edit', 'remove']);
+const { t } = useI18n();
 </script>
 
 <template>
-    <EmptyState v-if="expenses.length === 0">Aucune dépense enregistrée.</EmptyState>
+    <EmptyState v-if="expenses.length === 0">{{ t('events.expenses.empty') }}</EmptyState>
     <DataTable v-else :items="expenses" class="expense-list">
         <template #head>
             <tr>
-                <th>Libellé</th>
-                <th class="data-table__cell--number">Montant</th>
-                <th class="data-table__cell--actions"><VisuallyHidden>Actions</VisuallyHidden></th>
+                <th>{{ t('events.expenses.label') }}</th>
+                <th class="data-table__cell--number">{{ t('events.expenses.amount') }}</th>
+                <th class="data-table__cell--actions"><VisuallyHidden>{{ t('events.expenses.actions') }}</VisuallyHidden></th>
             </tr>
         </template>
         <template #default="{ rows }">
@@ -28,14 +30,14 @@ const emit = defineEmits(['edit', 'remove']);
                 <td>{{ expense.label }}</td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
                 <td class="data-table__cell--actions">
-                    <IconButton :icon="Pencil" :label="`Modifier ${expense.label}`" @click="emit('edit', expense)" />
-                    <IconButton :icon="Trash2" :label="`Supprimer ${expense.label}`" variant="danger" @click="emit('remove', expense)" />
+                    <IconButton :icon="Pencil" :label="t('events.expenses.edit', { label: expense.label })" @click="emit('edit', expense)" />
+                    <IconButton :icon="Trash2" :label="t('events.expenses.remove', { label: expense.label })" variant="danger" @click="emit('remove', expense)" />
                 </td>
             </tr>
         </template>
         <template #foot>
             <tr>
-                <td>Total</td>
+                <td>{{ t('events.expenses.total') }}</td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="total" /></td>
                 <td />
             </tr>

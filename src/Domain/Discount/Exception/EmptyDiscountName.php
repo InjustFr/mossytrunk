@@ -8,6 +8,6 @@ final class EmptyDiscountName extends InvalidDiscountRule
 {
     public function __construct()
     {
-        parent::__construct('Le nom de la remise est obligatoire.');
+        parent::__construct('discount.empty_name');
     }
 }

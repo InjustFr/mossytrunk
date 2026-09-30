@@ -1,0 +1,61 @@
+{
+    "title": "Dashboard",
+    "year": "Year",
+    "month": "Month",
+    "welcome": {
+        "title": "No sales yet",
+        "text": "The dashboard fills up with the orders of your events: create an event, then enter its orders or import them from a connected service.",
+        "createEvent": "Create an event"
+    },
+    "checks": {
+        "withoutCost": "{count} product has never been bought: its cost counts as €0, so the result is overestimated. | {count} products have never been bought: their cost counts as €0, so the result is overestimated.",
+        "seeWithoutCost": "See products without a buying cost",
+        "outOfStock": "{count} product has negative stock. | {count} products have negative stock.",
+        "lowOnStock": "{count} product is below its low stock threshold. | {count} products are below their low stock threshold.",
+        "seeLowOnStock": "See products to restock"
+    },
+    "receipt": {
+        "title": "{year} result",
+        "turnover": "Turnover",
+        "costOfGoods": "Buying cost",
+        "expenses": "Expenses",
+        "urssafRate": "12.8%"
+    },
+    "summary": "{orders} across {events}",
+    "orderCount": "{count} order | {count} orders",
+    "eventCount": "{count} event | {count} events",
+    "byMonth": "Result by month",
+    "events": {
+        "title": "Markets & fairs of the year",
+        "label": "Result by event, from best to worst",
+        "empty": "No events in {year}."
+    },
+    "bestSellers": {
+        "title": "Best sellers",
+        "empty": "No sales in {year}.",
+        "products": "Products",
+        "types": "Types",
+        "noType": "No type",
+        "sold": "{count} sold | {count} sold"
+    },
+    "monthlyDetail": "Monthly breakdown",
+    "expensesNote": "An event's expenses count in the month it starts.",
+    "yearComparison": "Year comparison",
+    "chart": {
+        "label": "Result by month",
+        "slot": "{month}: result {result}",
+        "turnover": "Turnover {amount}",
+        "result": "Result {amount}"
+    },
+    "table": {
+        "orders": "Orders",
+        "turnover": "Turnover",
+        "costOfGoods": "Buying cost",
+        "expenses": "Expenses",
+        "urssaf": "URSSAF",
+        "result": "Result",
+        "total": "Total",
+        "hideEmpty": "Hide months without activity",
+        "showAll": "Show all {count} months"
+    }
+}

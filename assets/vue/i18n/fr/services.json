@@ -1,0 +1,21 @@
+{
+    "fields": {
+        "alphanumeric": "Lettres et chiffres uniquement."
+    },
+    "sumup": {
+        "summary": "Ventes et produits du terminal de paiement",
+        "fields": {
+            "merchantCode": "Code marchand",
+            "apiKey": "Clé API",
+            "apiKeyHint": "Tableau de bord SumUp › Clés API, commence par sup_sk_."
+        }
+    },
+    "etsy": {
+        "summary": "Commandes payées de votre boutique en ligne",
+        "instructions": "Créez une application sur etsy.com/developers et déclarez-y cette adresse de retour.",
+        "fields": {
+            "keystring": "Keystring",
+            "sharedSecret": "Shared secret"
+        }
+    }
+}

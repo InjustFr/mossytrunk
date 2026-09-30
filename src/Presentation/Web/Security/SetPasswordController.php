@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/password/set', name: 'password_set', methods: ['GET', 'POST'])]
 final class SetPasswordController extends AbstractController
@@ -24,6 +25,7 @@ final class SetPasswordController extends AbstractController
     public function __construct(
         private readonly VuePage $page,
         private readonly CsrfTokenManagerInterface $csrfTokens,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -36,27 +38,27 @@ final class SetPasswordController extends AbstractController
         try {
             $purpose = $check($token);
         } catch (DomainException $exception) {
-            return $this->form(null, $exception->getMessage());
+            return $this->form(null, $this->explain($exception));
         }
 
         if ($request->isMethod('POST')) {
             $password = (string) $request->request->get('password');
 
             if (!$this->isCsrfTokenValid(self::CSRF_ID, (string) $request->request->get('_csrf_token'))) {
-                return $this->form($purpose, null, 'Votre session a expiré, réessayez.');
+                return $this->form($purpose, null, $this->translator->trans('session.expired'));
             }
             if ($password !== (string) $request->request->get('confirmation')) {
-                return $this->form($purpose, null, 'Les deux mots de passe ne correspondent pas.');
+                return $this->form($purpose, null, $this->translator->trans('password.mismatch'));
             }
 
             try {
                 $setPassword($token, $password);
             } catch (DomainException $exception) {
-                return $this->form($purpose, null, $exception->getMessage());
+                return $this->form($purpose, null, $this->explain($exception));
             }
 
             $session->remove(self::SESSION_TOKEN);
-            $this->addFlash('notice', 'Mot de passe enregistré : vous pouvez vous connecter.');
+            $this->addFlash('notice', 'password.saved');
 
             return $this->redirectToRoute('login');
         }
@@ -64,9 +66,14 @@ final class SetPasswordController extends AbstractController
         return $this->form($purpose);
     }
 
+    private function explain(DomainException $exception): string
+    {
+        return $this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions');
+    }
+
     private function form(?PasswordTokenPurpose $purpose, ?string $linkError = null, ?string $error = null): Response
     {
-        return $this->page->render('SetPasswordPage', 'Mot de passe', [
+        return $this->page->render('SetPasswordPage', 'password', [
             'invitation' => PasswordTokenPurpose::Invitation === $purpose,
             'linkError' => $linkError,
             'error' => $error,

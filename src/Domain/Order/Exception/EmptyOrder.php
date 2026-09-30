@@ -8,6 +8,6 @@ final class EmptyOrder extends InvalidOrder
 {
     public function __construct()
     {
-        parent::__construct('Une commande doit contenir au moins un produit.');
+        parent::__construct('order.empty');
     }
 }

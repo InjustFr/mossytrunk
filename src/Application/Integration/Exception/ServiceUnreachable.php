@@ -8,6 +8,6 @@ final class ServiceUnreachable extends ServiceUnavailable
 {
     public function __construct(string $label, string $reason)
     {
-        parent::__construct(\sprintf('Impossible de joindre %s : %s', $label, $reason));
+        parent::__construct('integration.service_unreachable', ['service' => $label, 'reason' => $reason]);
     }
 }

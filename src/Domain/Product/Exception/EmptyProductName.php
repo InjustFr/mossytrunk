@@ -8,6 +8,6 @@ final class EmptyProductName extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Le nom du produit est obligatoire.');
+        parent::__construct('product.empty_name');
     }
 }

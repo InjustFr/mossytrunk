@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { ArrowLeft, Plus } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
@@ -13,7 +14,6 @@ import DesignForm from '../components/designs/DesignForm.vue';
 import { useDesign, useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
-import { plural } from '../composables/usePlural.js';
 import { useToast } from '../composables/useToast.js';
 
 const props = defineProps({
@@ -24,6 +24,7 @@ const { design, load, update, remove, workOn, decline, adjust, withdraw, tick, v
 const { board, load: loadBoard } = useDesignBoard();
 const { gabarits, load: loadGabarits } = useGabarits();
 const toast = useToast();
+const { t } = useI18n();
 const editOpen = ref(false);
 
 const validated = computed(() => design.value?.status === 'validated');
@@ -43,21 +44,21 @@ async function run(action, success) {
     }
 }
 
-const onDecline = (gabarit) => run(() => decline(gabarit.id), `Décliné en « ${gabarit.name} ».`);
+const onDecline = (gabarit) => run(() => decline(gabarit.id), t('designs.detail.declined', { name: gabarit.name }));
 const onTick = (declination, adaptation, done) => run(() => tick(declination.id, adaptation, done));
-const onWithdraw = (declination) => run(() => withdraw(declination.id), `Déclinaison « ${declination.gabarit.name} » retirée.`);
-const onBench = (current) => run(() => workOn(current), current ? 'Remis sur l\'établi.' : 'Mis de côté.');
+const onWithdraw = (declination) => run(() => withdraw(declination.id), t('designs.detail.withdrawn', { name: declination.gabarit.name }));
+const onBench = (current) => run(() => workOn(current), t(current ? 'designs.detail.backOnBench' : 'designs.detail.setAside'));
 
 async function submitAdjustment(declination, payload) {
     await adjust(declination.id, payload);
-    toast.success(`Déclinaison « ${declination.gabarit.name} » enregistrée.`);
+    toast.success(t('designs.detail.adjusted', { name: declination.gabarit.name }));
     await load();
 }
 
 async function onValidate() {
     try {
         const { productsCreated } = await validate();
-        toast.success(`Sorti de l'atelier : ${plural(productsCreated, 'produit créé', 'produits créés')}.`);
+        toast.success(t('designs.detail.validated', productsCreated));
         await load();
     } catch (error) {
         toast.error(error.message);
@@ -66,13 +67,13 @@ async function onValidate() {
 
 async function onRemove() {
     await remove();
-    toast.success(`Design « ${design.value.name} » supprimé.`);
+    toast.success(t('designs.detail.removed', { name: design.value.name }));
     visit('/designs');
 }
 
 async function onSaved({ name }) {
     editOpen.value = false;
-    toast.success(`Design « ${name} » mis à jour.`);
+    toast.success(t('designs.detail.updated', { name }));
     await load();
 }
 
@@ -80,18 +81,18 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
 </script>
 
 <template>
-    <AppLayout :title="design?.name ?? 'Design'">
-        <template #back><a class="back-link" href="/designs"><ArrowLeft size="0.875rem" aria-hidden="true" /> Créations</a></template>
+    <AppLayout :title="design?.name ?? t('designs.detail.titleFallback')">
+        <template #back><a class="back-link" href="/designs"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('designs.detail.back') }}</a></template>
         <template #actions>
             <template v-if="design">
-                <ConfirmButton v-if="!hasProducts" variant="ghost" label="Supprimer" :message="`Le design « ${design.name} » et ses déclinaisons seront supprimés.`" @confirm="onRemove" />
-                <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
+                <ConfirmButton v-if="!hasProducts" variant="ghost" :label="t('designs.detail.delete')" :message="t('designs.detail.deleteMessage', { name: design.name })" @confirm="onRemove" />
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('designs.detail.edit') }}</BaseButton>
                 <ConfirmButton
                     v-if="ready"
                     variant="primary"
-                    :label="hasProducts ? 'Créer les nouveaux produits' : 'Sortir de l\'atelier'"
-                    confirm-label="Créer les produits"
-                    :message="`Produits créés : ${productNames}. Ces déclinaisons ne pourront plus changer.`"
+                    :label="hasProducts ? t('designs.detail.createNewProducts') : t('designs.detail.validate')"
+                    :confirm-label="t('designs.detail.createProducts')"
+                    :message="t('designs.detail.validateMessage', { products: productNames })"
                     @confirm="onValidate"
                 />
             </template>
@@ -99,23 +100,23 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
 
         <div v-if="design" class="design-page">
             <div class="design-page__meta">
-                <span v-if="design.collection">Collection <strong>{{ design.collection.name }}</strong></span>
-                <span v-else>Sans collection</span>
-                <StatusBadge v-if="validated" tone="success">Sorti de l'atelier le {{ formatDateTime(design.validatedAt) }}</StatusBadge>
-                <label v-if="!validated" class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> Sur l'établi</label>
+                <span v-if="design.collection"><i18n-t keypath="designs.detail.collection" scope="global"><template #name><strong>{{ design.collection.name }}</strong></template></i18n-t></span>
+                <span v-else>{{ t('designs.noCollection') }}</span>
+                <StatusBadge v-if="validated" tone="success">{{ t('designs.validatedOn', { date: formatDateTime(design.validatedAt) }) }}</StatusBadge>
+                <label v-if="!validated" class="design-page__bench"><BaseSwitch :model-value="design.current" @update:model-value="onBench" /> {{ t('designs.onBench') }}</label>
             </div>
             <p v-if="design.notes" class="design-page__notes">{{ design.notes }}</p>
 
             <div class="design-page__decline">
-                <span class="design-page__decline-label">Décliner sur</span>
+                <span class="design-page__decline-label">{{ t('designs.detail.declineOn') }}</span>
                 <BaseButton v-for="gabarit in available" :key="gabarit.id" variant="secondary" @click="onDecline(gabarit)">
                     <Plus size="0.875rem" aria-hidden="true" /> {{ gabarit.name }}
                 </BaseButton>
-                <span v-if="gabarits.length === 0" class="design-page__hint">Créez d'abord des gabarits depuis la page Créations.</span>
-                <span v-else-if="available.length === 0" class="design-page__hint">Décliné sur tous les gabarits.</span>
+                <span v-if="gabarits.length === 0" class="design-page__hint">{{ t('designs.detail.noGabarits') }}</span>
+                <span v-else-if="available.length === 0" class="design-page__hint">{{ t('designs.detail.allDeclined') }}</span>
             </div>
 
-            <EmptyState v-if="design.declinations.length === 0">Choisissez les supports sur lesquels décliner ce design.</EmptyState>
+            <EmptyState v-if="design.declinations.length === 0">{{ t('designs.detail.noDeclinations') }}</EmptyState>
             <div v-else class="design-page__declinations">
                 <DeclinationCard
                     v-for="declination in design.declinations"
@@ -129,7 +130,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
             </div>
         </div>
 
-        <BaseModal v-model:open="editOpen" title="Modifier le design">
+        <BaseModal v-model:open="editOpen" :title="t('designs.detail.editTitle')">
             <DesignForm v-if="design" :design="design" :collections="board?.collections ?? []" :submit="update" @saved="onSaved" @cancel="editOpen = false" />
         </BaseModal>
     </AppLayout>

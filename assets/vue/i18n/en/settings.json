@@ -1,0 +1,101 @@
+{
+    "title": "Settings",
+    "workspace": "Workspace",
+    "services": {
+        "title": "Connected services",
+        "add": "Add a service",
+        "intro": "Your sales land in Orders when you run an import.",
+        "empty": "No services. Add {available} to import your sales.",
+        "or": " or ",
+        "someService": "The service",
+        "added": "{label} added.",
+        "updated": "{label} updated.",
+        "removed": "{label} removed.",
+        "disconnected": "{label} disconnected.",
+        "outcome": {
+            "connected": "{label} connected: import its orders from the Orders page.",
+            "refused": "The connection to {label} was canceled.",
+            "error": "{label} could not confirm the connection. Try again.",
+            "unavailable": "Complete the access details for {label} first."
+        }
+    },
+    "danger": {
+        "title": "Danger zone",
+        "warning": "These deletions are permanent: they cannot be undone.",
+        "confirm": "Delete everything",
+        "orders": {
+            "title": "All orders",
+            "detail": "Event turnover and margins start from zero again. Sold items go back into stock. A new import from your connected services can bring their sales back.",
+            "action": "Delete all orders",
+            "message": "All orders of the workspace will be permanently deleted.",
+            "deleted": "Orders deleted: {count}."
+        },
+        "products": {
+            "title": "All products",
+            "detail": "Past orders keep their lines. Product stock is deleted with them. Bundle discounts that only list products are deleted too.",
+            "action": "Delete all products",
+            "message": "The whole catalog and the bundle discounts that only list products will be permanently deleted.",
+            "deleted": "Products deleted: {count}."
+        }
+    },
+    "connected": {
+        "status": {
+            "incomplete": "Incomplete access",
+            "ready": "Ready",
+            "connected": "Connected",
+            "toConnect": "To connect"
+        },
+        "sales": "Sales",
+        "unknownItem": "Unknown item",
+        "itemsToLink": "{count} item to link | {count} items to link",
+        "connect": "Connect the shop",
+        "disconnect": "Disconnect",
+        "disconnectMessage": "MossyTrunk will no longer have access to {label}. Orders already imported are kept.",
+        "edit": "Edit {label}",
+        "remove": "Remove {label}",
+        "removeConfirm": "Remove",
+        "removeMessage": "Its access details are forgotten. Orders already imported are kept."
+    },
+    "form": {
+        "access": "Access",
+        "import": "Import",
+        "copyCallback": "Copy the callback address",
+        "callbackCopied": "Callback address copied.",
+        "secretKept": "Key saved ({hint}). Leave empty to keep it.",
+        "salesContext": "Where to attach sales",
+        "unknownItems": "Unknown item",
+        "cancel": "Cancel",
+        "save": "Save",
+        "add": "Add {label}"
+    },
+    "modal": {
+        "edit": "Edit {label}",
+        "add": "Add {label}",
+        "addService": "Add a service",
+        "otherService": "Other service"
+    },
+    "picker": {
+        "label": "Available services",
+        "alreadyAdded": "Already added"
+    },
+    "salesContexts": {
+        "atEvent": {
+            "label": "At the day's event",
+            "description": "Each sale joins the event that covers its date."
+        },
+        "online": {
+            "label": "Online",
+            "description": "Sales belong to no event."
+        }
+    },
+    "unknownItemPolicies": {
+        "createProduct": {
+            "label": "Create the product",
+            "description": "At the service's selling price, buying price to fill in."
+        },
+        "linkByHand": {
+            "label": "Ask me",
+            "description": "The order waits for you to link the item to a product."
+        }
+    }
+}

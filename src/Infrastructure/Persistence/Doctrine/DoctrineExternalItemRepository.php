@@ -27,7 +27,7 @@ final readonly class DoctrineExternalItemRepository implements ExternalItemRepos
     public function get(Ulid $id): ExternalItem
     {
         return $this->entityManager->getRepository(ExternalItem::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Article', (string) $id);
+            ?? throw new NotFound('external_item', (string) $id);
     }
 
     public function ofService(string $service): array

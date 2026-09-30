@@ -8,6 +8,7 @@
         <script type="application/json" id="app-session">{{ {
             email: app.user.userIdentifier,
             workspace: app.user.workspaceName,
+            language: app.user.language.value ?? null,
             logoutToken: csrf_token('logout'),
         }|json_encode(constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP'))|raw }}</script>
     {% endif %}

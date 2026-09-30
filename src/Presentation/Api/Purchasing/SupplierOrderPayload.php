@@ -14,18 +14,18 @@ final readonly class SupplierOrderPayload
      * @param list<PurchaseLinePayload> $lines
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Choisissez un fournisseur.')]
-        #[Assert\Ulid(message: 'Fournisseur invalide.')]
+        #[Assert\NotBlank(message: 'supplier.required')]
+        #[Assert\Ulid(message: 'supplier.invalid')]
         public string $supplierId = '',
-        #[Assert\NotBlank(message: 'La date est obligatoire.')]
-        #[Assert\Date(message: 'Date invalide.')]
+        #[Assert\NotBlank(message: 'date.required')]
+        #[Assert\Date(message: 'date.invalid')]
         public string $orderedOn = '',
-        #[Assert\Count(min: 1, minMessage: 'Ajoutez au moins un produit.')]
+        #[Assert\Count(min: 1, minMessage: 'products.atLeastOne')]
         #[Assert\Valid]
         public array $lines = [],
-        #[Assert\PositiveOrZero(message: 'La remise globale ne peut pas être négative.')]
+        #[Assert\PositiveOrZero(message: 'supplierOrder.discount.negative')]
         public int $discount = 0,
-        #[Assert\PositiveOrZero(message: 'Les frais de livraison ne peuvent pas être négatifs.')]
+        #[Assert\PositiveOrZero(message: 'supplierOrder.deliveryFees.negative')]
         public int $deliveryFees = 0,
     ) {
     }

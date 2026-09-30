@@ -8,6 +8,6 @@ final class EmptySecret extends InvalidAccount
 {
     public function __construct()
     {
-        parent::__construct('La clé ne peut pas être vide.');
+        parent::__construct('identity.empty_secret');
     }
 }

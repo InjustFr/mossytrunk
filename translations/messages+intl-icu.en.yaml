@@ -1,0 +1,47 @@
+problem:
+    business_rule: 'Business rule not respected'
+    product_required: 'Choose a product.'
+    unknown_periodicity: 'Unknown frequency.'
+    check_fields: 'Check the form fields.'
+    cross_origin:
+        title: 'Request refused'
+        detail: 'Request from another origin refused.'
+    signed_out:
+        title: 'Not signed in'
+        detail: 'Your session has expired, please sign in again.'
+session:
+    expired: 'Your session has expired, please try again.'
+login:
+    bad_credentials: 'Incorrect email or password.'
+    too_many_attempts: 'Too many attempts: try again in a few minutes.'
+    failed: 'Unable to sign in, please try again.'
+password:
+    mismatch: 'The two passwords do not match.'
+    saved: 'Password saved: you can now sign in.'
+order:
+    source:
+        manual: 'Manual entry'
+import:
+    free_amount: 'Free amount'
+    discount: '{service} discount'
+export:
+    orders:
+        filename: 'orders-{from}-to-{to}.csv'
+        column:
+            reference: 'Reference'
+            date: 'Date'
+            time: 'Time'
+            source: 'Source'
+            event: 'Event'
+            payment: 'Payment'
+            items: 'Items'
+            detail: 'Detail'
+            subtotal: 'Subtotal'
+            discounts: 'Discounts'
+            shipping: 'Shipping'
+            total: 'Total received'
+            cost: 'Buying cost'
+            margin: 'Margin'
+        payment:
+            card: 'Card'
+            cash: 'Cash'

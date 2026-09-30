@@ -1,0 +1,39 @@
+{
+    "summary": {
+        "ordersImported": "{count} commande importée | {count} commandes importées",
+        "ordersAlreadyImported": "{count} déjà importée | {count} déjà importées",
+        "productsCreated": "{count} produit créé | {count} produits créés",
+        "typesCreated": "{count} type créé | {count} types créés",
+        "ordersWaitingForItems": "{count} commande en attente d'association | {count} commandes en attente d'association",
+        "done": "Import {service} terminé : {parts}."
+    },
+    "problem": {
+        "ordersWithoutEvent": "{count} commande non importée : aucun marché ne couvre leur date. Créez le marché puis relancez l'import. | {count} commandes non importées : aucun marché ne couvre leur date. Créez le marché puis relancez l'import.",
+        "salesWithoutItems": "{count} paiement ignoré : aucun article. | {count} paiements ignorés : aucun article.",
+        "datesWithoutEvent": "Dates sans marché :",
+        "createEvent": "Créer un marché",
+        "close": "Fermer le message"
+    },
+    "notice": {
+        "count": "{count} article {service} à associer à vos produits. | {count} articles {service} à associer à vos produits.",
+        "text": "Leurs commandes sont en attente : associez chaque article une fois, puis relancez l'import.",
+        "link": "Associer les articles"
+    },
+    "linker": {
+        "intro": "{service} ne connaît pas vos produits : indiquez ce que vend chaque article, une fois pour toutes. Astuce : quand le SKU de l'article est la référence du produit (ex. {example}), l'association est automatique.",
+        "unlinked": "Articles à associer",
+        "allLinked": "Tous les articles vus sur {service} sont associés.",
+        "linked": "Articles déjà associés ({count})",
+        "reimport": "Relancer l'import {service}"
+    },
+    "row": {
+        "chooseProduct": "Choisissez le produit vendu par cet article.",
+        "chooseVariant": "Choisissez la variante de « {product} ».",
+        "productPlaceholder": "Produit MossyTrunk…",
+        "productFor": "Produit pour {item}",
+        "variantPlaceholder": "Variante",
+        "variantFor": "Variante pour {item}",
+        "edit": "Modifier",
+        "link": "Associer"
+    }
+}

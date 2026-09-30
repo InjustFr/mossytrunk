@@ -1,10 +1,13 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { Pencil } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import FormField from '../ui/FormField.vue';
 import IconButton from '../ui/IconButton.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     suppliers: { type: Array, required: true },
@@ -43,7 +46,7 @@ async function onSubmit() {
 
 <template>
     <div class="supplier-manager">
-        <EmptyState v-if="suppliers.length === 0">Aucun fournisseur pour l'instant.</EmptyState>
+        <EmptyState v-if="suppliers.length === 0">{{ t('purchasing.suppliers.empty') }}</EmptyState>
         <ul v-else class="supplier-manager__list">
             <li v-for="supplier in suppliers" :key="supplier.id" :class="['supplier-manager__item', { 'supplier-manager__item--editing': supplier.id === editingId }]">
                 <div>
@@ -51,25 +54,25 @@ async function onSubmit() {
                     <span v-if="supplier.contact" class="supplier-manager__contact">{{ supplier.contact }}</span>
                     <p v-if="supplier.notes" class="supplier-manager__notes">{{ supplier.notes }}</p>
                 </div>
-                <IconButton :icon="Pencil" :label="`Modifier ${supplier.name}`" @click="edit(supplier)" />
+                <IconButton :icon="Pencil" :label="t('purchasing.suppliers.edit', { name: supplier.name })" @click="edit(supplier)" />
             </li>
         </ul>
 
         <form class="supplier-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
-                <h3 class="supplier-manager__title">{{ editingId ? 'Modifier le fournisseur' : 'Ajouter un fournisseur' }}</h3>
-                <FormField label="Nom" :error="errors.name">
+                <h3 class="supplier-manager__title">{{ editingId ? t('purchasing.suppliers.editTitle') : t('purchasing.suppliers.addTitle') }}</h3>
+                <FormField :label="t('purchasing.suppliers.name')" :error="errors.name">
                     <input v-model="form.name" type="text">
                 </FormField>
-                <FormField label="Contact" :error="errors.contact" hint="E-mail, téléphone, site…">
+                <FormField :label="t('purchasing.suppliers.contact')" :error="errors.contact" :hint="t('purchasing.suppliers.contactHint')">
                     <input v-model="form.contact" type="text">
                 </FormField>
-                <FormField label="Notes" :error="errors.notes">
+                <FormField :label="t('purchasing.suppliers.notes')" :error="errors.notes">
                     <textarea v-model="form.notes" rows="2" />
                 </FormField>
                 <div class="supplier-manager__actions">
-                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">Annuler</BaseButton>
-                    <BaseButton type="submit" :loading="saving">{{ editingId ? 'Enregistrer' : 'Ajouter le fournisseur' }}</BaseButton>
+                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('purchasing.suppliers.cancel') }}</BaseButton>
+                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('purchasing.suppliers.save') : t('purchasing.suppliers.add') }}</BaseButton>
                 </div>
             </fieldset>
         </form>

@@ -1,5 +1,6 @@
 <script setup>
 import { toRef } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PackageSearch } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -11,6 +12,8 @@ import { useSort } from '../../composables/useSort.js';
 const props = defineProps({
     events: { type: Array, required: true },
 });
+
+const { t } = useI18n();
 
 const margin = (event) => (event.turnover ? event.result / event.turnover : null);
 const perDay = (event) => Math.round(event.result / event.days);
@@ -31,12 +34,12 @@ const columns = {
 const { sorted, sortBy, ariaSort } = useSort(toRef(props, 'events'), columns, 'startDate');
 
 const headers = [
-    { key: 'orderCount', label: 'Commandes' },
-    { key: 'turnover', label: 'CA' },
-    { key: 'expensesTotal', label: 'Dépenses' },
-    { key: 'result', label: 'Résultat' },
-    { key: 'margin', label: 'Marge' },
-    { key: 'perDay', label: 'Par jour' },
+    { key: 'orderCount', label: 'events.comparison.orders' },
+    { key: 'turnover', label: 'events.comparison.turnover' },
+    { key: 'expensesTotal', label: 'events.comparison.expenses' },
+    { key: 'result', label: 'events.comparison.result' },
+    { key: 'margin', label: 'events.comparison.margin' },
+    { key: 'perDay', label: 'events.comparison.perDay' },
 ];
 </script>
 
@@ -44,10 +47,10 @@ const headers = [
     <DataTable :items="sorted" class="event-comparison">
         <template #head>
             <tr>
-                <SortableHeader :sort="ariaSort('name')" @sort="sortBy('name')">Événement</SortableHeader>
-                <SortableHeader :sort="ariaSort('startDate')" @sort="sortBy('startDate')">Date</SortableHeader>
-                <SortableHeader :sort="ariaSort('days')" numeric @sort="sortBy('days')">Jours</SortableHeader>
-                <SortableHeader v-for="header in headers" :key="header.key" :sort="ariaSort(header.key)" numeric @sort="sortBy(header.key)">{{ header.label }}</SortableHeader>
+                <SortableHeader :sort="ariaSort('name')" @sort="sortBy('name')">{{ t('events.comparison.event') }}</SortableHeader>
+                <SortableHeader :sort="ariaSort('startDate')" @sort="sortBy('startDate')">{{ t('events.comparison.date') }}</SortableHeader>
+                <SortableHeader :sort="ariaSort('days')" numeric @sort="sortBy('days')">{{ t('events.comparison.days') }}</SortableHeader>
+                <SortableHeader v-for="header in headers" :key="header.key" :sort="ariaSort(header.key)" numeric @sort="sortBy(header.key)">{{ t(header.label) }}</SortableHeader>
             </tr>
         </template>
         <template #default="{ rows }">
@@ -59,7 +62,7 @@ const headers = [
                         class="event-comparison__missing"
                         size="0.875rem"
                         role="img"
-                        :aria-label="`Commande manquante probable (${event.unexplainedUnits})`"
+                        :aria-label="t('events.comparison.missingOrder', { units: event.unexplainedUnits })"
                     />
                     <span class="event-comparison__location">{{ event.location }}</span>
                 </td>

@@ -6,8 +6,8 @@ namespace App\Domain\Design\Exception;
 
 final class EmptyDesignName extends InvalidDesign
 {
-    public function __construct(string $what)
+    public function __construct(string $subject)
     {
-        parent::__construct(\sprintf('Le nom %s est obligatoire.', $what));
+        parent::__construct('design.empty_name', ['subject' => $subject]);
     }
 }

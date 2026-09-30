@@ -57,7 +57,7 @@ class SupplierOrderLine
             throw new NonPositiveOrderedQuantity();
         }
         if ($purchased->totalPrice->isNegative()) {
-            throw new NegativeAmount('Le prix payé');
+            throw new NegativeAmount('paid_price');
         }
 
         $this->id = new Ulid();

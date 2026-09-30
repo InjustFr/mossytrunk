@@ -1,7 +1,10 @@
 <script setup>
 import { X } from '@lucide/vue';
 import { ToastClose, ToastDescription, ToastProvider, ToastRoot, ToastViewport } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import { useToast } from '../../composables/useToast.js';
+
+const { t } = useI18n();
 
 const { toasts, dismiss } = useToast();
 
@@ -13,7 +16,7 @@ function onOpenChange(id, open) {
 </script>
 
 <template>
-    <ToastProvider label="Notification" swipe-direction="right">
+    <ToastProvider :label="t('ui.toast.label')" swipe-direction="right">
         <ToastRoot
             v-for="toast in toasts"
             :key="toast.id"
@@ -24,7 +27,7 @@ function onOpenChange(id, open) {
             @update:open="onOpenChange(toast.id, $event)"
         >
             <ToastDescription class="toast__message">{{ toast.message }}</ToastDescription>
-            <ToastClose class="toast__close" aria-label="Fermer"><X size="1rem" aria-hidden="true" /></ToastClose>
+            <ToastClose class="toast__close" :aria-label="t('ui.close')"><X size="1rem" aria-hidden="true" /></ToastClose>
         </ToastRoot>
         <ToastViewport class="toast-host" />
     </ToastProvider>

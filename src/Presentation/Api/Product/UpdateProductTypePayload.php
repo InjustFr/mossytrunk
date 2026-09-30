@@ -9,13 +9,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class UpdateProductTypePayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom du type est obligatoire.')]
+        #[Assert\NotBlank(message: 'productType.name.required')]
         #[Assert\Length(max: 100)]
         public string $name = '',
-        #[Assert\NotBlank(message: 'Choisissez une couleur.')]
-        #[Assert\Regex(pattern: '/^#[0-9a-fA-F]{6}$/', message: 'Choisissez une couleur.')]
+        #[Assert\NotBlank(message: 'productType.color.required')]
+        #[Assert\Regex(pattern: '/^#[0-9a-fA-F]{6}$/', message: 'productType.color.required')]
         public string $color = '',
-        #[Assert\Regex(pattern: '/^\s*[A-Za-z0-9]{1,8}\s*$/', message: 'Le code fait 1 à 8 lettres ou chiffres.')]
+        #[Assert\Regex(pattern: '/^\s*[A-Za-z0-9]{1,8}\s*$/', message: 'productType.code.invalid')]
         public ?string $code = null,
     ) {
     }

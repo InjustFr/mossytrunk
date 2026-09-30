@@ -8,6 +8,6 @@ final class NoDiscountCondition extends InvalidDiscountRule
 {
     public function __construct()
     {
-        parent::__construct('Ajoutez au moins une condition à la remise.');
+        parent::__construct('discount.no_condition');
     }
 }

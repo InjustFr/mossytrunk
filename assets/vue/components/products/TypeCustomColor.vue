@@ -16,12 +16,14 @@ import {
     PopoverRoot,
     PopoverTrigger,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 
 const props = defineProps({
     initial: { type: String, required: true },
 });
 const emit = defineEmits(['pick']);
+const { t } = useI18n();
 
 const open = ref(false);
 const draft = ref(props.initial);
@@ -38,29 +40,29 @@ function add() {
 
 <template>
     <PopoverRoot v-model:open="open" @update:open="onOpen">
-        <PopoverTrigger class="type-custom-color__trigger" aria-label="Couleur personnalisée" title="Couleur personnalisée">
+        <PopoverTrigger class="type-custom-color__trigger" :aria-label="t('products.colors.custom')" :title="t('products.colors.custom')">
             <Plus size="1rem" aria-hidden="true" />
         </PopoverTrigger>
         <PopoverPortal>
-            <PopoverContent class="type-custom-color" side="bottom" align="start" :side-offset="8" aria-label="Couleur personnalisée">
+            <PopoverContent class="type-custom-color" side="bottom" align="start" :side-offset="8" :aria-label="t('products.colors.custom')">
                 <ColorAreaRoot v-slot="{ style }" v-model="draft" color-space="hsb" x-channel="saturation" y-channel="brightness" class="type-custom-color__area-root">
                     <ColorAreaArea class="type-custom-color__area" :style="style">
-                        <ColorAreaThumb class="type-custom-color__thumb" aria-label="Saturation et luminosité" />
+                        <ColorAreaThumb class="type-custom-color__thumb" :aria-label="t('products.colors.area')" />
                     </ColorAreaArea>
                 </ColorAreaRoot>
                 <ColorSliderRoot v-model="draft" channel="hue" color-space="hsb" class="type-custom-color__slider">
                     <ColorSliderTrack class="type-custom-color__track" />
-                    <ColorSliderThumb class="type-custom-color__thumb" aria-label="Teinte" />
+                    <ColorSliderThumb class="type-custom-color__thumb" :aria-label="t('products.colors.hue')" />
                 </ColorSliderRoot>
                 <div class="type-custom-color__row">
                     <span class="type-custom-color__preview" :style="{ background: draft }" aria-hidden="true" />
                     <ColorFieldRoot v-model="draft" class="type-custom-color__field">
-                        <ColorFieldInput class="type-custom-color__input" aria-label="Code hexadécimal" />
+                        <ColorFieldInput class="type-custom-color__input" :aria-label="t('products.colors.hex')" />
                     </ColorFieldRoot>
                 </div>
                 <div class="type-custom-color__actions">
-                    <PopoverClose as-child><BaseButton variant="ghost">Annuler</BaseButton></PopoverClose>
-                    <BaseButton variant="secondary" @click="add">Ajouter</BaseButton>
+                    <PopoverClose as-child><BaseButton variant="ghost">{{ t('products.cancel') }}</BaseButton></PopoverClose>
+                    <BaseButton variant="secondary" @click="add">{{ t('products.colors.add') }}</BaseButton>
                 </div>
             </PopoverContent>
         </PopoverPortal>

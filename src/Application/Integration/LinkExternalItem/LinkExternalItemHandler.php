@@ -23,7 +23,7 @@ final readonly class LinkExternalItemHandler
     {
         $item = $this->items->get(Ulid::fromString($itemId));
         if ($item->service() !== $service) {
-            throw new NotFound('Article', $itemId);
+            throw new NotFound('external_item', $itemId);
         }
 
         $item->link($this->products->get(Ulid::fromString($productId))->sellable($variant));

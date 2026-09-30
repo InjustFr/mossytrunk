@@ -34,7 +34,7 @@ final readonly class DoctrineProductRepository implements ProductRepository
     {
         $product = $this->entityManager->find(Product::class, $id);
         if (null === $product || !$product->workspace()->id()->equals($this->workspace->current()->id())) {
-            throw new NotFound('Produit', (string) $id);
+            throw new NotFound('product', (string) $id);
         }
 
         return $product;

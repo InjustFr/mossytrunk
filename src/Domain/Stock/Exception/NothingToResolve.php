@@ -8,6 +8,6 @@ final class NothingToResolve extends InvalidStock
 {
     public function __construct()
     {
-        parent::__construct('Cet écart est déjà expliqué.');
+        parent::__construct('stock.nothing_to_resolve');
     }
 }

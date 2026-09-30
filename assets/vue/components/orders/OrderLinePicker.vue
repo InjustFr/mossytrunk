@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
@@ -11,6 +12,7 @@ const props = defineProps({
     products: { type: Array, required: true },
 });
 const emit = defineEmits(['add']);
+const { t } = useI18n();
 
 const productId = ref('');
 const variant = ref('');
@@ -29,11 +31,11 @@ watch(productId, () => {
 
 function add() {
     if (!product.value) {
-        error.value = 'Choisissez un produit.';
+        error.value = t('orders.picker.chooseProduct');
         return;
     }
     if (needsVariant.value && !variant.value) {
-        error.value = `Choisissez une variante pour « ${product.value.displayName} ».`;
+        error.value = t('orders.picker.chooseVariant', { product: product.value.displayName });
         return;
     }
     emit('add', { productId: product.value.id, variant: needsVariant.value ? variant.value : null, quantity: Math.max(1, quantity.value ?? 1) });
@@ -45,18 +47,18 @@ function add() {
 
 <template>
     <div class="order-line-picker">
-        <FormField label="Produit" class="order-line-picker__product">
-            <BaseCombobox v-model="productId" :options="productOptions" placeholder="Rechercher un produit…" />
+        <FormField :label="t('orders.picker.product')" class="order-line-picker__product">
+            <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('orders.picker.search')" />
         </FormField>
         <Transition name="order-line-picker__slide">
-            <FormField v-if="needsVariant" label="Variante" class="order-line-picker__variant">
+            <FormField v-if="needsVariant" :label="t('orders.picker.variant')" class="order-line-picker__variant">
                 <BaseSelect v-model="variant" :options="variantOptions" />
             </FormField>
         </Transition>
-        <FormField label="Quantité" class="order-line-picker__quantity">
+        <FormField :label="t('orders.picker.quantity')" class="order-line-picker__quantity">
             <BaseNumberField v-model="quantity" :min="1" @keydown.enter.prevent="add" />
         </FormField>
-        <BaseButton variant="secondary" class="order-line-picker__add" @click="add">Ajouter</BaseButton>
+        <BaseButton variant="secondary" class="order-line-picker__add" @click="add">{{ t('orders.picker.add') }}</BaseButton>
         <p v-if="error" class="order-line-picker__error" role="alert">{{ error }}</p>
     </div>
 </template>

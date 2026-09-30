@@ -8,6 +8,6 @@ final class DiscountExpired extends InvalidDiscountRule
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('« %s » est expirée : modifiez ses dates pour la relancer.', $name));
+        parent::__construct('discount.expired', ['name' => $name]);
     }
 }

@@ -8,6 +8,6 @@ final class UnknownExpense extends InvalidEvent
 {
     public function __construct(string $expenseId)
     {
-        parent::__construct(\sprintf('Dépense introuvable (%s).', $expenseId));
+        parent::__construct('event.unknown_expense', ['id' => $expenseId]);
     }
 }

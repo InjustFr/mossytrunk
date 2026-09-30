@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Accounting\ExportOrders;
 
 use App\Application\Integration\Connectors;
+use App\Application\Translator;
 use App\Domain\Accounting\Exception\DeclarationPeriodEndsBeforeStart;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
@@ -15,11 +16,12 @@ use App\Domain\Shared\Money;
 
 final readonly class ExportOrdersHandler
 {
-    private const array HEADER = ['Référence', 'Date', 'Heure', 'Source', 'Événement', 'Paiement', 'Articles', 'Détail', 'Sous-total', 'Remises', 'Frais de port', 'Total encaissé', "Coût d'achat", 'Marge'];
+    private const array COLUMNS = ['reference', 'date', 'time', 'source', 'event', 'payment', 'items', 'detail', 'subtotal', 'discounts', 'shipping', 'total', 'cost', 'margin'];
 
     public function __construct(
         private OrderRepository $orders,
         private Connectors $connectors,
+        private Translator $translator,
     ) {
     }
 
@@ -36,7 +38,7 @@ final readonly class ExportOrdersHandler
         $orders = array_values(array_filter($this->orders->list(), static fn (Order $order): bool => $range->covers($order->placedAt())));
         usort($orders, static fn (Order $a, Order $b): int => $a->placedAt() <=> $b->placedAt());
 
-        $rows = [self::HEADER];
+        $rows = [array_map(fn (string $column): string => $this->translator->trans('export.orders.column.'.$column), self::COLUMNS)];
         foreach ($orders as $order) {
             $placedAt = $order->placedAt()->setTimezone($timezone);
             $rows[] = [
@@ -45,7 +47,7 @@ final readonly class ExportOrdersHandler
                 $placedAt->format('H:i'),
                 $this->connectors->labelOf($order->source()),
                 $order->event()?->name() ?? '',
-                self::payment($order->paymentMethod()),
+                $this->payment($order->paymentMethod()),
                 (string) $order->itemCount(),
                 implode(', ', array_map(static fn (OrderLine $line): string => \sprintf('%d × %s', $line->quantity(), $line->label()), $order->lines())),
                 self::amount($order->subtotal()),
@@ -58,7 +60,7 @@ final readonly class ExportOrdersHandler
         }
 
         return new OrdersCsv(
-            \sprintf('commandes-%s-au-%s.csv', $start->format('Y-m-d'), $end->format('Y-m-d')),
+            $this->translator->trans('export.orders.filename', ['from' => $start->format('Y-m-d'), 'to' => $end->format('Y-m-d')]),
             "\u{FEFF}".implode("\r\n", array_map(self::line(...), $rows))."\r\n",
             \count($orders),
         );
@@ -77,12 +79,8 @@ final readonly class ExportOrdersHandler
         return number_format($money->amount() / 100, 2, ',', '');
     }
 
-    private static function payment(?PaymentMethod $method): string
+    private function payment(?PaymentMethod $method): string
     {
-        return match ($method) {
-            PaymentMethod::Card => 'Carte',
-            PaymentMethod::Cash => 'Espèces',
-            null => '',
-        };
+        return null === $method ? '' : $this->translator->trans('export.orders.payment.'.$method->value);
     }
 }

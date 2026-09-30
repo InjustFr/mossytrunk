@@ -8,6 +8,6 @@ final class InvalidSecretName extends InvalidAccount
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('Nom de clé invalide « %s ».', $name));
+        parent::__construct('identity.invalid_secret_name', ['name' => $name]);
     }
 }

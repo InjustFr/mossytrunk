@@ -8,6 +8,6 @@ final class NegativeLowStockThreshold extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Le seuil de stock bas ne peut pas être négatif.');
+        parent::__construct('product.negative_low_stock_threshold');
     }
 }

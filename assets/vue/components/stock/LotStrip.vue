@@ -1,21 +1,23 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formatDate } from '../../composables/useDate.js';
 import { formatCents } from '../../composables/useMoney.js';
-import { LOT_ORIGINS } from '../../composables/useStock.js';
+import { lotOriginLabel } from '../../composables/useStock.js';
 
 const props = defineProps({
     lots: { type: Array, required: true },
 });
+const { t } = useI18n();
 
 const oldestFirst = computed(() => [...props.lots].reverse().filter((lot) => lot.remaining > 0));
 const total = computed(() => oldestFirst.value.reduce((sum, lot) => sum + lot.remaining, 0));
-const describe = (lot) => `${lot.remaining} × ${formatCents(lot.unitCost)} — ${LOT_ORIGINS[lot.origin]} du ${formatDate(lot.receivedAt)}`;
+const describe = (lot) => t('stock.lots.describe', { remaining: lot.remaining, cost: formatCents(lot.unitCost), origin: lotOriginLabel(lot.origin), date: formatDate(lot.receivedAt) });
 </script>
 
 <template>
     <div v-if="total > 0" class="lot-strip">
-        <ol class="lot-strip__bar" aria-label="Stock restant, du plus ancien au plus récent">
+        <ol class="lot-strip__bar" :aria-label="t('stock.lots.bar')">
             <li
                 v-for="(lot, index) in oldestFirst"
                 :key="lot.id"
@@ -27,7 +29,7 @@ const describe = (lot) => `${lot.remaining} × ${formatCents(lot.unitCost)} — 
                 <span class="lot-strip__cost">{{ formatCents(lot.unitCost) }}</span>
             </li>
         </ol>
-        <p class="lot-strip__legend"><span>Vendu en premier</span><span>Reçu en dernier</span></p>
+        <p class="lot-strip__legend"><span>{{ t('stock.lots.soldFirst') }}</span><span>{{ t('stock.lots.receivedLast') }}</span></p>
     </div>
 </template>
 

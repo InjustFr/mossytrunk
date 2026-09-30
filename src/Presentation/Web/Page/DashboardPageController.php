@@ -19,6 +19,6 @@ final readonly class DashboardPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('DashboardPage', 'Carnet de bord');
+        return $this->page->render('DashboardPage', 'dashboard');
     }
 }

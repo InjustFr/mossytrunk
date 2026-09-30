@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Plus, Trash2 } from '@lucide/vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
@@ -19,11 +20,12 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const ACTIONS = [
-    { value: 'fixedPrice', label: 'Prix fixe' },
-    { value: 'amountOff', label: 'Remise en €' },
-    { value: 'percentOff', label: 'Remise en %' },
+    { value: 'fixedPrice', label: 'discounts.form.fixedPrice' },
+    { value: 'amountOff', label: 'discounts.form.amountOff' },
+    { value: 'percentOff', label: 'discounts.form.percentOff' },
 ];
 
 const emptyCondition = () => ({ kind: 'type', id: '', quantity: 1 });
@@ -71,7 +73,7 @@ const pricing = computed(() => {
     };
 });
 
-const range = ({ min, max }) => (min === max ? formatCents(min) : `${formatCents(min)} à ${formatCents(max)}`);
+const range = ({ min, max }) => (min === max ? formatCents(min) : t('discounts.range', { min: formatCents(min), max: formatCents(max) }));
 
 function setKind(condition, kind) {
     if (kind && kind !== condition.kind) {
@@ -112,33 +114,33 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="discount-rule-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField label="Nom" :error="errors.name" hint="Affiché sur les commandes, ex. « 2 prints et 1 sticker pour 15 € »">
+            <FormField :label="t('discounts.form.name')" :error="errors.name" :hint="t('discounts.form.nameHint')">
                 <input v-model="form.name" type="text">
             </FormField>
 
-            <FormField as="group" label="Conditions" :error="errors.conditions" hint="Toutes les conditions doivent être réunies. Un produit compte avec toutes ses variantes.">
+            <FormField as="group" :label="t('discounts.form.conditions')" :error="errors.conditions" :hint="t('discounts.form.conditionsHint')">
                 <ol class="discount-rule-form__conditions">
                     <li v-for="(condition, index) in form.conditions" :key="index" class="discount-rule-form__condition" :data-test="`condition-${index}`">
-                        <BaseNumberField v-model="condition.quantity" :min="1" :label="`Quantité de la condition ${index + 1}`" />
+                        <BaseNumberField v-model="condition.quantity" :min="1" :label="t('discounts.form.conditionQuantity', { number: index + 1 })" />
                         <ToggleGroupRoot
                             :model-value="condition.kind"
                             type="single"
                             class="discount-rule-form__kinds"
-                            :aria-label="`Cible de la condition ${index + 1}`"
+                            :aria-label="t('discounts.form.conditionTarget', { number: index + 1 })"
                             @update:model-value="(kind) => setKind(condition, kind)"
                         >
-                            <ToggleGroupItem value="type" class="discount-rule-form__kind">Type</ToggleGroupItem>
-                            <ToggleGroupItem value="product" class="discount-rule-form__kind">Produit</ToggleGroupItem>
+                            <ToggleGroupItem value="type" class="discount-rule-form__kind">{{ t('discounts.form.type') }}</ToggleGroupItem>
+                            <ToggleGroupItem value="product" class="discount-rule-form__kind">{{ t('discounts.form.product') }}</ToggleGroupItem>
                         </ToggleGroupRoot>
                         <BaseCombobox
                             v-model="condition.id"
                             :options="optionsFor(condition)"
-                            :aria-label="condition.kind === 'type' ? `Type de la condition ${index + 1}` : `Produit de la condition ${index + 1}`"
-                            :placeholder="condition.kind === 'type' ? 'Choisir un type…' : 'Rechercher un produit…'"
+                            :aria-label="condition.kind === 'type' ? t('discounts.form.conditionType', { number: index + 1 }) : t('discounts.form.conditionProduct', { number: index + 1 })"
+                            :placeholder="condition.kind === 'type' ? t('discounts.form.chooseType') : t('discounts.form.searchProduct')"
                         />
                         <IconButton
                             :icon="Trash2"
-                            :label="`Retirer la condition ${index + 1}`"
+                            :label="t('discounts.form.removeCondition', { number: index + 1 })"
                             :disabled="form.conditions.length === 1"
                             @click="removeCondition(index)"
                         />
@@ -146,20 +148,20 @@ async function onSubmit() {
                     </li>
                 </ol>
                 <BaseButton variant="ghost" class="discount-rule-form__add" @click="form.conditions.push(emptyCondition())">
-                    <Plus size="1rem" aria-hidden="true" /> Ajouter une condition
+                    <Plus size="1rem" aria-hidden="true" /> {{ t('discounts.form.addCondition') }}
                 </BaseButton>
             </FormField>
 
-            <FormField as="group" label="Action" :error="errors['action.value'] ?? errors['action.kind']">
+            <FormField as="group" :label="t('discounts.form.action')" :error="errors['action.value'] ?? errors['action.kind']">
                 <div class="discount-rule-form__action">
                     <ToggleGroupRoot
                         :model-value="form.actionKind"
                         type="single"
                         class="discount-rule-form__kinds"
-                        aria-label="Type d'action"
+                        :aria-label="t('discounts.form.actionKind')"
                         @update:model-value="(kind) => kind && (form.actionKind = kind)"
                     >
-                        <ToggleGroupItem v-for="option in ACTIONS" :key="option.value" :value="option.value" class="discount-rule-form__kind">{{ option.label }}</ToggleGroupItem>
+                        <ToggleGroupItem v-for="option in ACTIONS" :key="option.value" :value="option.value" class="discount-rule-form__kind">{{ t(option.label) }}</ToggleGroupItem>
                     </ToggleGroupRoot>
                     <BaseNumberField
                         v-if="form.actionKind === 'percentOff'"
@@ -167,29 +169,31 @@ async function onSubmit() {
                         :min="0"
                         :max="100"
                         :step="0.5"
-                        label="Pourcentage de remise"
+                        :label="t('discounts.form.percent')"
                     />
-                    <BaseMoneyField v-else v-model="form.amount" :aria-label="form.actionKind === 'fixedPrice' ? 'Prix des articles' : 'Montant de la remise'" />
+                    <BaseMoneyField v-else v-model="form.amount" :aria-label="form.actionKind === 'fixedPrice' ? t('discounts.form.itemsPrice') : t('discounts.form.discountAmount')" />
                 </div>
             </FormField>
 
             <p v-if="pricing" class="discount-rule-form__hint" data-test="discount-rule-pricing">
-                Prix normal : <strong>{{ range(pricing.regular) }}</strong>
-                → prix client : <strong>{{ range(pricing.customer) }}</strong>
+                <i18n-t keypath="discounts.form.pricing" scope="global">
+                    <template #regular><strong>{{ range(pricing.regular) }}</strong></template>
+                    <template #customer><strong>{{ range(pricing.customer) }}</strong></template>
+                </i18n-t>
             </p>
 
             <div class="discount-rule-form__row">
-                <FormField as="group" label="Valable du" :error="errors.startsOn" hint="Vide : dès maintenant">
-                    <BaseDatePicker v-model="form.startsOn" aria-label="Début de validité" />
+                <FormField as="group" :label="t('discounts.form.startsOn')" :error="errors.startsOn" :hint="t('discounts.form.startsOnHint')">
+                    <BaseDatePicker v-model="form.startsOn" :aria-label="t('discounts.form.validFrom')" />
                 </FormField>
-                <FormField as="group" label="Au" :error="errors.endsOn" hint="Vide : sans fin">
-                    <BaseDatePicker v-model="form.endsOn" aria-label="Fin de validité" />
+                <FormField as="group" :label="t('discounts.form.endsOn')" :error="errors.endsOn" :hint="t('discounts.form.endsOnHint')">
+                    <BaseDatePicker v-model="form.endsOn" :aria-label="t('discounts.form.validUntil')" />
                 </FormField>
             </div>
 
             <div class="discount-rule-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer la remise' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('discounts.form.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('discounts.form.save') : t('discounts.form.create') }}</BaseButton>
             </div>
         </fieldset>
     </form>

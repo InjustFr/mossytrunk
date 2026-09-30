@@ -9,6 +9,7 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountStatus;
+use App\Domain\Discount\Exception\DuplicateConditionTarget;
 use App\Domain\Discount\Exception\InvalidDiscountRule;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
@@ -63,7 +64,7 @@ final class DiscountRuleTest extends TestCase
 
     public function testATargetAppearsInOneConditionOnly(): void
     {
-        $this->expectExceptionMessage('« Print » apparaît dans plusieurs conditions');
+        $this->expectExceptionObject(new DuplicateConditionTarget('Print'));
 
         $this->rule([new ConditionSpec(1, $this->print), new ConditionSpec(2, $this->print)]);
     }

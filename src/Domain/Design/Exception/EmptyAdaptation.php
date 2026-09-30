@@ -8,6 +8,6 @@ final class EmptyAdaptation extends InvalidDesign
 {
     public function __construct()
     {
-        parent::__construct('Une adaptation ne peut pas être vide.');
+        parent::__construct('design.empty_adjustment');
     }
 }

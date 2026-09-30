@@ -8,6 +8,6 @@ final class EmptyProductReference extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('La référence du produit est obligatoire.');
+        parent::__construct('product.empty_reference');
     }
 }

@@ -8,6 +8,6 @@ final class OnlyEligibleProduct extends InvalidDiscountRule
 {
     public function __construct(string $ruleName, string $productName)
     {
-        parent::__construct(\sprintf('La remise « %s » ne concerne que « %s » : modifiez ou supprimez-la avant de supprimer le produit.', $ruleName, $productName));
+        parent::__construct('discount.only_eligible_product', ['rule' => $ruleName, 'product' => $productName]);
     }
 }

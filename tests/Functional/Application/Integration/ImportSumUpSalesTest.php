@@ -24,6 +24,7 @@ use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\DiscountRules;
 use App\Tests\Support\ExternalSales;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 final class ImportSumUpSalesTest extends KernelTestCase
 {
@@ -32,6 +33,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
     protected function setUp(): void
     {
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('en');
         self::actAsMemberOf();
         ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'sumup', ['merchant_code' => 'MCODE', 'api_key' => 'sup_sk_test']);
     }
@@ -172,7 +174,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-RULE'));
         self::assertSame([['label' => '2 prints et 1 sticker pour 18 €', 'amount' => 1_200, 'ruleId' => $rule]], $discounts('TX-ROUNDED'));
         self::assertSame(1_800, self::getContainer()->get(GetOrderHandler::class)($orders['TX-ROUNDED'])->total);
-        self::assertSame([['label' => 'Remise SumUp', 'amount' => 1_250, 'ruleId' => null]], $discounts('TX-OTHER'));
+        self::assertSame([['label' => 'SumUp discount', 'amount' => 1_250, 'ruleId' => null]], $discounts('TX-OTHER'));
     }
 
     public function testCategoryBecomesTheProductType(): void
@@ -206,7 +208,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
         self::assertSame(2, $report->ordersImported);
         self::assertSame(1, $report->productsCreated);
-        self::assertSame(['Montant libre'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'name'));
+        self::assertSame(['Free amount'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'name'));
         self::assertEqualsCanonicalizing([700, 2_500], array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'total'));
     }
 

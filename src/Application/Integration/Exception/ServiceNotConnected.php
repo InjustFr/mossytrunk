@@ -8,6 +8,6 @@ final class ServiceNotConnected extends ServiceUnavailable
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('%s n\'est pas connecté : connectez-le depuis Paramètres › Services connectés.', $label));
+        parent::__construct('integration.service_not_connected', ['service' => $label]);
     }
 }

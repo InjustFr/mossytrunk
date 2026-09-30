@@ -8,6 +8,6 @@ final class DiscountExceedsSubtotal extends InvalidOrder
 {
     public function __construct()
     {
-        parent::__construct('Les remises ne peuvent pas dépasser le montant de la commande.');
+        parent::__construct('order.discount_exceeds_subtotal');
     }
 }

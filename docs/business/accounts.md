@@ -6,7 +6,7 @@ signs in; each user belongs to exactly **one** workspace, and several users can 
 | Entity | Fields |
 |---|---|
 | `Workspace` | `name` (unique) |
-| `User` | `email` (login, unique, lowercase), `passwordHash` (empty until chosen), `workspace` |
+| `User` | `email` (login, unique, lowercase), `passwordHash` (empty until chosen), `workspace`, `language` (`fr`/`en`, empty until chosen) |
 | `PasswordToken` | `selector`, SHA-256 of the `verifier`, `purpose` (invitation / reset), `expiresAt`, `usedAt` |
 
 Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: `config/packages/security.yaml`,
@@ -26,6 +26,7 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | A8 | Sign-in: 5 failed attempts per 15 minutes are throttled; "Se souvenir de moi" keeps the session 30 days; a password change signs out the other sessions | `security.yaml` (`login_throttling`, `remember_me`), `SecurityUser::__serialize()` | e2e `auth.spec.js` |
 | A10 | All business data is scoped to the user's workspace: lists only show it, an id from another workspace answers « introuvable » (404) | `WorkspaceContext` used by every Doctrine repository; aggregates are created with the current workspace (orders take their event's) | `WorkspaceIsolationTest`, `ProductApiTest` |
 | A11 | Workspace secrets (access keys and tokens of the connected services) are stored **encrypted** (libsodium secretbox, key `APP_ENCRYPTION_KEY`), one per name and workspace; the API only returns whether a key is set and its last 4 characters; saving an empty key keeps the current one | `WorkspaceSecret`, `SecretName`, `WorkspaceSecrets`, `SodiumSecretCipher`, `ConnectionCredentials` | `SodiumSecretCipherTest`, `SecretNameTest`, `ServiceConnectionUseCasesTest`, `ServicesApiTest` |
+| A12 | The app is in **French or English**. Language = the signed-in user's chosen language, else the `locale` cookie (choice made while signed out), else the browser's preferred language (`Accept-Language`) among fr/en, else English. The « Langue / Language » selector (sidebar, sign-in pages) saves the choice (cookie + user account, `PUT /api/me/language` `{language}`). Emails are sent in the recipient's language (else the current one). Dates and amounts are formatted for the language (fr-FR / en-GB), amounts stay in euros | `LocaleListener`, `User::speak()`, `ChooseLanguageHandler`, `SymfonyAccountMailer`, `assets/vue/i18n/` | `LanguageTest`, e2e `language.spec.js` |
 | A9 | Every page requires signing in; the API answers 401 to anonymous calls and 403 to cross-site writes | `security.yaml` `access_control`, `AuthenticationEntryPoint`, `SameOriginGuard` | `AuthenticationTest` |
 
 ## Pages

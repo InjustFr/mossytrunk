@@ -8,6 +8,6 @@ final class TypeCodeAlreadyUsed extends InvalidProduct
 {
     public function __construct(string $code)
     {
-        parent::__construct(\sprintf('Le code « %s » est déjà utilisé par un autre type.', $code));
+        parent::__construct('product.type_code_already_used', ['code' => $code]);
     }
 }

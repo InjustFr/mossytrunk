@@ -6,6 +6,7 @@ namespace App\Application\Integration;
 
 use App\Application\Integration\Exception\ServiceNotAuthorizing;
 use App\Application\Integration\Exception\ServiceNotRegistered;
+use App\Application\Translator;
 use App\Domain\Order\Order;
 
 final readonly class Connectors
@@ -16,7 +17,7 @@ final readonly class Connectors
     /**
      * @param iterable<SalesConnector> $connectors
      */
-    public function __construct(iterable $connectors)
+    public function __construct(iterable $connectors, private Translator $translator)
     {
         $byKey = [];
         foreach ($connectors as $connector) {
@@ -57,7 +58,7 @@ final readonly class Connectors
     public function labelOf(string $source): string
     {
         if (Order::MANUAL === $source) {
-            return 'Saisie';
+            return $this->translator->trans('order.source.manual');
         }
 
         return isset($this->connectors[$source]) ? $this->connectors[$source]->describe()->label : $source;

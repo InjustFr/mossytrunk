@@ -1,29 +1,35 @@
 import { ref } from 'vue';
 import { useApi } from './useApi.js';
+import { t } from '../i18n/index.js';
+import { perLocale } from '../i18n/locale.js';
 
-const monthFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-const shortMonthFormatter = new Intl.DateTimeFormat('fr-FR', { month: 'short', timeZone: 'UTC' });
+const monthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }));
+const shortMonthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }));
 
 export const PERIOD_STATUSES = {
-    declared: { label: 'Déclarée', tone: 'success' },
-    changed: { label: 'Montant modifié', tone: 'warning' },
-    late: { label: 'En retard', tone: 'danger' },
-    due: { label: 'À déclarer', tone: 'warning' },
-    current: { label: 'En cours', tone: 'neutral' },
-    upcoming: { label: 'À venir', tone: 'neutral' },
-    inactive: { label: 'Avant l\'activité', tone: 'neutral' },
+    declared: { tone: 'success' },
+    changed: { tone: 'warning' },
+    late: { tone: 'danger' },
+    due: { tone: 'warning' },
+    current: { tone: 'neutral' },
+    upcoming: { tone: 'neutral' },
+    inactive: { tone: 'neutral' },
 };
+
+export function periodStatusLabel(status) {
+    return t(`accounting.status.${status}`);
+}
 
 export function periodLabel(period) {
     if (period.periodicity === 'monthly') {
-        const label = monthFormatter.format(new Date(`${period.start}T00:00:00Z`));
+        const label = monthFormatter().format(new Date(`${period.start}T00:00:00Z`));
         return label.charAt(0).toUpperCase() + label.slice(1);
     }
-    return `${period.index === 1 ? '1er' : `${period.index}e`} trimestre ${period.year}`;
+    return t(period.index === 1 ? 'accounting.period.firstQuarter' : 'accounting.period.quarter', { index: period.index, year: period.year });
 }
 
 export function periodShortLabel(period) {
-    return period.periodicity === 'monthly' ? shortMonthFormatter.format(new Date(`${period.start}T00:00:00Z`)) : `T${period.index}`;
+    return period.periodicity === 'monthly' ? shortMonthFormatter().format(new Date(`${period.start}T00:00:00Z`)) : t('accounting.period.shortQuarter', { index: period.index });
 }
 
 export function useAccounting() {

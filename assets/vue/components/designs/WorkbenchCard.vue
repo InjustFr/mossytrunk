@@ -1,9 +1,12 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     design: { type: Object, required: true },
 });
+
+const { t } = useI18n();
 
 const progress = computed(() => (props.design.adaptationsTotal === 0 ? 1 : props.design.adaptationsDone / props.design.adaptationsTotal));
 const remaining = computed(() => props.design.adaptationsTotal - props.design.adaptationsDone);
@@ -17,15 +20,15 @@ const remaining = computed(() => props.design.adaptationsTotal - props.design.ad
             <span v-for="declination in design.declinations" :key="declination.id" :class="['workbench-card__gabarit', { 'workbench-card__gabarit--ready': declination.ready }]">
                 {{ declination.gabarit.name }}
             </span>
-            <span v-if="design.declinations.length === 0" class="workbench-card__empty">Pas encore décliné</span>
+            <span v-if="design.declinations.length === 0" class="workbench-card__empty">{{ t('designs.notDeclined') }}</span>
         </span>
-        <span class="workbench-card__rail" role="progressbar" :aria-valuenow="design.adaptationsDone" :aria-valuemax="design.adaptationsTotal" :aria-label="`Adaptations de ${design.name}`">
+        <span class="workbench-card__rail" role="progressbar" :aria-valuenow="design.adaptationsDone" :aria-valuemax="design.adaptationsTotal" :aria-label="t('designs.workbench.progress', { name: design.name })">
             <span class="workbench-card__fill" :style="{ width: `${progress * 100}%` }" />
         </span>
         <span class="workbench-card__status">
-            <template v-if="design.declinations.length === 0">Choisissez des gabarits</template>
-            <template v-else-if="remaining > 0">{{ remaining }} adaptation{{ remaining > 1 ? 's' : '' }} à faire</template>
-            <template v-else>Prêt à valider</template>
+            <template v-if="design.declinations.length === 0">{{ t('designs.workbench.chooseGabarits') }}</template>
+            <template v-else-if="remaining > 0">{{ t('designs.workbench.remaining', remaining) }}</template>
+            <template v-else>{{ t('designs.workbench.ready') }}</template>
         </span>
     </a>
 </template>

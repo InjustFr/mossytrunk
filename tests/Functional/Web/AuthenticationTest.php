@@ -61,7 +61,7 @@ final class AuthenticationTest extends WebTestCase
         $this->signIn($client, 'louis@example.com', 'wrong password');
         $client->followRedirect();
 
-        self::assertSame('Email ou mot de passe incorrect.', self::props($client)['error']);
+        self::assertSame('Incorrect email or password.', self::props($client)['error']);
     }
 
     public function testUsedLinkShowsAnError(): void
@@ -72,7 +72,7 @@ final class AuthenticationTest extends WebTestCase
         $client->followRedirect();
 
         self::assertResponseStatusCodeSame(400);
-        self::assertSame('Ce lien n\'est pas valide.', self::props($client)['linkError']);
+        self::assertSame('This link is not valid.', self::props($client)['linkError']);
     }
 
     public function testForgotPasswordNeverRevealsAccounts(): void

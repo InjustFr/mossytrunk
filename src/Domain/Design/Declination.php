@@ -91,10 +91,10 @@ class Declination
     {
         $productName = trim($productName);
         if ('' === $productName) {
-            throw new EmptyDesignName('du produit');
+            throw new EmptyDesignName('product');
         }
         if ($sellingPrice->isNegative()) {
-            throw new NegativeAmount('Le prix');
+            throw new NegativeAmount('price');
         }
 
         $this->productName = $productName;

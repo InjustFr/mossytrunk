@@ -14,7 +14,7 @@ final readonly class StockCheckPayload
      * @param list<CountedItemPayload> $items
      */
     public function __construct(
-        #[Assert\Count(min: 1, minMessage: 'Comptez au moins un article.')]
+        #[Assert\Count(min: 1, minMessage: 'stockCheck.items.atLeastOne')]
         #[Assert\Valid]
         public array $items = [],
     ) {

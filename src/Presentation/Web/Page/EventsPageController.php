@@ -19,6 +19,6 @@ final readonly class EventsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('EventsPage', 'Marchés & salons');
+        return $this->page->render('EventsPage', 'events');
     }
 }

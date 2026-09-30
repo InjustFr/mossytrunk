@@ -6,8 +6,8 @@ namespace App\Domain\Shared\Exception;
 
 final class NegativeAmount extends InvalidMoney
 {
-    public function __construct(string $what)
+    public function __construct(string $subject)
     {
-        parent::__construct(\sprintf('%s ne peut pas être négatif.', $what));
+        parent::__construct('shared.negative_amount', ['subject' => $subject]);
     }
 }

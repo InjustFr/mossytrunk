@@ -8,6 +8,6 @@ final class SoldWithoutVariant extends InvalidProduct
 {
     public function __construct(string $productName)
     {
-        parent::__construct(\sprintf('« %s » a déjà des ventes sans variante : déplacez-le d\'abord lui-même vers une variante.', $productName));
+        parent::__construct('product.sold_without_variant', ['name' => $productName]);
     }
 }

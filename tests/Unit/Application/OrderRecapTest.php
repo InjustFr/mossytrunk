@@ -36,7 +36,7 @@ final class OrderRecapTest extends TestCase
             $mousse->id()->toRfc4122() => $mousse,
         ]);
 
-        self::assertSame(['Print', 'Sticker', 'Sans type'], array_column($groups, 'type'));
+        self::assertSame(['Print', 'Sticker', null], array_column($groups, 'type'));
         self::assertSame(6, $groups[0]['quantity']);
         self::assertSame(9_000, $groups[0]['sales']);
         self::assertSame(['Print Forêt', 'Print Rivière'], array_column($groups[0]['products'], 'name'));

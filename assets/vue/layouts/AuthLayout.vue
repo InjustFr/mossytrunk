@@ -1,5 +1,7 @@
 <script setup>
 import { ConfigProvider } from 'reka-ui';
+import LanguageSelect from '../components/ui/LanguageSelect.vue';
+import { intlLocale } from '../i18n/locale.js';
 
 defineProps({
     title: { type: String, required: true },
@@ -7,7 +9,7 @@ defineProps({
 </script>
 
 <template>
-    <ConfigProvider locale="fr-FR">
+    <ConfigProvider :locale="intlLocale()">
         <main class="auth-layout">
             <div class="auth-layout__panel">
                 <p class="auth-layout__brand">mossytrunk</p>
@@ -16,6 +18,7 @@ defineProps({
                     <slot />
                 </section>
                 <p v-if="$slots.footer" class="auth-layout__footer"><slot name="footer" /></p>
+                <div class="auth-layout__language"><LanguageSelect /></div>
             </div>
         </main>
     </ConfigProvider>
@@ -51,6 +54,8 @@ defineProps({
 }
 
 .auth-layout__title { margin: 0; font-size: 1.5rem; }
+
+.auth-layout__language { display: flex; justify-content: center; margin-top: var(--space-4); }
 
 .auth-layout__footer { margin: var(--space-4) 0 0; text-align: center; font-size: 0.9rem; }
 </style>

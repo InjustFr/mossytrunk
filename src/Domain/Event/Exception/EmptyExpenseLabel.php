@@ -8,6 +8,6 @@ final class EmptyExpenseLabel extends InvalidEvent
 {
     public function __construct()
     {
-        parent::__construct('Le libellé de la dépense est obligatoire.');
+        parent::__construct('event.empty_expense_label');
     }
 }

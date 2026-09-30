@@ -9,11 +9,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsEventListener(event: KernelEvents::REQUEST, priority: 20)]
-final class SameOriginGuard
+final readonly class SameOriginGuard
 {
     private const array SAFE_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
+    public function __construct(private TranslatorInterface $translator)
+    {
+    }
 
     public function __invoke(RequestEvent $event): void
     {
@@ -34,7 +39,7 @@ final class SameOriginGuard
 
         if (!$sameOrigin) {
             $event->setResponse(new JsonResponse(
-                ['title' => 'Requête refusée', 'status' => Response::HTTP_FORBIDDEN, 'detail' => 'Requête d\'une autre origine refusée.'],
+                ['title' => $this->translator->trans('problem.cross_origin.title'), 'status' => Response::HTTP_FORBIDDEN, 'detail' => $this->translator->trans('problem.cross_origin.detail')],
                 Response::HTTP_FORBIDDEN,
                 ['Content-Type' => 'application/problem+json'],
             ));

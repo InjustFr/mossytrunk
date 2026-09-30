@@ -28,7 +28,7 @@ final readonly class DoctrineProductTypeRepository implements ProductTypeReposit
     public function get(Ulid $id): ProductType
     {
         return $this->entityManager->getRepository(ProductType::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Type de produit', (string) $id);
+            ?? throw new NotFound('product_type', (string) $id);
     }
 
     public function findByName(string $name): ?ProductType

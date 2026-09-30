@@ -1,6 +1,9 @@
 <script setup>
 import { TriangleAlert } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import ConfirmButton from '../ui/ConfirmButton.vue';
+
+const { t } = useI18n();
 
 const emit = defineEmits(['delete-orders', 'delete-products']);
 </script>
@@ -9,30 +12,30 @@ const emit = defineEmits(['delete-orders', 'delete-products']);
     <div class="delete-all-data">
         <p class="delete-all-data__warning">
             <TriangleAlert size="1rem" aria-hidden="true" />
-            Ces suppressions sont définitives : aucune annulation possible.
+            {{ t('settings.danger.warning') }}
         </p>
         <div class="delete-all-data__row">
             <div>
-                <h3 class="delete-all-data__title">Toutes les commandes</h3>
-                <p class="delete-all-data__detail">Le chiffre d'affaires et les marges des événements repartent de zéro. Les articles vendus reviennent en stock. Un nouvel import depuis vos services connectés pourra ramener leurs ventes.</p>
+                <h3 class="delete-all-data__title">{{ t('settings.danger.orders.title') }}</h3>
+                <p class="delete-all-data__detail">{{ t('settings.danger.orders.detail') }}</p>
             </div>
             <ConfirmButton
-                label="Supprimer toutes les commandes"
-                confirm-label="Tout supprimer"
-                message="Toutes les commandes de l'espace de travail seront supprimées définitivement."
+                :label="t('settings.danger.orders.action')"
+                :confirm-label="t('settings.danger.confirm')"
+                :message="t('settings.danger.orders.message')"
                 variant="danger"
                 @confirm="emit('delete-orders')"
             />
         </div>
         <div class="delete-all-data__row">
             <div>
-                <h3 class="delete-all-data__title">Tous les produits</h3>
-                <p class="delete-all-data__detail">Les commandes passées gardent leurs lignes. Le stock des produits est supprimé avec eux. Les remises par lot qui ne listent que des produits sont supprimées aussi.</p>
+                <h3 class="delete-all-data__title">{{ t('settings.danger.products.title') }}</h3>
+                <p class="delete-all-data__detail">{{ t('settings.danger.products.detail') }}</p>
             </div>
             <ConfirmButton
-                label="Supprimer tous les produits"
-                confirm-label="Tout supprimer"
-                message="Tout le catalogue et les remises par lot qui ne listent que des produits seront supprimés définitivement."
+                :label="t('settings.danger.products.action')"
+                :confirm-label="t('settings.danger.confirm')"
+                :message="t('settings.danger.products.message')"
                 variant="danger"
                 @confirm="emit('delete-products')"
             />

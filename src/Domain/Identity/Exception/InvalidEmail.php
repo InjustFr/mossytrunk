@@ -8,6 +8,6 @@ final class InvalidEmail extends InvalidAccount
 {
     public function __construct(string $email)
     {
-        parent::__construct(\sprintf('Adresse email invalide « %s ».', $email));
+        parent::__construct('identity.invalid_email', ['email' => $email]);
     }
 }

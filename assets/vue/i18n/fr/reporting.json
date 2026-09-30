@@ -1,0 +1,12 @@
+{
+    "bars": {
+        "result": "Résultat",
+        "costs": "Coûts",
+        "note": "sur le chiffre d'affaires de chaque événement",
+        "ratio": "{ratio} de {turnover}"
+    },
+    "receipt": {
+        "ratio": "{ratio} du chiffre d'affaires",
+        "result": "Résultat"
+    }
+}

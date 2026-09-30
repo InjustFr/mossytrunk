@@ -8,6 +8,6 @@ final class VariantMovedOntoItself extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Choisissez un autre produit que celui d\'origine.');
+        parent::__construct('product.variant_moved_onto_itself');
     }
 }

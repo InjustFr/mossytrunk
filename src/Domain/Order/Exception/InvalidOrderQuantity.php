@@ -8,6 +8,6 @@ final class InvalidOrderQuantity extends InvalidOrder
 {
     public function __construct()
     {
-        parent::__construct('La quantité doit être d\'au moins 1.');
+        parent::__construct('order.invalid_quantity');
     }
 }

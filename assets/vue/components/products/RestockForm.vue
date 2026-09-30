@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
@@ -12,6 +13,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ variant: props.product.variants[0] ?? '', quantity: 1, totalPaid: null });
 const errors = ref({});
@@ -47,28 +49,28 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="restock-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField v-if="product.variants.length" as="group" label="Variante" :error="errors.variant">
-                <BaseSelect v-model="form.variant" :options="variantOptions" aria-label="Variante" />
+            <FormField v-if="product.variants.length" as="group" :label="t('products.restock.variant')" :error="errors.variant">
+                <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.restock.variant')" />
             </FormField>
 
             <div class="restock-form__row">
-                <FormField as="group" label="Quantité reçue" :error="errors.quantity">
-                    <BaseNumberField v-model="form.quantity" :min="1" label="Quantité reçue" />
+                <FormField as="group" :label="t('products.restock.quantity')" :error="errors.quantity">
+                    <BaseNumberField v-model="form.quantity" :min="1" :label="t('products.restock.quantity')" />
                 </FormField>
-                <FormField label="Prix payé au total (€)" :error="errors.totalPaid">
+                <FormField :label="t('products.restock.totalPaid')" :error="errors.totalPaid">
                     <BaseMoneyField v-model="form.totalPaid" />
                 </FormField>
             </div>
 
             <p class="restock-form__unit">
-                Coût unitaire
+                {{ t('products.restock.unitCost') }}
                 <strong v-if="unitCost !== null"><MoneyAmount :cents="unitCost" /></strong>
                 <span v-else>—</span>
             </p>
 
             <div class="restock-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">Ajouter au stock</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t('products.restock.submit') }}</BaseButton>
             </div>
         </fieldset>
     </form>

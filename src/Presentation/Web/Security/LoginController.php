@@ -15,6 +15,7 @@ use Symfony\Component\Security\Core\Exception\TooManyLoginAttemptsAuthentication
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/login', name: 'login', methods: ['GET', 'POST'])]
 final class LoginController extends AbstractController
@@ -23,6 +24,7 @@ final class LoginController extends AbstractController
         private readonly VuePage $page,
         private readonly CsrfTokenManagerInterface $csrfTokens,
         private readonly Flashes $flashes,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -32,22 +34,31 @@ final class LoginController extends AbstractController
             return $this->redirectToRoute('dashboard');
         }
 
-        return $this->page->render('LoginPage', 'Connexion', [
+        return $this->page->render('LoginPage', 'login', [
             'lastEmail' => $authentication->getLastUsername(),
-            'error' => self::loginError($authentication->getLastAuthenticationError()),
+            'error' => $this->loginError($authentication->getLastAuthenticationError()),
             'csrfToken' => $this->csrfTokens->getToken('authenticate')->getValue(),
-            'notice' => $this->flashes->take('notice'),
+            'notice' => $this->notice(),
         ]);
     }
 
-    private static function loginError(?AuthenticationException $error): ?string
+    private function loginError(?AuthenticationException $error): ?string
     {
-        return match (true) {
+        $key = match (true) {
             null === $error => null,
-            $error instanceof BadCredentialsException, $error instanceof UserNotFoundException => 'Email ou mot de passe incorrect.',
-            $error instanceof TooManyLoginAttemptsAuthenticationException => 'Trop de tentatives : réessayez dans quelques minutes.',
-            $error instanceof InvalidCsrfTokenException => 'Votre session a expiré, réessayez.',
-            default => 'Connexion impossible, réessayez.',
+            $error instanceof BadCredentialsException, $error instanceof UserNotFoundException => 'login.bad_credentials',
+            $error instanceof TooManyLoginAttemptsAuthenticationException => 'login.too_many_attempts',
+            $error instanceof InvalidCsrfTokenException => 'session.expired',
+            default => 'login.failed',
         };
+
+        return null === $key ? null : $this->translator->trans($key);
+    }
+
+    private function notice(): ?string
+    {
+        $key = $this->flashes->take('notice');
+
+        return null === $key ? null : $this->translator->trans($key);
     }
 }

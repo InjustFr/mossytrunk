@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Security;
 
+use App\Domain\Identity\Language;
 use App\Domain\Identity\User;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -17,12 +18,13 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
         private readonly ?string $passwordHash,
         public readonly Ulid $workspaceId,
         public readonly string $workspaceName,
+        public readonly ?Language $language,
     ) {
     }
 
     public static function fromUser(User $user): self
     {
-        return new self($user->id(), $user->email(), $user->passwordHash(), $user->workspace()->id(), $user->workspace()->name());
+        return new self($user->id(), $user->email(), $user->passwordHash(), $user->workspace()->id(), $user->workspace()->name(), $user->language());
     }
 
     public function getUserIdentifier(): string
@@ -52,10 +54,11 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
             'password' => null === $this->passwordHash ? null : hash('crc32c', $this->passwordHash),
             'workspaceId' => (string) $this->workspaceId,
             'workspaceName' => $this->workspaceName,
+            'language' => $this->language?->value,
         ];
     }
 
-    /** @param array{id: string, email: string, password: ?string, workspaceId: string, workspaceName: string} $data */
+    /** @param array{id: string, email: string, password: ?string, workspaceId: string, workspaceName: string, language?: ?string} $data */
     public function __unserialize(array $data): void
     {
         $this->id = Ulid::fromString($data['id']);
@@ -63,5 +66,6 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
         $this->passwordHash = $data['password'];
         $this->workspaceId = Ulid::fromString($data['workspaceId']);
         $this->workspaceName = $data['workspaceName'];
+        $this->language = Language::tryFrom($data['language'] ?? '');
     }
 }

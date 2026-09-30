@@ -12,6 +12,7 @@ use App\Domain\Identity\Exception\InvalidAccount;
 use App\Domain\Identity\Exception\InvalidPasswordToken;
 use App\Domain\Identity\Exception\PasswordTokenExpired;
 use App\Domain\Identity\Exception\UnknownPasswordToken;
+use App\Domain\Identity\Language;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
 use App\Infrastructure\Security\SecurityUser;
@@ -20,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Component\Clock\Test\ClockSensitiveTrait;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 final class AccountUseCasesTest extends KernelTestCase
 {
@@ -38,6 +40,34 @@ final class AccountUseCasesTest extends KernelTestCase
         self::assertNotNull($email);
         self::assertEmailAddressContains($email, 'To', 'louis@example.com');
         self::assertEmailHtmlBodyContains($email, 'Atelier');
+    }
+
+    public function testInvitationIsWrittenInTheCurrentLanguage(): void
+    {
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('fr');
+
+        $this->createUser('louis@example.com', 'Atelier');
+
+        $email = self::getMailerMessage();
+        self::assertNotNull($email);
+        self::assertEmailHeaderSame($email, 'Subject', 'Bienvenue sur MossyTrunk');
+        self::assertEmailHtmlBodyContains($email, '<html lang="fr">');
+        self::assertEmailHtmlBodyContains($email, 'Choisir mon mot de passe');
+    }
+
+    public function testPasswordResetIsWrittenInTheUsersLanguage(): void
+    {
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('fr');
+        $this->createUser('louis@example.com', 'Atelier')->speak(Language::English);
+
+        self::getContainer()->get(RequestPasswordResetHandler::class)('louis@example.com');
+
+        $messages = self::getMailerMessages();
+        $email = end($messages);
+        self::assertInstanceOf(Email::class, $email);
+        self::assertEmailHeaderSame($email, 'Subject', 'Reset your password');
+        self::assertEmailHtmlBodyContains($email, '<html lang="en">');
+        self::assertMatchesRegularExpression('#until \d{2}/\d{2}/\d{4} at \d{2}:\d{2}\.#', (string) $email->getHtmlBody());
     }
 
     public function testUsersJoinAnExistingWorkspaceByName(): void

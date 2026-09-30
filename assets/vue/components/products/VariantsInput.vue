@@ -1,24 +1,26 @@
 <script setup>
 import { X } from '@lucide/vue';
 import { TagsInputInput, TagsInputItem, TagsInputItemDelete, TagsInputItemText, TagsInputRoot } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
-    inputLabel: { type: String, default: 'Nouvelle variante' },
-    placeholder: { type: String, default: 'Ajouter une variante puis Entrée' },
-    itemLabel: { type: String, default: 'la variante' },
+    inputLabel: { type: String, default: null },
+    placeholder: { type: String, default: null },
+    itemLabel: { type: String, default: null },
 });
 const variants = defineModel({ type: Array, required: true });
+const { t } = useI18n();
 </script>
 
 <template>
     <TagsInputRoot v-model="variants" add-on-blur add-on-paste class="variants-input">
         <TagsInputItem v-for="variant in variants" :key="variant" :value="variant" class="variants-input__chip">
             <TagsInputItemText />
-            <TagsInputItemDelete class="variants-input__remove" :aria-label="`Retirer ${itemLabel} ${variant}`">
+            <TagsInputItemDelete class="variants-input__remove" :aria-label="t('products.variantsInput.remove', { item: itemLabel ?? t('products.variantsInput.itemLabel'), variant })">
                 <X size="0.75rem" aria-hidden="true" />
             </TagsInputItemDelete>
         </TagsInputItem>
-        <TagsInputInput class="variants-input__field" :placeholder="placeholder" :aria-label="inputLabel" @keypress.enter.prevent />
+        <TagsInputInput class="variants-input__field" :placeholder="placeholder ?? t('products.variantsInput.placeholder')" :aria-label="inputLabel ?? t('products.variantsInput.inputLabel')" @keypress.enter.prevent />
     </TagsInputRoot>
 </template>
 

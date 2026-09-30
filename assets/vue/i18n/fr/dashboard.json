@@ -1,0 +1,61 @@
+{
+    "title": "Carnet de bord",
+    "year": "Année",
+    "month": "Mois",
+    "welcome": {
+        "title": "Pas encore de ventes",
+        "text": "Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis un service connecté.",
+        "createEvent": "Créer un événement"
+    },
+    "checks": {
+        "withoutCost": "{count} produit n'a jamais été acheté : leur coût compte pour 0 €, le résultat est donc surestimé. | {count} produits n'ont jamais été achetés : leur coût compte pour 0 €, le résultat est donc surestimé.",
+        "seeWithoutCost": "Voir les produits sans coût d'achat",
+        "outOfStock": "{count} produit a un stock négatif. | {count} produits ont un stock négatif.",
+        "lowOnStock": "{count} produit arrive sous leur seuil de stock bas. | {count} produits arrivent sous leur seuil de stock bas.",
+        "seeLowOnStock": "Voir les produits à réapprovisionner"
+    },
+    "receipt": {
+        "title": "Résultat {year}",
+        "turnover": "Chiffre d'affaires",
+        "costOfGoods": "Coût d'achat",
+        "expenses": "Dépenses",
+        "urssafRate": "12,8 %"
+    },
+    "summary": "{orders} sur {events}",
+    "orderCount": "{count} commande | {count} commandes",
+    "eventCount": "{count} événement | {count} événements",
+    "byMonth": "Résultat par mois",
+    "events": {
+        "title": "Marchés & salons de l'année",
+        "label": "Résultat par événement, du meilleur au moins bon",
+        "empty": "Aucun événement en {year}."
+    },
+    "bestSellers": {
+        "title": "Meilleures ventes",
+        "empty": "Aucune vente en {year}.",
+        "products": "Produits",
+        "types": "Types",
+        "noType": "Sans type",
+        "sold": "{count} vendu | {count} vendus"
+    },
+    "monthlyDetail": "Détail par mois",
+    "expensesNote": "Les dépenses d'un événement comptent dans le mois où il commence.",
+    "yearComparison": "Comparaison des années",
+    "chart": {
+        "label": "Résultat par mois",
+        "slot": "{month} : résultat {result}",
+        "turnover": "CA {amount}",
+        "result": "Résultat {amount}"
+    },
+    "table": {
+        "orders": "Commandes",
+        "turnover": "CA",
+        "costOfGoods": "Coût d'achat",
+        "expenses": "Dépenses",
+        "urssaf": "URSSAF",
+        "result": "Résultat",
+        "total": "Total",
+        "hideEmpty": "Masquer les mois sans activité",
+        "showAll": "Afficher les {count} mois"
+    }
+}

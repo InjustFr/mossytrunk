@@ -1,3 +1,7 @@
+import { t } from '../i18n/index.js';
+import { formatCents } from './useMoney.js';
+import { intlLocale } from '../i18n/locale.js';
+
 const matching = (products, condition) => products
     .filter((product) => (condition.kind === 'type' ? product.typeId === condition.id : product.id === condition.id))
     .map((product) => product.sellingPrice);
@@ -29,12 +33,12 @@ export function savingOn(regular, action) {
     return Math.round((regular * action.value) / 10000);
 }
 
-export function describeAction(action, formatCents) {
+export function describeAction(action) {
     if (action.kind === 'fixedPrice') {
-        return `pour ${formatCents(action.value)}`;
+        return t('discounts.action.fixedPrice', { price: formatCents(action.value) });
     }
     if (action.kind === 'amountOff') {
         return `−${formatCents(action.value).replace('−', '')}`;
     }
-    return `−${(action.value / 100).toLocaleString('fr-FR')} %`;
+    return t('discounts.action.percentOff', { percent: (action.value / 100).toLocaleString(intlLocale()) });
 }

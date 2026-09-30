@@ -32,7 +32,7 @@ final readonly class DoctrineDiscountRuleRepository implements DiscountRuleRepos
     public function get(Ulid $id): DiscountRule
     {
         return $this->entityManager->getRepository(DiscountRule::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Remise', (string) $id);
+            ?? throw new NotFound('discount', (string) $id);
     }
 
     public function all(): array

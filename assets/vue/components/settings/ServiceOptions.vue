@@ -1,5 +1,8 @@
 <script setup>
 import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineProps({
     label: { type: String, required: true },
@@ -14,8 +17,8 @@ const model = defineModel({ type: String, required: true });
         <RadioGroupItem v-for="option in options" :key="option.value" :value="option.value" class="service-options__item">
             <span class="service-options__radio"><RadioGroupIndicator class="service-options__dot" /></span>
             <span class="service-options__text">
-                <span class="service-options__name">{{ option.label }}</span>
-                <span class="service-options__description">{{ option.description }}</span>
+                <span class="service-options__name">{{ t(option.label) }}</span>
+                <span class="service-options__description">{{ t(option.description) }}</span>
             </span>
         </RadioGroupItem>
     </RadioGroupRoot>

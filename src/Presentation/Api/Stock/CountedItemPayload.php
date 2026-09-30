@@ -10,11 +10,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class CountedItemPayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Choisissez un produit.')]
-        #[Assert\Ulid(message: 'Produit invalide.')]
+        #[Assert\NotBlank(message: 'product.required')]
+        #[Assert\Ulid(message: 'product.invalid')]
         public string $productId = '',
         public ?string $variant = null,
-        #[Assert\PositiveOrZero(message: 'La quantité comptée ne peut pas être négative.')]
+        #[Assert\PositiveOrZero(message: 'stockCheck.counted.negative')]
         public int $counted = 0,
     ) {
     }

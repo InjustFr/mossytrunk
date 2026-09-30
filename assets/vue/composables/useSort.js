@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
+import { perLocale } from '../i18n/locale.js';
 
-const collator = new Intl.Collator('fr-FR', { numeric: true, sensitivity: 'base' });
+const collator = perLocale((locale) => new Intl.Collator(locale, { numeric: true, sensitivity: 'base' }));
 
 export function useSort(items, columns, initialKey, initialDirection = 'descending') {
     const key = ref(initialKey);
@@ -12,7 +13,7 @@ export function useSort(items, columns, initialKey, initialDirection = 'descendi
         return [...items.value].sort((a, b) => {
             const left = value(a);
             const right = value(b);
-            const order = typeof left === 'string' ? collator.compare(left, right) : (left ?? -Infinity) - (right ?? -Infinity);
+            const order = typeof left === 'string' ? collator().compare(left, right) : (left ?? -Infinity) - (right ?? -Infinity);
             return order * factor;
         });
     });

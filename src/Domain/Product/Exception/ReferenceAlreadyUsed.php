@@ -8,6 +8,6 @@ final class ReferenceAlreadyUsed extends InvalidProduct
 {
     public function __construct(string $reference)
     {
-        parent::__construct(\sprintf('La référence « %s » est déjà utilisée par un autre produit.', $reference));
+        parent::__construct('product.reference_already_used', ['reference' => $reference]);
     }
 }

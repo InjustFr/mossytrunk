@@ -1,11 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -30,11 +33,11 @@ watch(productId, () => {
 
 function add() {
     if (!product.value) {
-        error.value = 'Choisissez un produit.';
+        error.value = t('purchasing.picker.chooseProduct');
         return;
     }
     if (needsVariant.value && !variant.value) {
-        error.value = `Choisissez une variante pour « ${product.value.displayName} ».`;
+        error.value = t('purchasing.picker.chooseVariant', { product: product.value.displayName });
         return;
     }
     const chosen = needsVariant.value ? variant.value : null;
@@ -54,20 +57,20 @@ function add() {
 
 <template>
     <div class="purchase-line-picker">
-        <FormField label="Produit">
-            <BaseCombobox v-model="productId" :options="productOptions" placeholder="Rechercher un produit…" />
+        <FormField :label="t('purchasing.picker.product')">
+            <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('purchasing.picker.searchProduct')" />
         </FormField>
         <div class="purchase-line-picker__details">
-            <FormField v-if="needsVariant" as="group" label="Variante" class="purchase-line-picker__variant">
-                <BaseSelect v-model="variant" :options="variantOptions" aria-label="Variante" />
+            <FormField v-if="needsVariant" as="group" :label="t('purchasing.picker.variant')" class="purchase-line-picker__variant">
+                <BaseSelect v-model="variant" :options="variantOptions" :aria-label="t('purchasing.picker.variant')" />
             </FormField>
-            <FormField as="group" label="Quantité" class="purchase-line-picker__quantity">
-                <BaseNumberField v-model="quantity" :min="1" label="Quantité commandée" />
+            <FormField as="group" :label="t('purchasing.picker.quantity')" class="purchase-line-picker__quantity">
+                <BaseNumberField v-model="quantity" :min="1" :label="t('purchasing.picker.orderedQuantity')" />
             </FormField>
-            <FormField label="Prix total (€)" class="purchase-line-picker__price">
+            <FormField :label="t('purchasing.picker.totalPrice')" class="purchase-line-picker__price">
                 <BaseMoneyField v-model="totalPrice" />
             </FormField>
-            <BaseButton variant="secondary" class="purchase-line-picker__add" @click="add">Ajouter</BaseButton>
+            <BaseButton variant="secondary" class="purchase-line-picker__add" @click="add">{{ t('purchasing.picker.add') }}</BaseButton>
         </div>
         <p v-if="error" class="purchase-line-picker__error" role="alert">{{ error }}</p>
     </div>

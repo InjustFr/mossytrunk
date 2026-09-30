@@ -1,0 +1,49 @@
+{
+    "origin": {
+        "purchase": "Purchase",
+        "supplierOrder": "Supplier order",
+        "correction": "Stock check",
+        "return": "Order return"
+    },
+    "movement": {
+        "surplus": "Stock check (surplus)",
+        "sale": "Sale",
+        "loss": "Stock check (missing)"
+    },
+    "lots": {
+        "describe": "{remaining} × {cost} — {origin} of {date}",
+        "bar": "Remaining stock, oldest to newest",
+        "soldFirst": "Sold first",
+        "receivedLast": "Received last"
+    },
+    "check": {
+        "title": "Stock check",
+        "eventFallback": "Event",
+        "save": "Save stock check",
+        "intro": "Count what is left after the event. Stock is corrected; if items are missing, a forgotten order is flagged on the event. Lines left empty are not counted.",
+        "searchPlaceholder": "Search…",
+        "searchLabel": "Search an item",
+        "soldOnly": "Only items sold at the event",
+        "counted": "{count} item counted | {count} items counted",
+        "saved": "Stock check saved: {count} item counted. | Stock check saved: {count} items counted."
+    },
+    "count": {
+        "empty": "No items.",
+        "item": "Item",
+        "soldAtEvent": "Sold at the event",
+        "expected": "Expected stock",
+        "counted": "Counted",
+        "difference": "Difference",
+        "countedOf": "Counted quantity of {label}",
+        "ok": "OK"
+    },
+    "discrepancies": {
+        "title": "Probable missing order: {count} item (≈ {amount} in sales) | Probable missing order: {count} items (≈ {amount} in sales)",
+        "hint": "The stock check found fewer items than expected. Add the order forgotten during the event — stock will not be deducted twice — or dismiss the difference (breakage, loss, gift).",
+        "line": "{label}: {count} missing",
+        "checkedAt": "stock check of {date}",
+        "dismiss": "Dismiss the difference",
+        "dismissMessage": "The difference on “{label}” will no longer be flagged as a missing order.",
+        "dismissConfirm": "Dismiss"
+    }
+}

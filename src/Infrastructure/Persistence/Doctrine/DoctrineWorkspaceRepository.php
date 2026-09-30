@@ -23,7 +23,7 @@ final readonly class DoctrineWorkspaceRepository implements WorkspaceRepository
 
     public function get(Ulid $id): Workspace
     {
-        return $this->entityManager->find(Workspace::class, $id) ?? throw new NotFound('Espace de travail', (string) $id);
+        return $this->entityManager->find(Workspace::class, $id) ?? throw new NotFound('workspace', (string) $id);
     }
 
     public function findByName(string $name): ?Workspace

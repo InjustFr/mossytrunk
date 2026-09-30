@@ -11,13 +11,18 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Turns business rule violations into problem+json responses the UI can display as-is.
  */
 #[AsEventListener(event: KernelEvents::EXCEPTION)]
-final class DomainExceptionListener
+final readonly class DomainExceptionListener
 {
+    public function __construct(private TranslatorInterface $translator)
+    {
+    }
+
     public function __invoke(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
@@ -29,7 +34,11 @@ final class DomainExceptionListener
         $status = $exception instanceof NotFound ? Response::HTTP_NOT_FOUND : Response::HTTP_UNPROCESSABLE_ENTITY;
 
         $event->setResponse(new JsonResponse(
-            ['title' => 'Règle métier non respectée', 'status' => $status, 'detail' => $exception->getMessage()],
+            [
+                'title' => $this->translator->trans('problem.business_rule'),
+                'status' => $status,
+                'detail' => $this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions'),
+            ],
             $status,
             ['Content-Type' => 'application/problem+json'],
         ));

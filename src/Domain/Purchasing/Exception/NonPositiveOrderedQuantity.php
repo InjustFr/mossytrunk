@@ -8,6 +8,6 @@ final class NonPositiveOrderedQuantity extends InvalidPurchase
 {
     public function __construct()
     {
-        parent::__construct('La quantité commandée doit être d\'au moins 1.');
+        parent::__construct('purchasing.non_positive_ordered_quantity');
     }
 }

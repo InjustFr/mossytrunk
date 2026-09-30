@@ -10,12 +10,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class DiscountConditionPayload
 {
     public function __construct(
-        #[Assert\Choice(choices: [ConditionDefinition::PRODUCT, ConditionDefinition::TYPE], message: 'Type de condition invalide.')]
+        #[Assert\Choice(choices: [ConditionDefinition::PRODUCT, ConditionDefinition::TYPE], message: 'discount.condition.kind.invalid')]
         public string $kind = ConditionDefinition::PRODUCT,
-        #[Assert\NotBlank(message: 'Choisissez un produit ou un type.')]
-        #[Assert\Ulid(message: 'Produit ou type invalide.')]
+        #[Assert\NotBlank(message: 'discount.condition.target.required')]
+        #[Assert\Ulid(message: 'discount.condition.target.invalid')]
         public string $id = '',
-        #[Assert\Positive(message: 'La quantité doit être d\'au moins 1.')]
+        #[Assert\Positive(message: 'quantity.atLeastOne')]
         public int $quantity = 1,
     ) {
     }

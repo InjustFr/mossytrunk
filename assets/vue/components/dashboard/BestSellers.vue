@@ -1,7 +1,7 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import TypeMark from '../ui/TypeMark.vue';
 import { formatCents } from '../../composables/useMoney.js';
-import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -9,9 +9,11 @@ const props = defineProps({
     typeColors: { type: Map, required: true },
 });
 
+const { t } = useI18n();
+
 const groups = [
-    { key: 'products', title: 'Produits', rows: () => props.products.map((product) => ({ key: product.id, ...product, color: props.typeColors.get(product.typeName) })) },
-    { key: 'types', title: 'Types', rows: () => props.types.map((type) => ({ key: type.name ?? '', ...type, name: type.name ?? 'Sans type', color: props.typeColors.get(type.name) })) },
+    { key: 'products', title: 'dashboard.bestSellers.products', rows: () => props.products.map((product) => ({ key: product.id, ...product, color: props.typeColors.get(product.typeName) })) },
+    { key: 'types', title: 'dashboard.bestSellers.types', rows: () => props.types.map((type) => ({ key: type.name ?? '', ...type, name: type.name ?? t('dashboard.bestSellers.noType'), color: props.typeColors.get(type.name) })) },
 ];
 
 const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.sales))) * 100}%`;
@@ -20,11 +22,11 @@ const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.
 <template>
     <div class="best-sellers">
         <section v-for="group in groups" :key="group.key" :aria-labelledby="`best-sellers-${group.key}`">
-            <h3 :id="`best-sellers-${group.key}`" class="best-sellers__heading">{{ group.title }}</h3>
+            <h3 :id="`best-sellers-${group.key}`" class="best-sellers__heading">{{ t(group.title) }}</h3>
             <ol class="best-sellers__list">
                 <li v-for="row in group.rows()" :key="row.key" class="best-sellers__item">
                     <span class="best-sellers__name"><TypeMark :color="row.color" />{{ row.name }}</span>
-                    <span class="best-sellers__quantity">{{ plural(row.quantity, 'vendu', 'vendus') }}</span>
+                    <span class="best-sellers__quantity">{{ t('dashboard.bestSellers.sold', row.quantity) }}</span>
                     <span class="best-sellers__sales">{{ formatCents(row.sales) }}</span>
                     <span class="best-sellers__bar" :style="{ width: share(row.sales, group.rows()), background: row.color }" aria-hidden="true" />
                 </li>

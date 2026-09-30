@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
 import FormField from '../ui/FormField.vue';
@@ -9,6 +10,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const emptyForm = () => ({ name: '', location: '', startDate: '', endDate: '' });
 const form = reactive(emptyForm());
@@ -45,19 +47,19 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="event-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField label="Nom" :error="errors.name">
+            <FormField :label="t('events.form.name')" :error="errors.name">
                 <input v-model="form.name" type="text" required>
             </FormField>
-            <FormField label="Lieu" :error="errors.location">
+            <FormField :label="t('events.form.location')" :error="errors.location">
                 <input v-model="form.location" type="text" required>
             </FormField>
-            <FormField as="group" label="Dates" :error="errors.startDate ?? errors.endDate">
+            <FormField as="group" :label="t('events.form.dates')" :error="errors.startDate ?? errors.endDate">
                 <BaseDateRangePicker v-model:start="form.startDate" v-model:end="form.endDate" :invalid="Boolean(errors.startDate ?? errors.endDate)" />
             </FormField>
 
             <div class="event-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Créer l\'événement' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('events.form.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('events.form.save') : t('events.form.create') }}</BaseButton>
             </div>
         </fieldset>
     </form>

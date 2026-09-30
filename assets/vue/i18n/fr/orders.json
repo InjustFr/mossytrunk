@@ -1,0 +1,79 @@
+{
+    "shop": "Boutique {source}",
+    "page": {
+        "title": "Commandes",
+        "new": "Nouvelle commande",
+        "importFrom": "Importer depuis {service}",
+        "items": "Articles",
+        "serviceItems": "Articles {service}",
+        "placed": "Commande {reference} enregistrée.",
+        "itemLinked": "Article « {label} » associé."
+    },
+    "detail": {
+        "title": "Commande {reference}",
+        "titleFallback": "Commande",
+        "back": "Commandes",
+        "delete": "Supprimer la commande",
+        "confirmDelete": "Confirmer la suppression",
+        "importedFrom": "importée depuis {source}",
+        "items": "Articles",
+        "amount": "Montant",
+        "margin": "Marge"
+    },
+    "eventFilter": {
+        "label": "Événement",
+        "all": "Tous"
+    },
+    "draft": {
+        "quantityOf": "Quantité {line}",
+        "remove": "Supprimer {line}"
+    },
+    "form": {
+        "date": "Date",
+        "attachedTo": "Rattachée à {event}",
+        "noEvent": "Aucun événement à cette date.",
+        "createEvent": "Créer un événement",
+        "noLines": "Ajoutez au moins un produit.",
+        "submit": "Enregistrer la commande"
+    },
+    "picker": {
+        "product": "Produit",
+        "search": "Rechercher un produit…",
+        "variant": "Variante",
+        "quantity": "Quantité",
+        "add": "Ajouter",
+        "chooseProduct": "Choisissez un produit.",
+        "chooseVariant": "Choisissez une variante pour « {product} »."
+    },
+    "lines": {
+        "product": "Produit",
+        "quantity": "Qté",
+        "unitPrice": "Prix unitaire",
+        "total": "Total"
+    },
+    "list": {
+        "empty": "Aucune commande.",
+        "time": "Heure",
+        "items": "Articles",
+        "discounts": "Remises",
+        "total": "Total",
+        "payment": "Paiement",
+        "reference": "Référence",
+        "count": "{count} commande | {count} commandes"
+    },
+    "margin": {
+        "collected": "Encaissé",
+        "buyingCost": "Coût d'achat",
+        "gross": "Marge brute",
+        "note": "Avant cotisations URSSAF et dépenses de l'événement."
+    },
+    "totals": {
+        "subtotal": "Sous-total",
+        "shipping": "Frais de port",
+        "total": "Total"
+    },
+    "payment": {
+        "card": "Carte",
+        "cash": "Espèces"
+    }
+}

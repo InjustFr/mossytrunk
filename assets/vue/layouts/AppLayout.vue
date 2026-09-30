@@ -1,33 +1,38 @@
 <script setup>
 import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+import LanguageSelect from '../components/ui/LanguageSelect.vue';
 import ToastHost from '../components/ui/ToastHost.vue';
 import { useSession } from '../composables/useSession.js';
+import { intlLocale } from '../i18n/locale.js';
 
 defineProps({
     title: { type: String, required: true },
 });
 
+const { t } = useI18n();
+
 const groups = [
-    { label: null, links: [{ href: '/dashboard', label: 'Carnet de bord', icon: LayoutDashboard }] },
+    { label: null, links: [{ href: '/dashboard', label: 'layout.nav.dashboard', icon: LayoutDashboard }] },
     {
-        label: 'Ventes',
+        label: 'layout.nav.sales',
         links: [
-            { href: '/orders', label: 'Commandes', icon: Receipt },
-            { href: '/events', label: 'Marchés & salons', icon: CalendarDays },
-            { href: '/discounts', label: 'Remises', icon: Percent },
+            { href: '/orders', label: 'layout.nav.orders', icon: Receipt },
+            { href: '/events', label: 'layout.nav.events', icon: CalendarDays },
+            { href: '/discounts', label: 'layout.nav.discounts', icon: Percent },
         ],
     },
     {
-        label: 'Atelier',
+        label: 'layout.nav.workshop',
         links: [
-            { href: '/designs', label: 'Créations', icon: Palette },
-            { href: '/products', label: 'Produits', icon: Tag },
-            { href: '/supplier-orders', label: 'Fournisseurs', icon: Truck },
+            { href: '/designs', label: 'layout.nav.designs', icon: Palette },
+            { href: '/products', label: 'layout.nav.products', icon: Tag },
+            { href: '/supplier-orders', label: 'layout.nav.suppliers', icon: Truck },
         ],
     },
-    { label: 'Bureau', links: [{ href: '/accounting', label: 'Comptabilité', icon: Landmark }] },
-    { label: null, bottom: true, links: [{ href: '/settings', label: 'Paramètres', icon: Settings }] },
+    { label: 'layout.nav.office', links: [{ href: '/accounting', label: 'layout.nav.accounting', icon: Landmark }] },
+    { label: null, bottom: true, links: [{ href: '/settings', label: 'layout.nav.settings', icon: Settings }] },
 ];
 
 const session = useSession();
@@ -37,19 +42,19 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 </script>
 
 <template>
-    <ConfigProvider locale="fr-FR">
+    <ConfigProvider :locale="intlLocale()">
         <TooltipProvider :delay-duration="400">
             <div class="app-layout">
                 <aside class="app-layout__sidebar">
                     <a class="app-layout__brand" href="/">mossytrunk</a>
-                    <NavigationMenuRoot class="app-layout__menu" orientation="vertical" aria-label="Navigation principale">
+                    <NavigationMenuRoot class="app-layout__menu" orientation="vertical" :aria-label="t('layout.nav.label')">
                         <NavigationMenuList class="app-layout__nav">
                             <NavigationMenuItem
                                 v-for="(group, index) in groups"
                                 :key="group.label ?? index"
                                 :class="['app-layout__group', { 'app-layout__group--bottom': group.bottom }]"
                             >
-                                <span v-if="group.label" :id="`nav-group-${index}`" class="app-layout__group-label">{{ group.label }}</span>
+                                <span v-if="group.label" :id="`nav-group-${index}`" class="app-layout__group-label">{{ t(group.label) }}</span>
                                 <ul class="app-layout__group-links" :aria-labelledby="group.label ? `nav-group-${index}` : undefined">
                                     <li v-for="link in group.links" :key="link.href">
                                         <NavigationMenuLink
@@ -58,7 +63,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                                             :class="['app-layout__link', { 'app-layout__link--active': isActive(link.href) }]"
                                         >
                                             <component :is="link.icon" class="app-layout__icon" size="1.125rem" :stroke-width="1.75" aria-hidden="true" />
-                                            {{ link.label }}
+                                            {{ t(link.label) }}
                                         </NavigationMenuLink>
                                     </li>
                                 </ul>
@@ -72,9 +77,10 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                             <input type="hidden" name="_csrf_token" :value="session.logoutToken">
                             <button type="submit" class="app-layout__logout">
                                 <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
-                                Se déconnecter
+                                {{ t('layout.signOut') }}
                             </button>
                         </form>
+                        <LanguageSelect class="app-layout__language" />
                     </div>
                 </aside>
 
@@ -180,6 +186,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 }
 
 .app-layout__logout:hover { color: var(--color-ink); }
+.app-layout__language { margin-top: var(--space-2); }
 
 .app-layout__main {
     min-width: 0;

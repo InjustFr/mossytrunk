@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref, shallowRef, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -22,6 +23,7 @@ const { products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
 const services = useServices();
 const toast = useToast();
+const { t } = useI18n();
 const importers = shallowRef([]);
 const readyImporters = computed(() => importers.value.filter((importer) => isReady(importer.service)));
 const linking = shallowRef(null);
@@ -33,7 +35,7 @@ const formOpen = ref(false);
 const lastPlacedId = ref(null);
 
 async function onPlaced(order) {
-    toast.success(`Commande ${order.reference} enregistrée.`);
+    toast.success(t('orders.page.placed', { reference: order.reference }));
     lastPlacedId.value = order.id;
     await load();
 }
@@ -45,7 +47,7 @@ async function runImport(importer) {
 }
 
 async function onItemLinked(importer, item) {
-    toast.success(`Article « ${item.label} » associé.`);
+    toast.success(t('orders.page.itemLinked', { label: item.label }));
     await importer.loadItems();
 }
 
@@ -65,7 +67,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <AppLayout title="Commandes">
+    <AppLayout :title="t('orders.page.title')">
         <template #actions>
             <BaseButton
                 v-for="importer in readyImporters"
@@ -74,9 +76,9 @@ onMounted(async () => {
                 :loading="importer.importing.value"
                 @click="runImport(importer)"
             >
-                Importer depuis {{ importer.service.label }}
+                {{ t('orders.page.importFrom', { service: importer.service.label }) }}
             </BaseButton>
-            <BaseButton @click="formOpen = true">Nouvelle commande</BaseButton>
+            <BaseButton @click="formOpen = true">{{ t('orders.page.new') }}</BaseButton>
         </template>
 
         <template v-for="importer in importers" :key="importer.service.key">
@@ -99,7 +101,7 @@ onMounted(async () => {
             <OrderList :orders="orders" :highlight-id="lastPlacedId" />
         </BaseCard>
 
-        <BaseModal v-model:open="linkerOpen" :title="linking ? `Articles ${linking.service.label}` : 'Articles'">
+        <BaseModal v-model:open="linkerOpen" :title="linking ? t('orders.page.serviceItems', { service: linking.service.label }) : t('orders.page.items')">
             <ExternalItemLinker
                 v-if="linking"
                 :label="linking.service.label"
@@ -112,7 +114,7 @@ onMounted(async () => {
                 @reimport="reimport(linking)"
             />
         </BaseModal>
-        <BaseModal v-model:open="formOpen" title="Nouvelle commande" variant="drawer">
+        <BaseModal v-model:open="formOpen" :title="t('orders.page.new')" variant="drawer">
             <OrderForm :products="products" :submit="place" @placed="onPlaced" />
         </BaseModal>
     </AppLayout>

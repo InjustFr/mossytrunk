@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Download } from '@lucide/vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
@@ -10,14 +11,16 @@ const props = defineProps({
     urlFor: { type: Function, required: true },
 });
 
+const { t } = useI18n();
+
 const iso = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const today = new Date();
 const quarterStart = Math.floor(today.getMonth() / 3) * 3;
 const presets = {
-    lastMonth: { label: 'Mois dernier', from: iso(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: iso(new Date(today.getFullYear(), today.getMonth(), 0)) },
-    lastQuarter: { label: 'Trimestre dernier', from: iso(new Date(today.getFullYear(), quarterStart - 3, 1)), to: iso(new Date(today.getFullYear(), quarterStart, 0)) },
-    thisYear: { label: 'Cette année', from: `${today.getFullYear()}-01-01`, to: iso(today) },
-    custom: { label: 'Période personnalisée' },
+    lastMonth: { label: 'accounting.export.lastMonth', from: iso(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: iso(new Date(today.getFullYear(), today.getMonth(), 0)) },
+    lastQuarter: { label: 'accounting.export.lastQuarter', from: iso(new Date(today.getFullYear(), quarterStart - 3, 1)), to: iso(new Date(today.getFullYear(), quarterStart, 0)) },
+    thisYear: { label: 'accounting.export.thisYear', from: `${today.getFullYear()}-01-01`, to: iso(today) },
+    custom: { label: 'accounting.export.custom' },
 };
 
 const choice = ref('lastMonth');
@@ -30,19 +33,19 @@ const ready = computed(() => Boolean(range.value.from && range.value.to));
 
 <template>
     <div class="orders-export">
-        <ToggleGroupRoot :model-value="choice" type="single" class="orders-export__presets" aria-label="Période à exporter" @update:model-value="(value) => value && (choice = value)">
-            <ToggleGroupItem v-for="(preset, key) in presets" :key="key" :value="key" class="orders-export__preset">{{ preset.label }}</ToggleGroupItem>
+        <ToggleGroupRoot :model-value="choice" type="single" class="orders-export__presets" :aria-label="t('accounting.export.label')" @update:model-value="(value) => value && (choice = value)">
+            <ToggleGroupItem v-for="(preset, key) in presets" :key="key" :value="key" class="orders-export__preset">{{ t(preset.label) }}</ToggleGroupItem>
         </ToggleGroupRoot>
         <div v-if="choice === 'custom'" class="orders-export__custom">
-            <BaseDateRangePicker v-model:start="customFrom" v-model:end="customTo" aria-label="Période personnalisée" />
+            <BaseDateRangePicker v-model:start="customFrom" v-model:end="customTo" :aria-label="t('accounting.export.custom')" />
         </div>
         <div class="orders-export__footer">
             <p class="orders-export__summary">
-                <template v-if="ready">Toutes les commandes du {{ formatDate(range.from) }} au {{ formatDate(range.to) }}, une ligne par commande.</template>
-                <template v-else>Choisissez les dates de début et de fin.</template>
+                <template v-if="ready">{{ t('accounting.export.summary', { from: formatDate(range.from), to: formatDate(range.to) }) }}</template>
+                <template v-else>{{ t('accounting.export.chooseDates') }}</template>
             </p>
             <BaseButton v-if="ready" :href="props.urlFor(range.from, range.to)" variant="secondary" download data-turbo="false">
-                <Download size="1rem" aria-hidden="true" /> Télécharger le CSV
+                <Download size="1rem" aria-hidden="true" /> {{ t('accounting.export.download') }}
             </BaseButton>
         </div>
     </div>

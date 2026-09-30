@@ -8,6 +8,6 @@ final class NothingToValidate extends InvalidDesign
 {
     public function __construct(string $design)
     {
-        parent::__construct(\sprintf('Déclinez « %s » sur un nouveau gabarit avant de le valider.', $design));
+        parent::__construct('design.nothing_to_validate', ['name' => $design]);
     }
 }

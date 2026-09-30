@@ -19,6 +19,6 @@ final readonly class SettingsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('SettingsPage', 'Paramètres');
+        return $this->page->render('SettingsPage', 'settings');
     }
 }

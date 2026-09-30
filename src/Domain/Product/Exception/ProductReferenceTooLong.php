@@ -8,6 +8,6 @@ final class ProductReferenceTooLong extends InvalidProduct
 {
     public function __construct(int $maxLength)
     {
-        parent::__construct(\sprintf('La référence ne peut pas dépasser %d caractères.', $maxLength));
+        parent::__construct('product.reference_too_long', ['max' => $maxLength]);
     }
 }

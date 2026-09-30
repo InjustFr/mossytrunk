@@ -8,6 +8,6 @@ final class ReceivedQuantityMissing extends InvalidPurchase
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('Indiquez la quantité reçue pour « %s ».', $label));
+        parent::__construct('purchasing.received_quantity_missing', ['item' => $label]);
     }
 }

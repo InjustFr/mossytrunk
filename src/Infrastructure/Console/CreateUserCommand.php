@@ -12,11 +12,12 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Attribute\Option;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AsCommand(name: 'app:user:create', description: 'Creates a user and emails them a link to choose their password')]
 final readonly class CreateUserCommand
 {
-    public function __construct(private CreateUserHandler $createUser)
+    public function __construct(private CreateUserHandler $createUser, private TranslatorInterface $translator)
     {
     }
 
@@ -36,7 +37,7 @@ final readonly class CreateUserCommand
         try {
             $user = ($this->createUser)(new CreateUser($email, $workspace));
         } catch (DomainException $exception) {
-            $io->error($exception->getMessage());
+            $io->error($this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions'));
 
             return Command::FAILURE;
         }

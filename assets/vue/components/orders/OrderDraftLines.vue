@@ -1,5 +1,6 @@
 <script setup>
 import { X } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
@@ -8,6 +9,7 @@ const props = defineProps({
     products: { type: Array, required: true },
 });
 const emit = defineEmits(['quantity', 'remove']);
+const { t } = useI18n();
 
 const productOf = (line) => props.products.find((p) => p.id === line.productId);
 const label = (line) => {
@@ -24,11 +26,11 @@ const label = (line) => {
                 class="order-draft-lines__quantity"
                 :model-value="line.quantity"
                 :min="0"
-                :label="`Quantité ${label(line)}`"
+                :label="t('orders.draft.quantityOf', { line: label(line) })"
                 @update:model-value="emit('quantity', line.key, $event ?? 0)"
             />
             <MoneyAmount class="order-draft-lines__total" :cents="(productOf(line)?.sellingPrice ?? 0) * line.quantity" />
-            <button type="button" class="order-draft-lines__remove" :aria-label="`Supprimer ${label(line)}`" @click="emit('remove', line.key)"><X size="1rem" aria-hidden="true" /></button>
+            <button type="button" class="order-draft-lines__remove" :aria-label="t('orders.draft.remove', { line: label(line) })" @click="emit('remove', line.key)"><X size="1rem" aria-hidden="true" /></button>
         </li>
     </TransitionGroup>
 </template>

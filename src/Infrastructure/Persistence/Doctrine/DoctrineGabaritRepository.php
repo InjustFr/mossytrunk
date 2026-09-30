@@ -28,7 +28,7 @@ final readonly class DoctrineGabaritRepository implements GabaritRepository
     public function get(Ulid $id): Gabarit
     {
         return $this->entityManager->getRepository(Gabarit::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Gabarit', (string) $id);
+            ?? throw new NotFound('template', (string) $id);
     }
 
     public function findByName(string $name): ?Gabarit

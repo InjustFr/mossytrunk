@@ -28,7 +28,7 @@ final readonly class DoctrineSupplierRepository implements SupplierRepository
     public function get(Ulid $id): Supplier
     {
         return $this->entityManager->getRepository(Supplier::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Fournisseur', (string) $id);
+            ?? throw new NotFound('supplier', (string) $id);
     }
 
     public function findByName(string $name): ?Supplier

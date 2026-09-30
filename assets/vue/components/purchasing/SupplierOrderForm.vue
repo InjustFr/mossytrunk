@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import { X } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
@@ -11,6 +12,8 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 import PurchaseLinePicker from './PurchaseLinePicker.vue';
 import SupplierSelect from './SupplierSelect.vue';
 import { landedCosts } from '../../composables/usePurchasing.js';
+
+const { t } = useI18n();
 
 const props = defineProps({
     order: { type: Object, default: null },
@@ -83,22 +86,22 @@ async function onSubmit() {
             <p v-if="errors.form" class="supplier-order-form__error" role="alert">{{ errors.form }}</p>
 
             <div class="supplier-order-form__row">
-                <FormField as="group" label="Fournisseur" :error="errors.supplierId">
+                <FormField as="group" :label="t('purchasing.form.supplier')" :error="errors.supplierId">
                     <SupplierSelect v-model="form.supplierId" :suppliers="suppliers" :save="saveSupplier" />
                 </FormField>
-                <FormField as="group" label="Commandée le" :error="errors.orderedOn">
-                    <BaseDatePicker v-model="form.orderedOn" aria-label="Commandée le" />
+                <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
+                    <BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" />
                 </FormField>
             </div>
 
-            <section class="supplier-order-form__lines" aria-label="Produits commandés">
+            <section class="supplier-order-form__lines" :aria-label="t('purchasing.form.orderedProducts')">
                 <table v-if="form.lines.length" class="supplier-order-form__table">
                     <thead>
                         <tr>
-                            <th>Produit</th>
-                            <th>Quantité</th>
-                            <th>Prix total (€)</th>
-                            <th class="supplier-order-form__number">Coût unitaire</th>
+                            <th>{{ t('purchasing.form.product') }}</th>
+                            <th>{{ t('purchasing.form.quantity') }}</th>
+                            <th>{{ t('purchasing.form.totalPrice') }}</th>
+                            <th class="supplier-order-form__number">{{ t('purchasing.form.unitCost') }}</th>
                             <th />
                         </tr>
                     </thead>
@@ -110,15 +113,15 @@ async function onSubmit() {
                                     {{ errors[`lines[${index}].quantity`] ?? errors[`lines[${index}].totalPrice`] }}
                                 </span>
                             </td>
-                            <td class="supplier-order-form__quantity"><BaseNumberField v-model="line.quantity" :min="1" :label="`Quantité de ${line.label}`" /></td>
-                            <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="`Prix total de ${line.label}`" /></td>
+                            <td class="supplier-order-form__quantity"><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
+                            <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__number"><MoneyAmount :cents="unitCost(line, index)" /></td>
-                            <td><IconButton :icon="X" :label="`Retirer ${line.label}`" @click="form.lines.splice(index, 1)" /></td>
+                            <td><IconButton :icon="X" :label="t('purchasing.form.remove', { label: line.label })" @click="form.lines.splice(index, 1)" /></td>
                         </tr>
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2">Produits</td>
+                            <td colspan="2">{{ t('purchasing.form.products') }}</td>
                             <td><MoneyAmount :cents="subtotal" /></td>
                             <td colspan="2" />
                         </tr>
@@ -128,19 +131,19 @@ async function onSubmit() {
                 <PurchaseLinePicker :products="products" @add="addLine" />
             </section>
 
-            <section class="supplier-order-form__extras" aria-label="Remise et livraison">
-                <FormField label="Remise globale (€)" :error="errors.discount" hint="Répartie selon le prix de chaque ligne.">
+            <section class="supplier-order-form__extras" :aria-label="t('purchasing.form.extras')">
+                <FormField :label="t('purchasing.form.discount')" :error="errors.discount" :hint="t('purchasing.form.discountHint')">
                     <BaseMoneyField v-model="form.discount" />
                 </FormField>
-                <FormField label="Frais de livraison (€)" :error="errors.deliveryFees" hint="Répartis à parts égales entre les lignes.">
+                <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees" :hint="t('purchasing.form.deliveryFeesHint')">
                     <BaseMoneyField v-model="form.deliveryFees" />
                 </FormField>
-                <p class="supplier-order-form__total">Total payé <strong><MoneyAmount :cents="total" /></strong></p>
+                <p class="supplier-order-form__total">{{ t('purchasing.form.totalPaid') }} <strong><MoneyAmount :cents="total" /></strong></p>
             </section>
 
             <div class="supplier-order-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ order ? 'Enregistrer' : 'Passer la commande' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('purchasing.form.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ order ? t('purchasing.form.save') : t('purchasing.form.place') }}</BaseButton>
             </div>
         </fieldset>
     </form>

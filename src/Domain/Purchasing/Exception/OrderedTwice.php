@@ -8,6 +8,6 @@ final class OrderedTwice extends InvalidPurchase
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('« %s » figure deux fois dans la commande.', $label));
+        parent::__construct('purchasing.ordered_twice', ['item' => $label]);
     }
 }

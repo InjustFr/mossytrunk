@@ -8,6 +8,6 @@ final class EmptySupplierOrder extends InvalidPurchase
 {
     public function __construct()
     {
-        parent::__construct('Ajoutez au moins un produit à la commande.');
+        parent::__construct('purchasing.empty_supplier_order');
     }
 }

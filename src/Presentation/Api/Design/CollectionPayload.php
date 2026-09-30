@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class CollectionPayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom de la collection est obligatoire.')]
+        #[Assert\NotBlank(message: 'collection.name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
         public ?string $description = null,

@@ -1,14 +1,17 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Banknote, CreditCard } from '@lucide/vue';
 
 const props = defineProps({
     method: { type: String, default: null },
 });
 
+const { t } = useI18n();
+
 const shown = computed(() => ({
-    card: { icon: CreditCard, label: 'Carte' },
-    cash: { icon: Banknote, label: 'Espèces' },
+    card: { icon: CreditCard, label: t('orders.payment.card') },
+    cash: { icon: Banknote, label: t('orders.payment.cash') },
 })[props.method] ?? null);
 </script>
 

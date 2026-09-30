@@ -1,10 +1,13 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { Check } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     order: { type: Object, required: true },
@@ -52,7 +55,7 @@ async function validate() {
 
 <template>
     <div class="reception">
-        <ol class="reception__steps" aria-label="Lignes à contrôler">
+        <ol class="reception__steps" :aria-label="t('purchasing.reception.steps')">
             <li v-for="(line, index) in lines" :key="line.id">
                 <button
                     type="button"
@@ -79,66 +82,66 @@ async function validate() {
                     @click="step = lines.length"
                 >
                     <span class="reception__step-mark"><Check size="0.75rem" :stroke-width="3" aria-hidden="true" /></span>
-                    <span class="reception__step-label">Vérifier et valider</span>
+                    <span class="reception__step-label">{{ t('purchasing.reception.review') }}</span>
                 </button>
             </li>
         </ol>
 
-        <section v-if="current" class="reception__panel" :aria-label="`Ligne ${step + 1} sur ${lines.length}`">
-            <p class="reception__progress">Ligne {{ step + 1 }} sur {{ lines.length }}</p>
+        <section v-if="current" class="reception__panel" :aria-label="t('purchasing.reception.lineOf', { step: step + 1, total: lines.length })">
+            <p class="reception__progress">{{ t('purchasing.reception.lineOf', { step: step + 1, total: lines.length }) }}</p>
             <h3 class="reception__label">{{ current.label }}</h3>
 
             <dl class="reception__figures">
                 <div>
-                    <dt>Commandé</dt>
+                    <dt>{{ t('purchasing.reception.ordered') }}</dt>
                     <dd>{{ current.orderedQuantity }}</dd>
                 </div>
                 <div>
-                    <dt>Coût total</dt>
+                    <dt>{{ t('purchasing.reception.totalCost') }}</dt>
                     <dd>
                         <MoneyAmount :cents="current.landedCost" />
-                        <span v-if="current.landedCost !== current.totalPrice" class="reception__planned">dont remise et livraison</span>
+                        <span v-if="current.landedCost !== current.totalPrice" class="reception__planned">{{ t('purchasing.reception.includingShares') }}</span>
                     </dd>
                 </div>
                 <div>
-                    <dt>Coût unitaire</dt>
+                    <dt>{{ t('purchasing.reception.unitCost') }}</dt>
                     <dd>
                         <MoneyAmount :cents="realUnitCost(current) ?? current.plannedUnitCost" />
                         <span v-if="realUnitCost(current) !== null && realUnitCost(current) !== current.plannedUnitCost" class="reception__planned">
-                            prévu <MoneyAmount :cents="current.plannedUnitCost" />
+                            {{ t('purchasing.reception.planned') }} <MoneyAmount :cents="current.plannedUnitCost" />
                         </span>
                     </dd>
                 </div>
             </dl>
 
             <div class="reception__count">
-                <BaseButton variant="secondary" @click="conform">Tout est arrivé ({{ current.orderedQuantity }})</BaseButton>
-                <span class="reception__or">ou</span>
+                <BaseButton variant="secondary" @click="conform">{{ t('purchasing.reception.allArrived', { count: current.orderedQuantity }) }}</BaseButton>
+                <span class="reception__or">{{ t('purchasing.reception.or') }}</span>
                 <label class="reception__received">
-                    <span>Quantité reçue</span>
-                    <BaseNumberField :key="current.id" v-model="counts[current.id]" :min="0" label="Quantité reçue" @keydown.enter.prevent="next" />
+                    <span>{{ t('purchasing.reception.receivedQuantity') }}</span>
+                    <BaseNumberField :key="current.id" v-model="counts[current.id]" :min="0" :label="t('purchasing.reception.receivedQuantity')" @keydown.enter.prevent="next" />
                 </label>
-                <StatusBadge v-if="delta(current) > 0" tone="warning">{{ delta(current) }} en plus</StatusBadge>
-                <StatusBadge v-else-if="delta(current) < 0" tone="danger">{{ -delta(current) }} en moins</StatusBadge>
-                <StatusBadge v-else-if="delta(current) === 0" tone="success">Conforme</StatusBadge>
+                <StatusBadge v-if="delta(current) > 0" tone="warning">{{ t('purchasing.reception.more', { count: delta(current) }) }}</StatusBadge>
+                <StatusBadge v-else-if="delta(current) < 0" tone="danger">{{ t('purchasing.reception.less', { count: -delta(current) }) }}</StatusBadge>
+                <StatusBadge v-else-if="delta(current) === 0" tone="success">{{ t('purchasing.reception.conform') }}</StatusBadge>
             </div>
-            <p v-if="counted(current) && counts[current.id] === 0" class="reception__hint">Rien reçu : ce produit n'entrera pas en stock et son coût ne sera pas réparti.</p>
+            <p v-if="counted(current) && counts[current.id] === 0" class="reception__hint">{{ t('purchasing.reception.nothingHint') }}</p>
 
             <div class="reception__nav">
-                <BaseButton variant="ghost" @click="step === 0 ? emit('cancel') : step--">{{ step === 0 ? 'Annuler' : 'Précédent' }}</BaseButton>
-                <BaseButton :disabled="!counted(current)" @click="next">{{ step === lines.length - 1 ? 'Vérifier' : 'Suivant' }}</BaseButton>
+                <BaseButton variant="ghost" @click="step === 0 ? emit('cancel') : step--">{{ step === 0 ? t('purchasing.reception.cancel') : t('purchasing.reception.previous') }}</BaseButton>
+                <BaseButton :disabled="!counted(current)" @click="next">{{ step === lines.length - 1 ? t('purchasing.reception.check') : t('purchasing.reception.next') }}</BaseButton>
             </div>
         </section>
 
-        <section v-else class="reception__panel" aria-label="Vérifier et valider">
-            <h3 class="reception__label">Vérifier le déballage</h3>
+        <section v-else class="reception__panel" :aria-label="t('purchasing.reception.review')">
+            <h3 class="reception__label">{{ t('purchasing.reception.reviewTitle') }}</h3>
             <table class="reception__summary">
                 <thead>
                     <tr>
-                        <th>Produit</th>
-                        <th class="reception__number">Commandé</th>
-                        <th class="reception__number">Reçu</th>
-                        <th class="reception__number">Coût unitaire réel</th>
+                        <th>{{ t('purchasing.reception.product') }}</th>
+                        <th class="reception__number">{{ t('purchasing.reception.ordered') }}</th>
+                        <th class="reception__number">{{ t('purchasing.reception.received') }}</th>
+                        <th class="reception__number">{{ t('purchasing.reception.realUnitCost') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -152,16 +155,16 @@ async function validate() {
                         </td>
                         <td class="reception__number">
                             <MoneyAmount v-if="realUnitCost(line) !== null" :cents="realUnitCost(line)" />
-                            <span v-else class="reception__muted">Rien reçu</span>
+                            <span v-else class="reception__muted">{{ t('purchasing.reception.nothingReceived') }}</span>
                         </td>
                     </tr>
                 </tbody>
             </table>
-            <p class="reception__hint">Les quantités reçues entrent en réserve au coût réel. La commande ne pourra plus être modifiée.</p>
+            <p class="reception__hint">{{ t('purchasing.reception.reviewHint') }}</p>
             <p v-if="error" class="reception__error" role="alert">{{ error }}</p>
             <div class="reception__nav">
-                <BaseButton variant="ghost" @click="step--">Précédent</BaseButton>
-                <BaseButton :loading="saving" @click="validate">Valider le déballage</BaseButton>
+                <BaseButton variant="ghost" @click="step--">{{ t('purchasing.reception.previous') }}</BaseButton>
+                <BaseButton :loading="saving" @click="validate">{{ t('purchasing.reception.validate') }}</BaseButton>
             </div>
         </section>
     </div>

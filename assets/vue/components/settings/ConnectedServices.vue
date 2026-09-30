@@ -1,24 +1,29 @@
 <script setup>
 import { Pencil, Trash2 } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { SALES_CONTEXTS, UNKNOWN_ITEMS } from '../../composables/useServices.js';
-import { plural } from '../../composables/usePlural.js';
+
+const { t } = useI18n();
 
 defineProps({
     services: { type: Array, required: true },
 });
 const emit = defineEmits(['edit', 'remove', 'disconnect']);
 
-const labelOf = (options, value) => options.find((option) => option.value === value)?.label ?? value;
+const labelOf = (options, value) => {
+    const label = options.find((option) => option.value === value)?.label;
+    return label ? t(label) : value;
+};
 
 function status(service) {
     const connection = service.connection;
-    if (!connection.configured) return { tone: 'danger', label: 'Accès incomplets' };
-    if (!service.authorizes) return { tone: 'success', label: 'Prêt' };
-    return connection.authorized ? { tone: 'success', label: 'Connecté' } : { tone: 'warning', label: 'À connecter' };
+    if (!connection.configured) return { tone: 'danger', label: t('settings.connected.status.incomplete') };
+    if (!service.authorizes) return { tone: 'success', label: t('settings.connected.status.ready') };
+    return connection.authorized ? { tone: 'success', label: t('settings.connected.status.connected') } : { tone: 'warning', label: t('settings.connected.status.toConnect') };
 }
 </script>
 
@@ -34,16 +39,16 @@ function status(service) {
                 </p>
                 <dl class="connected-services__options">
                     <div>
-                        <dt>Ventes</dt>
+                        <dt>{{ t('settings.connected.sales') }}</dt>
                         <dd>{{ labelOf(SALES_CONTEXTS, service.connection.salesContext) }}</dd>
                     </div>
                     <div>
-                        <dt>Article inconnu</dt>
+                        <dt>{{ t('settings.connected.unknownItem') }}</dt>
                         <dd>{{ labelOf(UNKNOWN_ITEMS, service.connection.unknownItems) }}</dd>
                     </div>
                 </dl>
                 <p v-if="service.connection.itemsToLink" class="connected-services__waiting">
-                    <a href="/orders">{{ plural(service.connection.itemsToLink, 'article à associer', 'articles à associer') }}</a>
+                    <a href="/orders">{{ t('settings.connected.itemsToLink', service.connection.itemsToLink) }}</a>
                 </p>
             </div>
             <div class="connected-services__actions">
@@ -52,21 +57,21 @@ function status(service) {
                     :href="`/settings/${service.key}/connect`"
                     data-turbo="false"
                 >
-                    Connecter la boutique
+                    {{ t('settings.connected.connect') }}
                 </BaseButton>
                 <ConfirmButton
                     v-if="service.connection.authorized"
-                    label="Déconnecter"
-                    confirm-label="Déconnecter"
-                    :message="`MossyTrunk n'aura plus accès à ${service.label}. Les commandes déjà importées restent.`"
+                    :label="t('settings.connected.disconnect')"
+                    :confirm-label="t('settings.connected.disconnect')"
+                    :message="t('settings.connected.disconnectMessage', { label: service.label })"
                     @confirm="emit('disconnect', service)"
                 />
-                <IconButton :icon="Pencil" :label="`Modifier ${service.label}`" @click="emit('edit', service)" />
+                <IconButton :icon="Pencil" :label="t('settings.connected.edit', { label: service.label })" @click="emit('edit', service)" />
                 <ConfirmButton
                     :icon="Trash2"
-                    :label="`Retirer ${service.label}`"
-                    confirm-label="Retirer"
-                    message="Ses accès sont oubliés. Les commandes déjà importées restent."
+                    :label="t('settings.connected.remove', { label: service.label })"
+                    :confirm-label="t('settings.connected.removeConfirm')"
+                    :message="t('settings.connected.removeMessage')"
                     @confirm="emit('remove', service)"
                 />
             </div>

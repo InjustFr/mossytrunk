@@ -8,6 +8,6 @@ final class DuplicateConditionTarget extends InvalidDiscountRule
 {
     public function __construct(string $targetName)
     {
-        parent::__construct(\sprintf('« %s » apparaît dans plusieurs conditions : regroupez-les en une seule.', $targetName));
+        parent::__construct('discount.duplicate_condition_target', ['name' => $targetName]);
     }
 }

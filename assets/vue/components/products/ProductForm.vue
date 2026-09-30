@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, toRef, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
@@ -16,6 +17,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const emptyForm = () => ({ typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10 });
 const form = reactive(emptyForm());
@@ -86,41 +88,41 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField as="group" label="Type" :error="errors.typeId">
+            <FormField as="group" :label="t('products.form.type')" :error="errors.typeId">
                 <TypeSelect v-model="form.typeId" />
             </FormField>
 
-            <FormField label="Nom" :error="errors.name" :hint="displayName ? `Affiché « ${displayName} »` : 'Ex. « Forêt » pour un Print Forêt'">
+            <FormField :label="t('products.form.name')" :error="errors.name" :hint="displayName ? t('products.form.displayed', { name: displayName }) : t('products.form.nameExample')">
                 <input v-model="form.name" type="text" required>
             </FormField>
 
-            <FormField label="Référence" :error="errors.reference" :hint="isEditing ? 'Unique dans l\'atelier.' : 'Proposée d\'après le type, modifiable.'">
+            <FormField :label="t('products.form.reference')" :error="errors.reference" :hint="t(isEditing ? 'products.form.referenceUnique' : 'products.form.referenceSuggested')">
                 <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited()">
             </FormField>
 
             <div class="product-form__row">
-                <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
+                <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
                 <div class="product-form__cost">
-                    <span class="product-form__cost-label">Prix d'achat</span>
+                    <span class="product-form__cost-label">{{ t('products.form.buyingPrice') }}</span>
                     <strong v-if="isEditing && product.buyingPrice > 0"><MoneyAmount :cents="product.buyingPrice" /></strong>
-                    <span v-else class="product-form__cost-unknown">Pas encore acheté</span>
-                    <span class="product-form__cost-hint">Mis à jour par les réapprovisionnements et les commandes fournisseurs.</span>
+                    <span v-else class="product-form__cost-unknown">{{ t('products.form.notBoughtYet') }}</span>
+                    <span class="product-form__cost-hint">{{ t('products.form.buyingPriceHint') }}</span>
                 </div>
             </div>
 
-            <FormField as="group" label="Alerte stock bas" :error="errors.lowStockThreshold" hint="Le produit est signalé quand son stock (par variante) descend à ce seuil.">
-                <BaseNumberField v-model="form.lowStockThreshold" :min="0" label="Alerte stock bas" />
+            <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.form.lowStockThresholdHint')">
+                <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" />
             </FormField>
 
-            <FormField as="group" label="Variantes" :error="errors.variants" hint="Couleur, taille, design… Laisser vide pour un produit unique.">
+            <FormField as="group" :label="t('products.form.variants')" :error="errors.variants" :hint="t('products.form.variantsHint')">
                 <VariantsInput v-model="form.variants" />
             </FormField>
 
             <div class="product-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? 'Enregistrer' : 'Ajouter le produit' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t(isEditing ? 'products.save' : 'products.form.add') }}</BaseButton>
             </div>
         </fieldset>
     </form>

@@ -2,7 +2,7 @@ import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 import { useToast } from './useToast.js';
 import { formatDate } from './useDate.js';
-import { plural } from './usePlural.js';
+import { t } from '../i18n/index.js';
 
 export function useImport(service) {
     const api = useApi();
@@ -41,28 +41,28 @@ export function useImport(service) {
 
 function summary(report) {
     const parts = [
-        plural(report.ordersImported, 'commande importée', 'commandes importées'),
-        plural(report.ordersAlreadyImported, 'déjà importée', 'déjà importées'),
+        t('import.summary.ordersImported', report.ordersImported),
+        t('import.summary.ordersAlreadyImported', report.ordersAlreadyImported),
     ];
     if (report.productsCreated > 0) {
-        parts.push(plural(report.productsCreated, 'produit créé', 'produits créés'));
+        parts.push(t('import.summary.productsCreated', report.productsCreated));
     }
     if (report.typesCreated > 0) {
-        parts.push(plural(report.typesCreated, 'type créé', 'types créés'));
+        parts.push(t('import.summary.typesCreated', report.typesCreated));
     }
     if (report.ordersWaitingForItems > 0) {
-        parts.push(`${plural(report.ordersWaitingForItems, 'commande en attente', 'commandes en attente')} d'association`);
+        parts.push(t('import.summary.ordersWaitingForItems', report.ordersWaitingForItems));
     }
-    return `Import ${report.label} terminé : ${parts.join(', ')}.`;
+    return t('import.summary.done', { service: report.label, parts: parts.join(', ') });
 }
 
 function describeProblem(report) {
     const parts = [];
     if (report.ordersWithoutEvent > 0) {
-        parts.push(`${plural(report.ordersWithoutEvent, 'commande non importée', 'commandes non importées')} : aucun marché ne couvre leur date. Créez le marché puis relancez l'import.`);
+        parts.push(t('import.problem.ordersWithoutEvent', report.ordersWithoutEvent));
     }
     if (report.salesWithoutItems > 0) {
-        parts.push(`${plural(report.salesWithoutItems, 'paiement ignoré', 'paiements ignorés')} : aucun article.`);
+        parts.push(t('import.problem.salesWithoutItems', report.salesWithoutItems));
     }
     if (parts.length === 0) {
         return null;

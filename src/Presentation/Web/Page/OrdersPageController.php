@@ -19,6 +19,6 @@ final readonly class OrdersPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('OrdersPage', 'Commandes');
+        return $this->page->render('OrdersPage', 'orders');
     }
 }

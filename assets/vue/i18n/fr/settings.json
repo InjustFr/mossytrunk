@@ -1,0 +1,101 @@
+{
+    "title": "Paramètres",
+    "workspace": "Espace de travail",
+    "services": {
+        "title": "Services connectés",
+        "add": "Ajouter un service",
+        "intro": "Vos ventes arrivent dans Commandes quand vous lancez un import.",
+        "empty": "Aucun service. Ajoutez {available} pour importer vos ventes.",
+        "or": " ou ",
+        "someService": "Le service",
+        "added": "{label} ajouté.",
+        "updated": "{label} modifié.",
+        "removed": "{label} retiré.",
+        "disconnected": "{label} déconnecté.",
+        "outcome": {
+            "connected": "{label} connecté : ses commandes s'importent depuis la page Commandes.",
+            "refused": "La connexion à {label} a été annulée.",
+            "error": "{label} n'a pas pu confirmer la connexion. Réessayez.",
+            "unavailable": "Complétez d'abord les accès de {label}."
+        }
+    },
+    "danger": {
+        "title": "Zone de danger",
+        "warning": "Ces suppressions sont définitives : aucune annulation possible.",
+        "confirm": "Tout supprimer",
+        "orders": {
+            "title": "Toutes les commandes",
+            "detail": "Le chiffre d'affaires et les marges des événements repartent de zéro. Les articles vendus reviennent en stock. Un nouvel import depuis vos services connectés pourra ramener leurs ventes.",
+            "action": "Supprimer toutes les commandes",
+            "message": "Toutes les commandes de l'espace de travail seront supprimées définitivement.",
+            "deleted": "Commandes supprimées : {count}."
+        },
+        "products": {
+            "title": "Tous les produits",
+            "detail": "Les commandes passées gardent leurs lignes. Le stock des produits est supprimé avec eux. Les remises par lot qui ne listent que des produits sont supprimées aussi.",
+            "action": "Supprimer tous les produits",
+            "message": "Tout le catalogue et les remises par lot qui ne listent que des produits seront supprimés définitivement.",
+            "deleted": "Produits supprimés : {count}."
+        }
+    },
+    "connected": {
+        "status": {
+            "incomplete": "Accès incomplets",
+            "ready": "Prêt",
+            "connected": "Connecté",
+            "toConnect": "À connecter"
+        },
+        "sales": "Ventes",
+        "unknownItem": "Article inconnu",
+        "itemsToLink": "{count} article à associer | {count} articles à associer",
+        "connect": "Connecter la boutique",
+        "disconnect": "Déconnecter",
+        "disconnectMessage": "MossyTrunk n'aura plus accès à {label}. Les commandes déjà importées restent.",
+        "edit": "Modifier {label}",
+        "remove": "Retirer {label}",
+        "removeConfirm": "Retirer",
+        "removeMessage": "Ses accès sont oubliés. Les commandes déjà importées restent."
+    },
+    "form": {
+        "access": "Accès",
+        "import": "Import",
+        "copyCallback": "Copier l'adresse de retour",
+        "callbackCopied": "Adresse de retour copiée.",
+        "secretKept": "Clé enregistrée ({hint}). Laissez vide pour la garder.",
+        "salesContext": "Où rattacher les ventes",
+        "unknownItems": "Article inconnu",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter {label}"
+    },
+    "modal": {
+        "edit": "Modifier {label}",
+        "add": "Ajouter {label}",
+        "addService": "Ajouter un service",
+        "otherService": "Autre service"
+    },
+    "picker": {
+        "label": "Services disponibles",
+        "alreadyAdded": "Déjà ajouté"
+    },
+    "salesContexts": {
+        "atEvent": {
+            "label": "Au marché du jour",
+            "description": "Chaque vente rejoint le marché ou salon qui couvre sa date."
+        },
+        "online": {
+            "label": "En ligne",
+            "description": "Les ventes n'appartiennent à aucun marché."
+        }
+    },
+    "unknownItemPolicies": {
+        "createProduct": {
+            "label": "Créer le produit",
+            "description": "Au prix de vente du service, prix d'achat à compléter."
+        },
+        "linkByHand": {
+            "label": "Me demander",
+            "description": "La commande attend que vous associez l'article à un produit."
+        }
+    }
+}

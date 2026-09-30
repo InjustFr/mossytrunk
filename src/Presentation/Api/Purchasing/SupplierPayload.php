@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class SupplierPayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom du fournisseur est obligatoire.')]
+        #[Assert\NotBlank(message: 'supplier.name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
         #[Assert\Length(max: 255)]

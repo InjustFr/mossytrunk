@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
@@ -22,6 +23,7 @@ const props = defineProps({
 const { event, report, load, update, addExpense, reviseExpense, removeExpense } = useEvent(props.eventId);
 const { colors: typeColors, load: loadTypes } = useTypeColors();
 const toast = useToast();
+const { t } = useI18n();
 const { stockChecks, dismiss } = useStock();
 const checks = ref([]);
 const loadChecks = async () => { checks.value = await stockChecks(props.eventId); };
@@ -38,25 +40,25 @@ function openExpense(expense = null) {
 
 async function onEventSaved(name) {
     editOpen.value = false;
-    toast.success(`Événement « ${name} » mis à jour.`);
+    toast.success(t('events.detail.updated', { name }));
     await load();
 }
 
 async function onExpenseSaved(label) {
     expenseOpen.value = false;
-    toast.success(editingExpense.value ? `Dépense « ${label} » modifiée.` : `Dépense « ${label} » ajoutée.`);
+    toast.success(t(editingExpense.value ? 'events.detail.expenseUpdated' : 'events.detail.expenseAdded', { label }));
     await load();
 }
 
 async function onDismissed(line) {
     await dismiss(line.checkId, line.id);
-    toast.success(`Écart de « ${line.label} » classé.`);
+    toast.success(t('events.detail.discrepancyDismissed', { label: line.label }));
     await loadChecks();
 }
 
 async function onExpenseRemoved(expense) {
     await removeExpense(expense.id);
-    toast.success(`Dépense « ${expense.label} » supprimée.`);
+    toast.success(t('events.detail.expenseRemoved', { label: expense.label }));
     await load();
 }
 
@@ -64,13 +66,13 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 </script>
 
 <template>
-    <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a class="back-link" href="/events"><ArrowLeft size="0.875rem" aria-hidden="true" /> Marchés & salons</a></template>
+    <AppLayout :title="event?.name ?? t('events.detail.titleFallback')">
+        <template #back><a class="back-link" href="/events"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('events.detail.back') }}</a></template>
         <template #actions>
             <template v-if="event">
-                <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
-                <BaseButton variant="secondary" :href="`/events/${event.id}/stock-check`">Faire l'inventaire</BaseButton>
-                <BaseButton @click="openExpense()">Ajouter une dépense</BaseButton>
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('events.detail.edit') }}</BaseButton>
+                <BaseButton variant="secondary" :href="`/events/${event.id}/stock-check`">{{ t('events.detail.stockCheck') }}</BaseButton>
+                <BaseButton @click="openExpense()">{{ t('events.detail.addExpense') }}</BaseButton>
             </template>
         </template>
 
@@ -81,17 +83,17 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
             <EventReport :report="report" :event-id="event.id" :upcoming="event.timing === 'upcoming'" :type-colors="typeColors">
                 <template #aside>
                     <section class="event-detail-page__expenses" aria-labelledby="event-expenses">
-                        <h3 id="event-expenses" class="event-detail-page__expenses-title">Dépenses</h3>
+                        <h3 id="event-expenses" class="event-detail-page__expenses-title">{{ t('events.detail.expenses') }}</h3>
                         <ExpenseList :expenses="event.expenses" :total="event.expensesTotal" @edit="openExpense" @remove="onExpenseRemoved" />
                     </section>
                 </template>
             </EventReport>
         </div>
 
-        <BaseModal v-model:open="editOpen" title="Modifier l'événement">
+        <BaseModal v-model:open="editOpen" :title="t('events.detail.editTitle')">
             <EventForm v-if="event" :event="event" :submit="update" @saved="onEventSaved" @cancel="editOpen = false" />
         </BaseModal>
-        <BaseModal v-model:open="expenseOpen" :title="editingExpense ? 'Modifier la dépense' : 'Nouvelle dépense'">
+        <BaseModal v-model:open="expenseOpen" :title="editingExpense ? t('events.detail.editExpense') : t('events.detail.newExpense')">
             <ExpenseForm :expense="editingExpense" :submit="submitExpense" @saved="onExpenseSaved" @cancel="expenseOpen = false" />
         </BaseModal>
     </AppLayout>

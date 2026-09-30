@@ -26,6 +26,12 @@ Encore
     .splitEntryChunks()
 
     .enableVueLoader(() => {}, { runtimeCompilerBuild: false })
+    .configureDefinePlugin((options) => {
+        options.__VUE_I18N_FULL_INSTALL__ = JSON.stringify(true);
+        options.__VUE_I18N_LEGACY_API__ = JSON.stringify(false);
+        options.__INTLIFY_PROD_DEVTOOLS__ = JSON.stringify(false);
+        options.__INTLIFY_DROP_MESSAGE_COMPILER__ = JSON.stringify(false);
+    })
 
     // enables the Symfony UX Stimulus bridge (used in assets/stimulus_bootstrap.js)
     .enableStimulusBridge('./assets/controllers.json')

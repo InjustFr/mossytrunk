@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
@@ -8,6 +9,7 @@ import { nextTypeColor } from '../../composables/useTypeColor.js';
 
 const typeId = defineModel({ type: String, default: '' });
 const { types, create } = useProductTypes();
+const { t } = useI18n();
 
 const CREATE = '__create__';
 const selected = ref(typeId.value);
@@ -19,9 +21,9 @@ const saving = ref(false);
 const input = ref(null);
 
 const options = computed(() => [
-    { value: '', label: 'Sans type' },
+    { value: '', label: t('products.untyped') },
     ...types.value.map((type) => ({ value: type.id, label: type.name })),
-    { value: CREATE, label: '＋ Créer un type…' },
+    { value: CREATE, label: t('products.types.createOption') },
 ]);
 
 watch(typeId, (value) => { selected.value = value; });
@@ -39,7 +41,7 @@ watch(selected, async (value) => {
 
 async function confirm() {
     if (newName.value.trim() === '') {
-        error.value = 'Le nom du type est obligatoire.';
+        error.value = t('products.types.nameRequired');
         return;
     }
     saving.value = true;
@@ -67,20 +69,20 @@ function cancel() {
 
 <template>
     <div class="type-select">
-        <BaseSelect v-if="!creating" v-model="selected" :options="options" aria-label="Type" />
+        <BaseSelect v-if="!creating" v-model="selected" :options="options" :aria-label="t('products.types.select')" />
         <div v-else class="type-select__create">
             <div class="type-select__name">
                 <input
                     ref="input"
                     v-model="newName"
                     type="text"
-                    placeholder="Ex. Print, Sticker…"
-                    aria-label="Nom du nouveau type"
+                    :placeholder="t('products.types.nameExample')"
+                    :aria-label="t('products.types.newName')"
                     @keydown.enter.prevent="confirm"
                     @keydown.esc.prevent.stop="cancel"
                 >
-                <BaseButton variant="ghost" @click="cancel">Annuler</BaseButton>
-                <BaseButton variant="secondary" :loading="saving" @click="confirm">Créer</BaseButton>
+                <BaseButton variant="ghost" @click="cancel">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('products.types.createShort') }}</BaseButton>
             </div>
             <TypeColorPicker v-model="newColor" />
         </div>

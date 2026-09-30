@@ -37,7 +37,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     public function get(Ulid $id): Order
     {
         return $this->entityManager->getRepository(Order::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Commande', (string) $id);
+            ?? throw new NotFound('order', (string) $id);
     }
 
     public function list(?Ulid $eventId = null): array

@@ -1,20 +1,25 @@
+import { t } from '../i18n/index.js';
 import { useApi } from './useApi.js';
 
 export const LOW_STOCK_PARAM = 'stock';
 
-export const LOT_ORIGINS = {
-    purchase: 'Achat',
-    supplier_order: 'Commande fournisseur',
-    correction: 'Inventaire',
-    return: 'Retour de commande',
+const LOT_ORIGINS = {
+    purchase: 'stock.origin.purchase',
+    supplier_order: 'stock.origin.supplierOrder',
+    correction: 'stock.origin.correction',
+    return: 'stock.origin.return',
 };
 
-export const MOVEMENTS = {
+const MOVEMENTS = {
     ...LOT_ORIGINS,
-    correction: 'Inventaire (surplus)',
-    sale: 'Vente',
-    loss: 'Inventaire (manquant)',
+    correction: 'stock.movement.surplus',
+    sale: 'stock.movement.sale',
+    loss: 'stock.movement.loss',
 };
+
+export const lotOriginLabel = (origin) => t(LOT_ORIGINS[origin]);
+
+export const movementLabel = (kind) => t(MOVEMENTS[kind]);
 
 export function useStock() {
     const api = useApi();

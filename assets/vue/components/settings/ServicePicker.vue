@@ -1,4 +1,8 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
 const props = defineProps({
     services: { type: Array, required: true },
 });
@@ -6,7 +10,7 @@ const emit = defineEmits(['choose']);
 </script>
 
 <template>
-    <ul class="service-picker" aria-label="Services disponibles">
+    <ul class="service-picker" :aria-label="t('settings.picker.label')">
         <li v-for="service in props.services" :key="service.key" class="service-picker__slot">
             <button
                 type="button"
@@ -17,7 +21,7 @@ const emit = defineEmits(['choose']);
             >
                 <span class="service-tag__card">
                     <span class="service-tag__name">{{ service.label }}</span>
-                    <span :id="`service-tag-${service.key}`" class="service-tag__summary">{{ service.connection ? 'Déjà ajouté' : service.summary }}</span>
+                    <span :id="`service-tag-${service.key}`" class="service-tag__summary">{{ service.connection ? t('settings.picker.alreadyAdded') : t(service.summary) }}</span>
                 </span>
             </button>
         </li>

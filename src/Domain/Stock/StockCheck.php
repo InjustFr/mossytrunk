@@ -101,7 +101,7 @@ class StockCheck
             }
         }
 
-        throw new NotFound('Ligne d\'inventaire', (string) $lineId);
+        throw new NotFound('stock_check_line', (string) $lineId);
     }
 
     public function unexplainedUnits(): int

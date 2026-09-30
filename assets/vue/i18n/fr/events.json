@@ -1,0 +1,90 @@
+{
+    "page": {
+        "title": "Marchés & salons",
+        "new": "Nouveau marché ou salon",
+        "upcoming": "À venir",
+        "noUpcoming": "Aucun événement à venir. Créez-en un pour y rattacher des commandes.",
+        "past": "Passés",
+        "noPast": "Aucun événement passé.",
+        "created": "Événement « {name} » créé."
+    },
+    "detail": {
+        "titleFallback": "Événement",
+        "back": "Marchés & salons",
+        "edit": "Modifier",
+        "stockCheck": "Faire l'inventaire",
+        "addExpense": "Ajouter une dépense",
+        "expenses": "Dépenses",
+        "editTitle": "Modifier l'événement",
+        "editExpense": "Modifier la dépense",
+        "newExpense": "Nouvelle dépense",
+        "updated": "Événement « {name} » mis à jour.",
+        "expenseAdded": "Dépense « {label} » ajoutée.",
+        "expenseUpdated": "Dépense « {label} » modifiée.",
+        "expenseRemoved": "Dépense « {label} » supprimée.",
+        "discrepancyDismissed": "Écart de « {label} » classé."
+    },
+    "comparison": {
+        "event": "Événement",
+        "date": "Date",
+        "days": "Jours",
+        "orders": "Commandes",
+        "turnover": "CA",
+        "expenses": "Dépenses",
+        "result": "Résultat",
+        "margin": "Marge",
+        "perDay": "Par jour",
+        "missingOrder": "Commande manquante probable ({units})"
+    },
+    "form": {
+        "name": "Nom",
+        "location": "Lieu",
+        "dates": "Dates",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "create": "Créer l'événement"
+    },
+    "list": {
+        "empty": "Aucun événement.",
+        "ongoing": "En cours",
+        "committedExpenses": "Dépenses engagées",
+        "result": "Résultat"
+    },
+    "report": {
+        "committedExpenses": "Dépenses engagées",
+        "noSales": "Pas encore de ventes. Le bilan se remplira avec les commandes de l'événement.",
+        "result": "Résultat",
+        "orderCount": "{count} commande | {count} commandes",
+        "noOrders": "Aucune commande.",
+        "turnover": "Chiffre d'affaires",
+        "buyingCost": "Coût d'achat",
+        "expenses": "Dépenses",
+        "rate": "{rate} %",
+        "grossSales": "Ventes brutes",
+        "discountsGiven": "Remises accordées",
+        "seeOrders": "Voir les commandes"
+    },
+    "expenseForm": {
+        "label": "Libellé",
+        "labelPlaceholder": "Stand, train, hôtel…",
+        "amount": "Montant (€)",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "add": "Ajouter la dépense"
+    },
+    "expenses": {
+        "empty": "Aucune dépense enregistrée.",
+        "label": "Libellé",
+        "amount": "Montant",
+        "actions": "Actions",
+        "edit": "Modifier {label}",
+        "remove": "Supprimer {label}",
+        "total": "Total"
+    },
+    "recap": {
+        "showItems": "Afficher le détail des articles",
+        "itemCount": "{count} art.",
+        "unknownCost": "Coût d'achat inconnu (0 €)",
+        "untyped": "Sans type"
+    }
+}

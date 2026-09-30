@@ -8,6 +8,6 @@ final class DuplicateVariant extends InvalidProduct
 {
     public function __construct(string $variant)
     {
-        parent::__construct(\sprintf('La variante « %s » existe déjà pour ce produit.', $variant));
+        parent::__construct('product.duplicate_variant', ['variant' => $variant]);
     }
 }

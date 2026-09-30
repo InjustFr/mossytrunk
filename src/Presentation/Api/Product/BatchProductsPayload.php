@@ -15,15 +15,15 @@ final readonly class BatchProductsPayload
      * @param list<string> $removeVariants
      */
     public function __construct(
-        #[Assert\Count(min: 1, minMessage: 'Sélectionnez au moins un produit.')]
+        #[Assert\Count(min: 1, minMessage: 'products.selectAtLeastOne')]
         #[Assert\All([new Assert\Ulid()])]
         public array $productIds = [],
-        #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
+        #[Assert\PositiveOrZero(message: 'sellingPrice.negative')]
         public ?int $sellingPrice = null,
         public bool $changeType = false,
-        #[Assert\Ulid(message: 'Type invalide.')]
+        #[Assert\Ulid(message: 'productType.invalid')]
         public ?string $typeId = null,
-        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une variante ne peut pas être vide.')])]
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank')])]
         public array $addVariants = [],
         #[Assert\All([new Assert\Type('string')])]
         public array $removeVariants = [],

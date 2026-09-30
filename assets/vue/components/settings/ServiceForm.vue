@@ -1,12 +1,15 @@
 <script setup>
 import { computed, reactive, ref } from 'vue';
 import { Copy } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormField from '../ui/FormField.vue';
 import IconButton from '../ui/IconButton.vue';
 import ServiceOptions from './ServiceOptions.vue';
 import { SALES_CONTEXTS, UNKNOWN_ITEMS } from '../../composables/useServices.js';
 import { useToast } from '../../composables/useToast.js';
+
+const { t } = useI18n();
 
 const props = defineProps({
     service: { type: Object, required: true },
@@ -29,14 +32,14 @@ const callbackUrl = computed(() => `${window.location.origin}/settings/${props.s
 function hint(field) {
     const value = connection?.values[field.name];
     if (field.secret && value?.configured) {
-        return `Clé enregistrée (${value.hint}). Laissez vide pour la garder.`;
+        return t('settings.form.secretKept', { hint: value.hint });
     }
-    return field.hint;
+    return field.hint ? t(field.hint) : field.hint;
 }
 
 async function copyCallback() {
     await navigator.clipboard.writeText(callbackUrl.value);
-    toast.success('Adresse de retour copiée.');
+    toast.success(t('settings.form.callbackCopied'));
 }
 
 async function onSubmit() {
@@ -60,15 +63,15 @@ async function onSubmit() {
             <p v-if="errors.form" class="service-form__error" role="alert">{{ errors.form }}</p>
 
             <section class="service-form__section" aria-labelledby="service-form-access">
-                <h3 id="service-form-access" class="service-form__heading">Accès</h3>
+                <h3 id="service-form-access" class="service-form__heading">{{ t('settings.form.access') }}</h3>
                 <div v-if="service.authorizes" class="service-form__callback">
-                    <p class="service-form__instructions">{{ service.instructions }}</p>
+                    <p class="service-form__instructions">{{ t(service.instructions) }}</p>
                     <div class="service-form__url">
                         <code>{{ callbackUrl }}</code>
-                        <IconButton :icon="Copy" label="Copier l'adresse de retour" @click="copyCallback" />
+                        <IconButton :icon="Copy" :label="t('settings.form.copyCallback')" @click="copyCallback" />
                     </div>
                 </div>
-                <FormField v-for="field in service.fields" :key="field.name" :label="field.label" :error="errors[field.name]" :hint="hint(field)">
+                <FormField v-for="field in service.fields" :key="field.name" :label="t(field.label)" :error="errors[field.name]" :hint="hint(field)">
                     <input
                         v-model="fields[field.name]"
                         :type="field.secret ? 'password' : 'text'"
@@ -81,14 +84,14 @@ async function onSubmit() {
             </section>
 
             <section class="service-form__section" aria-labelledby="service-form-import">
-                <h3 id="service-form-import" class="service-form__heading">Import</h3>
-                <ServiceOptions v-model="options.salesContext" label="Où rattacher les ventes" :options="SALES_CONTEXTS" />
-                <ServiceOptions v-model="options.unknownItems" label="Article inconnu" :options="UNKNOWN_ITEMS" />
+                <h3 id="service-form-import" class="service-form__heading">{{ t('settings.form.import') }}</h3>
+                <ServiceOptions v-model="options.salesContext" :label="t('settings.form.salesContext')" :options="SALES_CONTEXTS" />
+                <ServiceOptions v-model="options.unknownItems" :label="t('settings.form.unknownItems')" :options="UNKNOWN_ITEMS" />
             </section>
 
             <div class="service-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ connection ? 'Enregistrer' : `Ajouter ${service.label}` }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('settings.form.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ connection ? t('settings.form.save') : t('settings.form.add', { label: service.label }) }}</BaseButton>
             </div>
         </fieldset>
     </form>

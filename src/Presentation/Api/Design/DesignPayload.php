@@ -13,13 +13,13 @@ final readonly class DesignPayload
      * @param list<string> $gabaritIds
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom du design est obligatoire.')]
+        #[Assert\NotBlank(message: 'design.name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
-        #[Assert\Ulid(message: 'Collection invalide.')]
+        #[Assert\Ulid(message: 'collection.invalid')]
         public ?string $collectionId = null,
         public ?string $notes = null,
-        #[Assert\All([new Assert\Ulid(message: 'Gabarit invalide.')])]
+        #[Assert\All([new Assert\Ulid(message: 'template.invalid')])]
         public array $gabaritIds = [],
     ) {
     }

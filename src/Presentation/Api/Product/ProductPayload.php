@@ -17,19 +17,19 @@ final readonly class ProductPayload
      * @param list<string> $variants
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+        #[Assert\NotBlank(message: 'name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
-        #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
+        #[Assert\PositiveOrZero(message: 'sellingPrice.negative')]
         public int $sellingPrice = 0,
-        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'Une variante ne peut pas être vide.')])]
-        #[Assert\Unique(message: 'Les variantes doivent être uniques.')]
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank')])]
+        #[Assert\Unique(message: 'variant.duplicate')]
         public array $variants = [],
-        #[Assert\Ulid(message: 'Type invalide.')]
+        #[Assert\Ulid(message: 'productType.invalid')]
         public ?string $typeId = null,
-        #[Assert\PositiveOrZero(message: 'Le seuil de stock bas ne peut pas être négatif.')]
+        #[Assert\PositiveOrZero(message: 'product.lowStock.negative')]
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
-        #[Assert\Length(max: Product::REFERENCE_MAX_LENGTH, maxMessage: 'La référence ne peut pas dépasser {{ limit }} caractères.')]
+        #[Assert\Length(max: Product::REFERENCE_MAX_LENGTH, maxMessage: 'product.reference.tooLong')]
         public ?string $reference = null,
     ) {
     }

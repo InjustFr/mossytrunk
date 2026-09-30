@@ -56,7 +56,7 @@ class Expense
             throw new EmptyExpenseLabel();
         }
         if (!$amount->isPositive()) {
-            throw new NonPositiveAmount('Le montant de la dépense');
+            throw new NonPositiveAmount('expense_amount');
         }
 
         $this->label = $label;

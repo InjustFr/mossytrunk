@@ -1,7 +1,10 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     suppliers: { type: Array, required: true },
@@ -19,7 +22,7 @@ const input = ref(null);
 
 const options = computed(() => [
     ...props.suppliers.map((supplier) => ({ value: supplier.id, label: supplier.name })),
-    { value: CREATE, label: '＋ Nouveau fournisseur…' },
+    { value: CREATE, label: t('purchasing.supplierSelect.new') },
 ]);
 
 watch(supplierId, (value) => { selected.value = value; });
@@ -60,19 +63,19 @@ function cancel() {
 
 <template>
     <div class="supplier-select">
-        <BaseSelect v-if="!creating" v-model="selected" :options="options" placeholder="Choisir un fournisseur" aria-label="Fournisseur" />
+        <BaseSelect v-if="!creating" v-model="selected" :options="options" :placeholder="t('purchasing.supplierSelect.placeholder')" :aria-label="t('purchasing.supplierSelect.label')" />
         <div v-else class="supplier-select__create">
             <input
                 ref="input"
                 v-model="newName"
                 type="text"
-                placeholder="Ex. Imprimerie du Lac"
-                aria-label="Nom du nouveau fournisseur"
+                :placeholder="t('purchasing.supplierSelect.namePlaceholder')"
+                :aria-label="t('purchasing.supplierSelect.nameLabel')"
                 @keydown.enter.prevent="confirm"
                 @keydown.esc.prevent.stop="cancel"
             >
-            <BaseButton variant="secondary" :loading="saving" @click="confirm">Créer</BaseButton>
-            <BaseButton variant="ghost" @click="cancel">Annuler</BaseButton>
+            <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('purchasing.supplierSelect.create') }}</BaseButton>
+            <BaseButton variant="ghost" @click="cancel">{{ t('purchasing.supplierSelect.cancel') }}</BaseButton>
         </div>
         <span v-if="error" class="supplier-select__error" role="alert">{{ error }}</span>
     </div>

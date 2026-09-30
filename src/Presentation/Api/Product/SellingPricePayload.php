@@ -9,10 +9,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class SellingPricePayload
 {
     public function __construct(
-        #[Assert\PositiveOrZero(message: 'Le prix de vente ne peut pas être négatif.')]
+        #[Assert\PositiveOrZero(message: 'sellingPrice.negative')]
         public int $price = 0,
-        #[Assert\NotBlank(message: 'La date est obligatoire.')]
-        #[Assert\Date(message: 'Date invalide.')]
+        #[Assert\NotBlank(message: 'date.required')]
+        #[Assert\Date(message: 'date.invalid')]
         public string $since = '',
     ) {
     }

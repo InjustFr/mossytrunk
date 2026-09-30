@@ -1,23 +1,24 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import { Link2 } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
-import { plural } from '../../composables/usePlural.js';
 
 defineProps({
     label: { type: String, required: true },
     count: { type: Number, required: true },
 });
 const emit = defineEmits(['open']);
+const { t } = useI18n();
 </script>
 
 <template>
     <div class="items-notice" role="status">
         <Link2 class="items-notice__icon" size="1.25rem" aria-hidden="true" />
         <p class="items-notice__text">
-            <strong>{{ plural(count, `article ${label}`, `articles ${label}`) }} à associer à vos produits.</strong>
-            Leurs commandes sont en attente : associez chaque article une fois, puis relancez l'import.
+            <strong>{{ t('import.notice.count', { service: label }, count) }}</strong>
+            {{ t('import.notice.text') }}
         </p>
-        <BaseButton variant="secondary" @click="emit('open')">Associer les articles</BaseButton>
+        <BaseButton variant="secondary" @click="emit('open')">{{ t('import.notice.link') }}</BaseButton>
     </div>
 </template>
 

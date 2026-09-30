@@ -11,7 +11,7 @@ final readonly class MoveVariantPayload
 {
     public function __construct(
         public ?string $variant = null,
-        #[Assert\Ulid(message: 'Produit invalide.')]
+        #[Assert\Ulid(message: 'product.invalid')]
         public ?string $targetProductId = null,
         #[Assert\Length(max: 255)]
         public ?string $newProductName = null,
@@ -20,7 +20,7 @@ final readonly class MoveVariantPayload
     ) {
     }
 
-    #[Assert\IsTrue(message: 'Choisissez le produit de destination ou nommez le nouveau produit.')]
+    #[Assert\IsTrue(message: 'variant.move.target.required')]
     public function isTargetChosen(): bool
     {
         return (null !== $this->targetProductId) !== (null !== $this->newProductName && '' !== trim($this->newProductName));

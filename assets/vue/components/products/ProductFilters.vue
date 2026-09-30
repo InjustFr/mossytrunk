@@ -2,9 +2,9 @@
 import { computed } from 'vue';
 import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { PackageMinus, TriangleAlert } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import TypeMark from '../ui/TypeMark.vue';
 import { UNTYPED } from '../../composables/useProductFilters.js';
-import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     types: { type: Array, required: true },
@@ -16,9 +16,10 @@ const typeId = defineModel('typeId', { type: String, required: true });
 const search = defineModel('search', { type: String, required: true });
 const missingCost = defineModel('missingCost', { type: Boolean, default: false });
 const lowStock = defineModel('lowStock', { type: Boolean, default: false });
+const { t } = useI18n();
 
 const ALL = '__all__';
-const chips = computed(() => [{ id: ALL, name: 'Tous', mark: false }, ...props.types.map((type) => ({ ...type, mark: true })), { id: UNTYPED, name: 'Sans type', mark: false }]);
+const chips = computed(() => [{ id: ALL, name: t('products.filters.all'), mark: false }, ...props.types.map((type) => ({ ...type, mark: true })), { id: UNTYPED, name: t('products.untyped'), mark: false }]);
 
 const selectedChip = computed({
     get: () => typeId.value || ALL,
@@ -32,19 +33,19 @@ const selectedChip = computed({
 
 <template>
     <div class="product-filters">
-        <input v-model="search" class="product-filters__search" type="search" placeholder="Rechercher…" aria-label="Rechercher un produit">
-        <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" aria-label="Filtrer par type">
+        <input v-model="search" class="product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
+        <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" :aria-label="t('products.filters.byType')">
             <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="product-filters__chip">
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
             </ToggleGroupItem>
         </ToggleGroupRoot>
         <Toggle v-if="lowStockCount > 0 || lowStock" v-model="lowStock" class="product-filters__missing product-filters__low-stock">
             <PackageMinus size="0.875rem" aria-hidden="true" />
-            {{ plural(lowStockCount, 'produit en stock bas', 'produits en stock bas') }}
+            {{ t('products.filters.lowStock', lowStockCount) }}
         </Toggle>
         <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="product-filters__missing">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
-            {{ plural(missingCostCount, 'produit sans coût d\'achat', 'produits sans coût d\'achat') }}
+            {{ t('products.filters.missingCost', missingCostCount) }}
         </Toggle>
     </div>
 </template>

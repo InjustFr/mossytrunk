@@ -20,6 +20,6 @@ final readonly class SupplierOrderDetailPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('SupplierOrderDetailPage', 'Commande fournisseur', ['orderId' => $id]);
+        return $this->page->render('SupplierOrderDetailPage', 'supplierOrder', ['orderId' => $id]);
     }
 }

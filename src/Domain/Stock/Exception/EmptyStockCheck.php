@@ -8,6 +8,6 @@ final class EmptyStockCheck extends InvalidStock
 {
     public function __construct()
     {
-        parent::__construct('L\'inventaire doit compter au moins un article.');
+        parent::__construct('stock.empty_stock_check');
     }
 }

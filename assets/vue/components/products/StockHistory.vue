@@ -1,11 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import LotStrip from '../stock/LotStrip.vue';
 import { formatDate } from '../../composables/useDate.js';
-import { LOT_ORIGINS, useStock } from '../../composables/useStock.js';
+import { lotOriginLabel, useStock } from '../../composables/useStock.js';
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -13,6 +14,7 @@ const props = defineProps({
 
 const items = ref(null);
 const { productStock } = useStock();
+const { t } = useI18n();
 
 onMounted(async () => {
     items.value = await productStock(props.product.id);
@@ -23,29 +25,29 @@ onMounted(async () => {
     <div class="stock-history">
         <section v-for="item in items ?? []" :key="item.variant ?? ''" class="stock-history__item">
             <header class="stock-history__header">
-                <h3 class="stock-history__title">{{ item.variant ?? 'En réserve' }}</h3>
-                <StatusBadge v-if="item.negative" tone="danger">Stock négatif</StatusBadge>
-                <StatusBadge v-else-if="item.low" tone="warning">Stock bas</StatusBadge>
-                <span class="stock-history__on-hand">{{ item.onHand }} en réserve</span>
+                <h3 class="stock-history__title">{{ item.variant ?? t('products.stockHistory.onHand') }}</h3>
+                <StatusBadge v-if="item.negative" tone="danger">{{ t('products.stockHistory.negative') }}</StatusBadge>
+                <StatusBadge v-else-if="item.low" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
+                <span class="stock-history__on-hand">{{ t('products.stockHistory.onHandCount', { count: item.onHand }) }}</span>
             </header>
-            <EmptyState v-if="item.lots.length === 0">Rien n'est encore entré en réserve. Réapprovisionnez pour suivre son coût.</EmptyState>
+            <EmptyState v-if="item.lots.length === 0">{{ t('products.stockHistory.empty') }}</EmptyState>
             <LotStrip v-else :lots="item.lots" />
             <table v-if="item.lots.length" class="stock-history__lots">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Origine</th>
-                        <th class="stock-history__number">Reçus</th>
-                        <th class="stock-history__number">Restants</th>
-                        <th class="stock-history__number">Coût unitaire</th>
+                        <th>{{ t('products.stockHistory.date') }}</th>
+                        <th>{{ t('products.stockHistory.origin') }}</th>
+                        <th class="stock-history__number">{{ t('products.stockHistory.received') }}</th>
+                        <th class="stock-history__number">{{ t('products.stockHistory.remaining') }}</th>
+                        <th class="stock-history__number">{{ t('products.stockHistory.unitCost') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="lot in item.lots" :key="lot.id" :class="{ 'stock-history__lot--exhausted': lot.remaining === 0 }">
                         <td>{{ formatDate(lot.receivedAt) }}</td>
                         <td>
-                            <a v-if="lot.origin === 'supplier_order' && lot.sourceId" :href="`/supplier-orders/${lot.sourceId}`">{{ LOT_ORIGINS[lot.origin] }}</a>
-                            <template v-else>{{ LOT_ORIGINS[lot.origin] }}</template>
+                            <a v-if="lot.origin === 'supplier_order' && lot.sourceId" :href="`/supplier-orders/${lot.sourceId}`">{{ lotOriginLabel(lot.origin) }}</a>
+                            <template v-else>{{ lotOriginLabel(lot.origin) }}</template>
                         </td>
                         <td class="stock-history__number">{{ lot.quantity }}</td>
                         <td class="stock-history__number">{{ lot.remaining }}</td>

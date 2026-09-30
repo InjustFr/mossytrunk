@@ -24,6 +24,7 @@ use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\ExternalSales;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 final class ImportPoliciesTest extends KernelTestCase
 {
@@ -32,6 +33,7 @@ final class ImportPoliciesTest extends KernelTestCase
 
     protected function setUp(): void
     {
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('en');
         self::actAsMemberOf();
     }
 
@@ -48,7 +50,7 @@ final class ImportPoliciesTest extends KernelTestCase
         self::assertSame([1, 0], [$report->ordersImported, $report->ordersWithoutEvent]);
         $order = self::getContainer()->get(ListOrdersHandler::class)()[0];
         self::assertNull($order->eventId);
-        self::assertSame([['label' => 'Remise SumUp', 'amount' => 200, 'ruleId' => null]], self::getContainer()->get(GetOrderHandler::class)($order->id)->discounts);
+        self::assertSame([['label' => 'SumUp discount', 'amount' => 200, 'ruleId' => null]], self::getContainer()->get(GetOrderHandler::class)($order->id)->discounts);
     }
 
     public function testSumUpLinesCanWaitToBeLinkedByHandInsteadOfCreatingProducts(): void

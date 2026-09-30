@@ -16,12 +16,14 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final readonly class ConnectionPayload
 {
     public function __construct(
         private ValidatorInterface $validator,
         private Connectors $connectors,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -44,7 +46,7 @@ final readonly class ConnectionPayload
             ),
         ));
         if (\count($violations) > 0) {
-            throw new UnprocessableEntityHttpException('Vérifiez les champs du formulaire.', new ValidationFailedException($fields, $violations));
+            throw new UnprocessableEntityHttpException($this->translator->trans('problem.check_fields'), new ValidationFailedException($fields, $violations));
         }
 
         return new ConnectionSettings(
@@ -58,7 +60,7 @@ final readonly class ConnectionPayload
     private function description(string $service): ServiceDescription
     {
         if (!$this->connectors->has($service)) {
-            throw new NotFound('Service', $service);
+            throw new NotFound('service', $service);
         }
 
         return $this->connectors->get($service)->describe();
@@ -71,10 +73,10 @@ final readonly class ConnectionPayload
     {
         $constraints = [new Assert\Length(max: max(1, $field->maxLength))];
         if ($field->required && (!$field->secret || $adding)) {
-            $constraints[] = new Assert\NotBlank(message: 'Ce champ est obligatoire.');
+            $constraints[] = new Assert\NotBlank(message: 'field.required');
         }
         if (null !== $field->pattern) {
-            $constraints[] = new Assert\Regex(pattern: $field->pattern, message: $field->patternMessage ?? 'Valeur invalide.');
+            $constraints[] = new Assert\Regex(pattern: $field->pattern, message: $field->patternMessage ?? 'field.invalid');
         }
 
         return $constraints;

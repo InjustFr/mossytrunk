@@ -8,6 +8,6 @@ final class UnknownVariant extends InvalidProduct
 {
     public function __construct(string $productName, string $variant)
     {
-        parent::__construct(\sprintf('« %s » n\'est pas une variante de « %s ».', $variant, $productName));
+        parent::__construct('product.unknown_variant', ['product' => $productName, 'variant' => $variant]);
     }
 }

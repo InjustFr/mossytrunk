@@ -25,10 +25,10 @@ final readonly class SumUpConnector implements SalesConnector
         return new ServiceDescription(
             self::KEY,
             'SumUp',
-            'Ventes et produits du terminal de paiement',
+            'services.sumup.summary',
             [
-                new ServiceField('merchant_code', 'Code marchand', pattern: '/^[A-Za-z0-9]{1,32}$/', patternMessage: 'Lettres et chiffres uniquement.', maxLength: 32, uppercase: true),
-                new ServiceField('api_key', 'Clé API', secret: true, hint: 'Tableau de bord SumUp › Clés API, commence par sup_sk_.', maxLength: 500),
+                new ServiceField('merchant_code', 'services.sumup.fields.merchantCode', pattern: '/^[A-Za-z0-9]{1,32}$/', patternMessage: 'services.fields.alphanumeric', maxLength: 32, uppercase: true),
+                new ServiceField('api_key', 'services.sumup.fields.apiKey', secret: true, hint: 'services.sumup.fields.apiKeyHint', maxLength: 500),
             ],
             SalesContext::AtEvent,
             UnknownItems::CreateProduct,

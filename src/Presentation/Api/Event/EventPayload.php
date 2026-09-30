@@ -9,17 +9,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class EventPayload
 {
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+        #[Assert\NotBlank(message: 'name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
-        #[Assert\NotBlank(message: 'Le lieu est obligatoire.')]
+        #[Assert\NotBlank(message: 'event.location.required')]
         #[Assert\Length(max: 255)]
         public string $location = '',
-        #[Assert\NotBlank(message: 'La date de début est obligatoire.')]
-        #[Assert\Date(message: 'Date invalide.')]
+        #[Assert\NotBlank(message: 'date.start.required')]
+        #[Assert\Date(message: 'date.invalid')]
         public string $startDate = '',
-        #[Assert\NotBlank(message: 'La date de fin est obligatoire.')]
-        #[Assert\Date(message: 'Date invalide.')]
+        #[Assert\NotBlank(message: 'date.end.required')]
+        #[Assert\Date(message: 'date.invalid')]
         public string $endDate = '',
     ) {
     }

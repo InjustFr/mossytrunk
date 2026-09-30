@@ -19,6 +19,7 @@ use App\Domain\Accounting\DeclarationPeriodicity;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 final class AccountingUseCasesTest extends KernelTestCase
 {
@@ -83,6 +84,7 @@ final class AccountingUseCasesTest extends KernelTestCase
     {
         $this->place('2026-07-10 15:00', 3);
         $this->place('2026-05-02 11:00', 1);
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('fr');
 
         $csv = self::getContainer()->get(ExportOrdersHandler::class)('2026-07-01', '2026-07-31');
 
@@ -91,6 +93,19 @@ final class AccountingUseCasesTest extends KernelTestCase
         $lines = explode("\r\n", trim($csv->content));
         self::assertStringStartsWith("\u{FEFF}Référence;Date;Heure;Source;Événement", $lines[0]);
         self::assertMatchesRegularExpression('/^CMD-20260710-\w{6};10\/07\/2026;15:00;Saisie;Japan Expo;;3;3 × Sticker;12,00;0,00;0,00;12,00;3,00;9,00$/', $lines[1]);
+    }
+
+    public function testCsvExportFollowsTheLanguage(): void
+    {
+        $this->place('2026-07-10 15:00', 1);
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('en');
+
+        $csv = self::getContainer()->get(ExportOrdersHandler::class)('2026-07-01', '2026-07-31');
+
+        self::assertSame('orders-2026-07-01-to-2026-07-31.csv', $csv->filename);
+        $lines = explode("\r\n", trim($csv->content));
+        self::assertStringStartsWith("\u{FEFF}Reference;Date;Time;Source;Event", $lines[0]);
+        self::assertStringContainsString(';Manual entry;Japan Expo;', $lines[1]);
     }
 
     /**

@@ -34,7 +34,7 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof StockCheck ? $result : throw new NotFound('Inventaire', (string) $id);
+        return $result instanceof StockCheck ? $result : throw new NotFound('stock_check', (string) $id);
     }
 
     public function ofEvent(Ulid $eventId): array

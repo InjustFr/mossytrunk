@@ -8,6 +8,6 @@ final class EmailAlreadyUsed extends InvalidAccount
 {
     public function __construct(string $email)
     {
-        parent::__construct(\sprintf('Un utilisateur existe déjà avec l\'adresse « %s ».', $email));
+        parent::__construct('identity.email_already_used', ['email' => $email]);
     }
 }

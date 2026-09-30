@@ -1,5 +1,6 @@
 <script setup>
 import { computed, useSlots } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ChevronRight } from '@lucide/vue';
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
 import { formatCents, formatRatio } from '../../composables/useMoney.js';
@@ -12,6 +13,7 @@ const props = defineProps({
     resultTest: { type: String, default: null },
 });
 
+const { t } = useI18n();
 const slots = useSlots();
 const hasDetail = (key) => Boolean(slots[`detail-${key}`]);
 const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)));
@@ -22,7 +24,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
         <div class="receipt__summary">
             <h2 class="receipt__title">{{ title }}</h2>
             <p :class="['receipt__result', { 'receipt__result--loss': result < 0 }]" :data-test="resultTest">{{ formatCents(result) }}</p>
-            <p v-if="turnover > 0" class="receipt__ratio">{{ formatRatio(result, turnover) }} du chiffre d'affaires</p>
+            <p v-if="turnover > 0" class="receipt__ratio">{{ t('reporting.receipt.ratio', { ratio: formatRatio(result, turnover) }) }}</p>
             <slot name="summary" />
         </div>
 
@@ -48,7 +50,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
             </template>
             <div class="receipt__line receipt__line--result">
                 <span class="receipt__chevron" aria-hidden="true" />
-                <span class="receipt__label">Résultat</span>
+                <span class="receipt__label">{{ t('reporting.receipt.result') }}</span>
                 <span class="receipt__sign">=</span>
                 <span :class="['receipt__amount', { 'receipt__amount--loss': result < 0 }]">{{ formatCents(result) }}</span>
             </div>

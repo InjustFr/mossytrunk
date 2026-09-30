@@ -24,12 +24,12 @@ final readonly class DiscountAction
 
     public static function fixedPrice(Money $price): self
     {
-        return new self(DiscountActionKind::FixedPrice, self::positive($price, 'Le prix'));
+        return new self(DiscountActionKind::FixedPrice, self::positive($price, 'price'));
     }
 
     public static function amountOff(Money $amount): self
     {
-        return new self(DiscountActionKind::AmountOff, self::positive($amount, 'La remise'));
+        return new self(DiscountActionKind::AmountOff, self::positive($amount, 'discount'));
     }
 
     public static function percentOff(int $basisPoints): self
@@ -69,10 +69,10 @@ final readonly class DiscountAction
         return $this->value;
     }
 
-    private static function positive(Money $amount, string $label): int
+    private static function positive(Money $amount, string $subject): int
     {
         if (!$amount->isPositive()) {
-            throw new NonPositiveAmount($label);
+            throw new NonPositiveAmount($subject);
         }
 
         return $amount->amount();

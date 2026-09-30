@@ -10,13 +10,16 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
 import BaseButton from './BaseButton.vue';
 import IconButton from './IconButton.vue';
 
+const { t } = useI18n();
+
 defineProps({
     label: { type: String, required: true },
-    confirmLabel: { type: String, default: 'Confirmer ?' },
-    message: { type: String, default: 'Cette action est définitive.' },
+    confirmLabel: { type: String, default: undefined },
+    message: { type: String, default: undefined },
     icon: { type: [Object, Function], default: null },
     variant: { type: String, default: 'ghost' },
 });
@@ -33,10 +36,10 @@ const emit = defineEmits(['confirm']);
             <AlertDialogOverlay class="confirm-dialog">
                 <AlertDialogContent class="confirm-dialog__panel">
                     <AlertDialogTitle class="confirm-dialog__title">{{ label }}</AlertDialogTitle>
-                    <AlertDialogDescription class="confirm-dialog__message">{{ message }}</AlertDialogDescription>
+                    <AlertDialogDescription class="confirm-dialog__message">{{ message ?? t('ui.confirm.message') }}</AlertDialogDescription>
                     <div class="confirm-dialog__actions">
-                        <AlertDialogCancel as-child><BaseButton variant="ghost">Annuler</BaseButton></AlertDialogCancel>
-                        <AlertDialogAction as-child><BaseButton variant="danger" @click="emit('confirm')">{{ confirmLabel }}</BaseButton></AlertDialogAction>
+                        <AlertDialogCancel as-child><BaseButton variant="ghost">{{ t('ui.cancel') }}</BaseButton></AlertDialogCancel>
+                        <AlertDialogAction as-child><BaseButton variant="danger" @click="emit('confirm')">{{ confirmLabel ?? t('ui.confirm.action') }}</BaseButton></AlertDialogAction>
                     </div>
                 </AlertDialogContent>
             </AlertDialogOverlay>

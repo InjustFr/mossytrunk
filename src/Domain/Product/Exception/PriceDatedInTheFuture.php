@@ -8,6 +8,6 @@ final class PriceDatedInTheFuture extends InvalidProduct
 {
     public function __construct()
     {
-        parent::__construct('Un prix ne peut pas être daté dans le futur.');
+        parent::__construct('product.price_dated_in_the_future');
     }
 }

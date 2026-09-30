@@ -1,23 +1,26 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { formatDate } from '../../composables/useDate.js';
 
 defineProps({
     designs: { type: Array, required: true },
-    empty: { type: String, default: 'Aucun design.' },
+    empty: { type: String, default: null },
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <EmptyState v-if="designs.length === 0">{{ empty }}</EmptyState>
+    <EmptyState v-if="designs.length === 0">{{ empty ?? t('designs.rows.empty') }}</EmptyState>
     <ul v-else class="design-rows">
         <li v-for="design in designs" :key="design.id" class="design-rows__row">
             <a :href="`/designs/${design.id}`" class="design-rows__name">{{ design.name }}</a>
-            <span class="design-rows__gabarits">{{ design.declinations.map((d) => d.gabarit.name).join(', ') || 'Pas encore décliné' }}</span>
-            <StatusBadge v-if="design.status === 'validated'" tone="success">Sorti de l'atelier le {{ formatDate(design.validatedAt) }}</StatusBadge>
-            <StatusBadge v-else-if="design.current" tone="warning">Sur l'établi</StatusBadge>
-            <StatusBadge v-else>Mis de côté</StatusBadge>
+            <span class="design-rows__gabarits">{{ design.declinations.map((d) => d.gabarit.name).join(', ') || t('designs.notDeclined') }}</span>
+            <StatusBadge v-if="design.status === 'validated'" tone="success">{{ t('designs.validatedOn', { date: formatDate(design.validatedAt) }) }}</StatusBadge>
+            <StatusBadge v-else-if="design.current" tone="warning">{{ t('designs.onBench') }}</StatusBadge>
+            <StatusBadge v-else>{{ t('designs.setAside') }}</StatusBadge>
         </li>
     </ul>
 </template>

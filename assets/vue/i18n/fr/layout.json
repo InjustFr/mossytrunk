@@ -1,0 +1,18 @@
+{
+    "nav": {
+        "label": "Navigation principale",
+        "dashboard": "Carnet de bord",
+        "sales": "Ventes",
+        "orders": "Commandes",
+        "events": "Marchés & salons",
+        "discounts": "Remises",
+        "workshop": "Atelier",
+        "designs": "Créations",
+        "products": "Produits",
+        "suppliers": "Fournisseurs",
+        "office": "Bureau",
+        "accounting": "Comptabilité",
+        "settings": "Paramètres"
+    },
+    "signOut": "Se déconnecter"
+}

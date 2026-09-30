@@ -8,6 +8,6 @@ final class ConditionQuantityTooSmall extends InvalidDiscountRule
 {
     public function __construct()
     {
-        parent::__construct('Une condition porte sur au moins 1 article.');
+        parent::__construct('discount.condition_quantity_too_small');
     }
 }

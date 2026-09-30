@@ -24,6 +24,7 @@ use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use App\Tests\Support\ExternalSales;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Translation\LocaleSwitcher;
 
 final class ImportEtsySalesTest extends KernelTestCase
 {
@@ -37,6 +38,7 @@ final class ImportEtsySalesTest extends KernelTestCase
 
     protected function setUp(): void
     {
+        self::getContainer()->get(LocaleSwitcher::class)->setLocale('en');
         self::actAsMemberOf();
         $types = self::getContainer()->get(CreateProductTypeHandler::class);
         $this->sticker = self::createProduct('Mousse', 400, 60, typeId: (string) $types('Sticker')->id());
@@ -81,12 +83,12 @@ final class ImportEtsySalesTest extends KernelTestCase
         self::assertSame(['etsy', 'Etsy', null], [$receipt->source, $receipt->sourceLabel, $receipt->eventName]);
         $order = self::getContainer()->get(GetOrderHandler::class)($receipt->id);
         self::assertSame([2_600, 100, 250, 2_750], [$order->subtotal, $order->discountTotal, $order->shipping, $order->total]);
-        self::assertSame('Remise Etsy', $order->discounts[0]['label']);
+        self::assertSame('Etsy discount', $order->discounts[0]['label']);
         self::assertNull($order->event);
         self::assertSame(-3, self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0]->onHand);
 
         $csv = self::getContainer()->get(ExportOrdersHandler::class)('2030-01-01', '2030-01-02')->content;
-        self::assertStringContainsString(';Etsy;;Carte;3;', $csv);
+        self::assertStringContainsString(';Etsy;;Card;3;', $csv);
         self::assertStringContainsString(';26,00;1,00;2,50;27,50;', $csv);
     }
 

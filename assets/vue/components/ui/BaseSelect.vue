@@ -12,12 +12,15 @@ import {
     SelectValue,
     SelectViewport,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
     options: { type: Array, required: true },
-    placeholder: { type: String, default: 'Choisir…' },
+    placeholder: { type: String, default: undefined },
     size: { type: String, default: 'default' },
 });
 const model = defineModel({ type: [String, Number], default: '' });
@@ -41,7 +44,7 @@ const selected = computed({
 <template>
     <SelectRoot v-model="selected">
         <SelectTrigger :class="['select', `select--${size}`]" v-bind="$attrs">
-            <SelectValue class="select__value" :placeholder="placeholder" />
+            <SelectValue class="select__value" :placeholder="placeholder ?? t('ui.select.placeholder')" />
             <ChevronDown class="select__chevron" size="1rem" aria-hidden="true" />
         </SelectTrigger>
         <SelectPortal>

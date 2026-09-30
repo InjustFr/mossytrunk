@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
@@ -10,6 +11,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['linked']);
+const { t } = useI18n();
 
 const productId = ref(props.item.linkedTo?.productId ?? '');
 const variant = ref(props.item.linkedTo?.variant ?? '');
@@ -28,11 +30,11 @@ watch(productId, () => {
 
 async function onLink() {
     if (!product.value) {
-        error.value = 'Choisissez le produit vendu par cet article.';
+        error.value = t('import.row.chooseProduct');
         return;
     }
     if (product.value.variants.length && !variant.value) {
-        error.value = `Choisissez la variante de « ${product.value.displayName} ».`;
+        error.value = t('import.row.chooseVariant', { product: product.value.displayName });
         return;
     }
     saving.value = true;
@@ -55,9 +57,9 @@ async function onLink() {
             <span v-if="item.variation" class="external-item__variation">{{ item.variation }}</span>
         </div>
         <div class="external-item__target">
-            <BaseCombobox v-model="productId" :options="productOptions" placeholder="Produit MossyTrunk…" :aria-label="`Produit pour ${item.label}`" />
-            <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" placeholder="Variante" :aria-label="`Variante pour ${item.label}`" />
-            <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? 'Modifier' : 'Associer' }}</BaseButton>
+            <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('import.row.productPlaceholder')" :aria-label="t('import.row.productFor', { item: item.label })" />
+            <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" :placeholder="t('import.row.variantPlaceholder')" :aria-label="t('import.row.variantFor', { item: item.label })" />
+            <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? t('import.row.edit') : t('import.row.link') }}</BaseButton>
         </div>
         <p v-if="error" class="external-item__error" role="alert">{{ error }}</p>
     </li>

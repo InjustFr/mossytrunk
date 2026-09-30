@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -15,10 +16,11 @@ const { rules, load, create, update, setActive, remove } = useDiscountRules();
 const { products, load: loadProducts } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const toast = useToast();
+const { t } = useI18n();
 const modalOpen = ref(false);
 const editing = ref(null);
 
-const modalTitle = computed(() => (editing.value ? 'Modifier la remise' : 'Nouvelle remise'));
+const modalTitle = computed(() => (editing.value ? t('discounts.page.edit') : t('discounts.page.new')));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
 
 function openCreate() {
@@ -32,7 +34,7 @@ function openEdit(rule) {
 }
 
 async function onSaved(name) {
-    toast.success(editing.value ? `Remise « ${name} » mise à jour.` : `Remise « ${name} » créée.`);
+    toast.success(t(editing.value ? 'discounts.page.updated' : 'discounts.page.created', { name }));
     modalOpen.value = false;
     await load();
 }
@@ -40,7 +42,7 @@ async function onSaved(name) {
 async function onToggle(rule, running) {
     try {
         await setActive(rule.id, running);
-        toast.success(running ? `Remise « ${rule.name} » lancée à partir d'aujourd'hui.` : `Remise « ${rule.name} » arrêtée : elle s'est terminée hier.`);
+        toast.success(t(running ? 'discounts.page.started' : 'discounts.page.stopped', { name: rule.name }));
     } catch (error) {
         toast.error(error.message);
     }
@@ -49,7 +51,7 @@ async function onToggle(rule, running) {
 
 async function onRemove(rule) {
     await remove(rule.id);
-    toast.success(`Remise « ${rule.name} » supprimée.`);
+    toast.success(t('discounts.page.removed', { name: rule.name }));
     await load();
 }
 
@@ -63,7 +65,7 @@ function openRequestedRule() {
     if (rule) {
         openEdit(rule);
     } else {
-        toast.error('Cette remise n\'existe plus.');
+        toast.error(t('discounts.page.notFound'));
     }
 }
 
@@ -74,14 +76,13 @@ onMounted(async () => {
 </script>
 
 <template>
-    <AppLayout title="Remises">
+    <AppLayout :title="t('discounts.page.title')">
         <template #actions>
-            <BaseButton @click="openCreate">Nouvelle remise</BaseButton>
+            <BaseButton @click="openCreate">{{ t('discounts.page.new') }}</BaseButton>
         </template>
 
         <p class="discounts-page__intro">
-            Une remise combine des conditions (une quantité d'un type ou d'un produit précis) et une action : prix fixe, remise en € ou en %.
-            Elles s'appliquent automatiquement aux commandes passées pendant leur période de validité, la plus avantageuse d'abord, et plusieurs remises peuvent se cumuler sur une commande.
+            {{ t('discounts.page.intro') }}
         </p>
         <BaseCard>
             <DiscountRuleList

@@ -35,7 +35,7 @@ final readonly class DoctrineServiceConnectionRepository implements ServiceConne
 
     public function get(string $service): ServiceConnection
     {
-        return $this->find($service) ?? throw new NotFound('Service', $service);
+        return $this->find($service) ?? throw new NotFound('service', $service);
     }
 
     public function all(): array

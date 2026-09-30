@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormField from '../ui/FormField.vue';
 
@@ -8,6 +9,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
+const { t } = useI18n();
 
 const form = reactive({ name: '', description: '' });
 const errors = ref({});
@@ -38,15 +40,15 @@ async function onSubmit() {
 <template>
     <form class="collection-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField label="Nom de la collection" :error="errors.name">
+            <FormField :label="t('designs.collectionForm.name')" :error="errors.name">
                 <input v-model="form.name" type="text">
             </FormField>
-            <FormField label="Description" :error="errors.description">
+            <FormField :label="t('designs.collectionForm.description')" :error="errors.description">
                 <textarea v-model="form.description" rows="3" />
             </FormField>
             <div class="collection-form__actions">
-                <BaseButton variant="ghost" @click="emit('cancel')">Annuler</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ collection ? 'Enregistrer' : 'Créer la collection' }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('designs.collectionForm.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ collection ? t('designs.collectionForm.save') : t('designs.collectionForm.create') }}</BaseButton>
             </div>
         </fieldset>
     </form>

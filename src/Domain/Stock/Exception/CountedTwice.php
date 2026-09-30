@@ -8,6 +8,6 @@ final class CountedTwice extends InvalidStock
 {
     public function __construct(string $label)
     {
-        parent::__construct(\sprintf('« %s » est compté deux fois.', $label));
+        parent::__construct('stock.counted_twice', ['item' => $label]);
     }
 }

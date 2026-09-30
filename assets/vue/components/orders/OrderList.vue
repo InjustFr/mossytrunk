@@ -1,16 +1,18 @@
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import PaymentMethod from './PaymentMethod.vue';
 import { formatDay, formatTime } from '../../composables/useDate.js';
-import { plural } from '../../composables/usePlural.js';
 
 const props = defineProps({
     orders: { type: Array, required: true },
     highlightId: { type: String, default: null },
 });
+
+const { t } = useI18n();
 
 const dayKey = (order) => `${order.placedAt.slice(0, 10)}|${order.eventId ?? order.source}`;
 
@@ -36,16 +38,16 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 </script>
 
 <template>
-    <EmptyState v-if="orders.length === 0">Aucune commande.</EmptyState>
+    <EmptyState v-if="orders.length === 0">{{ t('orders.list.empty') }}</EmptyState>
     <DataTable v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
-                <th>Heure</th>
-                <th class="data-table__cell--number">Articles</th>
-                <th class="data-table__cell--number">Remises</th>
-                <th class="data-table__cell--number">Total</th>
-                <th>Paiement</th>
-                <th>Référence</th>
+                <th>{{ t('orders.list.time') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.list.items') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.list.discounts') }}</th>
+                <th class="data-table__cell--number">{{ t('orders.list.total') }}</th>
+                <th>{{ t('orders.list.payment') }}</th>
+                <th>{{ t('orders.list.reference') }}</th>
             </tr>
         </template>
         <template #default="{ rows }">
@@ -54,10 +56,10 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <th scope="rowgroup" colspan="3">
                         <span class="order-list__date">{{ formatDay(order.placedAt) }}</span>
                         <a v-if="order.eventId" class="order-list__event" :href="`/events/${order.eventId}`">{{ order.eventName }}</a>
-                        <span v-else class="order-list__event order-list__event--online">Boutique {{ order.sourceLabel }}</span>
+                        <span v-else class="order-list__event order-list__event--online">{{ t('orders.shop', { source: order.sourceLabel }) }}</span>
                     </th>
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
-                    <td class="order-list__day-count" colspan="2">{{ plural(day.count, 'commande') }}</td>
+                    <td class="order-list__day-count" colspan="2">{{ t('orders.list.count', day.count) }}</td>
                 </tr>
                 <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]">
                     <td class="order-list__time">{{ formatTime(order.placedAt) }}</td>

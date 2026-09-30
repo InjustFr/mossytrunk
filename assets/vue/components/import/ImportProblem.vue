@@ -1,9 +1,11 @@
 <script setup>
 import { X } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 defineProps({
     problem: { type: Object, required: true },
 });
 const emit = defineEmits(['dismiss']);
+const { t } = useI18n();
 </script>
 
 <template>
@@ -11,11 +13,11 @@ const emit = defineEmits(['dismiss']);
         <div class="import-problem__content">
             <p class="import-problem__message">{{ problem.message }}</p>
             <p v-if="problem.dates.length" class="import-problem__detail">
-                Dates sans marché : <strong>{{ problem.dates.join(', ') }}</strong>
-                — <a href="/events">Créer un marché</a>
+                {{ t('import.problem.datesWithoutEvent') }} <strong>{{ problem.dates.join(', ') }}</strong>
+                — <a href="/events">{{ t('import.problem.createEvent') }}</a>
             </p>
         </div>
-        <button type="button" class="import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')"><X size="1rem" aria-hidden="true" /></button>
+        <button type="button" class="import-problem__close" :aria-label="t('import.problem.close')" @click="emit('dismiss')"><X size="1rem" aria-hidden="true" /></button>
     </div>
 </template>
 

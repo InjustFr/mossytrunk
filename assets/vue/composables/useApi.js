@@ -1,5 +1,6 @@
 import { begin, end } from '../../progress-bar.js';
 import { visit } from './useNavigation.js';
+import { t } from '../i18n/index.js';
 
 export class ApiError extends Error {
     constructor(message, status, violations = []) {
@@ -42,7 +43,7 @@ async function send(method, url, body) {
 
     if (!response.ok) {
         throw new ApiError(
-            payload?.detail ?? payload?.title ?? 'Une erreur est survenue.',
+            payload?.detail ?? payload?.title ?? t('common.error'),
             response.status,
             payload?.violations ?? [],
         );

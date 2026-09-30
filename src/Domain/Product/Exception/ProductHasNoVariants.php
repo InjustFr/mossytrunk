@@ -8,6 +8,6 @@ final class ProductHasNoVariants extends InvalidProduct
 {
     public function __construct(string $productName)
     {
-        parent::__construct(\sprintf('« %s » est un produit unique : il n\'a pas de variante.', $productName));
+        parent::__construct('product.has_no_variants', ['name' => $productName]);
     }
 }

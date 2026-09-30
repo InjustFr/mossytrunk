@@ -13,17 +13,17 @@ final readonly class DiscountRulePayload
      * @param list<DiscountConditionPayload> $conditions
      */
     public function __construct(
-        #[Assert\NotBlank(message: 'Le nom est obligatoire.')]
+        #[Assert\NotBlank(message: 'name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
-        #[Assert\Count(min: 1, minMessage: 'Ajoutez au moins une condition.')]
+        #[Assert\Count(min: 1, minMessage: 'discount.conditions.atLeastOne')]
         #[Assert\Valid]
         public array $conditions = [],
         #[Assert\Valid]
         public DiscountActionPayload $action = new DiscountActionPayload(),
-        #[Assert\Date(message: 'Date de début invalide.')]
+        #[Assert\Date(message: 'date.start.invalid')]
         public ?string $startsOn = null,
-        #[Assert\Date(message: 'Date de fin invalide.')]
+        #[Assert\Date(message: 'date.end.invalid')]
         public ?string $endsOn = null,
     ) {
     }

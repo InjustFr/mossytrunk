@@ -1,5 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Pencil } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
@@ -15,6 +16,7 @@ const props = defineProps({
     save: { type: Function, required: true },
 });
 const emit = defineEmits(['saved']);
+const { t } = useI18n();
 
 const empty = () => ({ name: '', typeId: '', sellingPrice: null, variants: [], adaptations: [] });
 const editingId = ref(null);
@@ -50,42 +52,42 @@ async function onSubmit() {
 
 <template>
     <div class="gabarit-manager">
-        <EmptyState v-if="gabarits.length === 0">Aucun gabarit. Un gabarit décrit un support (tirage 15×15, sticker brillant…) et ce qu'il faut adapter pour y poser un design.</EmptyState>
+        <EmptyState v-if="gabarits.length === 0">{{ t('designs.gabarits.empty') }}</EmptyState>
         <ul v-else class="gabarit-manager__list">
             <li v-for="gabarit in gabarits" :key="gabarit.id" :class="['gabarit-manager__item', { 'gabarit-manager__item--editing': gabarit.id === editingId }]">
                 <div class="gabarit-manager__summary">
                     <strong>{{ gabarit.name }}</strong>
                     <span class="gabarit-manager__meta">
-                        {{ gabarit.typeName ?? 'Sans type' }}, <MoneyAmount :cents="gabarit.sellingPrice" />
+                        {{ gabarit.typeName ?? t('designs.gabarits.noType') }}, <MoneyAmount :cents="gabarit.sellingPrice" />
                         <template v-if="gabarit.variants.length">, {{ gabarit.variants.join(', ') }}</template>
                     </span>
-                    <span v-if="gabarit.adaptations.length" class="gabarit-manager__meta">À adapter : {{ gabarit.adaptations.join(', ') }}</span>
+                    <span v-if="gabarit.adaptations.length" class="gabarit-manager__meta">{{ t('designs.gabarits.toAdapt', { adaptations: gabarit.adaptations.join(', ') }) }}</span>
                 </div>
-                <IconButton :icon="Pencil" :label="`Modifier ${gabarit.name}`" @click="edit(gabarit)" />
+                <IconButton :icon="Pencil" :label="t('designs.gabarits.edit', { name: gabarit.name })" @click="edit(gabarit)" />
             </li>
         </ul>
 
         <form class="gabarit-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
-                <h3 class="gabarit-manager__title">{{ editingId ? 'Modifier le gabarit' : 'Nouveau gabarit' }}</h3>
-                <FormField label="Nom du gabarit" :error="errors.name" hint="Ex. « Tirage 15×15 », « Sticker mat »">
+                <h3 class="gabarit-manager__title">{{ editingId ? t('designs.gabarits.editTitle') : t('designs.gabarits.newTitle') }}</h3>
+                <FormField :label="t('designs.gabarits.name')" :error="errors.name" :hint="t('designs.gabarits.nameHint')">
                     <input v-model="form.name" type="text">
                 </FormField>
-                <FormField as="group" label="Type des produits créés" :error="errors.typeId">
+                <FormField as="group" :label="t('designs.gabarits.type')" :error="errors.typeId">
                     <TypeSelect v-model="form.typeId" />
                 </FormField>
-                <FormField label="Prix de vente (€)" :error="errors.sellingPrice">
+                <FormField :label="t('designs.gabarits.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
-                <FormField as="group" label="Variantes proposées" :error="errors.variants">
+                <FormField as="group" :label="t('designs.gabarits.variants')" :error="errors.variants">
                     <VariantsInput v-model="form.variants" />
                 </FormField>
-                <FormField as="group" label="Adaptations à faire" :error="errors.adaptations" hint="La liste à cocher de chaque déclinaison sur ce gabarit.">
-                    <VariantsInput v-model="form.adaptations" input-label="Nouvelle adaptation" placeholder="Ex. fond perdu 3 mm, puis Entrée" item-label="l'adaptation" />
+                <FormField as="group" :label="t('designs.gabarits.adaptations')" :error="errors.adaptations" :hint="t('designs.gabarits.adaptationsHint')">
+                    <VariantsInput v-model="form.adaptations" :input-label="t('designs.gabarits.newAdaptation')" :placeholder="t('designs.gabarits.adaptationPlaceholder')" :item-label="t('designs.gabarits.adaptationItem')" />
                 </FormField>
                 <div class="gabarit-manager__actions">
-                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">Annuler</BaseButton>
-                    <BaseButton type="submit" :loading="saving">{{ editingId ? 'Enregistrer' : 'Ajouter le gabarit' }}</BaseButton>
+                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('designs.gabarits.cancel') }}</BaseButton>
+                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('designs.gabarits.save') : t('designs.gabarits.add') }}</BaseButton>
                 </div>
             </fieldset>
         </form>

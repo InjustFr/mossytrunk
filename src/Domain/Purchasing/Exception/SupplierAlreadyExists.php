@@ -8,6 +8,6 @@ final class SupplierAlreadyExists extends InvalidPurchase
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('Le fournisseur « %s » existe déjà.', $name));
+        parent::__construct('purchasing.supplier_already_exists', ['name' => $name]);
     }
 }

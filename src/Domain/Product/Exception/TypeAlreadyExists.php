@@ -8,6 +8,6 @@ final class TypeAlreadyExists extends InvalidProduct
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('Le type « %s » existe déjà.', $name));
+        parent::__construct('product.type_already_exists', ['name' => $name]);
     }
 }

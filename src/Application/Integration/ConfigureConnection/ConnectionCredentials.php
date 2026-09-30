@@ -43,7 +43,7 @@ final readonly class ConnectionCredentials
                 $known = $known || null !== $current;
             }
             if ($field->required && !$known) {
-                throw new MissingSetting($field->label);
+                throw new MissingSetting($field->name);
             }
         }
 

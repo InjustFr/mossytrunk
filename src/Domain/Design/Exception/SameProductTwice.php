@@ -8,6 +8,6 @@ final class SameProductTwice extends InvalidDesign
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('Deux déclinaisons donneraient le même produit « %s » : renommez-en une.', $name));
+        parent::__construct('design.same_product_twice', ['name' => $name]);
     }
 }

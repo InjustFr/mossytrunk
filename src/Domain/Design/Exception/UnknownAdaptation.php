@@ -8,6 +8,6 @@ final class UnknownAdaptation extends InvalidDesign
 {
     public function __construct(string $adaptation)
     {
-        parent::__construct(\sprintf('Adaptation inconnue « %s ».', $adaptation));
+        parent::__construct('design.unknown_adjustment', ['adjustment' => $adaptation]);
     }
 }

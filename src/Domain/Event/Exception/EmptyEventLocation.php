@@ -8,6 +8,6 @@ final class EmptyEventLocation extends InvalidEvent
 {
     public function __construct()
     {
-        parent::__construct('Le lieu de l\'événement est obligatoire.');
+        parent::__construct('event.empty_location');
     }
 }

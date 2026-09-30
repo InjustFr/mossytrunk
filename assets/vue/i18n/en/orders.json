@@ -1,0 +1,79 @@
+{
+    "shop": "{source} shop",
+    "page": {
+        "title": "Orders",
+        "new": "New order",
+        "importFrom": "Import from {service}",
+        "items": "Items",
+        "serviceItems": "{service} items",
+        "placed": "Order {reference} saved.",
+        "itemLinked": "Item “{label}” linked."
+    },
+    "detail": {
+        "title": "Order {reference}",
+        "titleFallback": "Order",
+        "back": "Orders",
+        "delete": "Delete order",
+        "confirmDelete": "Confirm deletion",
+        "importedFrom": "imported from {source}",
+        "items": "Items",
+        "amount": "Amount",
+        "margin": "Margin"
+    },
+    "eventFilter": {
+        "label": "Event",
+        "all": "All"
+    },
+    "draft": {
+        "quantityOf": "Quantity {line}",
+        "remove": "Remove {line}"
+    },
+    "form": {
+        "date": "Date",
+        "attachedTo": "Attached to {event}",
+        "noEvent": "No event on this date.",
+        "createEvent": "Create an event",
+        "noLines": "Add at least one product.",
+        "submit": "Save order"
+    },
+    "picker": {
+        "product": "Product",
+        "search": "Search for a product…",
+        "variant": "Variant",
+        "quantity": "Quantity",
+        "add": "Add",
+        "chooseProduct": "Choose a product.",
+        "chooseVariant": "Choose a variant for “{product}”."
+    },
+    "lines": {
+        "product": "Product",
+        "quantity": "Qty",
+        "unitPrice": "Unit price",
+        "total": "Total"
+    },
+    "list": {
+        "empty": "No orders.",
+        "time": "Time",
+        "items": "Items",
+        "discounts": "Discounts",
+        "total": "Total",
+        "payment": "Payment",
+        "reference": "Reference",
+        "count": "{count} order | {count} orders"
+    },
+    "margin": {
+        "collected": "Collected",
+        "buyingCost": "Buying cost",
+        "gross": "Gross margin",
+        "note": "Before URSSAF contributions and event expenses."
+    },
+    "totals": {
+        "subtotal": "Subtotal",
+        "shipping": "Shipping",
+        "total": "Total"
+    },
+    "payment": {
+        "card": "Card",
+        "cash": "Cash"
+    }
+}

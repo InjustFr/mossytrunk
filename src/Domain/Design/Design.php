@@ -77,7 +77,7 @@ class Design
     {
         $name = trim($name);
         if ('' === $name) {
-            throw new EmptyDesignName('du design');
+            throw new EmptyDesignName('design');
         }
 
         $this->name = $name;
@@ -218,7 +218,7 @@ class Design
             }
         }
 
-        throw new NotFound('Déclinaison', (string) $declinationId);
+        throw new NotFound('adaptation', (string) $declinationId);
     }
 
     public function isValidated(): bool

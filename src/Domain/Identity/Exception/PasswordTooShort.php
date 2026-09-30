@@ -8,6 +8,6 @@ final class PasswordTooShort extends InvalidAccount
 {
     public function __construct(int $minLength)
     {
-        parent::__construct(\sprintf('Le mot de passe doit contenir au moins %d caractères.', $minLength));
+        parent::__construct('identity.password_too_short', ['min' => $minLength]);
     }
 }

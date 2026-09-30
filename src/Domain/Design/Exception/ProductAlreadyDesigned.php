@@ -8,6 +8,6 @@ final class ProductAlreadyDesigned extends InvalidDesign
 {
     public function __construct(string $product, string $design)
     {
-        parent::__construct(\sprintf('« %s » appartient déjà au design « %s ».', $product, $design));
+        parent::__construct('design.product_already_designed', ['product' => $product, 'design' => $design]);
     }
 }

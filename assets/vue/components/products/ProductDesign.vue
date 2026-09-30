@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
 import { Palette } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
@@ -13,6 +14,7 @@ const props = defineProps({
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['designed']);
+const { t } = useI18n();
 
 const mode = ref(null);
 const form = reactive({ gabaritId: '', designId: '' });
@@ -48,27 +50,29 @@ async function onSubmit() {
             <Palette size="1.25rem" aria-hidden="true" />
             <span>
                 <strong>{{ design.name }}</strong>
-                <span class="product-design__hint">Ouvrir le design pour le décliner sur un autre gabarit</span>
+                <span class="product-design__hint">{{ t('products.design.openHint') }}</span>
             </span>
         </a>
         <template v-else>
-            <p class="product-design__intro">Ce produit n'a pas encore de design. Donnez-lui le sien pour le décliner facilement sur d'autres supports.</p>
+            <p class="product-design__intro">{{ t('products.design.intro') }}</p>
             <div v-if="mode === null" class="product-design__choices">
-                <BaseButton variant="secondary" :disabled="gabarits.length === 0" @click="mode = 'create'">Créer son design</BaseButton>
-                <BaseButton variant="ghost" :disabled="gabarits.length === 0 || designs.length === 0" @click="mode = 'attach'">Rattacher à un design</BaseButton>
+                <BaseButton variant="secondary" :disabled="gabarits.length === 0" @click="mode = 'create'">{{ t('products.design.create') }}</BaseButton>
+                <BaseButton variant="ghost" :disabled="gabarits.length === 0 || designs.length === 0" @click="mode = 'attach'">{{ t('products.design.attach') }}</BaseButton>
             </div>
-            <p v-if="gabarits.length === 0" class="product-design__hint">Créez d'abord un gabarit depuis la page <a href="/designs">Créations</a>.</p>
+            <i18n-t v-if="gabarits.length === 0" keypath="products.design.noGabarit" tag="p" class="product-design__hint" scope="global">
+                <template #link><a href="/designs">{{ t('products.design.designsPage') }}</a></template>
+            </i18n-t>
             <form v-if="mode" class="product-design__form" novalidate @submit.prevent="onSubmit">
-                <FormField v-if="mode === 'attach'" as="group" label="Design">
-                    <BaseSelect v-model="form.designId" :options="designOptions" aria-label="Design" placeholder="Choisir un design" />
+                <FormField v-if="mode === 'attach'" as="group" :label="t('products.design.design')">
+                    <BaseSelect v-model="form.designId" :options="designOptions" :aria-label="t('products.design.design')" :placeholder="t('products.design.chooseDesign')" />
                 </FormField>
-                <FormField as="group" label="Gabarit de ce produit" hint="Le support sur lequel ce produit est déjà décliné.">
-                    <BaseSelect v-model="form.gabaritId" :options="gabaritOptions" aria-label="Gabarit" placeholder="Choisir un gabarit" />
+                <FormField as="group" :label="t('products.design.gabarit')" :hint="t('products.design.gabaritHint')">
+                    <BaseSelect v-model="form.gabaritId" :options="gabaritOptions" :aria-label="t('products.design.gabaritLabel')" :placeholder="t('products.design.chooseGabarit')" />
                 </FormField>
                 <p v-if="error" class="product-design__error" role="alert">{{ error }}</p>
                 <div class="product-design__actions">
-                    <BaseButton variant="ghost" @click="mode = null">Annuler</BaseButton>
-                    <BaseButton type="submit" :loading="saving">{{ mode === 'create' ? 'Créer le design' : 'Rattacher' }}</BaseButton>
+                    <BaseButton variant="ghost" @click="mode = null">{{ t('products.cancel') }}</BaseButton>
+                    <BaseButton type="submit" :loading="saving">{{ t(mode === 'create' ? 'products.design.createSubmit' : 'products.design.attachSubmit') }}</BaseButton>
                 </div>
             </form>
         </template>

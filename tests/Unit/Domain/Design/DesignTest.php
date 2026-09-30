@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Domain\Design;
 
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignStatus;
+use App\Domain\Design\Exception\AdaptationsPending;
 use App\Domain\Design\Exception\InvalidDesign;
 use App\Domain\Design\Gabarit;
 use App\Domain\Product\Product;
@@ -55,7 +56,7 @@ final class DesignTest extends TestCase
         $declination = $design->decline($this->print);
         $design->tick($declination->id(), 'Recadrage carré', true);
 
-        $this->expectExceptionMessage('« Print Forêt » a encore 1 adaptation à faire.');
+        $this->expectExceptionObject(new AdaptationsPending('Print Forêt', 1));
 
         $design->validate(new \DateTimeImmutable());
     }

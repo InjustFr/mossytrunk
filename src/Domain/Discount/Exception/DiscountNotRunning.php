@@ -8,6 +8,6 @@ final class DiscountNotRunning extends InvalidDiscountRule
 {
     public function __construct(string $name)
     {
-        parent::__construct(\sprintf('« %s » n\'est pas en cours.', $name));
+        parent::__construct('discount.not_running', ['name' => $name]);
     }
 }

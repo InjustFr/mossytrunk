@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ChevronRight, TriangleAlert } from '@lucide/vue';
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
@@ -10,6 +11,8 @@ defineProps({
     groups: { type: Array, required: true },
     typeColors: { type: Map, required: true },
 });
+
+const { t } = useI18n();
 
 const STORAGE_KEY = 'mossytrunk.orderRecap.visible';
 const readVisible = () => {
@@ -33,16 +36,16 @@ watch(visible, (value) => {
     <div class="order-recap">
         <label class="order-recap__toggle">
             <BaseCheckbox v-model="visible" />
-            Afficher le détail des articles
+            {{ t('events.recap.showItems') }}
         </label>
 
         <Transition name="order-recap__list">
             <div v-if="visible && groups.length" class="order-recap__list" data-test="order-recap">
-                <CollapsibleRoot v-for="group in groups" :key="group.type" class="order-recap__group">
+                <CollapsibleRoot v-for="group in groups" :key="group.type ?? ''" class="order-recap__group">
                     <CollapsibleTrigger class="order-recap__row order-recap__row--group">
                         <ChevronRight class="order-recap__chevron" size="0.875rem" aria-hidden="true" />
-                        <span class="order-recap__label order-recap__label--type"><TypeMark :color="typeColors.get(group.type)" />{{ group.type }}</span>
-                        <span class="order-recap__quantity">{{ group.quantity }} art.</span>
+                        <span class="order-recap__label order-recap__label--type"><TypeMark :color="typeColors.get(group.type)" />{{ group.type ?? t('events.recap.untyped') }}</span>
+                        <span class="order-recap__quantity">{{ t('events.recap.itemCount', { count: group.quantity }) }}</span>
                         <MoneyAmount class="order-recap__amount" :cents="group.sales" />
                     </CollapsibleTrigger>
                     <CollapsibleContent>
@@ -66,7 +69,7 @@ watch(visible, (value) => {
                         <div v-else class="order-recap__row order-recap__row--product order-recap__row--leaf">
                             <span class="order-recap__label">
                                 {{ product.name }}
-                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" size="0.875rem" aria-label="Coût d'achat inconnu (0 €)" role="img" />
+                                <TriangleAlert v-if="product.unknownCost" class="order-recap__warning" size="0.875rem" :aria-label="t('events.recap.unknownCost')" role="img" />
                             </span>
                             <span class="order-recap__quantity">{{ product.quantity }}</span>
                             <MoneyAmount class="order-recap__amount" :cents="product.sales" />

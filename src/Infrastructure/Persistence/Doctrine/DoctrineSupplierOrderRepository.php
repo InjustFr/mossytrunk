@@ -33,7 +33,7 @@ final readonly class DoctrineSupplierOrderRepository implements SupplierOrderRep
     public function get(Ulid $id): SupplierOrder
     {
         return $this->entityManager->getRepository(SupplierOrder::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('Commande fournisseur', (string) $id);
+            ?? throw new NotFound('supplier_order', (string) $id);
     }
 
     public function all(): array

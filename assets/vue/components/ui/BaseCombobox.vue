@@ -12,13 +12,16 @@ import {
     ComboboxTrigger,
     ComboboxViewport,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
     options: { type: Array, required: true },
-    placeholder: { type: String, default: 'Rechercher…' },
-    empty: { type: String, default: 'Aucun résultat.' },
+    placeholder: { type: String, default: undefined },
+    empty: { type: String, default: undefined },
 });
 const model = defineModel({ type: String, default: '' });
 
@@ -28,15 +31,15 @@ const labelOf = (value) => props.options.find((option) => option.value === value
 <template>
     <ComboboxRoot v-model="model" open-on-click reset-search-term-on-select>
         <ComboboxAnchor class="combobox">
-            <ComboboxInput class="combobox__input" :display-value="labelOf" :placeholder="placeholder" v-bind="$attrs" />
-            <ComboboxTrigger class="combobox__trigger" aria-label="Afficher les choix">
+            <ComboboxInput class="combobox__input" :display-value="labelOf" :placeholder="placeholder ?? t('ui.combobox.placeholder')" v-bind="$attrs" />
+            <ComboboxTrigger class="combobox__trigger" :aria-label="t('ui.combobox.showChoices')">
                 <ChevronDown size="1rem" aria-hidden="true" />
             </ComboboxTrigger>
         </ComboboxAnchor>
         <ComboboxPortal>
             <ComboboxContent class="combobox__content" position="popper" :side-offset="4">
                 <ComboboxViewport class="combobox__viewport">
-                    <ComboboxEmpty class="combobox__empty">{{ empty }}</ComboboxEmpty>
+                    <ComboboxEmpty class="combobox__empty">{{ empty ?? t('ui.combobox.empty') }}</ComboboxEmpty>
                     <ComboboxItem
                         v-for="option in options"
                         :key="option.value"

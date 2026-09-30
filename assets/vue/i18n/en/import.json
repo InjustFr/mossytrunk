@@ -1,0 +1,39 @@
+{
+    "summary": {
+        "ordersImported": "{count} order imported | {count} orders imported",
+        "ordersAlreadyImported": "{count} already imported | {count} already imported",
+        "productsCreated": "{count} product created | {count} products created",
+        "typesCreated": "{count} type created | {count} types created",
+        "ordersWaitingForItems": "{count} order waiting to be linked | {count} orders waiting to be linked",
+        "done": "{service} import finished: {parts}."
+    },
+    "problem": {
+        "ordersWithoutEvent": "{count} order not imported: no event covers its date. Create the event, then run the import again. | {count} orders not imported: no event covers their date. Create the event, then run the import again.",
+        "salesWithoutItems": "{count} payment skipped: no items. | {count} payments skipped: no items.",
+        "datesWithoutEvent": "Dates without an event:",
+        "createEvent": "Create an event",
+        "close": "Close the message"
+    },
+    "notice": {
+        "count": "{count} {service} item to link to your products. | {count} {service} items to link to your products.",
+        "text": "Their orders are on hold: link each item once, then run the import again.",
+        "link": "Link items"
+    },
+    "linker": {
+        "intro": "{service} does not know your products: tell what each item sells, once and for all. Tip: when the item's SKU is the product reference (e.g. {example}), it is linked automatically.",
+        "unlinked": "Items to link",
+        "allLinked": "All items seen on {service} are linked.",
+        "linked": "Items already linked ({count})",
+        "reimport": "Run the {service} import again"
+    },
+    "row": {
+        "chooseProduct": "Choose the product this item sells.",
+        "chooseVariant": "Choose the variant of “{product}”.",
+        "productPlaceholder": "MossyTrunk product…",
+        "productFor": "Product for {item}",
+        "variantPlaceholder": "Variant",
+        "variantFor": "Variant for {item}",
+        "edit": "Edit",
+        "link": "Link"
+    }
+}

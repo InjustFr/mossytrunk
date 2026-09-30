@@ -8,6 +8,6 @@ final class EmptyWorkspaceName extends InvalidAccount
 {
     public function __construct()
     {
-        parent::__construct('Le nom de l\'espace de travail est obligatoire.');
+        parent::__construct('identity.empty_workspace_name');
     }
 }

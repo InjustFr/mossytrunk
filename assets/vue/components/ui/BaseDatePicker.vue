@@ -21,6 +21,9 @@ import {
     DatePickerRoot,
     DatePickerTrigger,
 } from 'reka-ui';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     withTime: { type: Boolean, default: false },
@@ -54,7 +57,7 @@ const date = computed({
                 <DatePickerInput v-if="item.part === 'literal'" :part="item.part" class="date-picker__literal">{{ item.value }}</DatePickerInput>
                 <DatePickerInput v-else :part="item.part" class="date-picker__segment">{{ item.value }}</DatePickerInput>
             </template>
-            <DatePickerTrigger class="date-picker__trigger" aria-label="Ouvrir le calendrier">
+            <DatePickerTrigger class="date-picker__trigger" :aria-label="t('ui.datePicker.open')">
                 <CalendarDays size="1rem" aria-hidden="true" />
             </DatePickerTrigger>
         </DatePickerField>
@@ -62,9 +65,9 @@ const date = computed({
         <DatePickerContent class="date-picker__content" :side-offset="4" align="start">
             <DatePickerCalendar v-slot="{ weekDays, grid }">
                 <DatePickerHeader class="date-picker__header">
-                    <DatePickerPrev class="date-picker__nav" aria-label="Mois précédent"><ChevronLeft size="1rem" aria-hidden="true" /></DatePickerPrev>
+                    <DatePickerPrev class="date-picker__nav" :aria-label="t('ui.datePicker.previousMonth')"><ChevronLeft size="1rem" aria-hidden="true" /></DatePickerPrev>
                     <DatePickerHeading class="date-picker__heading" />
-                    <DatePickerNext class="date-picker__nav" aria-label="Mois suivant"><ChevronRight size="1rem" aria-hidden="true" /></DatePickerNext>
+                    <DatePickerNext class="date-picker__nav" :aria-label="t('ui.datePicker.nextMonth')"><ChevronRight size="1rem" aria-hidden="true" /></DatePickerNext>
                 </DatePickerHeader>
                 <DatePickerGrid v-for="month in grid" :key="month.value.toString()" class="date-picker__grid">
                     <DatePickerGridHead>

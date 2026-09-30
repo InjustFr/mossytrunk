@@ -8,6 +8,6 @@ final class NonPositiveStockQuantity extends InvalidStock
 {
     public function __construct()
     {
-        parent::__construct('La quantité doit être supérieure à zéro.');
+        parent::__construct('stock.non_positive_quantity');
     }
 }

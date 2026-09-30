@@ -8,6 +8,6 @@ final class InvalidTypeColor extends InvalidProduct
 {
     public function __construct(string $color)
     {
-        parent::__construct(\sprintf('« %s » n\'est pas une couleur valide (format #rrggbb).', $color));
+        parent::__construct('product.invalid_type_color', ['color' => $color]);
     }
 }

@@ -8,6 +8,6 @@ final class DeclarationPeriodNotOver extends InvalidDeclaration
 {
     public function __construct(string $key)
     {
-        parent::__construct(\sprintf('La période %s n\'est pas terminée : elle ne peut pas encore être déclarée.', $key));
+        parent::__construct('accounting.period_not_over', ['period' => $key]);
     }
 }

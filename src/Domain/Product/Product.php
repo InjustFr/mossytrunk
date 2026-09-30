@@ -142,7 +142,7 @@ class Product
     public function reprice(Money $sellingPrice): void
     {
         if ($sellingPrice->isNegative()) {
-            throw new NegativeAmount('Le prix de vente');
+            throw new NegativeAmount('selling_price');
         }
 
         if (isset($this->sellingPrice) && $this->sellingPrice->equals($sellingPrice)) {
@@ -196,13 +196,13 @@ class Product
             }
         }
 
-        throw new NotFound('Prix', (string) $changeId);
+        throw new NotFound('price', (string) $changeId);
     }
 
     private function assertPastPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
     {
         if ($price->isNegative()) {
-            throw new NegativeAmount('Le prix de vente');
+            throw new NegativeAmount('selling_price');
         }
         if ($since > $now) {
             throw new PriceDatedInTheFuture();
@@ -221,7 +221,7 @@ class Product
     public function bought(Money $unitCost): void
     {
         if ($unitCost->isNegative()) {
-            throw new NegativeAmount('Le prix d\'achat');
+            throw new NegativeAmount('buying_price');
         }
 
         $this->buyingPrice = $unitCost;
