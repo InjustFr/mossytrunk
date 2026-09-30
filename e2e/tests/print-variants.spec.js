@@ -61,7 +61,7 @@ test('a design drops A4 from its Print declination, and a discount on A3 prints 
     await expect(ruleForm.getByTestId('discount-rule-pricing')).toContainText('20,00');
     await expect(ruleForm.getByTestId('discount-rule-pricing')).toContainText('18,00');
     await ruleForm.getByRole('button', { name: 'Créer la remise' }).click();
-    await expect(page.getByTestId(`discount-rule-${rule}`)).toContainText(`1 × ${printType.name} · A3 −10 %`);
+    await expect(page.getByTestId(`discount-rule-${rule}`)).toContainText(`1 × ${printType.name} A3 −10 %`);
 
     await page.goto('/orders');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();

@@ -71,7 +71,7 @@ test('a product variant condition and an amount off, edited afterwards', async (
     await form.getByRole('button', { name: 'Créer la remise' }).click();
 
     const item = page.getByTestId(`discount-rule-${name}`);
-    await expect(item).toContainText(`1 × ${tshirt.displayName} · M −5,00`);
+    await expect(item).toContainText(`1 × ${tshirt.displayName} M −5,00`);
 
     await item.getByRole('button', { name: `Modifier ${name}` }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier la remise' }).locator('form');
@@ -80,7 +80,7 @@ test('a product variant condition and an amount off, edited afterwards', async (
     await edit.getByRole('spinbutton', { name: 'Pourcentage' }).fill('20');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
-    await expect(item).toContainText(`1 × ${tshirt.displayName} · M −20 %`);
+    await expect(item).toContainText(`1 × ${tshirt.displayName} M −20 %`);
     await expect(item).toContainText('5,00');
 });
 
@@ -97,6 +97,7 @@ test('stopping a running discount ends it yesterday; an expired discount has no 
     await expect(item).toContainText('En cours');
     await item.getByRole('switch').uncheck();
 
-    await expect(item).toContainText('Expirée');
-    await expect(item.getByRole('switch')).toHaveCount(0);
+    const past = page.getByRole('region', { name: 'Passées' }).getByTestId(`discount-rule-${name}`);
+    await expect(past).toContainText('Expirée');
+    await expect(past.getByRole('switch')).toHaveCount(0);
 });

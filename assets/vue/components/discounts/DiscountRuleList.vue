@@ -1,10 +1,11 @@
 <script setup>
-import { Pencil, Trash2 } from '@lucide/vue';
+import { ArrowRight, CalendarRange, Pencil, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseSwitch from '../ui/BaseSwitch.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
+import TypeMark from '../ui/TypeMark.vue';
 import { describeAction, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatCents } from '../../composables/useMoney.js';
 import { formatDate } from '../../composables/useDate.js';
@@ -12,6 +13,7 @@ import { formatDate } from '../../composables/useDate.js';
 const props = defineProps({
     rules: { type: Array, required: true },
     products: { type: Array, required: true },
+    types: { type: Array, default: () => [] },
     selectedId: { type: String, default: null },
 });
 const emit = defineEmits(['edit', 'toggle', 'remove']);
@@ -19,7 +21,17 @@ const { t } = useI18n();
 
 const range = (min, max) => (min === max ? formatCents(min) : t('discounts.range', { min: formatCents(min), max: formatCents(max) }));
 
-const conditions = (rule) => rule.conditions.map((condition) => `${condition.quantity} × ${condition.name}`).join(' + ');
+const typeOf = (id) => props.types.find((type) => type.id === id);
+const productOf = (id) => props.products.find((product) => product.id === id);
+
+function target(condition) {
+    if (condition.kind === 'type') {
+        const type = typeOf(condition.id);
+        return { name: type?.name ?? condition.name, color: type?.color ?? null };
+    }
+    const product = productOf(condition.id);
+    return { name: product?.displayName ?? condition.name, color: typeOf(product?.typeId)?.color ?? null };
+}
 
 function period(rule) {
     if (rule.startsOn && rule.endsOn) {
@@ -28,7 +40,7 @@ function period(rule) {
     if (rule.startsOn) {
         return t('discounts.list.from', { start: formatDate(rule.startsOn) });
     }
-    return rule.endsOn ? t('discounts.list.until', { end: formatDate(rule.endsOn) }) : null;
+    return rule.endsOn ? t('discounts.list.until', { end: formatDate(rule.endsOn) }) : t('discounts.list.always');
 }
 
 const status = (key) => t(`discounts.status.${key}`);
@@ -58,25 +70,37 @@ function saving(rule) {
             :data-test="`discount-rule-${rule.name}`"
         >
             <div class="discount-rule-list__main">
-                <span class="discount-rule-list__name">
-                    {{ rule.name }}
-                    <span v-if="rule.status === 'expired'" class="discount-rule-list__status">{{ status('expired') }}</span>
+                <span class="discount-rule-list__name">{{ rule.name }}</span>
+                <p class="discount-rule-list__deal">
+                    <template v-for="(condition, index) in rule.conditions" :key="`${condition.kind}-${condition.id}-${condition.variant}`">
+                        <span v-if="index > 0" class="discount-rule-list__plus">+</span>{{ ' ' }}
+                        <span class="discount-rule-list__condition">
+                            <span class="discount-rule-list__quantity">{{ condition.quantity }} ×</span> <TypeMark :color="target(condition).color" /> <span>{{ target(condition).name }}</span> <span v-if="condition.variant" class="discount-rule-list__variant">{{ condition.variant }}</span>
+                        </span>{{ ' ' }}
+                    </template>
+                    <ArrowRight class="discount-rule-list__arrow" size="1rem" aria-hidden="true" /> <span class="discount-rule-list__action">{{ describeAction(rule.action) }}</span>
+                </p>
+                <span class="discount-rule-list__period">
+                    <CalendarRange size="0.875rem" aria-hidden="true" />
+                    {{ period(rule) }}
                 </span>
-                <span class="discount-rule-list__deal">
-                    {{ conditions(rule) }} {{ describeAction(rule.action) }}
-                    <template v-if="saving(rule)">{{ t('discounts.list.insteadOf', { price: saving(rule).regular }) }}</template>
-                </span>
-                <span v-if="period(rule)" class="discount-rule-list__period">{{ period(rule) }}</span>
             </div>
-            <p v-if="saving(rule)" class="discount-rule-list__saving">
-                <span class="discount-rule-list__saving-label">{{ t('discounts.list.customerSaving') }}</span>
-                <span class="discount-rule-list__saving-amount">{{ saving(rule).saved }}</span>
-            </p>
+            <dl v-if="saving(rule)" class="discount-rule-list__figures">
+                <div class="discount-rule-list__figure">
+                    <dt>{{ t('discounts.list.regularPrice') }}</dt>
+                    <dd>{{ saving(rule).regular }}</dd>
+                </div>
+                <div class="discount-rule-list__figure">
+                    <dt>{{ t('discounts.list.customerSaving') }}</dt>
+                    <dd class="discount-rule-list__saved">{{ saving(rule).saved }}</dd>
+                </div>
+            </dl>
+            <span v-else class="discount-rule-list__figures" />
             <label v-if="rule.status !== 'expired'" class="discount-rule-list__toggle" :title="rule.status === 'running' ? t('discounts.list.stop') : t('discounts.list.start')">
                 <BaseSwitch :key="rule.status" :default-value="rule.status === 'running'" @update:model-value="emit('toggle', rule, $event)" />
                 {{ status(rule.status) }}
             </label>
-            <span v-else class="discount-rule-list__toggle discount-rule-list__toggle--none" />
+            <span v-else class="discount-rule-list__toggle discount-rule-list__toggle--expired">{{ status('expired') }}</span>
             <div class="discount-rule-list__actions">
                 <IconButton :icon="Pencil" :label="t('discounts.list.edit', { name: rule.name })" @click="emit('edit', rule)" />
                 <ConfirmButton :icon="Trash2" :label="t('discounts.list.remove', { name: rule.name })" @confirm="emit('remove', rule)" />
@@ -90,50 +114,80 @@ function saving(rule) {
 
 .discount-rule-list__item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 9rem 7rem auto;
+    grid-template-columns: minmax(0, 1fr) auto 7rem auto;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-3) var(--space-2);
+    padding: var(--space-4) var(--space-2);
     border-bottom: 0.0625rem solid var(--color-border);
     transition: opacity var(--transition), background var(--transition);
 }
 
 .discount-rule-list__item:last-child { border-bottom: none; }
 .discount-rule-list__item--inactive .discount-rule-list__main,
-.discount-rule-list__item--inactive .discount-rule-list__saving { opacity: 0.55; }
+.discount-rule-list__item--inactive .discount-rule-list__figures { opacity: 0.6; }
 .discount-rule-list__item--selected { background: var(--color-accent-soft); }
 
-.discount-rule-list__main { display: flex; flex-direction: column; min-width: 0; }
-.discount-rule-list__name { display: flex; align-items: center; gap: var(--space-2); font-weight: 600; }
-.discount-rule-list__status {
-    padding: 0 var(--space-2);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    color: var(--color-muted);
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+.discount-rule-list__main { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.discount-rule-list__name { font-weight: 600; }
+
+.discount-rule-list__deal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: 0.9rem;
 }
-.discount-rule-list__deal { font-size: 0.9rem; }
-.discount-rule-list__period { color: var(--color-muted); font-size: 0.85rem; }
 
-.discount-rule-list__saving { display: flex; flex-direction: column; align-items: flex-end; margin: 0; grid-column: 2; }
-.discount-rule-list__saving-label { color: var(--color-muted); font-size: 0.8rem; }
-.discount-rule-list__saving-amount { color: var(--color-success); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.discount-rule-list__condition {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.125rem var(--space-3) 0.125rem var(--space-2);
+    border: 0.0625rem solid var(--color-border);
+    border-radius: 62.4375rem;
+    background: var(--color-bg);
+}
 
-.discount-rule-list__toggle { grid-column: 3; display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
-.discount-rule-list__actions { grid-column: 4; display: flex; align-items: center; gap: var(--space-1); }
+.discount-rule-list__quantity { font-weight: 600; font-variant-numeric: tabular-nums; }
+.discount-rule-list__variant {
+    padding: 0 var(--space-2);
+    border-radius: 62.4375rem;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.8rem;
+}
+
+.discount-rule-list__plus { color: var(--color-muted); }
+.discount-rule-list__arrow { color: var(--color-subtle); }
+.discount-rule-list__action {
+    padding: 0.125rem var(--space-3);
+    border-radius: 62.4375rem;
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.discount-rule-list__period { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: 0.85rem; }
+
+.discount-rule-list__figures { display: flex; gap: var(--space-5); margin: 0; }
+.discount-rule-list__figure { display: flex; flex-direction: column; align-items: flex-end; }
+.discount-rule-list__figure dt { color: var(--color-muted); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.discount-rule-list__figure dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.discount-rule-list__saved { color: var(--color-success); }
+
+.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
+.discount-rule-list__toggle--expired { color: var(--color-muted); cursor: default; }
+.discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
 
 .discount-rule-list__item-enter-active,
 .discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
 .discount-rule-list__item-enter-from,
 .discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 
-@media (max-width: 43.75rem) {
+@media (max-width: 50rem) {
     .discount-rule-list__item { grid-template-columns: 1fr auto; }
-    .discount-rule-list__saving,
-    .discount-rule-list__toggle,
-    .discount-rule-list__actions { grid-column: auto; }
+    .discount-rule-list__main { grid-column: 1 / -1; }
 }
 </style>

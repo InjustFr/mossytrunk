@@ -5,6 +5,8 @@
         "new": "Nouvelle remise",
         "edit": "Modifier la remise",
         "intro": "Une remise combine des conditions (une quantité d'un type ou d'un produit précis, éventuellement d'une seule variante) et une action : prix fixe, remise en € ou en %. Elles s'appliquent automatiquement aux commandes passées pendant leur période de validité, la plus avantageuse d'abord, et plusieurs remises peuvent se cumuler sur une commande.",
+        "current": "En cours et à venir",
+        "past": "Passées",
         "created": "Remise « {name} » créée.",
         "updated": "Remise « {name} » mise à jour.",
         "started": "Remise « {name} » lancée à partir d'aujourd'hui.",
@@ -55,11 +57,12 @@
         "expired": "Expirée"
     },
     "list": {
-        "empty": "Aucune remise. Créez-en une, ex. « 2 prints et 1 sticker pour 15 € ».",
+        "empty": "Aucune remise en cours ni à venir. Créez-en une, ex. « 2 prints et 1 sticker pour 15 € ».",
         "between": "Du {start} au {end}",
         "from": "À partir du {start}",
         "until": "Jusqu'au {end}",
-        "insteadOf": ", au lieu de {price}",
+        "always": "Dès maintenant, sans fin",
+        "regularPrice": "Prix normal",
         "customerSaving": "Économie client",
         "stop": "Arrêter : la remise se termine hier",
         "start": "Lancer : la remise commence aujourd'hui",

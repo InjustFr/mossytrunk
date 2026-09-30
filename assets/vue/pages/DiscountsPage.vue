@@ -20,6 +20,11 @@ const { t } = useI18n();
 const modalOpen = ref(false);
 const editing = ref(null);
 
+const currentRules = computed(() => rules.value.filter((rule) => rule.status !== 'expired'));
+const pastRules = computed(() => rules.value
+    .filter((rule) => rule.status === 'expired')
+    .sort((a, b) => (b.endsOn ?? '').localeCompare(a.endsOn ?? '')));
+
 const modalTitle = computed(() => (editing.value ? t('discounts.page.edit') : t('discounts.page.new')));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
 
@@ -84,16 +89,29 @@ onMounted(async () => {
         <p class="discounts-page__intro">
             {{ t('discounts.page.intro') }}
         </p>
-        <BaseCard>
-            <DiscountRuleList
-                :rules="rules"
-                :products="products"
-                :selected-id="modalOpen ? editing?.id ?? null : null"
-                @edit="openEdit"
-                @toggle="onToggle"
-                @remove="onRemove"
-            />
-        </BaseCard>
+        <div class="discounts-page__sections">
+            <BaseCard :title="t('discounts.page.current')">
+                <DiscountRuleList
+                    :rules="currentRules"
+                    :products="products"
+                    :types="types"
+                    :selected-id="modalOpen ? editing?.id ?? null : null"
+                    @edit="openEdit"
+                    @toggle="onToggle"
+                    @remove="onRemove"
+                />
+            </BaseCard>
+            <BaseCard v-if="pastRules.length" :title="t('discounts.page.past')">
+                <DiscountRuleList
+                    :rules="pastRules"
+                    :products="products"
+                    :types="types"
+                    :selected-id="modalOpen ? editing?.id ?? null : null"
+                    @edit="openEdit"
+                    @remove="onRemove"
+                />
+            </BaseCard>
+        </div>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
             <DiscountRuleForm :rule="editing" :products="products" :types="types" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
@@ -102,5 +120,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.discounts-page__sections { display: flex; flex-direction: column; gap: var(--space-5); }
 .discounts-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); max-width: 70ch; }
 </style>
