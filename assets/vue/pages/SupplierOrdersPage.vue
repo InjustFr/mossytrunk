@@ -12,6 +12,7 @@ import SupplierOrderList from '../components/purchasing/SupplierOrderList.vue';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useSupplierOrders, useSuppliers } from '../composables/usePurchasing.js';
+import { queryText } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 
 const { t } = useI18n();
@@ -24,7 +25,7 @@ const toast = useToast();
 
 const formOpen = ref(false);
 const suppliersOpen = ref(false);
-const status = ref('ordered');
+const status = queryText('status', 'ordered');
 
 const awaiting = computed(() => orders.value.filter((order) => order.status === 'ordered'));
 const visible = computed(() => (status.value === 'all' ? orders.value : orders.value.filter((order) => order.status === status.value)));
@@ -54,7 +55,7 @@ async function onSupplierSaved(name) {
 
 onMounted(async () => {
     await Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes()]);
-    if (awaiting.value.length === 0 && orders.value.length > 0) {
+    if (status.value === 'ordered' && awaiting.value.length === 0 && orders.value.length > 0) {
         status.value = 'all';
     }
 });

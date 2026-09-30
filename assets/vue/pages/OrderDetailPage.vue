@@ -18,6 +18,7 @@ import { useProducts } from '../composables/useProducts.js';
 import { useToast } from '../composables/useToast.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
+import { listUrl } from '../composables/useQueryState.js';
 
 const props = defineProps({
     orderId: { type: String, required: true },
@@ -45,7 +46,7 @@ async function onIdentified(name) {
 
 async function onDelete() {
     await remove();
-    visit('/orders');
+    visit(listUrl('/orders'));
 }
 
 onMounted(() => Promise.all([load(), loadProducts()]));
@@ -53,7 +54,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
 
 <template>
     <AppLayout :title="order ? t('orders.detail.title', { reference: order.reference }) : t('orders.detail.titleFallback')">
-        <template #back><a class="back-link" href="/orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
+        <template #back><a class="back-link" :href="listUrl('/orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
         <template #actions>
             <BaseButton v-if="order" variant="secondary" @click="mergeOpen = true">{{ t('orders.merge.open') }}</BaseButton>
             <ConfirmButton v-if="order" :label="t('orders.detail.delete')" :confirm-label="t('orders.detail.confirmDelete')" @confirm="onDelete" />

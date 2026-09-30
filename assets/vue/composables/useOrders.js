@@ -1,11 +1,11 @@
 import { ref } from 'vue';
 import { useApi } from './useApi.js';
+import { queryText } from './useQueryState.js';
 
 export function useOrders() {
     const api = useApi();
     const orders = ref([]);
-    // Pre-selected by links such as /orders?event=<id> from an event report.
-    const eventFilter = ref(new URLSearchParams(window.location.search).get('event') ?? '');
+    const eventFilter = queryText('event');
 
     async function load() {
         const query = eventFilter.value ? `?eventId=${encodeURIComponent(eventFilter.value)}` : '';

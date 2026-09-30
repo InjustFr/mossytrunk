@@ -1,18 +1,19 @@
 import { computed, ref, watch } from 'vue';
+import { queryFlag, queryList, queryText } from './useQueryState.js';
 
 export const MISSING_COST_PARAM = 'purchase-price';
 export const STOCK_PARAM = 'stock';
 
 export function useProductFilters(allProducts) {
-    const archived = ref(false);
+    const archived = queryFlag('archived', 'yes');
     const archivedCount = computed(() => allProducts.value.filter((product) => product.archived).length);
     const products = computed(() => allProducts.value.filter((product) => product.archived === archived.value));
-    const typeId = ref('');
-    const variants = ref([]);
-    const search = ref('');
-    const missingCost = ref(new URLSearchParams(window.location.search).get(MISSING_COST_PARAM) === 'missing');
+    const typeId = queryText('type');
+    const variants = queryList('variant');
+    const search = queryText('search');
+    const missingCost = queryFlag(MISSING_COST_PARAM, 'missing');
     const missingCostCount = computed(() => products.value.filter((product) => product.buyingPrice === 0).length);
-    const lowStock = ref(new URLSearchParams(window.location.search).get(STOCK_PARAM) === 'low');
+    const lowStock = queryFlag(STOCK_PARAM, 'low');
     const lowStockCount = computed(() => products.value.filter((product) => product.lowStock).length);
     const selectedIds = ref([]);
 

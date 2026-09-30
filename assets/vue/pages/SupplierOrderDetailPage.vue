@@ -13,6 +13,7 @@ import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderReception from '../components/purchasing/SupplierOrderReception.vue';
 import { formatDate, formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
+import { listUrl } from '../composables/useQueryState.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { SUPPLIER_ORDER_STATUSES, useSupplierOrders, useSuppliers } from '../composables/usePurchasing.js';
@@ -54,7 +55,7 @@ async function onRemove() {
     try {
         await remove(props.orderId);
         toast.success(t('purchasing.detail.deleted', { reference: order.value.reference }));
-        visit('/supplier-orders');
+        visit(listUrl('/supplier-orders'));
     } catch (error) {
         toast.error(error.message);
     }
@@ -71,7 +72,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
 
 <template>
     <AppLayout :title="order?.reference ?? t('purchasing.detail.title')">
-        <template #back><a class="back-link" href="/supplier-orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('purchasing.detail.back') }}</a></template>
+        <template #back><a class="back-link" :href="listUrl('/supplier-orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('purchasing.detail.back') }}</a></template>
         <template #actions>
             <template v-if="isOrdered && !receiving">
                 <ConfirmButton variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />

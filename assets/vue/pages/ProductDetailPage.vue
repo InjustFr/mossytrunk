@@ -17,6 +17,7 @@ import StockHistory from '../components/products/StockHistory.vue';
 import { useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { formatRatio } from '../composables/useMoney.js';
 import { visit } from '../composables/useNavigation.js';
+import { listUrl } from '../composables/useQueryState.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useStock } from '../composables/useStock.js';
@@ -86,7 +87,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
 
 <template>
     <AppLayout :title="product?.displayName ?? t('products.detail.fallbackTitle')">
-        <template #back><a class="back-link" href="/products"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('products.detail.back') }}</a></template>
+        <template #back><a class="back-link" :href="listUrl('/products')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('products.detail.back') }}</a></template>
         <template #actions>
             <template v-if="product">
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('products.detail.edit') }}</BaseButton>
