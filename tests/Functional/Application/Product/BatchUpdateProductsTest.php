@@ -8,6 +8,7 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
+use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Shared\Exception\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
@@ -79,6 +80,21 @@ final class BatchUpdateProductsTest extends KernelTestCase
     private function product(string $name, int $price, array $variants = [], ?string $typeId = null): string
     {
         return (string) self::createProduct($name, $price, 0, $variants, $typeId);
+    }
+
+    public function testMovingProductsToATypeWithVariantsNeedsAVariant(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print', variants: ['A5', 'A4'])->id();
+        $zine = $this->product('Zine', 1_000);
+
+        try {
+            $this->batch(new BatchUpdateProducts([$zine], changeType: true, typeId: $print));
+            self::fail('a product of a type with variants needs one of them');
+        } catch (VariantChoiceMissing) {
+        }
+
+        $this->batch(new BatchUpdateProducts([$zine], changeType: true, typeId: $print, addVariants: ['A5']));
+        self::assertSame(['A5'], self::getContainer()->get(ListProductsHandler::class)()[0]->variants);
     }
 
     private function batch(BatchUpdateProducts $command): int

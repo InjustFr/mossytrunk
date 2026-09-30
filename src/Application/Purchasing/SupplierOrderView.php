@@ -16,6 +16,7 @@ final readonly class SupplierOrderView
     public function __construct(
         public string $id,
         public string $reference,
+        public ?string $supplierReference,
         public array $supplier,
         public string $orderedOn,
         public string $status,
@@ -35,6 +36,7 @@ final readonly class SupplierOrderView
         return new self(
             (string) $order->id(),
             $order->reference(),
+            $order->supplierReference(),
             ['id' => (string) $order->supplier()->id(), 'name' => $order->supplier()->name()],
             $order->orderedOn()->format('Y-m-d'),
             $order->status()->value,

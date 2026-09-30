@@ -10,6 +10,7 @@ use App\Domain\Purchasing\Exception\EmptySupplierOrder;
 use App\Domain\Purchasing\Exception\OrderedTwice;
 use App\Domain\Purchasing\Exception\ReceivedQuantityMissing;
 use App\Domain\Purchasing\Exception\SupplierOrderAlreadyReceived;
+use App\Domain\Purchasing\Exception\SupplierReferenceTooLong;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -24,6 +25,8 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\UniqueConstraint(name: 'supplier_order_workspace_reference', columns: ['workspace_id', 'reference'])]
 class SupplierOrder
 {
+    public const int SUPPLIER_REFERENCE_MAX_LENGTH = 100;
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
@@ -34,6 +37,9 @@ class SupplierOrder
 
     #[ORM\Column(length: 64)]
     private string $reference;
+
+    #[ORM\Column(length: self::SUPPLIER_REFERENCE_MAX_LENGTH, nullable: true)]
+    private ?string $supplierReference = null;
 
     #[ORM\ManyToOne(targetEntity: Supplier::class)]
     #[ORM\JoinColumn(nullable: false)]
@@ -110,6 +116,16 @@ class SupplierOrder
         }
 
         $this->allocate($discount, $deliveryFees);
+    }
+
+    public function referToSupplierOrder(?string $supplierReference): void
+    {
+        $supplierReference = null === $supplierReference || '' === trim($supplierReference) ? null : trim($supplierReference);
+        if (null !== $supplierReference && mb_strlen($supplierReference) > self::SUPPLIER_REFERENCE_MAX_LENGTH) {
+            throw new SupplierReferenceTooLong(self::SUPPLIER_REFERENCE_MAX_LENGTH);
+        }
+
+        $this->supplierReference = $supplierReference;
     }
 
     private function allocate(Money $discount, Money $deliveryFees): void
@@ -194,6 +210,11 @@ class SupplierOrder
     public function reference(): string
     {
         return $this->reference;
+    }
+
+    public function supplierReference(): ?string
+    {
+        return $this->supplierReference;
     }
 
     public function supplier(): Supplier

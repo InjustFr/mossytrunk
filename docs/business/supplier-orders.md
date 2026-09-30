@@ -7,6 +7,7 @@ then — once the parcel arrives — what was really received. Reception feeds t
 |---|---|
 | `Supplier` | Name (unique per workspace, case-insensitive), optional contact and notes |
 | `reference` | `CMF-YYYYMMDD-XXXXXX`, generated from the order date |
+| `supplierReference` | « Référence fournisseur », optional: the order number at the supplier (trimmed, ≤ 100 characters), changeable while « Commandée » |
 | `orderedOn` | Day the order was placed |
 | `status` | `ordered` (« Commandée ») then `received` (« Reçue »), with `receivedAt` |
 | `discount` | « Remise globale » on the whole order, shared between the lines **in proportion to their price** |
@@ -33,13 +34,14 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 |---|---|
 | `ListSuppliers` / `SaveSupplier` | `GET /api/suppliers`, `POST /api/suppliers`, `PUT /api/suppliers/{id}` `{name, contact, notes}` |
 | `ListSupplierOrders` / `GetSupplierOrder` | `GET /api/supplier-orders`, `GET /api/supplier-orders/{id}` |
-| `PlaceSupplierOrder` / `ReviseSupplierOrder` | `POST /api/supplier-orders`, `PUT /api/supplier-orders/{id}` `{supplierId, orderedOn, discount, deliveryFees, lines: [{productId, variant, quantity, totalPrice}]}` |
+| `PlaceSupplierOrder` / `ReviseSupplierOrder` | `POST /api/supplier-orders`, `PUT /api/supplier-orders/{id}` `{supplierId, orderedOn, supplierReference?, discount, deliveryFees, lines: [{productId, variant, quantity, totalPrice}]}` |
 | `DeleteSupplierOrder` | `DELETE /api/supplier-orders/{id}` (422 once received) |
 | `ReceiveSupplierOrder` | `POST /api/supplier-orders/{id}/reception` `{lines: [{lineId, received}]}` |
 
 ## UI
 
-- **Fournisseurs** (`/supplier-orders`): orders filtered « À réceptionner » / « Reçues » / « Toutes »; « Nouvelle commande » opens a drawer (supplier with inline creation, date, product lines with quantity and total price, « Remise globale » and « Frais de livraison », each line's resulting unit cost shown live); « Fournisseurs » manages the supplier list.
-- **Commande fournisseur** (`/supplier-orders/{id}`): facts and lines (ordered, received with the gap, price paid, real unit cost vs planned). While « Commandée »: « Modifier », « Supprimer », « Déballer le colis ».
+- **Fournisseurs** (`/supplier-orders`): orders filtered « À réceptionner » / « Reçues » / « Toutes »; « Nouvelle commande » opens a drawer (supplier with inline creation, date, « Référence fournisseur », product lines with quantity and total price — added « Un produit » at a time or « Tout un type » at once: every non-archived product of the type, one line per variant, optionally only some variants, same quantity and unit price for each; archived products and variants and the imports' free-amount product are not offered — « Remise globale » and « Frais de livraison », each line's resulting unit cost shown live); « Fournisseurs » manages the supplier list.
+- The list shows the supplier reference under the order reference.
+- **Commande fournisseur** (`/supplier-orders/{id}`): facts (supplier reference included) and lines (ordered, received with the gap, price paid, real unit cost vs planned). While « Commandée »: « Modifier », « Supprimer », « Déballer le colis ».
 - **Déballage** (reception) is a guided, line-by-line check: « Tout est arrivé » or a counted quantity, the gap and the recomputed unit cost update live, then a summary before « Valider le déballage ».
 - The product stock history links « Commande fournisseur » lots to their order.

@@ -1,13 +1,15 @@
 <script setup>
 import { nextTick, ref } from 'vue';
-import { Check, ChevronDown, ChevronUp, Pencil, Plus, Trash2, X } from '@lucide/vue';
+import { Archive, ArchiveRestore, Check, ChevronDown, ChevronUp, Pencil, Plus, Trash2, X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import IconButton from '../ui/IconButton.vue';
+import StatusBadge from '../ui/StatusBadge.vue';
 
 const props = defineProps({
     rename: { type: Function, required: true },
 });
 const variants = defineModel({ type: Array, required: true });
+const archived = defineModel('archived', { type: Array, default: () => [] });
 const { t } = useI18n();
 
 const draft = ref('');
@@ -38,7 +40,15 @@ function move(index, offset) {
     variants.value = reordered;
 }
 
-const remove = (variant) => { variants.value = variants.value.filter((existing) => existing !== variant); };
+const remove = (variant) => {
+    variants.value = variants.value.filter((existing) => existing !== variant);
+    archived.value = archived.value.filter((existing) => existing !== variant);
+};
+
+const isArchived = (variant) => archived.value.includes(variant);
+const toggleArchived = (variant) => {
+    archived.value = isArchived(variant) ? archived.value.filter((existing) => existing !== variant) : [...archived.value, variant];
+};
 
 async function startRenaming(variant) {
     editing.value = variant;
@@ -68,6 +78,7 @@ async function confirmRenaming() {
     try {
         await props.rename(from, to);
         variants.value = variants.value.map((variant) => (variant === from ? to : variant));
+        archived.value = archived.value.map((variant) => (variant === from ? to : variant));
         stopRenaming();
     } catch (e) {
         error.value = e.message;
@@ -80,7 +91,7 @@ async function confirmRenaming() {
 <template>
     <div class="type-variants">
         <ol v-if="variants.length" class="type-variants__list">
-            <li v-for="(variant, index) in variants" :key="variant" class="type-variants__row">
+            <li v-for="(variant, index) in variants" :key="variant" :class="['type-variants__row', { 'type-variants__row--archived': isArchived(variant) }]">
                 <template v-if="editing === variant">
                     <input
                         ref="renameInput"
@@ -97,10 +108,15 @@ async function confirmRenaming() {
                     <IconButton :icon="X" :label="t('products.cancel')" :disabled="renaming" @click="stopRenaming" />
                 </template>
                 <template v-else>
-                    <span class="type-variants__label">{{ variant }}</span>
+                    <span class="type-variants__label">{{ variant }} <StatusBadge v-if="isArchived(variant)">{{ t('products.types.variants.archived') }}</StatusBadge></span>
                     <IconButton :icon="ChevronUp" :label="t('products.types.variants.moveUp', { variant })" :disabled="index === 0" @click="move(index, -1)" />
                     <IconButton :icon="ChevronDown" :label="t('products.types.variants.moveDown', { variant })" :disabled="index === variants.length - 1" @click="move(index, 1)" />
                     <IconButton :icon="Pencil" :label="t('products.types.variants.rename', { variant })" @click="startRenaming(variant)" />
+                    <IconButton
+                        :icon="isArchived(variant) ? ArchiveRestore : Archive"
+                        :label="t(isArchived(variant) ? 'products.types.variants.restore' : 'products.types.variants.archive', { variant })"
+                        @click="toggleArchived(variant)"
+                    />
                     <IconButton :icon="Trash2" variant="danger" :label="t('products.types.variants.remove', { variant })" @click="remove(variant)" />
                 </template>
             </li>
@@ -134,7 +150,8 @@ async function confirmRenaming() {
 }
 
 .type-variants__row:first-child { border-top: none; }
-.type-variants__label { flex: 1; color: var(--color-ink); }
+.type-variants__label { display: flex; flex: 1; align-items: center; gap: var(--space-2); color: var(--color-ink); }
+.type-variants__row--archived .type-variants__label { color: var(--color-muted); }
 .type-variants .type-variants__rename { flex: 1; min-height: 2rem; padding: var(--space-1) var(--space-2); }
 .type-variants__row :deep(.icon-button:disabled) { opacity: 0.35; cursor: default; pointer-events: none; }
 .type-variants__new { display: flex; align-items: center; gap: var(--space-2); }

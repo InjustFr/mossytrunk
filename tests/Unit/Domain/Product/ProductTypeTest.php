@@ -207,4 +207,44 @@ final class ProductTypeTest extends TestCase
 
         self::assertSame(['A4', 'A3'], $print->variants());
     }
+
+    public function testVariantsCanBeArchivedAndStayArchivedWhenRenamed(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A5', 'A4', 'A3']);
+
+        $print->archiveVariants([' a5 ', 'A5']);
+        $print->renameVariant('A5', 'Petit');
+
+        self::assertSame(['Petit'], $print->archivedVariants());
+        self::assertSame(['A4', 'A3'], $print->activeVariants());
+        self::assertTrue($print->isVariantArchived('petit'));
+    }
+
+    public function testOnlyItsOwnVariantsCanBeArchivedAndRemovedOnesAreForgotten(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A5', 'A4']);
+        $print->archiveVariants(['A5']);
+
+        $print->defineVariants(['A4']);
+        self::assertSame([], $print->archivedVariants());
+
+        $this->expectException(UnknownTypeVariant::class);
+        $print->archiveVariants(['A0']);
+    }
+
+    public function testATypeIsArchivedWithItsProductsAndRestored(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $product = Product::create(TestWorkspace::get(), 'PRI-FOR', 'Forêt', Money::cents(1_500), $print);
+
+        $print->archive(new \DateTimeImmutable('2026-09-30'));
+        self::assertTrue($print->isArchived());
+        self::assertTrue($product->isArchived());
+        self::assertFalse($product->isArchivedItself());
+
+        $print->restore();
+        self::assertFalse($product->isArchived());
+    }
 }

@@ -104,8 +104,8 @@ final class ImportSumUpSalesTest extends KernelTestCase
     public function testLinesAreMatchedToExistingProductVariants(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::createProduct('Print A4', 2_000, 600, ['Mousse', 'Fougère']);
         self::createProduct('Tote bag', 1_500, 500);
+        self::createProduct('Print A4', 2_000, 600, ['Mousse', 'Fougère']);
 
         $report = $this->import();
 
@@ -243,8 +243,8 @@ final class ImportSumUpSalesTest extends KernelTestCase
     public function testDescriptionIsTheVariant(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::createProduct('T-shirt', 2_000, 0, ['S', 'M']);
         self::createProduct('Zine', 1_000);
+        self::createProduct('T-shirt', 2_000, 0, ['S', 'M']);
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             ExternalSales::sumUp('TX-VARIANTS', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(10_500), [
                 ExternalSales::line('Forêt', Money::cents(1_500), 1, variant: 'A4'),

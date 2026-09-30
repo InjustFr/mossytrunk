@@ -1,7 +1,7 @@
 <script setup>
 import { computed, toRef } from 'vue';
 import { VisuallyHidden } from 'reka-ui';
-import { FolderInput, PackagePlus, Pencil, Trash2, TriangleAlert } from '@lucide/vue';
+import { Archive, ArchiveRestore, FolderInput, PackagePlus, Pencil, Trash2, TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
@@ -23,7 +23,7 @@ const props = defineProps({
     typeColors: { type: Map, required: true },
     stockVariants: { type: Array, default: () => [] },
 });
-const emit = defineEmits(['edit', 'move', 'remove', 'toggle-all', 'restock', 'history']);
+const emit = defineEmits(['edit', 'move', 'remove', 'archive', 'restore', 'toggle-all', 'restock', 'history']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 const { t } = useI18n();
 
@@ -88,6 +88,7 @@ function setChecked(id, checked) {
                 </td>
                 <td>
                     <span class="product-list__type"><TypeMark :color="typeColors.get(product.typeName)" />{{ product.typeName }}</span>
+                    <StatusBadge v-if="product.archived && !product.archivedItself">{{ t('products.list.typeArchived') }}</StatusBadge>
                 </td>
                 <td>
                     <span v-if="product.variants.length === 0" class="product-list__muted">{{ t('products.single') }}</span>
@@ -121,6 +122,8 @@ function setChecked(id, checked) {
                     <IconButton :icon="PackagePlus" :label="t('products.list.restock', { name: product.displayName })" @click="emit('restock', product)" />
                     <IconButton :icon="FolderInput" :label="t(product.variants.length ? 'products.list.moveVariant' : 'products.list.makeVariant', { name: product.displayName })" @click="emit('move', product)" />
                     <IconButton :icon="Pencil" :label="t('products.list.edit', { name: product.displayName })" @click="emit('edit', product)" />
+                    <IconButton v-if="product.archivedItself" :icon="ArchiveRestore" :label="t('products.list.restore', { name: product.displayName })" @click="emit('restore', product)" />
+                    <IconButton v-else-if="!product.archived" :icon="Archive" :label="t('products.list.archive', { name: product.displayName })" @click="emit('archive', product)" />
                     <ConfirmButton
                         :icon="Trash2"
                         :label="t('products.list.remove', { name: product.displayName })"

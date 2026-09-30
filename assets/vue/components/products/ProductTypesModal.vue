@@ -9,11 +9,30 @@ import ProductTypeForm from './ProductTypeForm.vue';
 import ProductTypeList from './ProductTypeList.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { nextTypeColor } from '../../composables/useTypeColor.js';
+import { useToast } from '../../composables/useToast.js';
 
-const emit = defineEmits(['saved', 'renamed']);
+const emit = defineEmits(['saved', 'renamed', 'changed']);
 const open = defineModel('open', { type: Boolean, required: true });
-const { types, create, update } = useProductTypes();
+const { types, create, update, archive, restore, remove } = useProductTypes();
 const { t } = useI18n();
+const toast = useToast();
+
+const activeTypes = computed(() => types.value.filter((type) => !type.archived));
+const archivedTypes = computed(() => types.value.filter((type) => type.archived));
+
+async function change(action, type, message) {
+    try {
+        await action(type.id);
+        toast.success(t(message, { name: type.name }));
+        emit('changed');
+    } catch (error) {
+        toast.error(error.message);
+    }
+}
+
+const onArchive = (type) => change(archive, type, 'products.toast.typeArchived');
+const onRestore = (type) => change(restore, type, 'products.toast.typeRestored');
+const onRemove = (type) => change(remove, type, 'products.toast.typeRemoved');
 
 const NEW = 'new';
 const editing = ref(null);
@@ -40,11 +59,16 @@ function onSaved(name) {
         <Transition name="product-types-modal__step" mode="out-in">
             <div v-if="!editing" key="list" class="product-types-modal__step">
                 <p class="product-types-modal__intro">{{ t('products.types.intro') }}</p>
-                <ProductTypeList v-if="types.length" :types="types" @edit="editing = $event" />
+                <ProductTypeList v-if="activeTypes.length" :types="activeTypes" @edit="editing = $event" @archive="onArchive" @remove="onRemove" />
                 <EmptyState v-else>{{ t('products.types.empty') }}</EmptyState>
                 <div class="product-types-modal__actions">
                     <BaseButton variant="secondary" @click="editing = NEW"><Plus size="1rem" aria-hidden="true" /> {{ t('products.types.add') }}</BaseButton>
                 </div>
+                <section v-if="archivedTypes.length" class="product-types-modal__archived" aria-labelledby="archived-types-title">
+                    <h3 id="archived-types-title" class="product-types-modal__archived-title">{{ t('products.types.archivedTitle') }}</h3>
+                    <p class="product-types-modal__intro">{{ t('products.types.archivedHint') }}</p>
+                    <ProductTypeList :types="archivedTypes" @restore="onRestore" @remove="onRemove" />
+                </section>
             </div>
             <div v-else :key="editing === NEW ? NEW : editing.id" class="product-types-modal__step">
                 <button type="button" class="product-types-modal__back" @click="editing = null">
@@ -67,6 +91,8 @@ function onSaved(name) {
 .product-types-modal__step { display: flex; flex-direction: column; gap: var(--space-4); }
 .product-types-modal__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .product-types-modal__actions { display: flex; justify-content: flex-end; }
+.product-types-modal__archived { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-4); border-top: 0.0625rem solid var(--color-border); }
+.product-types-modal__archived-title { margin: 0; color: var(--color-muted); font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 
 .product-types-modal__back {
     display: inline-flex;

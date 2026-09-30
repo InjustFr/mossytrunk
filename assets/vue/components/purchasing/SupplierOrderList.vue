@@ -29,7 +29,10 @@ defineProps({
         </template>
         <template #default="{ rows }">
             <tr v-for="order in rows" :key="order.id">
-                <td><a :href="`/supplier-orders/${order.id}`">{{ order.reference }}</a></td>
+                <td>
+                    <a :href="`/supplier-orders/${order.id}`">{{ order.reference }}</a>
+                    <span v-if="order.supplierReference" class="supplier-order-list__supplier-reference">{{ t('purchasing.list.supplierReference', { reference: order.supplierReference }) }}</span>
+                </td>
                 <td>{{ order.supplier.name }}</td>
                 <td>{{ formatDate(order.orderedOn) }}</td>
                 <td class="data-table__cell--number">
@@ -47,6 +50,7 @@ defineProps({
 </template>
 
 <style scoped>
+.supplier-order-list__supplier-reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .supplier-order-list__planned { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .supplier-order-list__lines { margin-left: var(--space-2); color: var(--color-muted); font-size: 0.8rem; }
 </style>

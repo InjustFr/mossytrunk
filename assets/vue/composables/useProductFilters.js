@@ -3,7 +3,10 @@ import { computed, ref, watch } from 'vue';
 export const MISSING_COST_PARAM = 'purchase-price';
 export const STOCK_PARAM = 'stock';
 
-export function useProductFilters(products) {
+export function useProductFilters(allProducts) {
+    const archived = ref(false);
+    const archivedCount = computed(() => allProducts.value.filter((product) => product.archived).length);
+    const products = computed(() => allProducts.value.filter((product) => product.archived === archived.value));
     const typeId = ref('');
     const variants = ref([]);
     const search = ref('');
@@ -14,6 +17,10 @@ export function useProductFilters(products) {
     const selectedIds = ref([]);
 
     watch(typeId, () => { variants.value = []; });
+    watch(archived, () => {
+        typeId.value = '';
+        selectedIds.value = [];
+    });
 
     const hasSelectedVariant = (product) => variants.value.length === 0 || product.variants.some((variant) => variants.value.includes(variant));
 
@@ -39,5 +46,5 @@ export function useProductFilters(products) {
 
     const clearSelection = () => { selectedIds.value = []; };
 
-    return { typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
+    return { archived, archivedCount, typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
 }

@@ -16,6 +16,7 @@ design:
     same_product_twice: 'Deux déclinaisons donneraient le même produit « {name} » : renommez-en une.'
     unknown_adjustment: 'Adaptation inconnue « {adjustment} ».'
 discount:
+    only_eligible_type: 'La remise « {rule} » ne concerne que le type « {type} » : modifiez ou supprimez-la avant de supprimer le type.'
     condition_quantity_too_small: 'Une condition porte sur au moins 1 article.'
     expired: '« {name} » est expirée : modifiez ses dates pour la relancer.'
     not_running: '« {name} » n''est pas en cours.'
@@ -63,6 +64,8 @@ order:
     no_event_on_date: 'Aucun événement le {date, date, short}. Créez d''abord l''événement correspondant.'
     outside_event: 'La date de la commande ({date, date, short} {date, time, short}) doit être comprise dans les dates de l''événement « {event} ».'
 product:
+    type_still_used: 'Le type « {type} » est encore utilisé par {products, plural, =0 {aucun produit} one {# produit} other {# produits}} et {gabarits, plural, =0 {aucun gabarit} one {# gabarit} other {# gabarits}} : changez leur type, ou archivez-le plutôt.'
+    variant_choice_missing: '« {product} » doit avoir au moins une variante du type « {type} ».'
     unknown_type_variant: '« {variant} » n''est pas une variante du type « {type} ».'
     duplicate_type_variant: 'La variante « {variant} » existe déjà pour ce type.'
     variant_in_use: 'La variante « {variant} » est encore utilisée par des produits, gabarits ou remises : retirez-la d''abord de ceux-ci.'
@@ -86,6 +89,7 @@ product:
     variant_moved_onto_itself: 'Choisissez un autre produit que celui d''origine.'
     variant_required: 'Choisissez une variante pour « {name} ».'
 purchasing:
+    supplier_reference_too_long: 'La référence fournisseur ne peut pas dépasser {max} caractères.'
     discount_exceeds_lines: 'La remise globale ne peut pas dépasser le prix des produits.'
     empty_supplier_name: 'Le nom du fournisseur est obligatoire.'
     empty_supplier_order: 'Ajoutez au moins un produit à la commande.'

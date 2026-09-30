@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
-import { createProduct, createType } from './support/api.js';
+import { createProduct, createType, defineVariants } from './support/api.js';
 
 const uniqueCode = (prefix) => `${prefix}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toUpperCase();
 
@@ -83,9 +83,10 @@ test('create a type inline with its colour and display products as "Type Nom"', 
 });
 
 test('filter by type and edit the selection in batch', async ({ page, request }) => {
-    const sticker = await createType(request, unique('Sticker'), { variants: ['Mat', 'Brillant'] });
+    const sticker = await createType(request, unique('Sticker'));
     const mousse = await createProduct(request, { name: 'Mousse', sellingPrice: 400, type: sticker });
     const fougere = await createProduct(request, { name: 'Fougère', sellingPrice: 450, type: sticker });
+    await defineVariants(request, sticker, ['Mat', 'Brillant']);
     const other = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500 });
 
     await page.goto('/products');

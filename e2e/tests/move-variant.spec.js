@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
-import { createEvent, createProduct, createType } from './support/api.js';
+import { createEvent, createProduct, createType, defineVariants } from './support/api.js';
 
 test('products split per variant are gathered into one product, their sales with them', async ({ page, request }) => {
     const mug = unique('Mug');
-    const type = await createType(request, unique('Mugs'), { variants: ['Lichen', 'Fougère'], prefixesNames: false });
+    const type = await createType(request, unique('Mugs'), { prefixesNames: false });
     const lichen = await createProduct(request, { name: `${mug} Lichen`, sellingPrice: 1_200, type });
     const fougere = await createProduct(request, { name: `${mug} Fougère`, sellingPrice: 1_200, type });
+    await defineVariants(request, type, ['Lichen', 'Fougère']);
     const event = await createEvent(request);
     const response = await request.post('/api/orders', {
         data: { placedAt: `${event.startDate}T11:00`, lines: [{ productId: lichen.id, variant: null, quantity: 2 }] },

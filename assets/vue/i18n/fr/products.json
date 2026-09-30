@@ -29,7 +29,12 @@
         "priceSaved": "Historique des prix mis à jour.",
         "priceForgotten": "Prix supprimé de l'historique.",
         "designed": "Design enregistré.",
-        "variantRenamed": "Variante « {from} » renommée « {to} » partout, commandes passées comprises."
+        "variantRenamed": "Variante « {from} » renommée « {to} » partout, commandes passées comprises.",
+        "archived": "Produit « {name} » archivé : il n'est plus proposé à la saisie.",
+        "restored": "Produit « {name} » désarchivé.",
+        "typeArchived": "Type « {name} » archivé.",
+        "typeRestored": "Type « {name} » désarchivé.",
+        "typeRemoved": "Type « {name} » supprimé."
     },
     "detail": {
         "fallbackTitle": "Produit",
@@ -58,7 +63,8 @@
         "byType": "Filtrer par type",
         "lowStock": "{count} produit en stock bas | {count} produits en stock bas",
         "missingCost": "{count} produit sans coût d'achat | {count} produits sans coût d'achat",
-        "byVariant": "Filtrer par variante"
+        "byVariant": "Filtrer par variante",
+        "archived": "{count} archivé | {count} archivés"
     },
     "list": {
         "empty": "Aucun produit.",
@@ -82,7 +88,10 @@
         "makeVariant": "Faire de {name} une variante",
         "edit": "Modifier {name}",
         "remove": "Supprimer {name}",
-        "removeMessage": "Il disparaît du catalogue et des remises. Les commandes passées gardent leurs lignes."
+        "removeMessage": "Il disparaît du catalogue et des remises. Les commandes passées gardent leurs lignes.",
+        "archive": "Archiver {name}",
+        "restore": "Désarchiver {name}",
+        "typeArchived": "Type archivé"
     },
     "form": {
         "type": "Type",
@@ -231,12 +240,22 @@
             "duplicate": "La variante « {variant} » existe déjà.",
             "newVariant": "Nouvelle variante",
             "placeholder": "Ajouter une variante puis Entrée",
-            "add": "Ajouter la variante"
+            "add": "Ajouter la variante",
+            "archive": "Archiver {variant}",
+            "restore": "Désarchiver {variant}",
+            "archived": "Archivée"
         },
         "more": "Code et affichage",
         "display": "Affichage",
         "exampleProduct": "Forêt",
-        "displayedAs": "produits « {name} »"
+        "displayedAs": "produits « {name} »",
+        "archivedOption": "{name} (archivé)",
+        "archive": "Archiver le type {name}",
+        "restore": "Désarchiver le type {name}",
+        "remove": "Supprimer le type {name}",
+        "removeMessage": "Possible seulement si aucun produit ni gabarit ne l'utilise. Les remises qui le visent perdent cette condition.",
+        "archivedTitle": "Types archivés",
+        "archivedHint": "Ils ne sont plus proposés, et leurs produits sont archivés avec eux."
     },
     "colors": {
         "label": "Couleur du type",
@@ -268,7 +287,8 @@
     "variantPicker": {
         "label": "Variantes",
         "empty": "Ce type n'a pas de variante : produit unique. Les variantes se gèrent dans « Types de produit ».",
-        "chooseTypeFirst": "Choisissez d'abord un type."
+        "chooseTypeFirst": "Choisissez d'abord un type.",
+        "archived": "{variant} (archivée)"
     },
     "tag": {
         "label": "Aperçu de l'étiquette",

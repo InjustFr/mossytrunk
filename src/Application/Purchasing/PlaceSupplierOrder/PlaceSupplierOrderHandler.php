@@ -26,6 +26,7 @@ final readonly class PlaceSupplierOrderHandler
     public function __invoke(SupplierOrderDraft $draft): Ulid
     {
         $order = SupplierOrder::place($this->suppliers->get(Ulid::fromString($draft->supplierId)), $draft->orderedOn, $this->items->of($draft->lines), Money::cents($draft->discountCents), Money::cents($draft->deliveryFeesCents));
+        $order->referToSupplierOrder($draft->supplierReference);
         $this->orders->add($order);
         $this->transaction->commit();
 

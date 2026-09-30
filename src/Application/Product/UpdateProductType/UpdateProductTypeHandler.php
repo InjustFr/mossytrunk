@@ -24,8 +24,9 @@ final readonly class UpdateProductTypeHandler
 
     /**
      * @param list<string>|null $variants
+     * @param list<string>|null $archivedVariants
      */
-    public function __invoke(string $typeId, string $name, string $color, ?string $code = null, ?array $variants = null, ?bool $prefixesNames = null): void
+    public function __invoke(string $typeId, string $name, string $color, ?string $code = null, ?array $variants = null, ?bool $prefixesNames = null, ?array $archivedVariants = null): void
     {
         $type = $this->types->get(Ulid::fromString($typeId));
 
@@ -44,6 +45,9 @@ final readonly class UpdateProductTypeHandler
         }
         if (null !== $prefixesNames) {
             $type->prefixNames($prefixesNames);
+        }
+        if (null !== $archivedVariants) {
+            $type->archiveVariants($archivedVariants);
         }
         $this->transaction->commit();
     }

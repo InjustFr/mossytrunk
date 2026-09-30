@@ -22,8 +22,8 @@ import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
-const { products, load, create, update, batchUpdate, moveVariant, remove } = useProducts();
-const { types, load: loadTypes, variantsOf } = useProductTypes();
+const { products, activeProducts, load, create, update, batchUpdate, moveVariant, remove, archive, restore } = useProducts();
+const { types, activeTypes, load: loadTypes, allVariantsOf } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
 const { t } = useI18n();
@@ -86,6 +86,19 @@ async function onRemove(product) {
     }
 }
 
+async function onArchive(product) {
+    await archive(product.id);
+    toast.success(t('products.toast.archived', { name: product.displayName }));
+    filters.selectedIds.value = filters.selectedIds.value.filter((id) => id !== product.id);
+    await load();
+}
+
+async function onRestore(product) {
+    await restore(product.id);
+    toast.success(t('products.toast.restored', { name: product.displayName }));
+    await load();
+}
+
 async function onTypeSaved(name, created) {
     toast.success(t(created ? 'products.toast.typeCreated' : 'products.toast.typeUpdated', { name }));
     await load();
@@ -112,12 +125,14 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             <ProductFilters
                 v-model:type-id="filters.typeId.value"
                 v-model:variants="filters.variants.value"
-                :variant-options="variantsOf(filters.typeId.value)"
+                v-model:archived="filters.archived.value"
+                :archived-count="filters.archivedCount.value"
+                :variant-options="allVariantsOf(filters.typeId.value)"
                 v-model:search="filters.search.value"
                 v-model:missing-cost="filters.missingCost.value"
                 v-model:low-stock="filters.lowStock.value"
                 :low-stock-count="filters.lowStockCount.value"
-                :types="types"
+                :types="filters.archived.value ? types : activeTypes"
                 :missing-cost-count="filters.missingCostCount.value"
                 :type-colors="colors"
             />
@@ -134,6 +149,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 @restock="restocking = $event"
                 @history="viewingStock = $event"
                 @remove="onRemove"
+                @archive="onArchive"
+                @restore="onRestore"
             />
         </BaseCard>
 
@@ -143,7 +160,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="moveOpen" :title="t(moving?.variants.length ? 'products.page.moveVariantTitle' : 'products.page.makeVariantTitle')">
-            <MoveVariantForm v-if="moving" :product="moving" :products="products" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
+            <MoveVariantForm v-if="moving" :product="moving" :products="activeProducts" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
         </BaseModal>
         <BaseModal v-model:open="restockOpen" :title="t('products.page.restockTitle', { name: restocking?.displayName ?? '' })">
             <RestockForm v-if="restocking" :product="restocking" :submit="restock" @saved="onRestocked" @cancel="restocking = null" />

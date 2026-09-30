@@ -25,7 +25,9 @@ const input = ref(null);
 
 const options = computed(() => [
     ...(props.allowNone ? [{ value: '', label: t('products.types.none') }] : []),
-    ...types.value.map((type) => ({ value: type.id, label: type.name })),
+    ...types.value
+        .filter((type) => !type.archived || type.id === typeId.value)
+        .map((type) => ({ value: type.id, label: type.archived ? t('products.types.archivedOption', { name: type.name }) : type.name })),
     { value: CREATE, label: t('products.types.createOption') },
 ]);
 

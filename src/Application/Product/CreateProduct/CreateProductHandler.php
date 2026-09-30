@@ -40,6 +40,7 @@ final readonly class CreateProductHandler
             $command->variants,
         );
 
+        $product->assertVariantChosen();
         $product->alertBelow($command->lowStockThreshold);
         $this->products->add($product);
         $this->transaction->commit();

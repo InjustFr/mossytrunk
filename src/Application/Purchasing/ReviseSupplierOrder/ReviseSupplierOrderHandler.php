@@ -24,13 +24,15 @@ final readonly class ReviseSupplierOrderHandler
 
     public function __invoke(string $orderId, SupplierOrderDraft $draft): void
     {
-        $this->orders->get(Ulid::fromString($orderId))->revise(
+        $order = $this->orders->get(Ulid::fromString($orderId));
+        $order->revise(
             $this->suppliers->get(Ulid::fromString($draft->supplierId)),
             $draft->orderedOn,
             $this->items->of($draft->lines),
             Money::cents($draft->discountCents),
             Money::cents($draft->deliveryFeesCents),
         );
+        $order->referToSupplierOrder($draft->supplierReference);
         $this->transaction->commit();
     }
 }

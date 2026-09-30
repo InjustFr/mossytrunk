@@ -44,7 +44,8 @@
         "totalCost": "Coût total",
         "unitCost": "Coût unitaire",
         "planned": "prévu",
-        "nothingReceived": "Rien reçu"
+        "nothingReceived": "Rien reçu",
+        "supplierReference": "Réf. fournisseur"
     },
     "list": {
         "empty": "Aucune commande fournisseur. Passez-en une pour suivre ce que vous attendez.",
@@ -55,7 +56,8 @@
         "total": "Total",
         "status": "Statut",
         "ofOrdered": "sur {count} commandés",
-        "lines": "{count} ligne | {count} lignes"
+        "lines": "{count} ligne | {count} lignes",
+        "supplierReference": "Réf. fournisseur {reference}"
     },
     "form": {
         "supplier": "Fournisseur",
@@ -76,7 +78,9 @@
         "totalPaid": "Total payé",
         "cancel": "Annuler",
         "save": "Enregistrer",
-        "place": "Passer la commande"
+        "place": "Passer la commande",
+        "supplierReference": "Référence fournisseur",
+        "supplierReferenceHint": "Le numéro de commande chez le fournisseur."
     },
     "picker": {
         "product": "Produit",
@@ -87,7 +91,18 @@
         "totalPrice": "Prix total",
         "add": "Ajouter",
         "chooseProduct": "Choisissez un produit.",
-        "chooseVariant": "Choisissez une variante pour « {product} »."
+        "chooseVariant": "Choisissez une variante pour « {product} ».",
+        "mode": "Ajouter",
+        "oneProduct": "Un produit",
+        "wholeType": "Tout un type",
+        "type": "Type",
+        "chooseTypePlaceholder": "Choisir un type…",
+        "onlyVariants": "Seulement ces variantes (toutes si aucune)",
+        "quantityEach": "Quantité par article",
+        "unitPrice": "Prix unitaire",
+        "addLines": "Ajouter {count} ligne | Ajouter {count} lignes",
+        "chooseType": "Choisissez un type.",
+        "nothingToAdd": "Aucun article de ce type ne correspond à ces variantes."
     },
     "suppliers": {
         "empty": "Aucun fournisseur pour l'instant.",

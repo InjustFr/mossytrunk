@@ -44,7 +44,8 @@
         "totalCost": "Total cost",
         "unitCost": "Unit cost",
         "planned": "planned",
-        "nothingReceived": "Nothing received"
+        "nothingReceived": "Nothing received",
+        "supplierReference": "Supplier ref."
     },
     "list": {
         "empty": "No supplier orders. Place one to track what you are waiting for.",
@@ -55,7 +56,8 @@
         "total": "Total",
         "status": "Status",
         "ofOrdered": "of {count} ordered",
-        "lines": "{count} line | {count} lines"
+        "lines": "{count} line | {count} lines",
+        "supplierReference": "Supplier ref. {reference}"
     },
     "form": {
         "supplier": "Supplier",
@@ -76,7 +78,9 @@
         "totalPaid": "Total paid",
         "cancel": "Cancel",
         "save": "Save",
-        "place": "Place the order"
+        "place": "Place the order",
+        "supplierReference": "Supplier reference",
+        "supplierReferenceHint": "The order number at the supplier."
     },
     "picker": {
         "product": "Product",
@@ -87,7 +91,18 @@
         "totalPrice": "Total price",
         "add": "Add",
         "chooseProduct": "Choose a product.",
-        "chooseVariant": "Choose a variant for “{product}”."
+        "chooseVariant": "Choose a variant for “{product}”.",
+        "mode": "Add",
+        "oneProduct": "One product",
+        "wholeType": "A whole type",
+        "type": "Type",
+        "chooseTypePlaceholder": "Choose a type…",
+        "onlyVariants": "Only these variants (all if none)",
+        "quantityEach": "Quantity per item",
+        "unitPrice": "Unit price",
+        "addLines": "Add {count} line | Add {count} lines",
+        "chooseType": "Choose a type.",
+        "nothingToAdd": "No item of this type matches these variants."
     },
     "suppliers": {
         "empty": "No suppliers yet.",

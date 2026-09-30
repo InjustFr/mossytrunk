@@ -55,11 +55,16 @@ watch(() => props.rule, (rule) => {
     errors.value = {};
 }, { immediate: true });
 
-const productOptions = computed(() => props.products.map((product) => ({ value: product.id, label: product.displayName })));
-const typeOptions = computed(() => props.types.map((type) => ({ value: type.id, label: type.name })));
-const optionsFor = (condition) => (condition.kind === 'type' ? typeOptions.value : productOptions.value);
+const offered = (targets, condition) => targets.filter((target) => !target.archived || target.id === condition.id);
+const productOptions = (condition) => offered(props.products, condition).map((product) => ({ value: product.id, label: product.displayName }));
+const typeOptions = (condition) => offered(props.types, condition).map((type) => ({ value: type.id, label: type.name }));
+const optionsFor = (condition) => (condition.kind === 'type' ? typeOptions(condition) : productOptions(condition));
 const targetOf = (condition) => (condition.kind === 'type' ? props.types : props.products).find((target) => target.id === condition.id);
-const variantsOf = (condition) => targetOf(condition)?.variants ?? [];
+const archivedVariantsOf = (condition) => (condition.kind === 'type'
+    ? targetOf(condition)?.archivedVariants ?? []
+    : (targetOf(condition)?.variants ?? []).filter((variant) => !targetOf(condition).activeVariants.includes(variant)));
+const variantsOf = (condition) => (targetOf(condition)?.variants ?? [])
+    .filter((variant) => variant === condition.variant || !archivedVariantsOf(condition).includes(variant));
 const variantOptions = (condition) => [
     { value: '', label: t('discounts.form.allVariants') },
     ...variantsOf(condition).map((variant) => ({ value: variant, label: variant })),

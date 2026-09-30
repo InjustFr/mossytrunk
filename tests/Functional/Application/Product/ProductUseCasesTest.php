@@ -35,8 +35,8 @@ final class ProductUseCasesTest extends KernelTestCase
     public function testCreateThenListProducts(): void
     {
         $create = self::getContainer()->get(CreateProductHandler::class);
-        self::createProduct('T-shirt', 2_000, 800, ['S', 'M']);
         self::createProduct('Aquarelle', 5_000);
+        self::createProduct('T-shirt', 2_000, 800, ['S', 'M']);
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
 
@@ -49,8 +49,8 @@ final class ProductUseCasesTest extends KernelTestCase
     public function testProductsShowTheirSalesOfTheCurrentYear(): void
     {
         $container = self::getContainer();
-        $print = (string) self::createProduct('Print', 1_500, 300, ['A4', 'A3']);
         self::createProduct('Zine', 1_000);
+        $print = (string) self::createProduct('Print', 1_500, 300, ['A4', 'A3']);
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2027', 'Lyon', new \DateTimeImmutable('2027-03-06'), new \DateTimeImmutable('2027-03-06')));
         $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon 2028', 'Lyon', new \DateTimeImmutable('2028-03-04'), new \DateTimeImmutable('2028-03-04')));
         $place = $container->get(PlaceOrderHandler::class);

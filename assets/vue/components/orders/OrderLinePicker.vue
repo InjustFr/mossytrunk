@@ -21,7 +21,7 @@ const error = ref(null);
 
 const product = computed(() => props.products.find((p) => p.id === productId.value) ?? null);
 const needsVariant = computed(() => (product.value?.variants.length ?? 0) > 0);
-const productOptions = computed(() => props.products.map((p) => ({ value: p.id, label: `${p.displayName} — ${formatCents(p.sellingPrice)}` })));
+const productOptions = computed(() => props.products.filter((p) => !p.archived).map((p) => ({ value: p.id, label: `${p.displayName} — ${formatCents(p.sellingPrice)}` })));
 
 watch(productId, () => {
     variant.value = '';
@@ -67,7 +67,7 @@ async function add() {
                 :aria-label="t('orders.picker.variant')"
                 @update:model-value="chooseVariant"
             >
-                <ToggleGroupItem v-for="option in product.variants" :key="option" :value="option" class="order-line-picker__variant">{{ option }}</ToggleGroupItem>
+                <ToggleGroupItem v-for="option in product.activeVariants" :key="option" :value="option" class="order-line-picker__variant">{{ option }}</ToggleGroupItem>
             </ToggleGroupRoot>
         </Transition>
         <p v-if="error" class="order-line-picker__error" role="alert">{{ error }}</p>

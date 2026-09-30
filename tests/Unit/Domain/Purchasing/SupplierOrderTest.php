@@ -154,4 +154,19 @@ final class SupplierOrderTest extends TestCase
             new PurchasedItem($this->print->sellable('A4'), 20, Money::cents(1_000)),
         ]);
     }
+
+    public function testTheSupplierReferenceIsOptionalTrimmedAndShort(): void
+    {
+        $order = $this->order();
+        self::assertNull($order->supplierReference());
+
+        $order->referToSupplierOrder('  CMD-4521 ');
+        self::assertSame('CMD-4521', $order->supplierReference());
+
+        $order->referToSupplierOrder(' ');
+        self::assertNull($order->supplierReference());
+
+        $this->expectException(InvalidPurchase::class);
+        $order->referToSupplierOrder(str_repeat('X', 101));
+    }
 }

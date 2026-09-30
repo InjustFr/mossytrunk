@@ -12,6 +12,7 @@ use App\Domain\Discount\DiscountStatus;
 use App\Domain\Discount\Exception\DuplicateConditionTarget;
 use App\Domain\Discount\Exception\InvalidDiscountRule;
 use App\Domain\Discount\Exception\OnlyEligibleProduct;
+use App\Domain\Discount\Exception\OnlyEligibleType;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Exception\UnknownTypeVariant;
 use App\Domain\Product\Exception\UnknownVariant;
@@ -302,5 +303,15 @@ final class DiscountRuleTest extends TestCase
     private function targets(DiscountRule $rule): array
     {
         return array_map(static fn (DiscountCondition $c): array => [$c->targetName(), $c->quantity()], $rule->conditions());
+    }
+
+    public function testATypeCanBeWithdrawnUnlessItIsTheOnlyCondition(): void
+    {
+        $both = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(2, $this->print)]);
+        $both->withdrawType($this->print);
+        self::assertSame([['Sticker', 1]], $this->targets($both));
+
+        $this->expectException(OnlyEligibleType::class);
+        $this->rule([new ConditionSpec(2, $this->print)])->withdrawType($this->print);
     }
 }

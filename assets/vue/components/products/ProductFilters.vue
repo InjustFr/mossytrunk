@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
-import { PackageMinus, TriangleAlert } from '@lucide/vue';
+import { Archive, PackageMinus, TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import TypeMark from '../ui/TypeMark.vue';
 
@@ -9,6 +9,7 @@ const props = defineProps({
     types: { type: Array, required: true },
     missingCostCount: { type: Number, default: 0 },
     lowStockCount: { type: Number, default: 0 },
+    archivedCount: { type: Number, default: 0 },
     typeColors: { type: Map, required: true },
     variantOptions: { type: Array, default: () => [] },
 });
@@ -17,6 +18,7 @@ const variants = defineModel('variants', { type: Array, default: () => [] });
 const search = defineModel('search', { type: String, required: true });
 const missingCost = defineModel('missingCost', { type: Boolean, default: false });
 const lowStock = defineModel('lowStock', { type: Boolean, default: false });
+const archived = defineModel('archived', { type: Boolean, default: false });
 const { t } = useI18n();
 
 const ALL = '__all__';
@@ -47,6 +49,10 @@ const selectedChip = computed({
         <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="product-filters__missing">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.missingCost', missingCostCount) }}
+        </Toggle>
+        <Toggle v-if="archivedCount > 0 || archived" v-model="archived" class="product-filters__archived">
+            <Archive size="0.875rem" aria-hidden="true" />
+            {{ t('products.filters.archived', archivedCount) }}
         </Toggle>
         <ToggleGroupRoot
             v-if="typeId && variantOptions.length"
@@ -101,6 +107,22 @@ const selectedChip = computed({
 
 .product-filters__low-stock + .product-filters__missing { margin-left: 0; }
 .product-filters__missing[data-state="on"] { background: var(--color-warning); color: var(--color-surface); }
+
+.product-filters__archived {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: 62.4375rem;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.product-filters__archived[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 
 .product-filters__search {
     min-height: 2.125rem;

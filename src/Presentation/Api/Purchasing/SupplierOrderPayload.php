@@ -27,6 +27,8 @@ final readonly class SupplierOrderPayload
         public int $discount = 0,
         #[Assert\PositiveOrZero(message: 'supplierOrder.deliveryFees.negative')]
         public int $deliveryFees = 0,
+        #[Assert\Length(max: 100)]
+        public ?string $supplierReference = null,
     ) {
     }
 
@@ -38,6 +40,7 @@ final readonly class SupplierOrderPayload
             array_map(static fn (PurchaseLinePayload $line): PurchaseLine => $line->toLine(), $this->lines),
             $this->discount,
             $this->deliveryFees,
+            $this->supplierReference,
         );
     }
 }

@@ -47,6 +47,23 @@ final class SupplierOrderApiTest extends WebTestCase
         self::assertSame(['supplierId', 'orderedOn', 'lines'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
     }
 
+    public function testTheSupplierReferenceIsKeptAndRevised(): void
+    {
+        $client = self::signedInClient();
+        $supplierId = self::created($client, '/api/suppliers', ['name' => 'Imprimerie du Lac']);
+        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]);
+        $order = ['supplierId' => $supplierId, 'orderedOn' => '2026-09-01', 'lines' => [['productId' => $productId, 'quantity' => 10, 'totalPrice' => 200]]];
+
+        $orderId = self::created($client, '/api/supplier-orders', [...$order, 'supplierReference' => ' CMD-4521 ']);
+        $client->jsonRequest('GET', "/api/supplier-orders/$orderId");
+        self::assertSame('CMD-4521', Json::string(self::body($client), 'supplierReference'));
+
+        $client->jsonRequest('PUT', "/api/supplier-orders/$orderId", [...$order, 'supplierReference' => null]);
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', "/api/supplier-orders/$orderId");
+        self::assertNull(Json::at(self::body($client), 'supplierReference'));
+    }
+
     /**
      * @param array<string, mixed> $body
      */

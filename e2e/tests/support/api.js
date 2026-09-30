@@ -9,6 +9,12 @@ export async function createType(request, name = unique('Type'), { variants = []
     return response.json();
 }
 
+export async function defineVariants(request, type, variants) {
+    const response = await request.put(`/api/product-types/${type.id}`, { data: { name: type.name, color: type.color, variants } });
+    expect(response.status()).toBe(204);
+    return { ...type, variants };
+}
+
 let unprefixedType = null;
 
 async function typeKeepingNames(request) {
@@ -17,7 +23,7 @@ async function typeKeepingNames(request) {
 }
 
 export async function createProduct(request, { name = unique('Produit'), sellingPrice = 400, buyingPrice = 0, variants = [], type = null } = {}) {
-    type ??= await typeKeepingNames(request);
+    type ??= variants.length ? await createType(request, unique('Divers'), { prefixesNames: false }) : await typeKeepingNames(request);
     const response = await request.post('/api/products', { data: { name, sellingPrice, variants, typeId: type.id } });
     expect(response.status()).toBe(201);
     const id = (await response.json()).id;

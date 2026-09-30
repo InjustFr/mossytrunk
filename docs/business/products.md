@@ -36,6 +36,7 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 | P20 | A type's variants are non-empty and unique (case-insensitive). A product, gabarit or declination only has variants of its type. In the app, variants are **picked from the type's list** (chips in the product, gabarit, declination and batch forms; a select when moving a variant); new variants are created in « Types de produit » only. Imports still add an unknown variant to the type (nobody can pick during an import), with the type's spelling when it already exists in another case. Re-typing a product adds its variants to the new type. Variants are compared case-insensitively everywhere | `ProductType::offerVariant()`, `Product::addVariant()`, `Product::classify()`, `Gabarit::describe()`, `Declination::adjust()`, `VariantLabel` | `ProductTypeTest`, `ProductTest` |
 | P21 | Editing a type's variants (add, remove, reorder) cannot remove a variant still used by a product of the type, a gabarit, a declination not yet produced or a discount condition | `UpdateProductTypeHandler`, `VariantUsage`, `VariantInUse` | `ProductTypeUseCasesTest` |
 | P22 | **Renaming a variant** renames it everywhere: the type, its products, gabarits, declinations, discount conditions, stock, orders (past ones included), supplier orders, stock checks and linked service items | `RenameTypeVariantHandler`, `VariantRelabelling` | `TypeVariantsTest` |
+| P23 | When its type has variants, a product created or edited in the app (form or batch edit) has **at least one of them**: the product form picks the type's first variant and never lets the last one be unticked; changing the type drops the variants the new type does not offer. Imports and variant moves are not held to it | `Product::assertVariantChosen()`, `CreateProductHandler`, `UpdateProductHandler`, `BatchUpdateProductsHandler` | `ProductTest`, `BatchUpdateProductsTest` |
 | P5 | **What is sold is a (product ULID, variant) tuple.** A product with variants requires one of *its* variants; a unique product accepts no variant | `Product::sellable(?variant)` → `SellableItem` | `ProductTest` |
 
 `SellableItem` is the only way to obtain a sellable tuple, so an order line can never reference an invalid product/variant pair. It also carries the selling and buying prices at the time of sale: orders **snapshot** them, so later price changes never alter past orders.
@@ -48,6 +49,18 @@ can be edited together: selling price, type, variants to add (skipped when alrea
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P8 | A batch edit goes through the same entity methods as a single edit; any violation (e.g. negative price) aborts the whole batch | `BatchUpdateProductsHandler` | `BatchUpdateProductsTest` |
+
+## Archiving and deleting types
+
+Products, types and a type's variants are **archived** when they are no longer made, to keep their history (orders, stock, reports) while decluttering the app.
+
+| # | Rule | Where | Tests |
+|---|---|---|---|
+| P24 | An archived product, or any product of an archived type, is hidden from the catalogue (« N archivés » toggle on `/products` shows them) and from what is picked to enter something (order lines, supplier orders, discount conditions, variant moves). It keeps its stock, sales and reports; imports still match it. Restoring brings it back; a product archived by its type comes back with the type | `Product::archive()`, `restore()`, `isArchived()`, `ProductType::archive()` | `ProductTest`, `ProductTypeTest`, `ArchiveApiTest` |
+| P25 | A type's variants can be archived (« Types de produit » › edit, archive icon per variant): they stay on the products having them but are no longer offered by the pickers (product, gabarit, declination, batch, order and supplier order forms, discount conditions). Renaming a variant keeps it archived; removing it forgets it | `ProductType::archiveVariants()`, `activeVariants()`, `Product::activeVariants()` | `ProductTypeTest`, `ProductTest`, `ArchiveApiTest` |
+| P26 | A type can be **deleted** only when no product (archived ones included) and no gabarit uses it; its discount conditions are removed, unless one is the only condition of a discount (change or delete that discount first). Otherwise archive it | `DeleteProductTypeHandler`, `TypeStillUsed`, `DiscountRule::withdrawType()` | `DeleteProductTypeTest`, `DiscountRuleTest`, `ArchiveApiTest` |
+
+UI: `/products` row action archive / unarchive (Lucide `Archive` / `ArchiveRestore`); « Types de produit »: archive or delete each type, archived types listed apart with « Désarchiver ».
 
 ## Moving a variant
 
@@ -88,9 +101,11 @@ UI: trash icon on each row of `/products`, with a confirmation. `/settings` — 
 | `DesignProduct` | `POST /api/products/{id}/design` `{gabaritId, designId?, collectionId?}` → `{designId}` (see [designs.md](designs.md) D8) |
 | `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
+| `ArchiveProduct` / `RestoreProduct` | `PUT` / `DELETE /api/products/{id}/archive` → 204 |
+| `ArchiveProductType` / `RestoreProductType` / `DeleteProductType` | `PUT` / `DELETE /api/product-types/{id}/archive`, `DELETE /api/product-types/{id}` → 204 |
 | `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
-| `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
-| `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?, code?, variants?, prefixesNames?}` / `PUT /{id}` `{name, color, code?, variants?, prefixesNames?}` / `GET /api/product-types` → `{id, name, code, color, variants, prefixesNames}` |
+| `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`, `activeVariants`, `archived`, `archivedItself`) |
+| `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?, code?, variants?, prefixesNames?}` / `PUT /{id}` `{name, color, code?, variants?, prefixesNames?, archivedVariants?}` / `GET /api/product-types` → `{id, name, code, color, variants, prefixesNames, archivedVariants, archived}` |
 | `RenameTypeVariant` | `POST /api/product-types/{id}/variant-renaming` `{from, to}` |
 | `SuggestTypeCode` | `GET /api/product-types/code-suggestion?name=` → `{code}` |
 

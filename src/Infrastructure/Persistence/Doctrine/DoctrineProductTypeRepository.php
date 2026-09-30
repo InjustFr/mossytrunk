@@ -25,6 +25,11 @@ final readonly class DoctrineProductTypeRepository implements ProductTypeReposit
         $this->entityManager->persist($type);
     }
 
+    public function remove(ProductType $type): void
+    {
+        $this->entityManager->remove($type);
+    }
+
     public function get(Ulid $id): ProductType
     {
         return $this->entityManager->getRepository(ProductType::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])

@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 
 export function useProducts() {
@@ -20,6 +20,8 @@ export function useProducts() {
     const batchUpdate = (payload) => api.post('/api/products/batch', payload);
     const moveVariant = (id, payload) => api.post(`/api/products/${id}/move-variant`, payload);
     const remove = (id) => api.del(`/api/products/${id}`);
+    const archive = (id) => api.put(`/api/products/${id}/archive`);
+    const restore = (id) => api.del(`/api/products/${id}/archive`);
     const removeAll = () => api.del('/api/products');
     const get = (id) => api.get(`/api/products/${id}`);
     const suggestReference = async (name, typeId) => {
@@ -31,5 +33,7 @@ export function useProducts() {
     const savePrice = (id, changeId, payload) => (changeId ? api.put(`/api/products/${id}/prices/${changeId}`, payload) : api.post(`/api/products/${id}/prices`, payload));
     const forgetPrice = (id, changeId) => api.del(`/api/products/${id}/prices/${changeId}`);
 
-    return { products, loading, load, create, update, batchUpdate, moveVariant, remove, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
+    const activeProducts = computed(() => products.value.filter((product) => !product.archived));
+
+    return { products, activeProducts, loading, load, create, update, batchUpdate, moveVariant, remove, archive, restore, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
 }

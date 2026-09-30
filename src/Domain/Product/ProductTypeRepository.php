@@ -10,6 +10,8 @@ interface ProductTypeRepository
 {
     public function add(ProductType $type): void;
 
+    public function remove(ProductType $type): void;
+
     /**
      * @throws \App\Domain\Shared\Exception\NotFound
      */

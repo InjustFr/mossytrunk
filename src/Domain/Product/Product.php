@@ -15,6 +15,7 @@ use App\Domain\Product\Exception\PriceDatedInTheFuture;
 use App\Domain\Product\Exception\ProductHasNoVariants;
 use App\Domain\Product\Exception\ProductReferenceTooLong;
 use App\Domain\Product\Exception\UnknownVariant;
+use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Product\Exception\VariantRequired;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
@@ -83,6 +84,9 @@ class Product
 
     #[ORM\Column(options: ['default' => self::DEFAULT_LOW_STOCK_THRESHOLD])]
     private int $lowStockThreshold = self::DEFAULT_LOW_STOCK_THRESHOLD;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $archivedAt = null;
 
     /**
      * @param list<string> $variants
@@ -237,6 +241,41 @@ class Product
         }
 
         $this->lowStockThreshold = $threshold;
+    }
+
+    public function archive(\DateTimeImmutable $at): void
+    {
+        $this->archivedAt ??= $at;
+    }
+
+    public function restore(): void
+    {
+        $this->archivedAt = null;
+    }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archivedAt || $this->type->isArchived();
+    }
+
+    public function isArchivedItself(): bool
+    {
+        return null !== $this->archivedAt;
+    }
+
+    public function assertVariantChosen(): void
+    {
+        if ([] !== $this->type->variants() && !$this->hasVariants()) {
+            throw new VariantChoiceMissing($this->displayName(), $this->type->name());
+        }
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function activeVariants(): array
+    {
+        return array_values(array_filter($this->variants, fn (string $variant): bool => !$this->type->isVariantArchived($variant)));
     }
 
     public function lowStockThreshold(): int

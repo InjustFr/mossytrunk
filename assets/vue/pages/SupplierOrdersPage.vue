@@ -10,6 +10,7 @@ import SupplierManager from '../components/purchasing/SupplierManager.vue';
 import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderList from '../components/purchasing/SupplierOrderList.vue';
 import { useProducts } from '../composables/useProducts.js';
+import { useProductTypes } from '../composables/useProductTypes.js';
 import { useSupplierOrders, useSuppliers } from '../composables/usePurchasing.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -18,6 +19,7 @@ const { t } = useI18n();
 const { orders, load, create } = useSupplierOrders();
 const { suppliers, load: loadSuppliers, save: saveSupplier } = useSuppliers();
 const { products, load: loadProducts } = useProducts();
+const { load: loadTypes } = useProductTypes();
 const toast = useToast();
 
 const formOpen = ref(false);
@@ -51,7 +53,7 @@ async function onSupplierSaved(name) {
 }
 
 onMounted(async () => {
-    await Promise.all([load(), loadSuppliers(), loadProducts()]);
+    await Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes()]);
     if (awaiting.value.length === 0 && orders.value.length > 0) {
         status.value = 'all';
     }

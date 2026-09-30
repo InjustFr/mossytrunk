@@ -10,6 +10,7 @@ use App\Domain\Discount\Exception\DuplicateConditionTarget;
 use App\Domain\Discount\Exception\EmptyDiscountName;
 use App\Domain\Discount\Exception\NoDiscountCondition;
 use App\Domain\Discount\Exception\OnlyEligibleProduct;
+use App\Domain\Discount\Exception\OnlyEligibleType;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
@@ -129,6 +130,20 @@ class DiscountRule
         }
         if (\count($conditions) === $this->conditions->count()) {
             throw new OnlyEligibleProduct($this->name, $product->displayName());
+        }
+        foreach ($conditions as $condition) {
+            $this->conditions->removeElement($condition);
+        }
+    }
+
+    public function withdrawType(ProductType $type): void
+    {
+        $conditions = array_values(array_filter($this->conditions(), static fn (DiscountCondition $condition): bool => $condition instanceof TypeCondition && $condition->type() === $type));
+        if ([] === $conditions) {
+            return;
+        }
+        if (\count($conditions) === $this->conditions->count()) {
+            throw new OnlyEligibleType($this->name, $type->name());
         }
         foreach ($conditions as $condition) {
             $this->conditions->removeElement($condition);

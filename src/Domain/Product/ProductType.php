@@ -53,6 +53,13 @@ class ProductType
     #[ORM\Column(options: ['default' => true])]
     private bool $prefixesNames = true;
 
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $archivedVariants = [];
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $archivedAt = null;
+
     private function __construct(Ulid $id, Workspace $workspace, string $name, string $code, string $color)
     {
         $this->id = $id;
@@ -112,6 +119,43 @@ class ProductType
         }
 
         $this->variants = $defined;
+        $this->archivedVariants = array_values(array_filter($this->archivedVariants, static fn (string $archived): bool => null !== VariantLabel::find($defined, $archived)));
+    }
+
+    /**
+     * @param list<string> $variants
+     */
+    public function archiveVariants(array $variants): void
+    {
+        $archived = [];
+        foreach ($variants as $variant) {
+            $known = VariantLabel::find($this->variants, $variant) ?? throw new UnknownTypeVariant($this->name, trim($variant));
+            if (null === VariantLabel::find($archived, $known)) {
+                $archived[] = $known;
+            }
+        }
+
+        $this->archivedVariants = $archived;
+    }
+
+    public function isVariantArchived(string $variant): bool
+    {
+        return null !== VariantLabel::find($this->archivedVariants, $variant);
+    }
+
+    public function archive(\DateTimeImmutable $at): void
+    {
+        $this->archivedAt ??= $at;
+    }
+
+    public function restore(): void
+    {
+        $this->archivedAt = null;
+    }
+
+    public function isArchived(): bool
+    {
+        return null !== $this->archivedAt;
     }
 
     public function renameVariant(string $from, string $to): string
@@ -124,6 +168,7 @@ class ProductType
         }
 
         $this->variants = array_map(static fn (string $variant): string => $variant === $current ? $to : $variant, $this->variants);
+        $this->archivedVariants = VariantLabel::renamed($this->archivedVariants, $current, $to);
 
         return $current;
     }
@@ -212,6 +257,22 @@ class ProductType
     public function variants(): array
     {
         return $this->variants;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function archivedVariants(): array
+    {
+        return $this->archivedVariants;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function activeVariants(): array
+    {
+        return array_values(array_filter($this->variants, fn (string $variant): bool => !$this->isVariantArchived($variant)));
     }
 
     public function prefixesNames(): bool

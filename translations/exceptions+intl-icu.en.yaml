@@ -16,6 +16,7 @@ design:
     same_product_twice: 'Two adaptations would give the same product “{name}”: rename one of them.'
     unknown_adjustment: 'Unknown adjustment “{adjustment}”.'
 discount:
+    only_eligible_type: 'The discount “{rule}” only applies to the type “{type}”: edit or delete it before deleting the type.'
     condition_quantity_too_small: 'A condition applies to at least 1 item.'
     expired: '“{name}” has expired: change its dates to restart it.'
     not_running: '“{name}” is not running.'
@@ -63,6 +64,8 @@ order:
     no_event_on_date: 'No event on {date, date, medium}. Create the matching event first.'
     outside_event: 'The order date ({date, date, medium}, {date, time, short}) must fall within the dates of the event “{event}”.'
 product:
+    type_still_used: 'The type “{type}” is still used by {products, plural, =0 {no product} one {# product} other {# products}} and {gabarits, plural, =0 {no template} one {# template} other {# templates}}: change their type, or archive it instead.'
+    variant_choice_missing: '“{product}” needs at least one variant of the type “{type}”.'
     unknown_type_variant: '“{variant}” is not a variant of the type “{type}”.'
     duplicate_type_variant: 'The variant “{variant}” already exists for this type.'
     variant_in_use: 'The variant “{variant}” is still used by products, templates or discounts: remove it from them first.'
@@ -86,6 +89,7 @@ product:
     variant_moved_onto_itself: 'Choose a product other than the original one.'
     variant_required: 'Choose a variant for “{name}”.'
 purchasing:
+    supplier_reference_too_long: 'The supplier reference cannot exceed {max} characters.'
     discount_exceeds_lines: 'The overall discount cannot exceed the price of the products.'
     empty_supplier_name: 'The supplier name is required.'
     empty_supplier_order: 'Add at least one product to the order.'

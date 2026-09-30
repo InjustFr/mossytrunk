@@ -17,12 +17,12 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
-const { types, variantsOf } = useProductTypes();
+const { activeTypes, variantsOf } = useProductTypes();
 
 const UNCHANGED = '__unchanged__';
 const typeOptions = computed(() => [
     { value: UNCHANGED, label: t('products.batch.unchanged') },
-    ...types.value.map((type) => ({ value: type.id, label: type.name })),
+    ...activeTypes.value.map((type) => ({ value: type.id, label: type.name })),
 ]);
 
 const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], removeVariants: [] });

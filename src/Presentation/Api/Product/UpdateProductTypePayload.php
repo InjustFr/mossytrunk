@@ -10,6 +10,7 @@ final readonly class UpdateProductTypePayload
 {
     /**
      * @param list<string>|null $variants
+     * @param list<string>|null $archivedVariants
      */
     public function __construct(
         #[Assert\NotBlank(message: 'productType.name.required')]
@@ -23,6 +24,8 @@ final readonly class UpdateProductTypePayload
         #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank'), new Assert\Length(max: 100)])]
         public ?array $variants = null,
         public ?bool $prefixesNames = null,
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank'), new Assert\Length(max: 100)])]
+        public ?array $archivedVariants = null,
     ) {
     }
 }

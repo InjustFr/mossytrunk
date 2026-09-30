@@ -13,6 +13,7 @@ final readonly class ProductView
 {
     /**
      * @param list<string>                                                          $variants
+     * @param list<string>                                                          $activeVariants
      * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}> $stock
      */
     public function __construct(
@@ -34,6 +35,9 @@ final readonly class ProductView
         public bool $negativeStock,
         public int $stockUnitCost,
         public array $stock,
+        public array $activeVariants,
+        public bool $archived,
+        public bool $archivedItself,
     ) {
     }
 
@@ -63,6 +67,9 @@ final readonly class ProductView
                 'low' => $item->low,
                 'negative' => $item->negative,
             ], $stock->items),
+            $product->activeVariants(),
+            $product->isArchived(),
+            $product->isArchivedItself(),
         );
     }
 }

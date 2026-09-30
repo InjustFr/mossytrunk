@@ -27,7 +27,8 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 
 const today = () => new Date().toLocaleDateString('sv-SE');
-const form = reactive({ supplierId: '', orderedOn: today(), lines: [], discount: 0, deliveryFees: 0 });
+const blank = () => ({ supplierId: '', orderedOn: today(), supplierReference: '', lines: [], discount: 0, deliveryFees: 0 });
+const form = reactive(blank());
 const errors = ref({});
 const saving = ref(false);
 
@@ -36,11 +37,12 @@ watch(() => props.order, (order) => {
         ? {
             supplierId: order.supplier.id,
             orderedOn: order.orderedOn,
+            supplierReference: order.supplierReference ?? '',
             lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice })),
             discount: order.discount,
             deliveryFees: order.deliveryFees,
         }
-        : { supplierId: '', orderedOn: today(), lines: [], discount: 0, deliveryFees: 0 });
+        : blank());
     errors.value = {};
 }, { immediate: true });
 
@@ -66,6 +68,7 @@ async function onSubmit() {
         await props.submit({
             supplierId: form.supplierId,
             orderedOn: form.orderedOn,
+            supplierReference: form.supplierReference.trim() || null,
             lines: form.lines.map(({ productId, variant, quantity, totalPrice }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0 })),
             discount: form.discount ?? 0,
             deliveryFees: form.deliveryFees ?? 0,
@@ -93,6 +96,9 @@ async function onSubmit() {
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
                     <div class="supplier-order-form__date"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
+                </FormField>
+                <FormField :label="t('purchasing.form.supplierReference')" :error="errors.supplierReference" :hint="t('purchasing.form.supplierReferenceHint')" optional>
+                    <input v-model="form.supplierReference" type="text" maxlength="100" autocomplete="off" class="supplier-order-form__reference">
                 </FormField>
             </FormSection>
 
@@ -154,6 +160,7 @@ async function onSubmit() {
 .supplier-order-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .supplier-order-form__date,
 .supplier-order-form__money { max-width: 11rem; }
+.supplier-order-form .supplier-order-form__reference { max-width: 16rem; }
 .supplier-order-form__lines,
 .supplier-order-form__lines tbody,
 .supplier-order-form__lines tfoot { display: block; }

@@ -29,7 +29,7 @@ const errors = ref({});
 const saving = ref(false);
 
 const isEditing = computed(() => props.product !== null);
-const { types, variantsOf, load: loadTypes } = useProductTypes();
+const { types, variantsOf, allVariantsOf, load: loadTypes } = useProductTypes();
 const { suggestReference } = useProducts();
 const referenceSuggestion = useSuggestion(
     toRef(form, 'reference'),
@@ -57,6 +57,14 @@ watch(() => props.product, (product) => {
     errors.value = {};
     referenceSuggestion.reset(!product);
 }, { immediate: true });
+
+const offeredBy = (typeId, variant) => allVariantsOf(typeId).some((offered) => offered.toLowerCase() === variant.toLowerCase());
+
+watch(() => form.typeId, (typeId, previous) => {
+    if (previous) {
+        form.variants = form.variants.filter((variant) => offeredBy(typeId, variant));
+    }
+});
 
 async function onSubmit() {
     saving.value = true;
@@ -105,7 +113,7 @@ async function onSubmit() {
                     <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
                 </FormField>
                 <FormField as="group" :label="t('products.form.variants')" :error="errors.variants">
-                    <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />
+                    <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" required :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />
                 </FormField>
             </FormSection>
 

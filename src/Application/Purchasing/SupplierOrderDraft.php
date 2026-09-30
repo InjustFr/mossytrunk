@@ -15,6 +15,7 @@ final readonly class SupplierOrderDraft
         public array $lines,
         public int $discountCents = 0,
         public int $deliveryFeesCents = 0,
+        public ?string $supplierReference = null,
     ) {
     }
 }

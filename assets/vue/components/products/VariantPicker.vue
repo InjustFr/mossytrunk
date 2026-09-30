@@ -1,11 +1,12 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     options: { type: Array, required: true },
     empty: { type: String, default: null },
+    required: { type: Boolean, default: false },
 });
 const selected = defineModel({ type: Array, required: true });
 const { t } = useI18n();
@@ -20,9 +21,18 @@ const choices = computed(() => [
 const ordered = computed({
     get: () => selected.value,
     set: (labels) => {
+        if (props.required && labels.length === 0) {
+            return;
+        }
         selected.value = choices.value.filter((choice) => labels.includes(choice));
     },
 });
+
+watch(() => [props.required, props.options], () => {
+    if (props.required && props.options.length > 0 && selected.value.length === 0) {
+        selected.value = [props.options[0]];
+    }
+}, { immediate: true });
 </script>
 
 <template>

@@ -29,7 +29,12 @@
         "priceSaved": "Price history updated.",
         "priceForgotten": "Price removed from history.",
         "designed": "Design saved.",
-        "variantRenamed": "Variant “{from}” renamed “{to}” everywhere, past orders included."
+        "variantRenamed": "Variant “{from}” renamed “{to}” everywhere, past orders included.",
+        "archived": "Product “{name}” archived: it is no longer offered for entry.",
+        "restored": "Product “{name}” unarchived.",
+        "typeArchived": "Type “{name}” archived.",
+        "typeRestored": "Type “{name}” unarchived.",
+        "typeRemoved": "Type “{name}” deleted."
     },
     "detail": {
         "fallbackTitle": "Product",
@@ -58,7 +63,8 @@
         "byType": "Filter by type",
         "lowStock": "{count} low-stock product | {count} low-stock products",
         "missingCost": "{count} product without buying cost | {count} products without buying cost",
-        "byVariant": "Filter by variant"
+        "byVariant": "Filter by variant",
+        "archived": "{count} archived | {count} archived"
     },
     "list": {
         "empty": "No products.",
@@ -82,7 +88,10 @@
         "makeVariant": "Make {name} a variant",
         "edit": "Edit {name}",
         "remove": "Delete {name}",
-        "removeMessage": "It disappears from the catalog and discounts. Past orders keep their lines."
+        "removeMessage": "It disappears from the catalog and discounts. Past orders keep their lines.",
+        "archive": "Archive {name}",
+        "restore": "Unarchive {name}",
+        "typeArchived": "Type archived"
     },
     "form": {
         "type": "Type",
@@ -231,12 +240,22 @@
             "duplicate": "Variant “{variant}” already exists.",
             "newVariant": "New variant",
             "placeholder": "Add a variant, then Enter",
-            "add": "Add the variant"
+            "add": "Add the variant",
+            "archive": "Archive {variant}",
+            "restore": "Unarchive {variant}",
+            "archived": "Archived"
         },
         "more": "Code and display",
         "display": "Display",
         "exampleProduct": "Forest",
-        "displayedAs": "products shown as “{name}”"
+        "displayedAs": "products shown as “{name}”",
+        "archivedOption": "{name} (archived)",
+        "archive": "Archive the type {name}",
+        "restore": "Unarchive the type {name}",
+        "remove": "Delete the type {name}",
+        "removeMessage": "Only possible when no product or template uses it. Discounts targeting it lose that condition.",
+        "archivedTitle": "Archived types",
+        "archivedHint": "They are no longer offered, and their products are archived with them."
     },
     "colors": {
         "label": "Type color",
@@ -268,7 +287,8 @@
     "variantPicker": {
         "label": "Variants",
         "empty": "This type has no variants: single product. Variants are managed in “Product types”.",
-        "chooseTypeFirst": "Choose a type first."
+        "chooseTypeFirst": "Choose a type first.",
+        "archived": "{variant} (archived)"
     },
     "tag": {
         "label": "Tag preview",

@@ -47,6 +47,7 @@ final readonly class BatchUpdateProductsHandler
                     $product->addVariant($variant);
                 }
             }
+            $product->assertVariantChosen();
             $this->stock->forgetUnsold($product);
         }
 

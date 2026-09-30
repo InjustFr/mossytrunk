@@ -10,6 +10,7 @@ final readonly class ProductTypeView
 {
     /**
      * @param list<string> $variants
+     * @param list<string> $archivedVariants
      */
     public function __construct(
         public string $id,
@@ -18,11 +19,13 @@ final readonly class ProductTypeView
         public string $color,
         public array $variants,
         public bool $prefixesNames,
+        public array $archivedVariants,
+        public bool $archived,
     ) {
     }
 
     public static function fromType(ProductType $type): self
     {
-        return new self((string) $type->id(), $type->name(), $type->code(), $type->color(), $type->variants(), $type->prefixesNames());
+        return new self((string) $type->id(), $type->name(), $type->code(), $type->color(), $type->variants(), $type->prefixesNames(), $type->archivedVariants(), $type->isArchived());
     }
 }

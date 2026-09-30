@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { intlLocale } from '../i18n/locale.js';
 import { useApi } from './useApi.js';
 
@@ -6,6 +6,7 @@ import { useApi } from './useApi.js';
 const types = ref([]);
 
 const byName = (a, b) => a.name.localeCompare(b.name, intlLocale());
+const activeTypes = computed(() => types.value.filter((type) => !type.archived));
 
 export function useProductTypes() {
     const api = useApi();
@@ -20,8 +21,23 @@ export function useProductTypes() {
         return type;
     }
 
-    async function update(id, { name, color, code, variants, prefixesNames }) {
-        await api.put(`/api/product-types/${id}`, { name, color, code, variants, prefixesNames });
+    async function update(id, { name, color, code, variants, prefixesNames, archivedVariants }) {
+        await api.put(`/api/product-types/${id}`, { name, color, code, variants, prefixesNames, archivedVariants });
+        await load();
+    }
+
+    async function archive(id) {
+        await api.put(`/api/product-types/${id}/archive`);
+        await load();
+    }
+
+    async function restore(id) {
+        await api.del(`/api/product-types/${id}/archive`);
+        await load();
+    }
+
+    async function remove(id) {
+        await api.del(`/api/product-types/${id}`);
         await load();
     }
 
@@ -30,12 +46,14 @@ export function useProductTypes() {
         await load();
     }
 
-    const variantsOf = (typeId) => types.value.find((type) => type.id === typeId)?.variants ?? [];
+    const typeOf = (typeId) => types.value.find((type) => type.id === typeId);
+    const allVariantsOf = (typeId) => typeOf(typeId)?.variants ?? [];
+    const variantsOf = (typeId) => allVariantsOf(typeId).filter((variant) => !typeOf(typeId).archivedVariants.includes(variant));
 
     async function suggestCode(name) {
         if (name.trim() === '') return '';
         return (await api.peek(`/api/product-types/code-suggestion?${new URLSearchParams({ name })}`)).code;
     }
 
-    return { types, load, create, update, renameVariant, variantsOf, suggestCode };
+    return { types, activeTypes, load, create, update, archive, restore, remove, renameVariant, variantsOf, allVariantsOf, suggestCode };
 }

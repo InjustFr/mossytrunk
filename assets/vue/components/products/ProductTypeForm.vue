@@ -26,6 +26,7 @@ const form = reactive({
     color: props.type?.color ?? props.defaultColor,
     code: props.type?.code ?? '',
     variants: [...(props.type?.variants ?? [])],
+    archivedVariants: [...(props.type?.archivedVariants ?? [])],
     prefixesNames: props.type?.prefixesNames ?? true,
 });
 const errors = ref({});
@@ -93,7 +94,7 @@ async function onSubmit() {
                     <TypeColorPicker v-model="form.color" />
                 </FormField>
                 <FormField as="group" :label="t('products.types.variants.label')" :error="errors.variants" :hint="renamesEverywhere ? t('products.types.variants.hint') : null">
-                    <TypeVariantsEditor v-model="form.variants" :rename="renameSaved" />
+                    <TypeVariantsEditor v-model="form.variants" v-model:archived="form.archivedVariants" :rename="renameSaved" />
                 </FormField>
             </FormSection>
 

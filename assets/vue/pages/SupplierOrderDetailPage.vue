@@ -14,6 +14,7 @@ import SupplierOrderReception from '../components/purchasing/SupplierOrderRecept
 import { formatDate, formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
 import { useProducts } from '../composables/useProducts.js';
+import { useProductTypes } from '../composables/useProductTypes.js';
 import { SUPPLIER_ORDER_STATUSES, useSupplierOrders, useSuppliers } from '../composables/usePurchasing.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -26,6 +27,7 @@ const props = defineProps({
 const { get, update, remove, receive } = useSupplierOrders();
 const { suppliers, load: loadSuppliers, save: saveSupplier } = useSuppliers();
 const { products, load: loadProducts } = useProducts();
+const { load: loadTypes } = useProductTypes();
 const toast = useToast();
 
 const order = ref(null);
@@ -64,7 +66,7 @@ async function onReceived() {
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
+onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes()]));
 </script>
 
 <template>
@@ -81,6 +83,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
         <div v-if="order" class="supplier-order-page">
             <dl class="supplier-order-page__facts">
                 <div><dt>{{ t('purchasing.detail.supplier') }}</dt><dd>{{ order.supplier.name }}</dd></div>
+                <div v-if="order.supplierReference"><dt>{{ t('purchasing.detail.supplierReference') }}</dt><dd>{{ order.supplierReference }}</dd></div>
                 <div><dt>{{ t('purchasing.detail.orderedOn') }}</dt><dd>{{ formatDate(order.orderedOn) }}</dd></div>
                 <div v-if="order.receivedAt"><dt>{{ t('purchasing.detail.receivedAt') }}</dt><dd>{{ formatDateTime(order.receivedAt) }}</dd></div>
                 <div><dt>{{ t('purchasing.detail.products') }}</dt><dd><MoneyAmount :cents="order.subtotal" /></dd></div>

@@ -37,6 +37,7 @@ final readonly class UpdateProductHandler
         $this->stock->forgetUnsold($product);
         $product->alertBelow($command->lowStockThreshold);
         $product->classify($this->types->of($command->typeId));
+        $product->assertVariantChosen();
 
         $this->transaction->commit();
     }

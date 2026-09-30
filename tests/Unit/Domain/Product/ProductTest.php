@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Domain\Product;
 
 use App\Domain\Product\Exception\DuplicateVariant;
 use App\Domain\Product\Exception\InvalidProduct;
+use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Product\Exception\VariantRequired;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
@@ -265,5 +266,38 @@ final class ProductTest extends TestCase
         $product = Product::create(TestWorkspace::get(), 'PRI-FOR', 'Forêt', Money::cents(1_500), $print);
 
         self::assertTrue($product->sellable(null)->typeId->equals($print->id()));
+    }
+
+    public function testAProductIsArchivedAndRestored(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(400), TestProductType::get());
+
+        $product->archive(new \DateTimeImmutable('2026-09-30'));
+        self::assertTrue($product->isArchived());
+        self::assertTrue($product->isArchivedItself());
+
+        $product->restore();
+        self::assertFalse($product->isArchived());
+    }
+
+    public function testAProductOfATypeWithVariantsMustChooseOne(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A5', 'A4']);
+        Product::create(TestWorkspace::get(), 'PRI-LAC', 'Lac', Money::cents(1_500), $print, ['A4'])->assertVariantChosen();
+
+        $this->expectException(VariantChoiceMissing::class);
+        Product::create(TestWorkspace::get(), 'PRI-FOR', 'Forêt', Money::cents(1_500), $print)->assertVariantChosen();
+    }
+
+    public function testArchivedVariantsAreNotActive(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $product = Product::create(TestWorkspace::get(), 'PRI-FOR', 'Forêt', Money::cents(1_500), $print, ['A5', 'A4']);
+
+        $print->archiveVariants(['A5']);
+
+        self::assertSame(['A5', 'A4'], $product->variants());
+        self::assertSame(['A4'], $product->activeVariants());
     }
 }
