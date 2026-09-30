@@ -6,6 +6,7 @@ namespace App\Tests\Functional\Application\Design;
 
 use App\Application\Design\AdjustDeclination\AdjustDeclination;
 use App\Application\Design\AdjustDeclination\AdjustDeclinationHandler;
+use App\Application\Design\AttachProductToDesign\AttachProductToDesignHandler;
 use App\Application\Design\DeclineDesign\DeclineDesignHandler;
 use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Design\DesignView;
@@ -17,8 +18,10 @@ use App\Application\Design\SaveDesign\SaveDesignHandler;
 use App\Application\Design\SaveGabarit\SaveGabarit;
 use App\Application\Design\SaveGabarit\SaveGabaritHandler;
 use App\Application\Design\TickAdaptation\TickAdaptationHandler;
+use App\Application\Design\ValidateCollection\ValidateCollectionHandler;
 use App\Application\Design\ValidateDesign\ValidateDesignHandler;
-use App\Application\Design\WorkOn\WorkOnHandler;
+use App\Application\Design\WorkOnCollection\WorkOnCollectionHandler;
+use App\Application\Design\WorkOnDesign\WorkOnDesignHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
@@ -88,7 +91,7 @@ final class DesignUseCasesTest extends KernelTestCase
         $fern = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Fougère', $collectionId, null, [$this->sticker]));
         $moss = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Mousse', $collectionId, null, [$this->sticker]));
 
-        self::assertSame(2, self::getContainer()->get(ValidateDesignHandler::class)->collection($collectionId));
+        self::assertSame(2, self::getContainer()->get(ValidateCollectionHandler::class)($collectionId));
         $this->clear();
 
         $board = self::getContainer()->get(ListDesignsHandler::class)();
@@ -102,8 +105,8 @@ final class DesignUseCasesTest extends KernelTestCase
         $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', null);
         $designId = $this->design('Forêt');
 
-        self::getContainer()->get(WorkOnHandler::class)->design($designId, false);
-        self::getContainer()->get(WorkOnHandler::class)->collection($collectionId, false);
+        self::getContainer()->get(WorkOnDesignHandler::class)($designId, false);
+        self::getContainer()->get(WorkOnCollectionHandler::class)($collectionId, false);
         $this->clear();
 
         $board = self::getContainer()->get(ListDesignsHandler::class)();
@@ -116,7 +119,7 @@ final class DesignUseCasesTest extends KernelTestCase
         $productId = self::createProduct('Héron', 400, 60, ['5 cm']);
         $designProduct = self::getContainer()->get(DesignProductHandler::class);
 
-        $designId = (string) $designProduct->create($productId, $this->sticker);
+        $designId = (string) $designProduct($productId, $this->sticker);
         $this->clear();
 
         self::assertSame(['id' => $designId, 'name' => 'Héron'], self::getContainer()->get(GetProductHandler::class)($productId)->design);
@@ -130,7 +133,22 @@ final class DesignUseCasesTest extends KernelTestCase
 
         self::assertContains('Print Héron', array_map(static fn (ProductView $product): string => $product->displayName, self::getContainer()->get(ListProductsHandler::class)()));
         $this->expectException(InvalidDesign::class);
-        $designProduct->create($productId, $this->print);
+        $designProduct($productId, $this->print);
+    }
+
+    public function testAnExistingProductJoinsAnExistingDesign(): void
+    {
+        $productId = self::createProduct('Héron', 1_200, 300);
+        $designId = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Mousse', null, null, [$this->sticker]));
+        $attach = self::getContainer()->get(AttachProductToDesignHandler::class);
+
+        self::assertSame($designId, (string) $attach($productId, $designId, $this->print));
+        $this->clear();
+
+        self::assertSame(['id' => $designId, 'name' => 'Mousse'], self::getContainer()->get(GetProductHandler::class)($productId)->design);
+        self::assertCount(2, $this->view($designId)->declinations);
+        $this->expectException(InvalidDesign::class);
+        $attach($productId, $designId, $this->sticker);
     }
 
     public function testDesignsBelongToTheWorkspace(): void

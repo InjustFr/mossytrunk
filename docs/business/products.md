@@ -30,7 +30,7 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 | P3 | Prices are never negative. Only the selling price is entered by the user; the buying price starts at 0 and changes only through purchases (`Product::bought()`: restock, supplier order reception, or copied when a variant moves to a new product). Editing a product never changes it | `Product::reprice()`, `Product::bought()` | `ProductTest`, `ProductUseCasesTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
-| P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `CreateProductTypeHandler`, `RenameProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
+| P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `ProductTypeCreator`, `UpdateProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
 | P19 | A type colour is a `#rrggbb` hex colour (stored lowercase). Without one, a new type takes palette colour n° (number of types) | `ProductType::recolor()`, `CreateProductTypeHandler` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
 | P5 | **What is sold is a (product ULID, variant) tuple.** A product with variants requires one of *its* variants; a unique product accepts no variant | `Product::sellable(?variant)` → `SellableItem` | `ProductTest` |
 
@@ -79,7 +79,7 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 | `UpdateProduct` | `PUT /api/products/{id}` (same body) |
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `GetProduct` | `GET /api/products/{id}` → product figures, all-time sales, stock per variant with lots, movements (purchases, supplier receptions, returns, inventory surplus, sales, inventory losses; newest first), selling price history, design |
-| `ReviseSellingPrices` | `POST /api/products/{id}/prices`, `PUT` / `DELETE /api/products/{id}/prices/{changeId}` `{price, since: YYYY-MM-DD}` |
+| `RecordSellingPrice`, `AmendSellingPrice`, `ForgetSellingPrice` | `POST /api/products/{id}/prices`, `PUT` / `DELETE /api/products/{id}/prices/{changeId}` `{price, since: YYYY-MM-DD}` |
 | `DesignProduct` | `POST /api/products/{id}/design` `{gabaritId, designId?, collectionId?}` → `{designId}` (see [designs.md](designs.md) D8) |
 | `MoveVariant` | `POST /api/products/{id}/move-variant` `{variant?, targetProductId? \| newProductName?, targetVariant?}` → `{targetProductId}` |
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |

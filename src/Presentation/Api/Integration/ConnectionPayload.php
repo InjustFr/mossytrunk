@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Presentation\Api\Integration;
 
 use App\Application\Integration\ConfigureConnection\ConnectionSettings;
+use App\Application\Integration\Connectors;
 use App\Application\Integration\ServiceDescription;
 use App\Application\Integration\ServiceField;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
+use App\Domain\Shared\Exception\NotFound;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -17,12 +19,15 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final readonly class ConnectionPayload
 {
-    public function __construct(private ValidatorInterface $validator)
-    {
+    public function __construct(
+        private ValidatorInterface $validator,
+        private Connectors $connectors,
+    ) {
     }
 
-    public function settings(Request $request, ServiceDescription $description, bool $adding): ConnectionSettings
+    public function settings(Request $request, string $service, bool $adding): ConnectionSettings
     {
+        $description = $this->description($service);
         $payload = $request->getPayload();
         $raw = $payload->all('fields');
 
@@ -48,6 +53,15 @@ final readonly class ConnectionPayload
             SalesContext::tryFrom($payload->getString('salesContext')),
             UnknownItems::tryFrom($payload->getString('unknownItems')),
         );
+    }
+
+    private function description(string $service): ServiceDescription
+    {
+        if (!$this->connectors->has($service)) {
+            throw new NotFound('Service', $service);
+        }
+
+        return $this->connectors->get($service)->describe();
     }
 
     /**

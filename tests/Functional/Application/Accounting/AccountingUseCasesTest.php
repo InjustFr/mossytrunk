@@ -9,6 +9,7 @@ use App\Application\Accounting\DeclarePeriod\DeclarePeriodHandler;
 use App\Application\Accounting\ExportOrders\ExportOrdersHandler;
 use App\Application\Accounting\GetUrssafOverview\DeclarationPeriodView;
 use App\Application\Accounting\GetUrssafOverview\GetUrssafOverviewHandler;
+use App\Application\Accounting\WithdrawDeclaration\WithdrawDeclarationHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
@@ -52,17 +53,17 @@ final class AccountingUseCasesTest extends KernelTestCase
         $this->place('2026-07-10 15:00', 3);
         $declarations = self::getContainer()->get(DeclarePeriodHandler::class);
 
-        $declarations->declare('2026-07');
+        $declarations('2026-07');
         self::assertSame('declared', $this->period(self::getContainer()->get(GetUrssafOverviewHandler::class)(2026)->periods, '2026-07')->status);
 
         $this->place('2026-07-11 10:00', 1);
         $july = $this->period(self::getContainer()->get(GetUrssafOverviewHandler::class)(2026)->periods, '2026-07');
         self::assertSame(['changed', 1_200, 1_600], [$july->status, $july->declaredTurnover, $july->turnover]);
 
-        $declarations->declare('2026-07');
+        $declarations('2026-07');
         self::assertSame('declared', $this->period(self::getContainer()->get(GetUrssafOverviewHandler::class)(2026)->periods, '2026-07')->status);
 
-        $declarations->withdraw('2026-07');
+        self::getContainer()->get(WithdrawDeclarationHandler::class)('2026-07');
         self::assertSame('late', $this->period(self::getContainer()->get(GetUrssafOverviewHandler::class)(2026)->periods, '2026-07')->status);
     }
 

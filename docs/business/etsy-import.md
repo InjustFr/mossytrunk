@@ -17,9 +17,9 @@ Code: `src/Infrastructure/Connector/Etsy/` — `EtsyConnector` (`AuthorizingConn
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| Y1 | Connecting goes through Etsy's consent page; the `state` returned must match the one kept in the session, otherwise the connection is refused | `ServiceAuthorizationController` | `ServiceAuthorizationTest` |
+| Y1 | Connecting goes through Etsy's consent page; the `state` returned must match the one kept in the session, otherwise the connection is refused | `ConnectServiceController`, `ServiceCallbackController`, `AuthorizationFlow` | `ServiceAuthorizationTest` |
 | Y1b | Saving other app keys disconnects the shop (see [imports.md](imports.md) I2) | `UpdateConnectionHandler` | `ServiceConnectionUseCasesTest` |
-| Y2 | The access token (1 h) is renewed with the refresh token when it expires, and saved at once; disconnecting forgets both tokens and the shop, imported orders stay | `ConnectionSession`, `AuthorizeHandler::disconnect()` | `ImportEtsySalesTest` |
+| Y2 | The access token (1 h) is renewed with the refresh token when it expires, and saved at once; disconnecting forgets both tokens and the shop, imported orders stay | `ConnectionSession`, `DisconnectServiceHandler` | `ImportEtsySalesTest` |
 | Y3 | A receipt already imported is skipped (see I3) | `ImportSalesHandler` | `ImportEtsySalesTest` |
 | Y4 | A receipt line is matched by the listing's link, else **SKU = product reference**, else **title = product display name**; a product with variants needs the variation to equal one of its variants (see I5) | `ExternalItemResolver` | `ImportEtsySalesTest`, `ImportPoliciesTest` |
 | Y5 | A receipt with an unmatched line waits; its listing is remembered « à associer » (see I6) | `ExternalItemResolver`, `LinkExternalItemHandler` | `ImportEtsySalesTest`, `etsy.spec.js` |

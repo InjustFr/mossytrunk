@@ -8,6 +8,12 @@ UI language: **French**. Code, comments, commits: **English**.
 ## Code style
 
 - **Never write comments** — no docblocks, no inline `//`/`#`, no `<!-- -->`, no `{# #}`. Clear code prevails: express intent through names, small methods and types. Only type-only PHPDoc the type system needs (generics/array shapes like `@return list<Product>`, `@implements`) is allowed.
+- **Respect SOLID in every layer**, and check it on each change (fix a violation you touch rather than extend it):
+  - **S**ingle responsibility: one reason to change per class — one use case per handler, one route per controller, one exception per file; logic shared by several classes goes into a small named service, not a private helper copied around or a class with extra public methods.
+  - **O**pen/closed: add behaviour by adding a class (a controller, a handler, a connector tagged `app.sales_connector`, an exception subclass), not by growing an existing one with new methods or `switch`/`instanceof` branches.
+  - **L**iskov: subclasses and implementations honour their parent's contract (a `SalesConnector` fake behaves like the real gateway; an exception subclass keeps its base's meaning).
+  - **I**nterface segregation: small ports with only what their callers need (`SalesConnector` vs `AuthorizingConnector`); do not add methods to an interface for one implementation.
+  - **D**ependency inversion: Domain and Application depend on interfaces they own (repositories, `Transaction`, `WorkspaceContext`, `SecretCipher`), Infrastructure implements them; inject dependencies, never instantiate services inside a class.
 
 Generic Symfony conventions: see `AGENTS.md` (this file wins when they disagree — e.g. we run everything through Docker, not `symfony serve`).
 
@@ -50,7 +56,8 @@ Enforced by `deptrac.yaml`. Rules:
 - Entities change state only through intention-revealing methods (`reprice()`, `addExpense()`…). Named constructors (`Product::create()`), private constructor if useful.
 - Invariants throw subclasses of `App\Domain\Shared\Exception\DomainException` → returned as HTTP 422 `{detail}` by `Presentation\Api\DomainExceptionListener`. **One file per exception**: `<Context>/Exception/<Violation>.php` (`final class EmptyProductName extends InvalidProduct`, message built in the constructor, `throw new EmptyProductName()`), grouped under an abstract per-context base (`InvalidProduct`, `InvalidOrder`…). No static factory lists.
 - Money = `App\Domain\Shared\Money` (integer cents). The API exchanges **cents** as integers.
-- Handlers are plain invokable services (`__invoke(Command)`), called directly by controllers. They persist through repository interfaces and end with `App\Application\Transaction::commit()` (Doctrine flush).
+- Handlers are plain invokable services (`__invoke(Command)`), **one use case each** (no extra public methods: a second use case is a second handler; logic shared by several handlers goes into a small Application service such as `DesignProduction`, `ProductTypeCreator`), called directly by controllers. They persist through repository interfaces and end with `App\Application\Transaction::commit()` (Doctrine flush).
+- **One invokable controller per route**: `Presentation/Api/<Context>/<UseCase>Controller.php` with `#[Route]` on the class and `__invoke()`; a new endpoint is a new file, never a new method on an existing controller. Shared route regexes live in `Presentation\RouteRequirement`, shared presentation helpers in small services (`Web\VuePage`, `Web\Security\Flashes`, `Web\Integration\AuthorizationFlow`, `Api\Integration\ConnectionPayload`).
 
 ## Accounts & security
 
@@ -67,7 +74,7 @@ Enforced by `deptrac.yaml`. Rules:
 ## Frontend — `assets/vue/`
 
 - Navigation goes through **Turbo Drive** (`symfony/ux-turbo`): no full reload, mossy green top loading bar from `assets/progress-bar.js` (Turbo's own bar is disabled): it spans the Turbo visit **and** API calls (`useApi` calls `begin()`/`end()`), shown at least 300ms. The UX Vue Stimulus controller unmounts/mounts page apps on each visit, so read URL state in `setup()` (not at module level) and navigate from code with `visit()` (`composables/useNavigation.js`), never `window.location`.
-- `pages/` — one per route, mounted from `templates/page.html.twig` via `PageController`. **Thin orchestrators**: layout + components + composables, no business logic.
+- `pages/` — one per route, mounted from `templates/page.html.twig` by an invokable `Presentation/Web/Page/<Name>PageController` through `VuePage`. **Thin orchestrators**: layout + components + composables, no business logic.
 - `layouts/AppLayout.vue` — vertical sidebar nav, page title + header actions, toast host.
 - `components/<context>/` — feature components; `components/ui/` — generic building blocks.
 - Interactive widgets are built on **Reka UI** (`reka-ui`, headless). `components/ui/Base*` wrappers are **thin**: a Reka primitive + BEM/tokens theming, props and `v-model` fall through to the Reka root; use Reka features (`defaultValue`, `formatOptions`, `ItemIndicator`, providers) instead of re-implementing behaviour. Conversions only where the API contract needs them (`BaseMoneyField` v-model in cents, `BaseDatePicker`/`BaseDateRangePicker` in ISO strings). Map: Dialog (`BaseModal`), AlertDialog (`ConfirmButton`), Toast, Select (`BaseSelect`, `options: [{ value, label }]`), Combobox (`BaseCombobox`), Checkbox, Switch, NumberField (`BaseNumberField`, `BaseMoneyField`), DatePicker/DateRangePicker, Pagination, Tooltip (`IconButton`, provider in `AppLayout`), ScrollArea (`DataTable`), Label (`FormField`), VisuallyHidden, NavigationMenu (sidebar), ConfigProvider `fr-FR` (layouts); feature components use ToggleGroup, TagsInput, Listbox, Collapsible, RadioGroup (`settings/ServiceOptions`). No native `<select>`/checkbox/date/number inputs. Portaled parts (dialog, select/combobox content, tooltip, toast, calendar) are styled in a non-scoped `<style>` block since scoped attributes do not reach teleported content. Playwright helpers: `choose()` (`e2e/tests/support/select.js`), `fillDate()`/`fillDateRange()` (`support/date.js`, types dd/mm/yyyy[/hh/mm] segments).

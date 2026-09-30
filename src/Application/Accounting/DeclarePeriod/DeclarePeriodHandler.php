@@ -24,7 +24,7 @@ final readonly class DeclarePeriodHandler
     ) {
     }
 
-    public function declare(string $periodKey): void
+    public function __invoke(string $periodKey): void
     {
         $period = DeclarationPeriod::fromKey($periodKey);
         $previous = $this->declarations->find($period->key());
@@ -40,14 +40,5 @@ final readonly class DeclarePeriodHandler
             $this->clock->now(),
         ));
         $this->transaction->commit();
-    }
-
-    public function withdraw(string $periodKey): void
-    {
-        $declaration = $this->declarations->find(DeclarationPeriod::fromKey($periodKey)->key());
-        if (null !== $declaration) {
-            $this->declarations->remove($declaration);
-            $this->transaction->commit();
-        }
     }
 }

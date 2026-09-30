@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Application\Integration;
 
 use App\Application\Accounting\ExportOrders\ExportOrdersHandler;
-use App\Application\Integration\Authorize\AuthorizeHandler;
+use App\Application\Integration\CompleteAuthorization\CompleteAuthorizationHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\ConnectionSession;
+use App\Application\Integration\DisconnectService\DisconnectServiceHandler;
 use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
 use App\Application\Integration\LinkExternalItem\LinkExternalItemHandler;
@@ -48,7 +49,7 @@ final class ImportEtsySalesTest extends KernelTestCase
         self::assertSame('Atelier Mousse sur Etsy', $this->authorize());
         self::assertSame([true, 'Atelier Mousse sur Etsy'], [$this->etsy()->connection?->authorized, $this->etsy()->connection?->accountName]);
 
-        self::getContainer()->get(AuthorizeHandler::class)->disconnect('etsy');
+        self::getContainer()->get(DisconnectServiceHandler::class)('etsy');
 
         self::assertFalse($this->etsy()->connection?->authorized);
     }
@@ -112,7 +113,7 @@ final class ImportEtsySalesTest extends KernelTestCase
 
     private function authorize(): string
     {
-        return self::getContainer()->get(AuthorizeHandler::class)->complete('etsy', 'code', 'verifier', self::CALLBACK);
+        return self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', self::CALLBACK);
     }
 
     private function import(): \App\Application\Integration\ImportSales\ImportReport

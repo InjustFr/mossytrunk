@@ -9,7 +9,7 @@ use App\Application\Integration\Connectors;
 use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
 use App\Application\Order\OrderPricing;
-use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\CreateProductType\ProductTypeCreator;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Event\EventRepository;
@@ -35,7 +35,7 @@ final readonly class ImportSalesHandler
         private ProductRepository $products,
         private ProductReferenceGenerator $references,
         private ProductTypeRepository $types,
-        private CreateProductTypeHandler $createType,
+        private ProductTypeCreator $typeCreator,
         private EventRepository $events,
         private OrderRepository $orders,
         private OrderPricing $pricing,
@@ -58,7 +58,7 @@ final readonly class ImportSalesHandler
         uasort($sales, static fn (ExternalSale $a, ExternalSale $b): int => $a->placedAt <=> $b->placedAt);
         $alreadyImported = array_flip($this->orders->importedExternalIds($service, array_map(strval(...), array_keys($sales))));
 
-        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->createType, $connection->workspace());
+        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $connection->workspace());
         $resolver = new ExternalItemResolver($catalogue, $this->items, $connection, $description->linePrices, $this->clock->now());
         $atEvent = SalesContext::AtEvent === $connection->salesContext();
 

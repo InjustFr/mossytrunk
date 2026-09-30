@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Integration;
 
-use App\Application\Integration\Authorize\AuthorizeHandler;
+use App\Application\Integration\CompleteAuthorization\CompleteAuthorizationHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\ConfigureConnection\ConnectionSettings;
 use App\Application\Integration\ConfigureConnection\UpdateConnectionHandler;
@@ -95,7 +95,7 @@ final class ServiceConnectionUseCasesTest extends KernelTestCase
     public function testChangingTheAccessOfAnAuthorizedServiceDisconnectsIt(): void
     {
         ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'etsy', ['keystring' => 'keystring123', 'shared_secret' => 'shared-secret']);
-        self::getContainer()->get(AuthorizeHandler::class)->complete('etsy', 'code', 'verifier', 'https://app.test/parametres/etsy/retour');
+        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/parametres/etsy/retour');
 
         $this->update('etsy', ['keystring' => 'keystring123', 'shared_secret' => '']);
         self::assertTrue($this->services()['etsy']->connection?->authorized);

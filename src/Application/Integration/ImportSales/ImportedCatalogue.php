@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ImportSales;
 
-use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\CreateProductType\ProductTypeCreator;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductReferenceGenerator;
@@ -33,7 +33,7 @@ final class ImportedCatalogue
         private readonly ProductRepository $products,
         private readonly ProductReferenceGenerator $references,
         private readonly ProductTypeRepository $typeRepository,
-        private readonly CreateProductTypeHandler $createType,
+        private readonly ProductTypeCreator $typeCreator,
         private readonly Workspace $workspace,
     ) {
     }
@@ -115,7 +115,7 @@ final class ImportedCatalogue
         if (!isset($this->types[$key])) {
             $existing = $this->typeRepository->findByName($name);
             if (null === $existing) {
-                $existing = $this->createType->create($name);
+                $existing = $this->typeCreator->create($name);
                 ++$this->typesCreated;
             }
             $this->types[$key] = $existing;

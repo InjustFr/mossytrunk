@@ -23,8 +23,8 @@ Model: `src/Domain/Design/`.
 | D4 | Validating needs at least one declination, every declination ready, and distinct resulting product names | `Design::validate()` | `DesignTest`, `DesignUseCasesTest` |
 | D5 | Validation creates one product per declination: type of the gabarit, the declination's name, selling price and variants, a generated reference (P2); stock and buying price start at 0 (P3) | `ValidateDesignHandler` | `DesignUseCasesTest`, `DesignApiTest` |
 | D6 | A declination that became a product is frozen (no adjustment, tick or withdrawal). The design itself stays open: declining it on a new gabarit puts it back « en cours » and on the bench, and validating again creates only the new products. A design with products cannot be deleted | `Declination::assertEditable()`, `Design::decline()`, `Design::validate()`, `DeleteDesignHandler` | `DesignTest`, `DesignUseCasesTest` |
-| D7 | Validating a collection validates each of its designs still in progress, all or nothing | `ValidateDesignHandler::collection()` | `DesignUseCasesTest` |
-| D8 | An **existing product** can get its finished design (named after the product, validated, off the bench) or join an existing design: it becomes a declination on the chosen gabarit with its name, price and variants, all adaptations done. A product belongs to at most one design | `Design::fromProduct()`, `Design::adopt()`, `DesignProductHandler` | `DesignTest`, `DesignUseCasesTest` |
+| D7 | Validating a collection validates each of its designs still in progress, all or nothing | `ValidateCollectionHandler` | `DesignUseCasesTest` |
+| D8 | An **existing product** can get its finished design (named after the product, validated, off the bench) or join an existing design: it becomes a declination on the chosen gabarit with its name, price and variants, all adaptations done. A product belongs to at most one design | `Design::fromProduct()`, `Design::adopt()`, `DesignProductHandler`, `AttachProductToDesignHandler` | `DesignTest`, `DesignUseCasesTest` |
 
 ## Use cases & API
 

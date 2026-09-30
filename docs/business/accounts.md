@@ -10,7 +10,7 @@ signs in; each user belongs to exactly **one** workspace, and several users can 
 | `PasswordToken` | `selector`, SHA-256 of the `verifier`, `purpose` (invitation / reset), `expiresAt`, `usedAt` |
 
 Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: `config/packages/security.yaml`,
-`src/Infrastructure/Security/`, `src/Presentation/Web/SecurityController.php`.
+`src/Infrastructure/Security/`, `src/Presentation/Web/Security/`.
 
 ## Rules
 
@@ -20,8 +20,8 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | A2 | Email is valid, trimmed, lowercased and unique | `User::normalizeEmail()`, `CreateUserHandler` | `UserTest`, `AccountUseCasesTest` |
 | A3 | A new user receives an **invitation** email to choose their password; they cannot sign in before | `CreateUserHandler`, `SymfonyAccountMailer` | `AccountUseCasesTest`, `AuthenticationTest`, e2e `auth.setup.js` |
 | A4 | Password links are single-use; an invitation is valid **7 days**, a reset link **1 hour**; issuing a link revokes the previous ones | `PasswordToken`, `PasswordTokenPurpose`, `PasswordTokenIssuer` | `PasswordTokenTest`, `AccountUseCasesTest` |
-| A5 | Only a hash of the link's secret is stored; the link token is moved from the URL to the session before the form is shown | `PasswordToken::issue()`, `SecurityController::passwordLink()` | `PasswordTokenTest`, `AuthenticationTest` |
-| A6 | Passwords have at least **12 characters** and must be typed twice | `SetPasswordHandler::MIN_LENGTH`, `SecurityController::setPassword()` | `AccountUseCasesTest` |
+| A5 | Only a hash of the link's secret is stored; the link token is moved from the URL to the session before the form is shown | `PasswordToken::issue()`, `PasswordLinkController` | `PasswordTokenTest`, `AuthenticationTest` |
+| A6 | Passwords have at least **12 characters** and must be typed twice | `SetPasswordHandler::MIN_LENGTH`, `SetPasswordController` | `AccountUseCasesTest` |
 | A7 | "Mot de passe oublié ?" always shows the same confirmation, whether the account exists or not; at most 3 requests per email and IP every 15 minutes | `RequestPasswordResetHandler`, `forgot_password` rate limiter | `AccountUseCasesTest`, `AuthenticationTest` |
 | A8 | Sign-in: 5 failed attempts per 15 minutes are throttled; "Se souvenir de moi" keeps the session 30 days; a password change signs out the other sessions | `security.yaml` (`login_throttling`, `remember_me`), `SecurityUser::__serialize()` | e2e `auth.spec.js` |
 | A10 | All business data is scoped to the user's workspace: lists only show it, an id from another workspace answers « introuvable » (404) | `WorkspaceContext` used by every Doctrine repository; aggregates are created with the current workspace (orders take their event's) | `WorkspaceIsolationTest`, `ProductApiTest` |
