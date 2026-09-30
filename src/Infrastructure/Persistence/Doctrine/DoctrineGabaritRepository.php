@@ -25,6 +25,11 @@ final readonly class DoctrineGabaritRepository implements GabaritRepository
         $this->entityManager->persist($entity);
     }
 
+    public function remove(Gabarit $gabarit): void
+    {
+        $this->entityManager->remove($gabarit);
+    }
+
     public function get(Ulid $id): Gabarit
     {
         return $this->entityManager->getRepository(Gabarit::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])

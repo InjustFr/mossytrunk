@@ -25,7 +25,8 @@
         "gabaritSaved": "Template “{name}” saved.",
         "removeCollection": "Delete the collection {name}",
         "removeCollectionMessage": "Its {count} design moves to “No collection”. | Its {count} designs move to “No collection”.",
-        "collectionRemoved": "Collection “{name}” deleted."
+        "collectionRemoved": "Collection “{name}” deleted.",
+        "gabaritRemoved": "Template “{name}” deleted."
     },
     "detail": {
         "titleFallback": "Design",
@@ -65,6 +66,7 @@
         "toAdapt": "{count} to adapt",
         "withdraw": "Remove adaptation {name}",
         "withdrawMessage": "The adjustments checked for this template will be lost.",
+        "withdrawProducedMessage": "“{product}” stays in the catalogue, no longer attached to this design.",
         "checklist": "{name} adjustments",
         "noAdaptations": "This template requires no adjustments.",
         "variants": "Variants",
@@ -105,7 +107,9 @@
         "adaptationItem": "adjustment",
         "cancel": "Cancel",
         "save": "Save",
-        "add": "Add template"
+        "add": "Add template",
+        "remove": "Delete the template {name}",
+        "removeMessage": "Only possible when no design is declined on this template."
     },
     "workbench": {
         "progress": "Adjustments of {name}",

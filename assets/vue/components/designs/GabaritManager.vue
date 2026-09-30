@@ -1,13 +1,14 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Pencil } from '@lucide/vue';
+import { Pencil, Trash2 } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import ConfirmButton from '../ui/ConfirmButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import TypeSelect from '../products/TypeSelect.vue';
@@ -18,8 +19,9 @@ import { useProductTypes } from '../../composables/useProductTypes.js';
 const props = defineProps({
     gabarits: { type: Array, required: true },
     save: { type: Function, required: true },
+    remove: { type: Function, required: true },
 });
-const emit = defineEmits(['saved']);
+const emit = defineEmits(['saved', 'removed']);
 const { t } = useI18n();
 const { variantsOf } = useProductTypes();
 
@@ -35,6 +37,18 @@ function edit(gabarit) {
         ? { name: gabarit.name, typeId: gabarit.typeId, sellingPrice: gabarit.sellingPrice, variants: [...gabarit.variants], adaptations: [...gabarit.adaptations] }
         : empty());
     errors.value = {};
+}
+
+async function onRemove(gabarit) {
+    try {
+        await props.remove(gabarit.id);
+        if (editingId.value === gabarit.id) {
+            edit(null);
+        }
+        emit('removed', gabarit.name);
+    } catch (error) {
+        errors.value = { name: error.message };
+    }
 }
 
 async function onSubmit() {
@@ -68,7 +82,10 @@ async function onSubmit() {
                     </span>
                     <span v-if="gabarit.adaptations.length" class="gabarit-manager__meta">{{ t('designs.gabarits.toAdapt', { adaptations: gabarit.adaptations.join(', ') }) }}</span>
                 </div>
-                <IconButton :icon="Pencil" :label="t('designs.gabarits.edit', { name: gabarit.name })" @click="edit(gabarit)" />
+                <span class="gabarit-manager__actions">
+                    <IconButton :icon="Pencil" :label="t('designs.gabarits.edit', { name: gabarit.name })" @click="edit(gabarit)" />
+                    <ConfirmButton :icon="Trash2" :label="t('designs.gabarits.remove', { name: gabarit.name })" :message="t('designs.gabarits.removeMessage')" @confirm="onRemove(gabarit)" />
+                </span>
             </li>
         </ul>
 
@@ -117,6 +134,7 @@ async function onSubmit() {
 .gabarit-manager__item:last-child { border-bottom: none; }
 .gabarit-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .gabarit-manager__item--editing { background: var(--color-accent-soft); }
+.gabarit-manager__actions { display: flex; flex-shrink: 0; gap: var(--space-1); }
 .gabarit-manager__summary { display: flex; flex-direction: column; }
 .gabarit-manager__meta { color: var(--color-muted); font-size: 0.8125rem; }
 .gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }

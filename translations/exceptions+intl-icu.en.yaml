@@ -3,6 +3,7 @@ accounting:
     period_not_over: 'The period {period} is not over: it cannot be declared yet.'
     unknown_period: 'Unknown declaration period “{period}”.'
 design:
+    gabarit_in_use: 'The template “{name}” is still used by {designs, plural, one {# design} other {# designs}}: withdraw its declinations first.'
     adjustments_pending: '“{name}” still has {count, plural, one {# adjustment} other {# adjustments}} to do.'
     already_adapted: 'This design is already adapted to “{template}”.'
     adaptation_already_produced: '“{name}” is already a product: its adaptation can no longer change.'

@@ -25,7 +25,8 @@
         "gabaritSaved": "Gabarit « {name} » enregistré.",
         "removeCollection": "Supprimer la collection {name}",
         "removeCollectionMessage": "Ses {count} design passe dans « Sans collection ». | Ses {count} designs passent dans « Sans collection ».",
-        "collectionRemoved": "Collection « {name} » supprimée."
+        "collectionRemoved": "Collection « {name} » supprimée.",
+        "gabaritRemoved": "Gabarit « {name} » supprimé."
     },
     "detail": {
         "titleFallback": "Design",
@@ -65,6 +66,7 @@
         "toAdapt": "{count} à adapter",
         "withdraw": "Retirer la déclinaison {name}",
         "withdrawMessage": "Les adaptations cochées pour ce gabarit seront perdues.",
+        "withdrawProducedMessage": "« {product} » reste au catalogue, mais n'est plus rattaché à ce design.",
         "checklist": "Adaptations {name}",
         "noAdaptations": "Aucune adaptation demandée par ce gabarit.",
         "variants": "Variantes",
@@ -105,7 +107,9 @@
         "adaptationItem": "l'adaptation",
         "cancel": "Annuler",
         "save": "Enregistrer",
-        "add": "Ajouter le gabarit"
+        "add": "Ajouter le gabarit",
+        "remove": "Supprimer le gabarit {name}",
+        "removeMessage": "Possible seulement si aucun design n'est décliné sur ce gabarit."
     },
     "workbench": {
         "progress": "Adaptations de {name}",

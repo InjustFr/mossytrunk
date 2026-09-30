@@ -20,7 +20,7 @@ import { visit } from '../composables/useNavigation.js';
 import { useToast } from '../composables/useToast.js';
 
 const { board, load, createDesign, saveCollection, removeCollection, workOnCollection, validateCollection } = useDesignBoard();
-const { gabarits, load: loadGabarits, save: saveGabarit } = useGabarits();
+const { gabarits, load: loadGabarits, save: saveGabarit, remove: removeGabarit } = useGabarits();
 const { load: loadTypes } = useProductTypes();
 const toast = useToast();
 const { t } = useI18n();
@@ -78,6 +78,11 @@ async function onValidateCollection(collection) {
     } catch (error) {
         toast.error(error.message);
     }
+}
+
+async function onGabaritRemoved(name) {
+    toast.success(t('designs.page.gabaritRemoved', { name }));
+    await loadGabarits();
 }
 
 async function onGabaritSaved(name) {
@@ -149,7 +154,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
             <CollectionForm :collection="editingCollection" :submit="(payload) => saveCollection(editingCollection?.id, payload)" @saved="onCollectionSaved" @cancel="collectionOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="gabaritsOpen" :title="t('designs.page.gabarits')">
-            <GabaritManager :gabarits="gabarits" :save="saveGabarit" @saved="onGabaritSaved" />
+            <GabaritManager :gabarits="gabarits" :save="saveGabarit" :remove="removeGabarit" @saved="onGabaritSaved" @removed="onGabaritRemoved" />
         </BaseModal>
     </AppLayout>
 </template>

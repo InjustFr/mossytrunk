@@ -10,6 +10,8 @@ interface GabaritRepository
 {
     public function add(Gabarit $entity): void;
 
+    public function remove(Gabarit $gabarit): void;
+
     public function get(Ulid $id): Gabarit;
 
     public function findByName(string $name): ?Gabarit;

@@ -60,10 +60,9 @@ async function onSubmit() {
             <StatusBadge v-else-if="declination.ready" tone="success">{{ t('designs.declination.ready') }}</StatusBadge>
             <StatusBadge v-else tone="warning">{{ t('designs.declination.toAdapt', { count: declination.adaptations.length - declination.doneAdaptations.length }) }}</StatusBadge>
             <ConfirmButton
-                v-if="!locked"
                 :icon="Trash2"
                 :label="t('designs.declination.withdraw', { name: declination.gabarit.name })"
-                :message="t('designs.declination.withdrawMessage')"
+                :message="t(declination.productId ? 'designs.declination.withdrawProducedMessage' : 'designs.declination.withdrawMessage', { product: declination.displayName })"
                 @confirm="emit('withdraw')"
             />
         </header>

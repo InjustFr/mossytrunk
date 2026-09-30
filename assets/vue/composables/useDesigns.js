@@ -11,7 +11,9 @@ export function useGabarits() {
 
     const save = (id, payload) => (id ? api.put(`/api/gabarits/${id}`, payload) : api.post('/api/gabarits', payload));
 
-    return { gabarits, load, save };
+    const remove = (id) => api.del(`/api/gabarits/${id}`);
+
+    return { gabarits, load, save, remove };
 }
 
 export function useDesignBoard() {

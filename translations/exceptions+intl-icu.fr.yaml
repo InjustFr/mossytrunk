@@ -3,6 +3,7 @@ accounting:
     period_not_over: 'La période {period} n''est pas terminée : elle ne peut pas encore être déclarée.'
     unknown_period: 'Période de déclaration inconnue « {period} ».'
 design:
+    gabarit_in_use: 'Le gabarit « {name} » sert encore à {designs, plural, one {# design} other {# designs}} : retirez d''abord ses déclinaisons.'
     adjustments_pending: '« {name} » a encore {count, plural, one {# adaptation} other {# adaptations}} à faire.'
     already_adapted: 'Ce design est déjà décliné en « {template} ».'
     adaptation_already_produced: '« {name} » est déjà un produit : sa déclinaison ne change plus.'

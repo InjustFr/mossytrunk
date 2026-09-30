@@ -132,9 +132,7 @@ class Design
 
     public function withdraw(Ulid $declinationId): void
     {
-        $declination = $this->declination($declinationId);
-        $declination->assertEditable();
-        $this->declinations->removeElement($declination);
+        $this->declinations->removeElement($this->declination($declinationId));
         if ([] === $this->pendingDeclinations() && [] !== $this->declinations()) {
             $this->status = DesignStatus::Validated;
         }

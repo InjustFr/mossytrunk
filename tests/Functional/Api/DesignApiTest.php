@@ -42,6 +42,31 @@ final class DesignApiTest extends WebTestCase
         self::assertSame('validated', Json::at(self::body($client), 'standalone', 0, 'status'));
     }
 
+    public function testAGabaritIsDeletedOnceNoDesignIsDeclinedOnIt(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'typeId' => ProductTypesApi::create($client, 'Carte postale'), 'sellingPrice' => 250]);
+        $gabaritId = Json::string(self::body($client), 'id');
+        $client->jsonRequest('POST', '/api/designs', ['name' => 'Clairière']);
+        $designId = Json::string(self::body($client), 'id');
+        $client->jsonRequest('POST', "/api/designs/$designId/declinations", ['gabaritId' => $gabaritId]);
+        $declinationId = Json::string(self::body($client), 'id');
+        $client->jsonRequest('POST', "/api/designs/$designId/validation");
+
+        $client->jsonRequest('DELETE', "/api/gabarits/$gabaritId");
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('DELETE', "/api/designs/$designId/declinations/$declinationId");
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('DELETE', "/api/gabarits/$gabaritId");
+        self::assertResponseStatusCodeSame(204);
+
+        $client->jsonRequest('GET', '/api/gabarits');
+        self::assertSame([], self::body($client));
+        $client->jsonRequest('GET', '/api/products');
+        self::assertSame('Clairière', Json::at(self::body($client), 0, 'name'));
+    }
+
     public function testGabaritNeedsANameAndAType(): void
     {
         $client = self::signedInClient();
