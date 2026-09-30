@@ -10,6 +10,8 @@ interface DesignCollectionRepository
 {
     public function add(DesignCollection $entity): void;
 
+    public function remove(DesignCollection $collection): void;
+
     public function get(Ulid $id): DesignCollection;
 
     /**

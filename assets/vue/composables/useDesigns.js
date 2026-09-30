@@ -27,6 +27,7 @@ export function useDesignBoard() {
         load,
         createDesign: (payload) => api.post('/api/designs', payload),
         saveCollection: (id, payload) => (id ? api.put(`/api/design-collections/${id}`, payload) : api.post('/api/design-collections', payload)),
+        removeCollection: (id) => api.del(`/api/design-collections/${id}`),
         workOnCollection: (id, current) => api.put(`/api/design-collections/${id}/current`, { current }),
         validateCollection: (id) => api.post(`/api/design-collections/${id}/validation`),
     };

@@ -24,6 +24,7 @@ Model: `src/Domain/Design/`.
 | D5 | Validation creates one product per declination: type of the gabarit, the declination's name, selling price and variants, a generated reference (P2); stock and buying price start at 0 (P3) | `ValidateDesignHandler` | `DesignUseCasesTest`, `DesignApiTest` |
 | D6 | A declination that became a product is frozen (no adjustment, tick or withdrawal). The design itself stays open: declining it on a new gabarit puts it back « en cours » and on the bench, and validating again creates only the new products. A design with products cannot be deleted | `Declination::assertEditable()`, `Design::decline()`, `Design::validate()`, `DeleteDesignHandler` | `DesignTest`, `DesignUseCasesTest` |
 | D7 | Validating a collection validates each of its designs still in progress, all or nothing | `ValidateCollectionHandler` | `DesignUseCasesTest` |
+| D9 | Deleting a collection keeps its designs: they move to « Sans collection » | `DeleteCollectionHandler`, `Design::leaveCollection()` | `DesignApiTest` |
 | D8 | An **existing product** can get its finished design (named after the product, validated, off the bench) or join an existing design: it becomes a declination on the chosen gabarit with its name, price and variants, all adaptations done. A product belongs to at most one design | `Design::fromProduct()`, `Design::adopt()`, `DesignProductHandler`, `AttachProductToDesignHandler` | `DesignTest`, `DesignUseCasesTest` |
 
 ## Use cases & API
@@ -37,9 +38,9 @@ Model: `src/Domain/Design/`.
 | `DeclineDesign` / `WithdrawDeclination` / `AdjustDeclination` | `POST /api/designs/{id}/declinations` `{gabaritId}`, `DELETE` / `PUT /api/designs/{id}/declinations/{declinationId}` |
 | `TickAdaptation` | `PUT /api/designs/{id}/declinations/{declinationId}/adaptations` `{adaptation, done}` |
 | `ValidateDesign` | `POST /api/designs/{id}/validation`, `POST /api/design-collections/{id}/validation` → `{productsCreated}` |
-| `SaveCollection` | `POST /api/design-collections`, `PUT /api/design-collections/{id}` |
+| `SaveCollection` / `DeleteCollection` | `POST /api/design-collections`, `PUT` / `DELETE /api/design-collections/{id}` |
 
 ## UI
 
-- **Créations** (`/designs`): « Sur l'établi » cards (collection, gabarits — solid when ready —, adaptation progress), then each collection (switch « Sur l'établi », its designs, « Ajouter un design », « Sortir la collection de l'atelier » once every design is ready) and « Sans collection ». Header: « Gabarits » (manager), « Nouvelle collection », « Nouveau design » (name, collection, gabarits to start with, notes).
+- **Créations** (`/designs`): « Sur l'établi » cards (collection, gabarits — solid when ready —, adaptation progress), then each collection (switch « Sur l'établi », its designs, delete (trash icon, with confirmation), « Modifier », « Ajouter un design », « Sortir la collection de l'atelier » once every design is ready) and « Sans collection ». Header: « Gabarits » (manager), « Nouvelle collection », « Nouveau design » (name, collection, gabarits to start with, notes).
 - **Design** (`/designs/{id}`): « Décliner sur » buttons for the unused gabarits (also on validated designs), one card per declination with the adaptation checklist and the product-to-be (name, selling price, variants). « Sortir de l'atelier » (« Créer les nouveaux produits » once it has products) lists the products it will create; produced declinations link to their product.

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -18,7 +19,7 @@ import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
 import { useToast } from '../composables/useToast.js';
 
-const { board, load, createDesign, saveCollection, workOnCollection, validateCollection } = useDesignBoard();
+const { board, load, createDesign, saveCollection, removeCollection, workOnCollection, validateCollection } = useDesignBoard();
 const { gabarits, load: loadGabarits, save: saveGabarit } = useGabarits();
 const { load: loadTypes } = useProductTypes();
 const toast = useToast();
@@ -55,6 +56,12 @@ async function onDesignSaved({ name, id }) {
 async function onCollectionSaved(name) {
     collectionOpen.value = false;
     toast.success(t(editingCollection.value ? 'designs.page.collectionUpdated' : 'designs.page.collectionCreated', { name }));
+    await load();
+}
+
+async function onRemoveCollection(collection) {
+    await removeCollection(collection.id);
+    toast.success(t('designs.page.collectionRemoved', { name: collection.name }));
     await load();
 }
 
@@ -111,6 +118,12 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                 </header>
                 <DesignRows :designs="collection.designs" :empty="t('designs.page.collectionEmpty')" />
                 <footer class="designs-page__collection-actions">
+                    <ConfirmButton
+                        :icon="Trash2"
+                        :label="t('designs.page.removeCollection', { name: collection.name })"
+                        :message="t('designs.page.removeCollectionMessage', { count: collection.designs.length }, collection.designs.length)"
+                        @confirm="onRemoveCollection(collection)"
+                    />
                     <BaseButton variant="ghost" @click="openCollection(collection)">{{ t('designs.page.edit') }}</BaseButton>
                     <BaseButton variant="secondary" @click="newDesign(collection.id)">{{ t('designs.page.addDesign') }}</BaseButton>
                     <ConfirmButton

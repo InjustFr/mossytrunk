@@ -66,6 +66,21 @@ final class DesignApiTest extends WebTestCase
         self::assertSame(['A4', 'A3'], Json::at(self::body($client), 0, 'variants'));
     }
 
+    public function testDeletingACollectionKeepsItsDesignsWithoutCollection(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/design-collections', ['name' => 'Automne']);
+        $collectionId = Json::string(self::body($client), 'id');
+        $client->jsonRequest('POST', '/api/designs', ['name' => 'Clairière', 'collectionId' => $collectionId]);
+
+        $client->jsonRequest('DELETE', "/api/design-collections/$collectionId");
+        self::assertResponseStatusCodeSame(204);
+
+        $client->jsonRequest('GET', '/api/designs');
+        self::assertSame([], Json::array(self::body($client), 'collections'));
+        self::assertSame('Clairière', Json::string(self::body($client), 'standalone', 0, 'name'));
+    }
+
     /**
      * @return array<mixed>
      */

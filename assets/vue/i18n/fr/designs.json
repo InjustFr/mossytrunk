@@ -22,7 +22,10 @@
         "collectionCreated": "Collection « {name} » créée.",
         "collectionUpdated": "Collection « {name} » mise à jour.",
         "collectionValidated": "Collection « {name} » sortie de l'atelier : {count} produit créé. | Collection « {name} » sortie de l'atelier : {count} produits créés.",
-        "gabaritSaved": "Gabarit « {name} » enregistré."
+        "gabaritSaved": "Gabarit « {name} » enregistré.",
+        "removeCollection": "Supprimer la collection {name}",
+        "removeCollectionMessage": "Ses {count} design passe dans « Sans collection ». | Ses {count} designs passent dans « Sans collection ».",
+        "collectionRemoved": "Collection « {name} » supprimée."
     },
     "detail": {
         "titleFallback": "Design",

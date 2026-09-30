@@ -22,7 +22,10 @@
         "collectionCreated": "Collection “{name}” created.",
         "collectionUpdated": "Collection “{name}” updated.",
         "collectionValidated": "Collection “{name}” released from the workshop: {count} product created. | Collection “{name}” released from the workshop: {count} products created.",
-        "gabaritSaved": "Template “{name}” saved."
+        "gabaritSaved": "Template “{name}” saved.",
+        "removeCollection": "Delete the collection {name}",
+        "removeCollectionMessage": "Its {count} design moves to “No collection”. | Its {count} designs move to “No collection”.",
+        "collectionRemoved": "Collection “{name}” deleted."
     },
     "detail": {
         "titleFallback": "Design",

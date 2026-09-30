@@ -86,6 +86,11 @@ class Design
         $this->notes = null === $notes || '' === trim($notes) ? null : trim($notes);
     }
 
+    public function leaveCollection(): void
+    {
+        $this->collection = null;
+    }
+
     public function workOn(bool $current): void
     {
         $this->current = $current && !$this->isValidated();

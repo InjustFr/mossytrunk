@@ -24,6 +24,11 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
         $this->entityManager->persist($entity);
     }
 
+    public function remove(DesignCollection $collection): void
+    {
+        $this->entityManager->remove($collection);
+    }
+
     public function get(Ulid $id): DesignCollection
     {
         return $this->entityManager->getRepository(DesignCollection::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
