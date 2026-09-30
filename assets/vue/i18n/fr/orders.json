@@ -64,7 +64,8 @@
         "total": "Total",
         "payment": "Paiement",
         "reference": "Référence",
-        "count": "{count} commande | {count} commandes"
+        "count": "{count} commande | {count} commandes",
+        "source": "Source"
     },
     "margin": {
         "collected": "Encaissé",

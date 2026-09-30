@@ -64,7 +64,8 @@
         "total": "Total",
         "payment": "Payment",
         "reference": "Reference",
-        "count": "{count} order | {count} orders"
+        "count": "{count} order | {count} orders",
+        "source": "Source"
     },
     "margin": {
         "collected": "Collected",
