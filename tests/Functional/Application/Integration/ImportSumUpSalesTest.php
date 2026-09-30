@@ -9,6 +9,7 @@ use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\Exception\ServiceNotAdded;
+use App\Application\Integration\ExternalSale;
 use App\Application\Integration\ImportSales\ImportReport;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
 use App\Application\Order\GetOrder\GetOrderHandler;
@@ -337,6 +338,24 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(1, $report->ordersImported);
         self::assertSame(0, $report->productsCreated);
         self::assertSame([[], []], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'variants'));
+    }
+
+    public function testProductsCreatedInACategoryAreMatchedByTheNextImport(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $gateway = self::getContainer()->get(FakeSumUpGateway::class);
+        $sale = static fn (string $code, string $at): ExternalSale => ExternalSales::sumUp($code, new \DateTimeImmutable($at), Money::cents(3_000), [
+            ExternalSales::line('Print Forêt', Money::cents(1_500), 1, 'Print'),
+            ExternalSales::line('Rivière', Money::cents(1_500), 1, 'print'),
+        ]);
+        $gateway->willReturn([$sale('TX-1', '2030-03-14T12:00:00Z')]);
+        $this->import();
+
+        $gateway->willReturn([$sale('TX-1', '2030-03-14T12:00:00Z'), $sale('TX-2', '2030-03-14T13:00:00Z')]);
+        $report = $this->import();
+
+        self::assertSame(0, $report->productsCreated);
+        self::assertSame(['Print Forêt', 'Print Rivière'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'displayName'));
     }
 
     public function testTypedProductsAreMatchedByDisplayName(): void

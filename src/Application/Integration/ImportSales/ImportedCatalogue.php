@@ -20,6 +20,9 @@ final class ImportedCatalogue
     /** @var array<string, Product>|null */
     private ?array $byDisplayName = null;
 
+    /** @var array<string, Product>|null */
+    private ?array $byTypeAndName = null;
+
     /** @var array<string, Product> */
     private array $created = [];
 
@@ -38,9 +41,14 @@ final class ImportedCatalogue
     ) {
     }
 
-    public function named(string $displayName): ?Product
+    public function named(string $displayName, ?string $category = null): ?Product
     {
-        return $this->index()[mb_strtolower(trim($displayName))] ?? null;
+        $product = $this->index()[mb_strtolower(trim($displayName))] ?? null;
+        if (null !== $product || null === $category || '' === trim($category)) {
+            return $product;
+        }
+
+        return $this->typedIndex()[self::typedKey(trim($category), self::withoutPrefix(trim($displayName), trim($category)))] ?? null;
     }
 
     public function withReference(string $reference): ?Product
@@ -89,6 +97,7 @@ final class ImportedCatalogue
     {
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
+        $this->typedIndex()[self::typedKey($product->type()->name(), $product->name())] ??= $product;
         $this->created[(string) $product->id()] = $product;
 
         return $product;
@@ -107,6 +116,26 @@ final class ImportedCatalogue
         }
 
         return $this->byDisplayName;
+    }
+
+    /**
+     * @return array<string, Product>
+     */
+    private function &typedIndex(): array
+    {
+        if (null === $this->byTypeAndName) {
+            $this->byTypeAndName = [];
+            foreach ($this->products->all() as $product) {
+                $this->byTypeAndName[self::typedKey($product->type()->name(), $product->name())] ??= $product;
+            }
+        }
+
+        return $this->byTypeAndName;
+    }
+
+    private static function typedKey(string $typeName, string $name): string
+    {
+        return mb_strtolower(trim($typeName))."\n".mb_strtolower(trim($name));
     }
 
     private function type(string $name): ProductType

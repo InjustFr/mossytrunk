@@ -76,7 +76,7 @@ final class ExternalItemResolver
             return $this->withVariant($byReference, $variant, $line);
         }
 
-        $product = $this->catalogue->named($name);
+        $product = $this->catalogue->named($name, $line->category);
         if (null !== $variant) {
             return $this->matchedWithVariant($product, $name, $variant, $line);
         }
@@ -85,7 +85,7 @@ final class ExternalItemResolver
         }
 
         foreach (self::splitVariant($name) as [$productName, $candidate]) {
-            $named = $this->catalogue->named($productName);
+            $named = $this->catalogue->named($productName, $line->category);
             $known = null === $named ? null : self::matchingVariant($named, $candidate);
             if (null !== $named && null !== $known) {
                 return $this->sold($named, $known, $line);
@@ -103,7 +103,7 @@ final class ExternalItemResolver
         }
 
         foreach ([\sprintf('%s %s', $name, $variant), \sprintf('%s - %s', $name, $variant), \sprintf('%s (%s)', $name, $variant)] as $splitName) {
-            $split = $this->catalogue->named($splitName);
+            $split = $this->catalogue->named($splitName, $line->category);
             if (null !== $split && !$split->hasVariants()) {
                 return $this->sold($split, null, $line);
             }
@@ -128,7 +128,7 @@ final class ExternalItemResolver
 
     private function created(string $name, ?string $variant, ExternalLine $line): ?SellableItem
     {
-        $product = $this->catalogue->named($name);
+        $product = $this->catalogue->named($name, $line->category);
         if (null === $variant) {
             return null === $product ? $this->sold($this->catalogue->createFor($name, $line->category, $line->unitPrice), null, $line) : null;
         }
