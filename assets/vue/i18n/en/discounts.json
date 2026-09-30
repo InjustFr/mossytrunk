@@ -4,7 +4,7 @@
         "title": "Discounts",
         "new": "New discount",
         "edit": "Edit discount",
-        "intro": "A discount combines conditions (a quantity of a type or of a specific product, optionally of a single variant) and an action: fixed price, amount off in € or percentage off. Discounts apply automatically to orders placed during their validity period, the most favorable first, and several discounts can stack on one order.",
+        "intro": "A discount combines conditions (a quantity of items picked among one or more types or products, optionally of a single variant) and an action: fixed price, amount off in € or percentage off. Discounts apply automatically to orders placed during their validity period, the most favorable first, and several discounts can stack on one order.",
         "current": "Running and upcoming",
         "past": "Past",
         "created": "Discount “{name}” created.",
@@ -21,7 +21,7 @@
         "name": "Name",
         "namePlaceholder": "2 prints and 1 sticker for €15",
         "conditions": "Conditions",
-        "conditionsHint": "All of them must be in the order.",
+        "conditionsHint": "All of them must be in the order. A condition can offer several products or types: its items are picked among them.",
         "conditionQuantity": "Quantity for condition {number}",
         "conditionTarget": "Target of condition {number}",
         "type": "Type",
@@ -49,7 +49,11 @@
         "validUntil": "End of validity",
         "cancel": "Cancel",
         "save": "Save",
-        "create": "Create discount"
+        "create": "Create discount",
+        "or": "or",
+        "addTarget": "Add a product or type",
+        "targetNumber": "{condition}, option {target}",
+        "removeTarget": "Remove option {number}"
     },
     "status": {
         "running": "Running",
@@ -67,7 +71,8 @@
         "stop": "Stop: the discount ends yesterday",
         "start": "Start: the discount begins today",
         "edit": "Edit {name}",
-        "remove": "Delete {name}"
+        "remove": "Delete {name}",
+        "or": "or"
     },
     "action": {
         "fixedPrice": "for {price}",

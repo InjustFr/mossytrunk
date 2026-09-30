@@ -47,7 +47,7 @@ final class DeleteAllProductsTest extends KernelTestCase
         self::assertCount(2, $container->get(ListProductTypesHandler::class)(), 'Print and the miscellaneous type stay');
         $rules = $container->get(ListDiscountRulesHandler::class)();
         self::assertSame(['Prints et pins'], array_column($rules, 'name'));
-        self::assertSame(['Print'], array_column($rules[0]->conditions, 'name'));
+        self::assertSame(['Print'], DiscountRules::names($rules[0]));
         self::assertSame('Pin', $container->get(GetOrderHandler::class)($order)->lines[0]['label']);
         self::actAsMemberOf('Atelier B');
         self::assertCount(1, $container->get(ListProductsHandler::class)());

@@ -6,19 +6,20 @@ namespace App\Domain\Discount;
 
 use App\Domain\Product\Exception\UnknownVariant;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductType;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
-class ProductCondition extends DiscountCondition
+class ProductTarget extends ConditionTarget
 {
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private Product $product;
 
-    public function __construct(DiscountRule $rule, int $quantity, Product $product, ?string $variant = null)
+    public function __construct(DiscountCondition $condition, Product $product, ?string $variant = null)
     {
-        parent::__construct($rule, $quantity);
+        parent::__construct($condition);
         $this->retarget($product, $variant);
     }
 
@@ -28,9 +29,14 @@ class ProductCondition extends DiscountCondition
         $this->variant = null === $variant ? null : ($product->variantNamed($variant) ?? throw new UnknownVariant($product->displayName(), $variant));
     }
 
-    public function product(): Product
+    public function subject(): Product
     {
         return $this->product;
+    }
+
+    public function concerns(ProductType $type): bool
+    {
+        return $this->product->type() === $type;
     }
 
     public function kind(): string
@@ -38,27 +44,17 @@ class ProductCondition extends DiscountCondition
         return 'product';
     }
 
-    public function targetId(): Ulid
-    {
-        return $this->product->id();
-    }
-
-    protected function matchesTarget(Ulid $productId, Ulid $typeId): bool
+    protected function matchesSubject(Ulid $productId, Ulid $typeId): bool
     {
         return $this->product->id()->equals($productId);
     }
 
-    protected function isOn(object $target): bool
-    {
-        return $target === $this->product;
-    }
-
-    protected function specificityOfTarget(): int
+    protected function specificityOfSubject(): int
     {
         return 2;
     }
 
-    protected function nameOfTarget(): string
+    protected function nameOfSubject(): string
     {
         return $this->product->displayName();
     }

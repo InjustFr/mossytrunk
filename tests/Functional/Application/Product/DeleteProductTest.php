@@ -43,7 +43,7 @@ final class DeleteProductTest extends KernelTestCase
         $container->get('doctrine')->getManager()->clear();
 
         self::assertSame(['Sticker'], array_column($container->get(ListProductsHandler::class)(), 'name'));
-        self::assertSame(['Sticker'], array_column($container->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+        self::assertSame(['Sticker'], DiscountRules::names($container->get(ListDiscountRulesHandler::class)()[0]));
         $view = $container->get(GetOrderHandler::class)($order);
         self::assertSame('Pin', $view->lines[0]['label']);
         self::assertSame(800, $view->total);

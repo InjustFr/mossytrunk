@@ -12,6 +12,7 @@ use App\Domain\Discount\ConditionSpec;
 use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
+use App\Domain\Discount\TargetSpec;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
@@ -102,13 +103,14 @@ final class ConventionSeasonStory extends Story
             'validity' => $validity,
         ]);
         $rules = [
-            $rule('3 stickers pour 10 €', [new ConditionSpec(3, $sticker)], DiscountAction::fixedPrice(Money::cents(1_000))),
-            $rule('2 prints et 1 sticker pour 30 €', [new ConditionSpec(2, $print), new ConditionSpec(1, $sticker)], DiscountAction::fixedPrice(Money::cents(3_000))),
-            $rule('Prints A3 : −10 %', [new ConditionSpec(1, $print, 'A3')], DiscountAction::percentOff(1_000)),
-            $rule('T-shirt et tote bag : −5 €', [new ConditionSpec(1, $others[0]), new ConditionSpec(1, $others[1])], DiscountAction::amountOff(Money::cents(500))),
+            $rule('3 stickers pour 10 €', [ConditionSpec::on(3, $sticker)], DiscountAction::fixedPrice(Money::cents(1_000))),
+            $rule('2 prints et 1 sticker pour 30 €', [ConditionSpec::on(2, $print), ConditionSpec::on(1, $sticker)], DiscountAction::fixedPrice(Money::cents(3_000))),
+            $rule('Prints A3 : −10 %', [ConditionSpec::on(1, $print, 'A3')], DiscountAction::percentOff(1_000)),
+            $rule('3 au choix parmi Forêt, Rivière et zines : −2 €', [new ConditionSpec(3, [new TargetSpec($prints[0]), new TargetSpec($prints[1]), new TargetSpec($others[3]->type())])], DiscountAction::amountOff(Money::cents(200))),
+            $rule('T-shirt et tote bag : −5 €', [ConditionSpec::on(1, $others[0]), ConditionSpec::on(1, $others[1])], DiscountAction::amountOff(Money::cents(500))),
             $rule(
                 'Pin\'s et zine : −10 % (Angoulême)',
-                [new ConditionSpec(1, $others[2]), new ConditionSpec(1, $others[3])],
+                [ConditionSpec::on(1, $others[2]), ConditionSpec::on(1, $others[3])],
                 DiscountAction::percentOff(1_000),
                 ValidityPeriod::between(new \DateTimeImmutable('-45 days'), new \DateTimeImmutable('-44 days')),
             ),

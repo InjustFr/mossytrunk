@@ -24,14 +24,16 @@ const range = (min, max) => (min === max ? formatCents(min) : t('discounts.range
 const typeOf = (id) => props.types.find((type) => type.id === id);
 const productOf = (id) => props.products.find((product) => product.id === id);
 
-function target(condition) {
-    if (condition.kind === 'type') {
-        const type = typeOf(condition.id);
-        return { name: type?.name ?? condition.name, color: type?.color ?? null };
+function describe(target) {
+    if (target.kind === 'type') {
+        const type = typeOf(target.id);
+        return { name: type?.name ?? target.name, color: type?.color ?? null };
     }
-    const product = productOf(condition.id);
-    return { name: product?.displayName ?? condition.name, color: typeOf(product?.typeId)?.color ?? null };
+    const product = productOf(target.id);
+    return { name: product?.displayName ?? target.name, color: typeOf(product?.typeId)?.color ?? null };
 }
+
+const conditionKey = (condition) => condition.targets.map((target) => `${target.kind}-${target.id}-${target.variant}`).join('|');
 
 function period(rule) {
     if (rule.startsOn && rule.endsOn) {
@@ -72,10 +74,13 @@ function saving(rule) {
             <div class="discount-rule-list__main">
                 <span class="discount-rule-list__name">{{ rule.name }}</span>
                 <p class="discount-rule-list__deal">
-                    <template v-for="(condition, index) in rule.conditions" :key="`${condition.kind}-${condition.id}-${condition.variant}`">
+                    <template v-for="(condition, index) in rule.conditions" :key="conditionKey(condition)">
                         <span v-if="index > 0" class="discount-rule-list__plus">+</span>{{ ' ' }}
                         <span class="discount-rule-list__condition">
-                            <span class="discount-rule-list__quantity">{{ condition.quantity }} ×</span> <TypeMark :color="target(condition).color" /> <span>{{ target(condition).name }}</span> <span v-if="condition.variant" class="discount-rule-list__variant">{{ condition.variant }}</span>
+                            <span class="discount-rule-list__quantity">{{ condition.quantity }} ×</span>
+                            <template v-for="(target, position) in condition.targets" :key="`${target.kind}-${target.id}-${target.variant}`">
+                                {{ ' ' }}<span v-if="position > 0" class="discount-rule-list__or">{{ t('discounts.list.or') }}</span>{{ position > 0 ? ' ' : '' }}<TypeMark :color="describe(target).color" /> <span>{{ describe(target).name }}</span> <span v-if="target.variant" class="discount-rule-list__variant">{{ target.variant }}</span>
+                            </template>
                         </span>{{ ' ' }}
                     </template>
                     <ArrowRight class="discount-rule-list__arrow" size="1rem" aria-hidden="true" /> <span class="discount-rule-list__action">{{ describeAction(rule.action) }}</span>
@@ -158,7 +163,8 @@ function saving(rule) {
     font-size: 0.8rem;
 }
 
-.discount-rule-list__plus { color: var(--color-muted); }
+.discount-rule-list__plus,
+.discount-rule-list__or { color: var(--color-muted); }
 .discount-rule-list__arrow { color: var(--color-subtle); }
 .discount-rule-list__action {
     padding: 0.125rem var(--space-3);

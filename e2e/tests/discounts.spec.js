@@ -88,7 +88,7 @@ test('stopping a running discount ends it yesterday; an expired discount has no 
     const sticker = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400 });
     const name = unique('Sticker −1 €');
     const response = await request.post('/api/discount-rules', {
-        data: { name, conditions: [{ kind: 'product', id: sticker.id, quantity: 1 }], action: { kind: 'amountOff', value: 100 }, startsOn: '2026-01-01', endsOn: null },
+        data: { name, conditions: [{ quantity: 1, targets: [{ kind: 'product', id: sticker.id }] }], action: { kind: 'amountOff', value: 100 }, startsOn: '2026-01-01', endsOn: null },
     });
     expect(response.status()).toBe(201);
 
@@ -100,4 +100,41 @@ test('stopping a running discount ends it yesterday; an expired discount has no 
     const past = page.getByRole('region', { name: 'Passées' }).getByTestId(`discount-rule-${name}`);
     await expect(past).toContainText('Expirée');
     await expect(past.getByRole('switch')).toHaveCount(0);
+});
+
+test('three items picked among several products are reduced by 2 €', async ({ page, request }) => {
+    const mossy = await createProduct(request, { name: unique('Mossy'), sellingPrice: 600 });
+    const eevee = await createProduct(request, { name: unique('Évoli'), sellingPrice: 400 });
+    const event = await createEvent(request);
+    const name = unique('3 prints Mossy ou Évoli');
+
+    await page.goto('/discounts');
+    await page.getByRole('button', { name: 'Nouvelle remise' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle remise' }).locator('form');
+    await form.getByLabel('Nom').fill(name);
+    await form.getByLabel('Quantité de la condition 1').fill('3');
+    await form.getByRole('group', { name: 'Cible de la condition 1' }).getByRole('button', { name: 'Produit' }).click();
+    await choose(page, form.getByRole('combobox', { name: 'Produit de la condition 1' }), mossy.displayName);
+    await form.getByRole('button', { name: 'Ajouter un produit ou un type' }).click();
+    await form.getByRole('group', { name: 'Cible de la condition 1, choix 2' }).getByRole('button', { name: 'Produit' }).click();
+    await choose(page, form.getByRole('combobox', { name: 'Produit de la condition 1, choix 2' }), eevee.displayName);
+    await form.getByRole('button', { name: 'Remise en €' }).click();
+    await form.getByLabel('Montant').fill('2');
+    await expect(form.getByTestId('discount-rule-pricing')).toContainText('12,00');
+    await form.getByRole('button', { name: 'Créer la remise' }).click();
+
+    const item = page.getByTestId(`discount-rule-${name}`);
+    await expect(item).toContainText(`3 × ${mossy.displayName} ou ${eevee.displayName}`);
+
+    const preview = await (await request.post('/api/orders/preview', {
+        data: { placedAt: `${event.startDate}T12:00`, lines: [{ productId: mossy.id, variant: null, quantity: 2 }, { productId: eevee.id, variant: null, quantity: 1 }] },
+    })).json();
+    expect(preview.discounts).toContainEqual({ label: name, amount: 200, ruleId: expect.any(String) });
+
+    await item.getByRole('button', { name: `Modifier ${name}` }).click();
+    const edit = page.getByRole('dialog', { name: 'Modifier la remise' });
+    await expect(edit.getByRole('combobox', { name: 'Produit de la condition 1, choix 2' })).toHaveValue(eevee.displayName);
+    await edit.getByRole('button', { name: 'Retirer le choix 1, choix 2' }).click();
+    await edit.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(item).not.toContainText(eevee.displayName);
 });

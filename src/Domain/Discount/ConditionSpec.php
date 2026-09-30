@@ -9,10 +9,17 @@ use App\Domain\Product\ProductType;
 
 final readonly class ConditionSpec
 {
+    /**
+     * @param list<TargetSpec> $targets
+     */
     public function __construct(
         public int $quantity,
-        public Product|ProductType $target,
-        public ?string $variant = null,
+        public array $targets,
     ) {
+    }
+
+    public static function on(int $quantity, Product|ProductType $target, ?string $variant = null): self
+    {
+        return new self($quantity, [new TargetSpec($target, $variant)]);
     }
 }

@@ -97,7 +97,7 @@ final class TypeVariantsTest extends KernelTestCase
         $declination = self::getContainer()->get(GetDesignHandler::class)($design)->declinations[0];
         self::assertSame(['Grand', 'A3'], $declination['variants']);
         self::assertSame(['id' => $gabarit, 'name' => 'Tirage', 'typeId' => $this->print, 'typeName' => 'Print', 'prefixesNames' => true], $declination['gabarit']);
-        self::assertSame(['Print · Grand', 'Print Forêt · Grand'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+        self::assertSame(['Print · Grand', 'Print Forêt · Grand'], DiscountRules::names(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]));
         self::assertSame(['Grand' => 4, 'A3' => 0], self::stock($forest));
         self::assertSame(['A4' => 2], self::stock($shirt));
         self::assertSame(['Print Forêt — Grand'], array_column(self::getContainer()->get(GetOrderHandler::class)($order)->lines, 'label'));

@@ -23,7 +23,7 @@ final class DiscountRuleApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/discount-rules', [
             'name' => '2 prints et 1 sticker pour 15 €',
-            'conditions' => [['kind' => 'type', 'id' => $print, 'quantity' => 2], ['kind' => 'product', 'id' => $sticker, 'quantity' => 1]],
+            'conditions' => [['quantity' => 2, 'targets' => [['kind' => 'type', 'id' => $print]]], ['quantity' => 1, 'targets' => [['kind' => 'product', 'id' => $sticker]]]],
             'action' => ['kind' => 'fixedPrice', 'value' => 1_500],
             'startsOn' => '2026-07-01',
             'endsOn' => null,
@@ -32,7 +32,7 @@ final class DiscountRuleApiTest extends WebTestCase
 
         $client->jsonRequest('GET', '/api/discount-rules');
         $rule = Json::array(Json::decode((string) $client->getResponse()->getContent()), 0);
-        self::assertSame([['type', 'Print', 2], ['product', 'Mousse', 1]], array_map(static fn (mixed $c): array => [Json::at($c, 'kind'), Json::at($c, 'name'), Json::at($c, 'quantity')], Json::array($rule, 'conditions')));
+        self::assertSame([['type', 'Print', 2], ['product', 'Mousse', 1]], array_map(static fn (mixed $c): array => [Json::at($c, 'targets', 0, 'kind'), Json::at($c, 'targets', 0, 'name'), Json::at($c, 'quantity')], Json::array($rule, 'conditions')));
         self::assertSame(['kind' => 'fixedPrice', 'value' => 1_500], $rule['action']);
         self::assertSame(['2026-07-01', null], [$rule['startsOn'], $rule['endsOn']]);
     }
@@ -46,7 +46,10 @@ final class DiscountRuleApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/discount-rules', [
             'name' => 'Grands formats',
-            'conditions' => [['kind' => 'type', 'id' => $print, 'quantity' => 2, 'variant' => 'a3'], ['kind' => 'product', 'id' => $forest, 'quantity' => 1, 'variant' => 'A4'], ['kind' => 'product', 'id' => $forest, 'quantity' => 1, 'variant' => '']],
+            'conditions' => [
+                ['quantity' => 2, 'targets' => [['kind' => 'type', 'id' => $print, 'variant' => 'a3']]],
+                ['quantity' => 1, 'targets' => [['kind' => 'product', 'id' => $forest, 'variant' => 'A4'], ['kind' => 'product', 'id' => $forest, 'variant' => '']]],
+            ],
             'action' => ['kind' => 'percentOff', 'value' => 1_000],
         ]);
         self::assertResponseStatusCodeSame(201);
@@ -54,9 +57,11 @@ final class DiscountRuleApiTest extends WebTestCase
         $client->jsonRequest('GET', '/api/discount-rules');
         $conditions = Json::array(Json::decode((string) $client->getResponse()->getContent()), 0, 'conditions');
         self::assertSame([
-            ['kind' => 'type', 'id' => $print, 'name' => 'Print · A3', 'variant' => 'A3', 'quantity' => 2],
-            ['kind' => 'product', 'id' => $forest, 'name' => 'Print Forêt · A4', 'variant' => 'A4', 'quantity' => 1],
-            ['kind' => 'product', 'id' => $forest, 'name' => 'Print Forêt', 'variant' => null, 'quantity' => 1],
+            ['quantity' => 2, 'targets' => [['kind' => 'type', 'id' => $print, 'name' => 'Print · A3', 'variant' => 'A3']]],
+            ['quantity' => 1, 'targets' => [
+                ['kind' => 'product', 'id' => $forest, 'name' => 'Print Forêt · A4', 'variant' => 'A4'],
+                ['kind' => 'product', 'id' => $forest, 'name' => 'Print Forêt', 'variant' => null],
+            ]],
         ], $conditions);
     }
 
@@ -67,7 +72,7 @@ final class DiscountRuleApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/discount-rules', [
             'name' => 'A3',
-            'conditions' => [['kind' => 'type', 'id' => $print, 'quantity' => 1, 'variant' => 'A3']],
+            'conditions' => [['quantity' => 1, 'targets' => [['kind' => 'type', 'id' => $print, 'variant' => 'A3']]]],
             'action' => ['kind' => 'percentOff', 'value' => 1_000],
         ]);
 
@@ -81,14 +86,14 @@ final class DiscountRuleApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/discount-rules', [
             'name' => 'Lot',
-            'conditions' => [['kind' => 'variant', 'id' => 'x', 'quantity' => 0]],
+            'conditions' => [['quantity' => 0, 'targets' => [['kind' => 'variant', 'id' => 'x']]], ['quantity' => 1, 'targets' => []]],
             'action' => ['kind' => 'free', 'value' => 0],
         ]);
 
         self::assertResponseStatusCodeSame(422);
         $paths = array_column(Json::array(Json::decode((string) $client->getResponse()->getContent()), 'violations'), 'propertyPath');
         self::assertEqualsCanonicalizing(
-            ['conditions[0].kind', 'conditions[0].id', 'conditions[0].quantity', 'action.kind', 'action.value'],
+            ['conditions[0].targets[0].kind', 'conditions[0].targets[0].id', 'conditions[0].quantity', 'conditions[1].targets', 'action.kind', 'action.value'],
             $paths,
         );
     }

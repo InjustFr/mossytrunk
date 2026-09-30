@@ -4,10 +4,11 @@ import { intlLocale } from '../i18n/locale.js';
 
 const sameVariant = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const offers = (product, variant) => !variant || product.variants.some((candidate) => sameVariant(candidate, variant));
-const targets = (product, condition) => (condition.kind === 'type' ? product.typeId === condition.id : product.id === condition.id);
+const targets = (product, target) => (target.kind === 'type' ? product.typeId === target.id : product.id === target.id);
+const chosen = (condition) => condition.targets.filter((target) => target.id);
 
 const matching = (products, condition) => products
-    .filter((product) => targets(product, condition) && offers(product, condition.variant))
+    .filter((product) => chosen(condition).some((target) => targets(product, target) && offers(product, target.variant)))
     .map((product) => product.sellingPrice);
 
 export function regularPrice(products, conditions) {
@@ -15,7 +16,7 @@ export function regularPrice(products, conditions) {
     let max = 0;
     for (const condition of conditions) {
         const prices = matching(products, condition);
-        if (!condition.id || prices.length === 0 || !condition.quantity) {
+        if (chosen(condition).length === 0 || prices.length === 0 || !condition.quantity) {
             return null;
         }
         min += Math.min(...prices) * condition.quantity;

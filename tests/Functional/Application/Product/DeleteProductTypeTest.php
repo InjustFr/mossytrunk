@@ -46,7 +46,7 @@ final class DeleteProductTypeTest extends KernelTestCase
 
         self::assertSame(['Sticker'], array_column(self::getContainer()->get(ListProductTypesHandler::class)(), 'name'));
         $rules = self::getContainer()->get(ListDiscountRulesHandler::class)();
-        self::assertSame(['Sticker Mousse'], array_column($rules[0]->conditions, 'name'));
+        self::assertSame(['Sticker Mousse'], DiscountRules::names($rules[0]));
     }
 
     public function testATypeThatIsTheOnlyConditionOfADiscountIsKept(): void

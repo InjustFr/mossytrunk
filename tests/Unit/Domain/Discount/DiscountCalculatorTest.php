@@ -10,6 +10,7 @@ use App\Domain\Discount\ConditionSpec;
 use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCalculator;
 use App\Domain\Discount\DiscountRule;
+use App\Domain\Discount\TargetSpec;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
@@ -47,23 +48,35 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testTwoPrintsAndOneStickerForAFixedPrice(): void
     {
-        $rule = $this->rule('2 prints et 1 sticker pour 15 €', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
+        $rule = $this->rule('2 prints et 1 sticker pour 15 €', [ConditionSpec::on(2, $this->printType), ConditionSpec::on(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
 
         $discounts = $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->river, 1), $this->line($this->sticker, 1)], [$rule], $this->now);
 
         self::assertEquals([new AppliedDiscount('2 prints et 1 sticker pour 15 €', Money::cents(1_900), $rule->id())], $discounts);
     }
 
+    public function testAGroupConditionPicksItsUnitsAmongAllItsProductsAndTypes(): void
+    {
+        $rule = $this->rule('3 prints au choix : −2 €', [new ConditionSpec(3, [new TargetSpec($this->forest, 'A4'), new TargetSpec($this->river), new TargetSpec($this->stickerType)])], DiscountAction::amountOff(Money::cents(200)));
+        $basket = [$this->line($this->forest, 1, 'A3'), $this->line($this->river, 1), $this->line($this->holoSticker, 1)];
+
+        self::assertSame([], $this->calculator->calculate($basket, [$rule], $this->now));
+
+        $discounts = $this->calculator->calculate([...$basket, $this->line($this->forest, 1, 'A4')], [$rule], $this->now);
+
+        self::assertEquals([new AppliedDiscount('3 prints au choix : −2 €', Money::cents(200), $rule->id())], $discounts);
+    }
+
     public function testEveryConditionMustBeMet(): void
     {
-        $rule = $this->rule('2 prints et 1 sticker', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
+        $rule = $this->rule('2 prints et 1 sticker', [ConditionSpec::on(2, $this->printType), ConditionSpec::on(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_500)));
 
         self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->sticker, 3)], [$rule], $this->now));
     }
 
     public function testRuleAppliesAsOftenAsTheBasketAllows(): void
     {
-        $rule = $this->rule('2 prints et 1 sticker', [new ConditionSpec(2, $this->printType), new ConditionSpec(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(3_000)));
+        $rule = $this->rule('2 prints et 1 sticker', [ConditionSpec::on(2, $this->printType), ConditionSpec::on(1, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(3_000)));
 
         $discounts = $this->calculator->calculate([$this->line($this->forest, 5), $this->line($this->sticker, 2)], [$rule], $this->now);
 
@@ -72,7 +85,7 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testProductConditionOnlyMatchesThatProductWhateverTheVariant(): void
     {
-        $rule = $this->rule('2 Forêt pour 25 €', [new ConditionSpec(2, $this->forest)], DiscountAction::fixedPrice(Money::cents(2_500)));
+        $rule = $this->rule('2 Forêt pour 25 €', [ConditionSpec::on(2, $this->forest)], DiscountAction::fixedPrice(Money::cents(2_500)));
 
         self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1), $this->line($this->river, 1)], [$rule], $this->now));
         self::assertCount(1, $this->calculator->calculate([$this->line($this->forest, 2)], [$rule], $this->now));
@@ -80,7 +93,7 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testProductConditionsPickTheirUnitsBeforeTypeConditions(): void
     {
-        $rule = $this->rule('1 Holo et 1 sticker', [new ConditionSpec(1, $this->stickerType), new ConditionSpec(1, $this->holoSticker)], DiscountAction::fixedPrice(Money::cents(800)));
+        $rule = $this->rule('1 Holo et 1 sticker', [ConditionSpec::on(1, $this->stickerType), ConditionSpec::on(1, $this->holoSticker)], DiscountAction::fixedPrice(Money::cents(800)));
 
         $discounts = $this->calculator->calculate([$this->line($this->holoSticker, 1), $this->line($this->sticker, 1)], [$rule], $this->now);
 
@@ -89,7 +102,7 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testMostExpensiveMatchingUnitsAreTakenFirst(): void
     {
-        $rule = $this->rule('−50 % sur 1 sticker', [new ConditionSpec(1, $this->stickerType)], DiscountAction::percentOff(5_000));
+        $rule = $this->rule('−50 % sur 1 sticker', [ConditionSpec::on(1, $this->stickerType)], DiscountAction::percentOff(5_000));
 
         $discounts = $this->calculator->calculate([$this->line($this->sticker, 1), $this->line($this->holoSticker, 1)], [$rule], $this->now);
 
@@ -98,22 +111,22 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testAmountOffIsCappedAtTheItemsPrice(): void
     {
-        $rule = $this->rule('Sticker −10 €', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(1_000)));
+        $rule = $this->rule('Sticker −10 €', [ConditionSpec::on(1, $this->sticker)], DiscountAction::amountOff(Money::cents(1_000)));
 
         self::assertEquals([new AppliedDiscount('Sticker −10 €', Money::cents(400), $rule->id())], $this->calculator->calculate([$this->line($this->sticker, 1)], [$rule], $this->now));
     }
 
     public function testFixedPriceAboveTheRegularPriceIsNotApplied(): void
     {
-        $rule = $this->rule('2 stickers pour 10 €', [new ConditionSpec(2, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_000)));
+        $rule = $this->rule('2 stickers pour 10 €', [ConditionSpec::on(2, $this->stickerType)], DiscountAction::fixedPrice(Money::cents(1_000)));
 
         self::assertSame([], $this->calculator->calculate([$this->line($this->sticker, 2)], [$rule], $this->now));
     }
 
     public function testBestSavingWinsWhenRulesCompeteForTheSameUnits(): void
     {
-        $small = $this->rule('A: T-shirt −2 €', [new ConditionSpec(1, $this->tshirt)], DiscountAction::amountOff(Money::cents(200)));
-        $big = $this->rule('B: T-shirt −20 %', [new ConditionSpec(1, $this->tshirt)], DiscountAction::percentOff(2_000));
+        $small = $this->rule('A: T-shirt −2 €', [ConditionSpec::on(1, $this->tshirt)], DiscountAction::amountOff(Money::cents(200)));
+        $big = $this->rule('B: T-shirt −20 %', [ConditionSpec::on(1, $this->tshirt)], DiscountAction::percentOff(2_000));
 
         $discounts = $this->calculator->calculate([$this->line($this->tshirt, 1)], [$small, $big], $this->now);
 
@@ -124,7 +137,7 @@ final class DiscountCalculatorTest extends TestCase
     {
         $rule = $this->rule(
             'T-shirt −2 €',
-            [new ConditionSpec(1, $this->tshirt)],
+            [ConditionSpec::on(1, $this->tshirt)],
             DiscountAction::amountOff(Money::cents(200)),
             ValidityPeriod::between(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-11')),
         );
@@ -139,7 +152,7 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testATypeVariantConditionOnlyMatchesThatVariantOfTheTypesProducts(): void
     {
-        $rule = $this->rule('−5 € sur les prints A3', [new ConditionSpec(1, $this->printType, 'A3')], DiscountAction::amountOff(Money::cents(500)));
+        $rule = $this->rule('−5 € sur les prints A3', [ConditionSpec::on(1, $this->printType, 'A3')], DiscountAction::amountOff(Money::cents(500)));
 
         self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1, 'A4'), $this->line($this->river, 1)], [$rule], $this->now));
         self::assertEquals(
@@ -150,7 +163,7 @@ final class DiscountCalculatorTest extends TestCase
 
     public function testAProductVariantConditionOnlyMatchesThatVariantOfThatProduct(): void
     {
-        $rule = $this->rule('−5 € sur Forêt A3', [new ConditionSpec(1, $this->forest, 'A3')], DiscountAction::amountOff(Money::cents(500)));
+        $rule = $this->rule('−5 € sur Forêt A3', [ConditionSpec::on(1, $this->forest, 'A3')], DiscountAction::amountOff(Money::cents(500)));
 
         self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1, 'A4'), $this->line($this->lake, 1, 'A3')], [$rule], $this->now));
         self::assertEquals(
@@ -162,10 +175,10 @@ final class DiscountCalculatorTest extends TestCase
     public function testConditionsPickTheirUnitsFromTheMostSpecificToTheLeast(): void
     {
         $rule = $this->rule('5 prints pour 60 €', [
-            new ConditionSpec(1, $this->printType),
-            new ConditionSpec(1, $this->printType, 'A3'),
-            new ConditionSpec(2, $this->forest),
-            new ConditionSpec(1, $this->forest, 'A3'),
+            ConditionSpec::on(1, $this->printType),
+            ConditionSpec::on(1, $this->printType, 'A3'),
+            ConditionSpec::on(2, $this->forest),
+            ConditionSpec::on(1, $this->forest, 'A3'),
         ], DiscountAction::fixedPrice(Money::cents(6_000)));
         $basket = [
             new BasketLine($this->forest->id(), Money::cents(3_000), 1, $this->printType->id(), 'A3'),

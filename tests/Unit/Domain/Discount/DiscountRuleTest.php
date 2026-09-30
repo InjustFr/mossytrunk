@@ -9,10 +9,12 @@ use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountStatus;
+use App\Domain\Discount\Exception\ConditionWithoutTarget;
 use App\Domain\Discount\Exception\DuplicateConditionTarget;
 use App\Domain\Discount\Exception\InvalidDiscountRule;
 use App\Domain\Discount\Exception\OnlyEligibleProduct;
 use App\Domain\Discount\Exception\OnlyEligibleType;
+use App\Domain\Discount\TargetSpec;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Exception\UnknownTypeVariant;
 use App\Domain\Product\Exception\UnknownVariant;
@@ -39,11 +41,11 @@ final class DiscountRuleTest extends TestCase
 
     public function testConditionsDescribeTheirTarget(): void
     {
-        $rule = $this->rule([new ConditionSpec(2, $this->print), new ConditionSpec(1, $this->sticker)]);
+        $rule = $this->rule([ConditionSpec::on(2, $this->print), ConditionSpec::on(1, $this->sticker)]);
 
         self::assertSame(
             [['type', 'Print', 2], ['product', 'Sticker', 1]],
-            array_map(static fn (DiscountCondition $c): array => [$c->kind(), $c->targetName(), $c->quantity()], $rule->conditions()),
+            array_map(static fn (DiscountCondition $c): array => [$c->targets()[0]->kind(), $c->name(), $c->quantity()], $rule->conditions()),
         );
     }
 
@@ -58,21 +60,21 @@ final class DiscountRuleTest extends TestCase
     {
         $this->expectException(InvalidDiscountRule::class);
 
-        DiscountRule::create(TestWorkspace::get(), '  ', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)));
+        DiscountRule::create(TestWorkspace::get(), '  ', [ConditionSpec::on(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)));
     }
 
     public function testConditionQuantityIsAtLeastOne(): void
     {
         $this->expectException(InvalidDiscountRule::class);
 
-        $this->rule([new ConditionSpec(0, $this->sticker)]);
+        $this->rule([ConditionSpec::on(0, $this->sticker)]);
     }
 
     public function testATargetAppearsInOneConditionOnly(): void
     {
         $this->expectExceptionObject(new DuplicateConditionTarget('Print'));
 
-        $this->rule([new ConditionSpec(1, $this->print), new ConditionSpec(2, $this->print)]);
+        $this->rule([ConditionSpec::on(1, $this->print), ConditionSpec::on(2, $this->print)]);
     }
 
     public function testValidityEndCannotPrecedeItsStart(): void
@@ -138,14 +140,14 @@ final class DiscountRuleTest extends TestCase
 
     private function summer(?\DateTimeImmutable $start, ?\DateTimeImmutable $end): DiscountRule
     {
-        return DiscountRule::create(TestWorkspace::get(), 'Été', [new ConditionSpec(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)), ValidityPeriod::between($start, $end));
+        return DiscountRule::create(TestWorkspace::get(), 'Été', [ConditionSpec::on(1, $this->sticker)], DiscountAction::amountOff(Money::cents(100)), ValidityPeriod::between($start, $end));
     }
 
     public function testAReplacedProductIsRetargetedOrMergedWithTheTarget(): void
     {
         $other = Product::create(TestWorkspace::get(), 'OTH', 'Autre', Money::cents(400), TestProductType::get());
-        $retargeted = $this->rule([new ConditionSpec(2, $this->sticker)]);
-        $merged = $this->rule([new ConditionSpec(2, $this->sticker), new ConditionSpec(1, $this->holo)]);
+        $retargeted = $this->rule([ConditionSpec::on(2, $this->sticker)]);
+        $merged = $this->rule([ConditionSpec::on(2, $this->sticker), ConditionSpec::on(1, $this->holo)]);
 
         $retargeted->replaceProduct($this->sticker, null, $other, null);
         $merged->replaceProduct($this->sticker, null, $this->holo, null);
@@ -156,7 +158,7 @@ final class DiscountRuleTest extends TestCase
 
     public function testAProductCanBeWithdrawnUnlessItIsTheOnlyCondition(): void
     {
-        $both = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(1, $this->holo)]);
+        $both = $this->rule([ConditionSpec::on(1, $this->sticker), ConditionSpec::on(1, $this->holo)]);
         $both->withdrawProduct($this->holo);
         self::assertSame([['Sticker', 1]], $this->targets($both));
 
@@ -166,7 +168,7 @@ final class DiscountRuleTest extends TestCase
 
     public function testEveryProductCanBeWithdrawnWhenTypesRemain(): void
     {
-        $rule = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(2, $this->print)]);
+        $rule = $this->rule([ConditionSpec::on(1, $this->sticker), ConditionSpec::on(2, $this->print)]);
 
         $rule->withdrawEveryProduct();
 
@@ -177,11 +179,11 @@ final class DiscountRuleTest extends TestCase
     {
         $forest = $this->print('Forêt', ['A4', 'A3']);
 
-        $rule = $this->rule([new ConditionSpec(1, $this->print, 'a3'), new ConditionSpec(2, $forest, ' a4 '), new ConditionSpec(1, $this->print)]);
+        $rule = $this->rule([ConditionSpec::on(1, $this->print, 'a3'), ConditionSpec::on(2, $forest, ' a4 '), ConditionSpec::on(1, $this->print)]);
 
         self::assertSame(
             [['type', 'Print · A3', 'A3', 1], ['product', 'Print Forêt · A4', 'A4', 2], ['type', 'Print', null, 1]],
-            array_map(static fn (DiscountCondition $c): array => [$c->kind(), $c->targetName(), $c->variant(), $c->quantity()], $rule->conditions()),
+            array_map(static fn (DiscountCondition $c): array => [$c->targets()[0]->kind(), $c->name(), $c->targets()[0]->variant(), $c->quantity()], $rule->conditions()),
         );
     }
 
@@ -189,11 +191,11 @@ final class DiscountRuleTest extends TestCase
     {
         $forest = $this->print('Forêt', ['A3']);
 
-        $rule = $this->rule([new ConditionSpec(1, $this->print), new ConditionSpec(1, $this->print, 'A3'), new ConditionSpec(1, $forest), new ConditionSpec(1, $forest, 'A3')]);
+        $rule = $this->rule([ConditionSpec::on(1, $this->print), ConditionSpec::on(1, $this->print, 'A3'), ConditionSpec::on(1, $forest), ConditionSpec::on(1, $forest, 'A3')]);
 
         self::assertSame(
             [['Print Forêt · A3', 3], ['Print Forêt', 2], ['Print · A3', 1], ['Print', 0]],
-            array_map(static fn (DiscountCondition $c): array => [$c->targetName(), $c->specificity()], $rule->conditionsMostSpecificFirst()),
+            array_map(static fn (DiscountCondition $c): array => [$c->name(), $c->specificity()], $rule->conditionsMostSpecificFirst()),
         );
     }
 
@@ -201,7 +203,7 @@ final class DiscountRuleTest extends TestCase
     {
         $this->print('Forêt', ['A3']);
 
-        DomainExceptions::assertThrown(new UnknownTypeVariant('Print', 'A5'), fn () => $this->rule([new ConditionSpec(1, $this->print, 'A5')]));
+        DomainExceptions::assertThrown(new UnknownTypeVariant('Print', 'A5'), fn () => $this->rule([ConditionSpec::on(1, $this->print, 'A5')]));
     }
 
     public function testAConditionVariantMustBeOneOfTheProduct(): void
@@ -209,23 +211,23 @@ final class DiscountRuleTest extends TestCase
         $this->print('Rivière', ['A3']);
         $forest = $this->print('Forêt', ['A4']);
 
-        DomainExceptions::assertThrown(new UnknownVariant('Print Forêt', 'A3'), fn () => $this->rule([new ConditionSpec(1, $forest, 'A3')]));
+        DomainExceptions::assertThrown(new UnknownVariant('Print Forêt', 'A3'), fn () => $this->rule([ConditionSpec::on(1, $forest, 'A3')]));
     }
 
     public function testATargetWithTheSameVariantAppearsInOneConditionOnly(): void
     {
         $forest = $this->print('Forêt', ['A4', 'A3']);
-        $this->rule([new ConditionSpec(1, $forest), new ConditionSpec(1, $forest, 'A3'), new ConditionSpec(1, $forest, 'A4'), new ConditionSpec(1, $this->print, 'A3')]);
+        $this->rule([ConditionSpec::on(1, $forest), ConditionSpec::on(1, $forest, 'A3'), ConditionSpec::on(1, $forest, 'A4'), ConditionSpec::on(1, $this->print, 'A3')]);
 
-        DomainExceptions::assertThrown(new DuplicateConditionTarget('Print Forêt · A3'), fn () => $this->rule([new ConditionSpec(1, $forest, 'A3'), new ConditionSpec(2, $forest, 'a3')]));
-        DomainExceptions::assertThrown(new DuplicateConditionTarget('Print · A3'), fn () => $this->rule([new ConditionSpec(1, $this->print, 'A3'), new ConditionSpec(2, $this->print, 'a3')]));
+        DomainExceptions::assertThrown(new DuplicateConditionTarget('Print Forêt · A3'), fn () => $this->rule([ConditionSpec::on(1, $forest, 'A3'), ConditionSpec::on(2, $forest, 'a3')]));
+        DomainExceptions::assertThrown(new DuplicateConditionTarget('Print · A3'), fn () => $this->rule([ConditionSpec::on(1, $this->print, 'A3'), ConditionSpec::on(2, $this->print, 'a3')]));
     }
 
     public function testConditionsOnAMovedVariantFollowItAndOthersFollowWhenTheTargetHasTheirVariant(): void
     {
         $old = $this->print('Vieux', ['A4', 'A3', 'A5']);
         $forest = $this->print('Forêt', ['a3', 'Carré']);
-        $rule = $this->rule([new ConditionSpec(1, $old), new ConditionSpec(2, $old, 'A4'), new ConditionSpec(3, $old, 'A3'), new ConditionSpec(4, $old, 'A5')]);
+        $rule = $this->rule([ConditionSpec::on(1, $old), ConditionSpec::on(2, $old, 'A4'), ConditionSpec::on(3, $old, 'A3'), ConditionSpec::on(4, $old, 'A5')]);
 
         $rule->replaceProduct($old, 'A4', $forest, 'Carré');
 
@@ -236,7 +238,7 @@ final class DiscountRuleTest extends TestCase
     {
         $old = $this->print('Vieux', ['A4']);
         $forest = $this->print('Forêt', ['A4']);
-        $rule = $this->rule([new ConditionSpec(2, $old, 'A4'), new ConditionSpec(1, $forest, 'A4')]);
+        $rule = $this->rule([ConditionSpec::on(2, $old, 'A4'), ConditionSpec::on(1, $forest, 'A4')]);
 
         $rule->replaceProduct($old, 'A4', $forest, 'A4');
 
@@ -247,7 +249,7 @@ final class DiscountRuleTest extends TestCase
     {
         $old = $this->print('Vieux', ['A4', 'A3']);
         $forest = $this->print('Forêt', ['A5']);
-        $rule = $this->rule([new ConditionSpec(1, $old, 'A3')]);
+        $rule = $this->rule([ConditionSpec::on(1, $old, 'A3')]);
 
         DomainExceptions::assertThrown(new OnlyEligibleProduct('Remise', 'Print Vieux'), static fn () => $rule->replaceProduct($old, 'A4', $forest, 'A5'));
     }
@@ -257,11 +259,11 @@ final class DiscountRuleTest extends TestCase
         $forest = $this->print('Forêt', ['A3']);
         $shirts = ProductType::create(TestWorkspace::get(), 'T-shirt', 'TSH');
         $shirt = Product::create(TestWorkspace::get(), 'TSH-MOU', 'Mousse', Money::cents(2_000), $shirts, ['A3']);
-        $rule = $this->rule([new ConditionSpec(1, $this->print, 'A3'), new ConditionSpec(1, $forest, 'A3'), new ConditionSpec(1, $shirts, 'A3'), new ConditionSpec(1, $shirt, 'A3')]);
+        $rule = $this->rule([ConditionSpec::on(1, $this->print, 'A3'), ConditionSpec::on(1, $forest, 'A3'), ConditionSpec::on(1, $shirts, 'A3'), ConditionSpec::on(1, $shirt, 'A3')]);
 
         $rule->renameVariant($this->print, 'a3', 'Grand');
 
-        self::assertSame(['Grand', 'Grand', 'A3', 'A3'], array_map(static fn (DiscountCondition $c): ?string => $c->variant(), $rule->conditions()));
+        self::assertSame(['Grand', 'Grand', 'A3', 'A3'], array_map(static fn (DiscountCondition $c): ?string => $c->targets()[0]->variant(), $rule->conditions()));
     }
 
     public function testARuleUsesAVariantThroughATypeOrAProductCondition(): void
@@ -269,9 +271,9 @@ final class DiscountRuleTest extends TestCase
         $forest = $this->print('Forêt', ['A4', 'A3']);
         $shirts = ProductType::create(TestWorkspace::get(), 'T-shirt', 'TSH');
         $shirts->defineVariants(['A5']);
-        $onType = $this->rule([new ConditionSpec(1, $this->print, 'A3')]);
-        $onProduct = $this->rule([new ConditionSpec(1, $forest, 'A4'), new ConditionSpec(1, $shirts, 'A5')]);
-        $withoutVariant = $this->rule([new ConditionSpec(1, $this->print), new ConditionSpec(1, $forest)]);
+        $onType = $this->rule([ConditionSpec::on(1, $this->print, 'A3')]);
+        $onProduct = $this->rule([ConditionSpec::on(1, $forest, 'A4'), ConditionSpec::on(1, $shirts, 'A5')]);
+        $withoutVariant = $this->rule([ConditionSpec::on(1, $this->print), ConditionSpec::on(1, $forest)]);
 
         self::assertTrue($onType->usesVariant($this->print, 'a3'));
         self::assertFalse($onType->usesVariant($this->print, 'A4'));
@@ -302,16 +304,77 @@ final class DiscountRuleTest extends TestCase
      */
     private function targets(DiscountRule $rule): array
     {
-        return array_map(static fn (DiscountCondition $c): array => [$c->targetName(), $c->quantity()], $rule->conditions());
+        return array_map(static fn (DiscountCondition $c): array => [$c->name(), $c->quantity()], $rule->conditions());
     }
 
     public function testATypeCanBeWithdrawnUnlessItIsTheOnlyCondition(): void
     {
-        $both = $this->rule([new ConditionSpec(1, $this->sticker), new ConditionSpec(2, $this->print)]);
+        $both = $this->rule([ConditionSpec::on(1, $this->sticker), ConditionSpec::on(2, $this->print)]);
         $both->withdrawType($this->print);
         self::assertSame([['Sticker', 1]], $this->targets($both));
 
         $this->expectException(OnlyEligibleType::class);
-        $this->rule([new ConditionSpec(2, $this->print)])->withdrawType($this->print);
+        $this->rule([ConditionSpec::on(2, $this->print)])->withdrawType($this->print);
+    }
+
+    public function testAConditionCanBeMetByAnyProductOrTypeOfItsGroup(): void
+    {
+        $forest = $this->print('Forêt', ['A4']);
+        $rule = $this->rule([new ConditionSpec(3, [new TargetSpec($forest, 'A4'), new TargetSpec($this->sticker), new TargetSpec($this->print)])]);
+        $condition = $rule->conditions()[0];
+
+        self::assertSame(['Print Forêt · A4 / Sticker / Print', 3, 0], [$condition->name(), $condition->quantity(), $condition->specificity()]);
+        self::assertTrue($condition->matches($this->sticker->id(), $this->sticker->type()->id(), null));
+        self::assertTrue($condition->matches($forest->id(), $this->print->id(), 'A4'));
+        self::assertFalse($condition->matches($this->holo->id(), $this->holo->type()->id(), null));
+    }
+
+    public function testAConditionNeedsATargetAndATargetAppearsOnceInTheRule(): void
+    {
+        DomainExceptions::assertThrown(new ConditionWithoutTarget(), fn () => $this->rule([new ConditionSpec(1, [])]));
+        DomainExceptions::assertThrown(new DuplicateConditionTarget('Sticker'), fn () => $this->rule([new ConditionSpec(1, [new TargetSpec($this->sticker), new TargetSpec($this->sticker)])]));
+        DomainExceptions::assertThrown(new DuplicateConditionTarget('Sticker'), fn () => $this->rule([ConditionSpec::on(1, $this->holo), new ConditionSpec(1, [new TargetSpec($this->print), new TargetSpec($this->sticker)]), ConditionSpec::on(1, $this->sticker)]));
+    }
+
+    public function testWithdrawingAProductShrinksItsGroupAndKeepsTheCondition(): void
+    {
+        $rule = $this->rule([new ConditionSpec(2, [new TargetSpec($this->sticker), new TargetSpec($this->holo)])]);
+
+        $rule->withdrawProduct($this->holo);
+
+        self::assertSame([['Sticker', 2]], $this->targets($rule));
+        $this->expectException(OnlyEligibleProduct::class);
+        $rule->withdrawProduct($this->sticker);
+    }
+
+    public function testWithdrawingATypeShrinksItsGroup(): void
+    {
+        $rule = $this->rule([new ConditionSpec(2, [new TargetSpec($this->print), new TargetSpec($this->sticker)])]);
+
+        $rule->withdrawType($this->print);
+
+        self::assertSame([['Sticker', 2]], $this->targets($rule));
+    }
+
+    public function testEveryProductWithdrawnKeepsTheTypesOfAGroup(): void
+    {
+        $rule = $this->rule([new ConditionSpec(2, [new TargetSpec($this->print), new TargetSpec($this->sticker)]), ConditionSpec::on(1, $this->holo)]);
+
+        $rule->withdrawEveryProduct();
+
+        self::assertSame([['Print', 2]], $this->targets($rule));
+    }
+
+    public function testAReplacedProductOfAGroupIsRetargetedOrDroppedWhenItsTargetIsAlreadyThere(): void
+    {
+        $other = Product::create(TestWorkspace::get(), 'OTH', 'Autre', Money::cents(400), TestProductType::get());
+        $retargeted = $this->rule([new ConditionSpec(2, [new TargetSpec($this->sticker), new TargetSpec($this->print)])]);
+        $alreadyThere = $this->rule([new ConditionSpec(2, [new TargetSpec($this->sticker), new TargetSpec($this->holo)])]);
+
+        $retargeted->replaceProduct($this->sticker, null, $other, null);
+        $alreadyThere->replaceProduct($this->sticker, null, $this->holo, null);
+
+        self::assertSame([['Autre / Print', 2]], $this->targets($retargeted));
+        self::assertSame([['Holo', 2]], $this->targets($alreadyThere));
     }
 }

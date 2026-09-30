@@ -17,5 +17,5 @@ parameters:
         -
             identifier: doctrine.associationType
             paths:
-                - src/Domain/Discount/ProductCondition.php
-                - src/Domain/Discount/TypeCondition.php
+                - src/Domain/Discount/ProductTarget.php
+                - src/Domain/Discount/TypeTarget.php

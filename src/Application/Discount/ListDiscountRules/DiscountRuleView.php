@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Application\Discount\ListDiscountRules;
 
+use App\Domain\Discount\ConditionTarget;
 use App\Domain\Discount\DiscountCondition;
 use App\Domain\Discount\DiscountRule;
 
 final readonly class DiscountRuleView
 {
     /**
-     * @param list<array{kind: string, id: string, name: string, variant: ?string, quantity: int}> $conditions
-     * @param array{kind: string, value: int}                                                      $action
+     * @param list<array{quantity: int, targets: list<array{kind: string, id: string, name: string, variant: ?string}>}> $conditions
+     * @param array{kind: string, value: int}                                                                            $action
      */
     public function __construct(
         public string $id,
@@ -31,11 +32,13 @@ final readonly class DiscountRuleView
             $rule->name(),
             $rule->statusOn($today)->value,
             array_map(static fn (DiscountCondition $condition): array => [
-                'kind' => $condition->kind(),
-                'id' => (string) $condition->targetId(),
-                'name' => $condition->targetName(),
-                'variant' => $condition->variant(),
                 'quantity' => $condition->quantity(),
+                'targets' => array_map(static fn (ConditionTarget $target): array => [
+                    'kind' => $target->kind(),
+                    'id' => (string) $target->subjectId(),
+                    'name' => $target->name(),
+                    'variant' => $target->variant(),
+                ], $condition->targets()),
             ], $rule->conditions()),
             ['kind' => $rule->action()->kind()->value, 'value' => $rule->action()->value()],
             $rule->validity()->start()?->format('Y-m-d'),

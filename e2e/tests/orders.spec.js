@@ -10,7 +10,7 @@ test('place an order with automatic bundle discount while seeing the list', asyn
     const tshirt = await createProduct(request, { name: unique('T-shirt'), sellingPrice: 2_000, variants: ['Mousse', 'Fougère'] });
     const bundle = await createDiscountRule(request, {
         name: unique('3 stickers pour 10 €'),
-        conditions: [{ kind: 'product', id: sticker.id, quantity: 3 }],
+        conditions: [{ quantity: 3, targets: [{ kind: 'product', id: sticker.id }] }],
         action: { kind: 'fixedPrice', value: 1_000 },
     });
 

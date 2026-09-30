@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Discount;
 
-use App\Application\Discount\ConditionDefinition;
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Discount\DeleteDiscountRule\DeleteDiscountRuleHandler;
 use App\Application\Discount\DiscountRuleDefinition;
@@ -45,13 +44,13 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
 
         $id = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
             '3 stickers pour 10 €',
-            [new ConditionDefinition(ConditionDefinition::PRODUCT, $sticker, 3)],
+            [DiscountRules::product($sticker, 3)],
             'fixedPrice',
             1_000,
         ));
         self::getContainer()->get(UpdateDiscountRuleHandler::class)($id, new DiscountRuleDefinition(
             'Sticker et sticker XL : −10 %',
-            [new ConditionDefinition(ConditionDefinition::PRODUCT, $sticker, 1), new ConditionDefinition(ConditionDefinition::PRODUCT, $bigSticker, 1)],
+            [DiscountRules::product($sticker, 1), DiscountRules::product($bigSticker, 1)],
             'percentOff',
             1_000,
             '2026-07-01',
@@ -64,7 +63,7 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
         self::assertSame(['kind' => 'percentOff', 'value' => 1_000], $rule->action);
         self::assertSame(['2026-07-01', '2026-07-31'], [$rule->startsOn, $rule->endsOn]);
         self::assertSame('expired', $rule->status);
-        self::assertSame([['Sticker', 1], ['Sticker XL', 1]], array_map(static fn (array $c): array => [$c['name'], $c['quantity']], $rule->conditions));
+        self::assertSame([['Sticker', 1], ['Sticker XL', 1]], array_map(static fn (array $c): array => [$c['targets'][0]['name'], $c['quantity']], $rule->conditions));
 
         self::getContainer()->get(DeleteDiscountRuleHandler::class)($id);
         self::assertSame([], self::getContainer()->get(ListDiscountRulesHandler::class)());
@@ -79,7 +78,7 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
         $mousse = (string) self::createProduct('Mousse', 400, typeId: $sticker);
         self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
             '2 prints et 1 sticker pour 15 €',
-            [new ConditionDefinition(ConditionDefinition::TYPE, $print, 2), new ConditionDefinition(ConditionDefinition::TYPE, $sticker, 1)],
+            [DiscountRules::type($print, 2), DiscountRules::type($sticker, 1)],
             'fixedPrice',
             1_500,
             '2026-07-09',
@@ -103,7 +102,7 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
 
         self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
             'Lot',
-            [new ConditionDefinition(ConditionDefinition::PRODUCT, '01K00000000000000000000000', 3)],
+            [DiscountRules::product('01K00000000000000000000000', 3)],
             'fixedPrice',
             1_000,
         ));
@@ -125,7 +124,31 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
         $view = self::getContainer()->get(GetOrderHandler::class)($order);
         self::assertSame([['label' => '−3 € sur les prints A3 ×2', 'amount' => 600, 'ruleId' => $rule]], $view->discounts);
         self::assertSame(6_000 - 600, $view->total);
-        self::assertSame(['Print · A3'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+        self::assertSame(['Print · A3'], DiscountRules::names(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]));
+    }
+
+    public function testThreeProductsChosenAmongSeveralProductsAndTypesAreDiscounted(): void
+    {
+        $prints = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print', variants: ['8x8', '15x15'])->id();
+        $zines = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Zine')->id();
+        $mossy = self::createProduct('Mossy', 600, variants: ['15x15'], typeId: $prints);
+        $eevee = self::createProduct('Évoli', 400, variants: ['8x8'], typeId: $prints);
+        $zine = self::createProduct('Sous-bois', 1_000, typeId: $zines);
+        $rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition(
+            '3 prints Mossy ou Évoli : −2 €',
+            [DiscountRules::anyOf(3, DiscountRules::productTarget($mossy), DiscountRules::productTarget($eevee, '8x8'))],
+            'amountOff',
+            200,
+        ));
+        self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
+
+        $order = (string) self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(
+            new \DateTimeImmutable('2030-03-14 12:00'),
+            [new RequestedLine($mossy, '15x15', 1), new RequestedLine($eevee, '8x8', 2), new RequestedLine($zine, null, 1)],
+        ))->id();
+
+        self::assertSame([['label' => '3 prints Mossy ou Évoli : −2 €', 'amount' => 200, 'ruleId' => $rule]], self::getContainer()->get(GetOrderHandler::class)($order)->discounts);
+        self::assertSame(['Print Mossy / Print Évoli · 8x8'], DiscountRules::names(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]));
     }
 
     public function testAConditionVariantMustBeOneOfTheType(): void

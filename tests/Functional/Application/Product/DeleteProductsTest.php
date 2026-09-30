@@ -37,7 +37,7 @@ final class DeleteProductsTest extends KernelTestCase
         self::assertSame(2, $this->delete([$pin, $badge, $pin]));
 
         self::assertSame(['Sticker'], array_column($container->get(ListProductsHandler::class)(), 'name'));
-        self::assertSame(['Sticker'], array_column($container->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+        self::assertSame(['Sticker'], DiscountRules::names($container->get(ListDiscountRulesHandler::class)()[0]));
     }
 
     public function testAProductThatADiscountTargetsAloneAbortsTheDeletion(): void

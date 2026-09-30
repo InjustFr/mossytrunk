@@ -9,21 +9,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class DiscountConditionPayload
 {
+    /**
+     * @param list<DiscountTargetPayload> $targets
+     */
     public function __construct(
-        #[Assert\Choice(choices: [ConditionDefinition::PRODUCT, ConditionDefinition::TYPE], message: 'discount.condition.kind.invalid')]
-        public string $kind = ConditionDefinition::PRODUCT,
-        #[Assert\NotBlank(message: 'discount.condition.target.required')]
-        #[Assert\Ulid(message: 'discount.condition.target.invalid')]
-        public string $id = '',
         #[Assert\Positive(message: 'quantity.atLeastOne')]
         public int $quantity = 1,
-        #[Assert\Length(max: 100)]
-        public ?string $variant = null,
+        #[Assert\Count(min: 1, minMessage: 'discount.condition.targets.atLeastOne')]
+        #[Assert\Valid]
+        public array $targets = [],
     ) {
     }
 
     public function toDefinition(): ConditionDefinition
     {
-        return new ConditionDefinition($this->kind, $this->id, $this->quantity, $this->variant);
+        return new ConditionDefinition($this->quantity, array_map(static fn (DiscountTargetPayload $target) => $target->toDefinition(), $this->targets));
     }
 }

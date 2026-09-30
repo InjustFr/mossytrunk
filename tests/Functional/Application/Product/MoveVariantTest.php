@@ -77,7 +77,7 @@ final class MoveVariantTest extends KernelTestCase
 
         self::assertSame(['Print'], array_column($this->products(), 'name'));
         self::assertSame([['Print · A4', 'A4', 2]], array_map(
-            static fn (array $condition): array => [$condition['name'], $condition['variant'], $condition['quantity']],
+            static fn (array $condition): array => [$condition['targets'][0]['name'], $condition['targets'][0]['variant'], $condition['quantity']],
             self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions,
         ));
     }

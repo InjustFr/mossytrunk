@@ -7,6 +7,7 @@ namespace App\Application\Discount;
 use App\Domain\Discount\ConditionSpec;
 use App\Domain\Discount\DiscountAction;
 use App\Domain\Discount\DiscountActionKind;
+use App\Domain\Discount\TargetSpec;
 use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductTypeRepository;
@@ -27,10 +28,7 @@ final readonly class DiscountRuleParts
     {
         return array_map(fn (ConditionDefinition $condition): ConditionSpec => new ConditionSpec(
             $condition->quantity,
-            ConditionDefinition::TYPE === $condition->kind
-                ? $this->types->get(Ulid::fromString($condition->targetId))
-                : $this->products->get(Ulid::fromString($condition->targetId)),
-            null === $condition->variant || '' === trim($condition->variant) ? null : $condition->variant,
+            array_map($this->target(...), $condition->targets),
         ), $definition->conditions);
     }
 
@@ -42,6 +40,16 @@ final readonly class DiscountRuleParts
     public function validity(DiscountRuleDefinition $definition): ValidityPeriod
     {
         return ValidityPeriod::between(self::date($definition->startsOn), self::date($definition->endsOn));
+    }
+
+    private function target(TargetDefinition $target): TargetSpec
+    {
+        return new TargetSpec(
+            TargetDefinition::TYPE === $target->kind
+                ? $this->types->get(Ulid::fromString($target->targetId))
+                : $this->products->get(Ulid::fromString($target->targetId)),
+            null === $target->variant || '' === trim($target->variant) ? null : $target->variant,
+        );
     }
 
     private static function date(?string $date): ?\DateTimeImmutable
