@@ -34,7 +34,8 @@
         "restored": "Product “{name}” unarchived.",
         "typeArchived": "Type “{name}” archived.",
         "typeRestored": "Type “{name}” unarchived.",
-        "typeRemoved": "Type “{name}” deleted."
+        "typeRemoved": "Type “{name}” deleted.",
+        "selectionRemoved": "{count} product deleted. | {count} products deleted."
     },
     "detail": {
         "fallbackTitle": "Product",
@@ -122,7 +123,10 @@
     },
     "selection": {
         "count": "{count} product selected | {count} products selected",
-        "edit": "Edit selection"
+        "edit": "Edit selection",
+        "delete": "Delete selection",
+        "confirmDelete": "Delete {count} product? | Delete {count} products?",
+        "deleteMessage": "Past orders keep their lines; discount conditions on these products are removed. This cannot be undone."
     },
     "move": {
         "variant": "Variant",

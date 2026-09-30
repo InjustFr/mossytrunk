@@ -210,3 +210,24 @@ test('create a product type with a colour and a suggested code, then rename it, 
     await types.getByRole('button', { name: 'Ajouter un type' }).click();
     await expect(page.getByRole('dialog', { name: 'Nouveau type de produit' }).getByRole('option', { name: 'Personnalisée #123ABC' })).toBeVisible();
 });
+
+test('delete the selected products', async ({ page, request }) => {
+    const type = await createType(request, unique('Badge'));
+    const [first, second, kept] = [
+        await createProduct(request, { name: 'Lune', type }),
+        await createProduct(request, { name: 'Soleil', type }),
+        await createProduct(request, { name: 'Étoile', type }),
+    ];
+
+    await page.goto('/products');
+    await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: type.name }).click();
+    await page.getByRole('checkbox', { name: `Sélectionner ${first.displayName}` }).check();
+    await page.getByRole('checkbox', { name: `Sélectionner ${second.displayName}` }).check();
+    await page.getByRole('region', { name: 'Sélection' }).getByRole('button', { name: 'Supprimer la sélection' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Supprimer 2 produits ?' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText('2 produits supprimés.');
+    await expect(page.getByRole('row').filter({ hasText: first.displayName })).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: second.displayName })).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: kept.displayName })).toBeVisible();
+});

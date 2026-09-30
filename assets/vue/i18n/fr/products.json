@@ -34,7 +34,8 @@
         "restored": "Produit « {name} » désarchivé.",
         "typeArchived": "Type « {name} » archivé.",
         "typeRestored": "Type « {name} » désarchivé.",
-        "typeRemoved": "Type « {name} » supprimé."
+        "typeRemoved": "Type « {name} » supprimé.",
+        "selectionRemoved": "{count} produit supprimé. | {count} produits supprimés."
     },
     "detail": {
         "fallbackTitle": "Produit",
@@ -122,7 +123,10 @@
     },
     "selection": {
         "count": "{count} produit sélectionné | {count} produits sélectionnés",
-        "edit": "Modifier la sélection"
+        "edit": "Modifier la sélection",
+        "delete": "Supprimer la sélection",
+        "confirmDelete": "Supprimer {count} produit ? | Supprimer {count} produits ?",
+        "deleteMessage": "Les commandes passées gardent leurs lignes ; les conditions de remise sur ces produits sont retirées. Cette action est définitive."
     },
     "move": {
         "variant": "Variante",

@@ -18,6 +18,7 @@ export function useProducts() {
     const create = (payload) => api.post('/api/products', payload);
     const update = (id, payload) => api.put(`/api/products/${id}`, payload);
     const batchUpdate = (payload) => api.post('/api/products/batch', payload);
+    const removeSelected = (productIds) => api.post('/api/products/deletion', { productIds });
     const moveVariant = (id, payload) => api.post(`/api/products/${id}/move-variant`, payload);
     const remove = (id) => api.del(`/api/products/${id}`);
     const archive = (id) => api.put(`/api/products/${id}/archive`);
@@ -35,5 +36,5 @@ export function useProducts() {
 
     const activeProducts = computed(() => products.value.filter((product) => !product.archived));
 
-    return { products, activeProducts, loading, load, create, update, batchUpdate, moveVariant, remove, archive, restore, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
+    return { products, activeProducts, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
 }

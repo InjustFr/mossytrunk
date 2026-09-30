@@ -70,6 +70,28 @@ final class ProductApiTest extends WebTestCase
         self::assertSame([], Json::decode((string) $client->getResponse()->getContent()));
     }
 
+    public function testDeleteSelectedProducts(): void
+    {
+        $client = self::signedInClient();
+        $typeId = ProductTypesApi::create($client);
+        $ids = [];
+        foreach (['Sticker', 'Pin', 'Badge'] as $name) {
+            $client->jsonRequest('POST', '/api/products', ['name' => $name, 'sellingPrice' => 400, 'typeId' => $typeId]);
+            $ids[] = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+        }
+
+        $client->jsonRequest('POST', '/api/products/deletion', ['productIds' => []]);
+        self::assertResponseStatusCodeSame(422);
+        $client->jsonRequest('POST', '/api/products/deletion', ['productIds' => [$ids[0], $ids[1]]]);
+        self::assertResponseIsSuccessful();
+        self::assertSame(['deleted' => 2], Json::decode((string) $client->getResponse()->getContent()));
+
+        $client->jsonRequest('GET', '/api/products');
+        $listed = $client->getResponse();
+        $products = Json::decode((string) $listed->getContent());
+        self::assertSame([$ids[2]], array_map(static fn (mixed $product): string => Json::string($product, 'id'), $products));
+    }
+
     public function testMoveAProductIntoANewOneAsAVariant(): void
     {
         $client = self::signedInClient();

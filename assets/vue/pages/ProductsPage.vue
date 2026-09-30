@@ -14,6 +14,7 @@ import ProductList from '../components/products/ProductList.vue';
 import ProductTypesModal from '../components/products/ProductTypesModal.vue';
 import RestockForm from '../components/products/RestockForm.vue';
 import StockHistory from '../components/products/StockHistory.vue';
+import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import SelectionBar from '../components/ui/SelectionBar.vue';
 import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
@@ -22,7 +23,7 @@ import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
-const { products, activeProducts, load, create, update, batchUpdate, moveVariant, remove, archive, restore } = useProducts();
+const { products, activeProducts, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore } = useProducts();
 const { types, activeTypes, load: loadTypes, allVariantsOf } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
@@ -80,6 +81,17 @@ async function onRemove(product) {
         await remove(product.id);
         toast.success(t('products.toast.removed', { name: product.displayName }));
         filters.selectedIds.value = filters.selectedIds.value.filter((id) => id !== product.id);
+        await load();
+    } catch (error) {
+        toast.error(error.message);
+    }
+}
+
+async function onRemoveSelected() {
+    try {
+        const { deleted } = await removeSelected(filters.selectedIds.value);
+        toast.success(t('products.toast.selectionRemoved', deleted));
+        filters.clearSelection();
         await load();
     } catch (error) {
         toast.error(error.message);
@@ -156,6 +168,13 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 
         <SelectionBar :count="filters.selectedIds.value.length" :summary="t('products.selection.count', filters.selectedIds.value.length)" @clear="filters.clearSelection">
             <BaseButton @click="batchOpen = true">{{ t('products.selection.edit') }}</BaseButton>
+            <ConfirmButton
+                variant="danger"
+                :label="t('products.selection.delete')"
+                :confirm-label="t('products.selection.confirmDelete', filters.selectedIds.value.length)"
+                :message="t('products.selection.deleteMessage')"
+                @confirm="onRemoveSelected"
+            />
         </SelectionBar>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
