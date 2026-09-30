@@ -43,6 +43,9 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
+.product-movements :deep(.data-table__table) { min-width: 0; }
+.product-movements :deep(th),
+.product-movements :deep(td) { padding-inline: var(--space-2); }
 .product-movements__date { white-space: nowrap; color: var(--color-muted); }
 .product-movements__label { display: block; color: var(--color-muted); font-size: 0.8rem; }
 .product-movements__in { color: var(--color-accent-strong); font-weight: 600; }
