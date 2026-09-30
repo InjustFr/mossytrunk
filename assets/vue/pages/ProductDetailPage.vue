@@ -97,7 +97,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
         <div v-if="product" class="product-page">
             <dl class="product-page__facts">
                 <div><dt>{{ t('products.detail.reference') }}</dt><dd>{{ product.reference }}</dd></div>
-                <div><dt>{{ t('products.detail.type') }}</dt><dd>{{ product.typeName ?? t('products.untyped') }}</dd></div>
+                <div><dt>{{ t('products.detail.type') }}</dt><dd>{{ product.typeName }}</dd></div>
                 <div><dt>{{ t('products.detail.variants') }}</dt><dd>{{ product.variants.join(', ') || t('products.single') }}</dd></div>
                 <div><dt>{{ t('products.detail.sellingPrice') }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
                 <div>

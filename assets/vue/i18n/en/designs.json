@@ -91,7 +91,6 @@
     },
     "gabarits": {
         "empty": "No templates. A template describes a format (15×15 print, glossy sticker…) and what must be adapted to put a design on it.",
-        "noType": "No type",
         "toAdapt": "To adjust: {adaptations}",
         "edit": "Edit {name}",
         "editTitle": "Edit template",

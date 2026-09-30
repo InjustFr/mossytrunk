@@ -12,13 +12,19 @@ use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
 use App\Application\Discount\UpdateDiscountRule\UpdateDiscountRuleHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\GetOrder\GetOrderHandler;
+use App\Application\Order\PlaceOrder\PlaceOrder;
+use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\PreviewOrder\PreviewOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Domain\Product\Exception\UnknownTypeVariant;
 use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
+use App\Tests\Support\DiscountRules;
+use App\Tests\Support\DomainExceptions;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class DiscountRuleUseCasesTest extends KernelTestCase
@@ -101,5 +107,34 @@ final class DiscountRuleUseCasesTest extends KernelTestCase
             'fixedPrice',
             1_000,
         ));
+    }
+
+    public function testADiscountOnA3PrintsOnlyAppliesToA3Lines(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print', variants: ['A4', 'A3'])->id();
+        $foret = self::createProduct('Forêt', 1_500, variants: ['A4', 'A3'], typeId: $print);
+        $lac = self::createProduct('Lac', 1_500, variants: ['A3'], typeId: $print);
+        $rule = (string) self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('−3 € sur les prints A3', [DiscountRules::type($print, 1, 'a3')], 'amountOff', 300));
+        self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
+
+        $order = (string) self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(
+            new \DateTimeImmutable('2030-03-14 12:00'),
+            [new RequestedLine($foret, 'A3', 1), new RequestedLine($foret, 'A4', 2), new RequestedLine($lac, 'A3', 1)],
+        ))->id();
+
+        $view = self::getContainer()->get(GetOrderHandler::class)($order);
+        self::assertSame([['label' => '−3 € sur les prints A3 ×2', 'amount' => 600, 'ruleId' => $rule]], $view->discounts);
+        self::assertSame(6_000 - 600, $view->total);
+        self::assertSame(['Print · A3'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+    }
+
+    public function testAConditionVariantMustBeOneOfTheType(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print', variants: ['A4'])->id();
+
+        DomainExceptions::assertThrown(
+            new UnknownTypeVariant('Print', 'A3'),
+            static fn () => self::getContainer()->get(CreateDiscountRuleHandler::class)(new DiscountRuleDefinition('A3', [DiscountRules::type($print, 1, 'A3')], 'amountOff', 300)),
+        );
     }
 }

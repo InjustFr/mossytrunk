@@ -7,6 +7,7 @@ namespace App\Domain\Design;
 use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\ProductType;
+use App\Domain\Product\VariantLabel;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
@@ -31,8 +32,8 @@ class Gabarit
     private string $name;
 
     #[ORM\ManyToOne(targetEntity: ProductType::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?ProductType $type = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ProductType $type;
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'selling_price_')]
     private Money $sellingPrice;
@@ -49,7 +50,7 @@ class Gabarit
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    private function __construct(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, array $variants, array $adaptations)
+    private function __construct(Workspace $workspace, string $name, ProductType $type, Money $sellingPrice, array $variants, array $adaptations)
     {
         $this->id = new Ulid();
         $this->workspace = $workspace;
@@ -60,7 +61,7 @@ class Gabarit
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    public static function create(Workspace $workspace, string $name, ?ProductType $type, Money $sellingPrice, array $variants = [], array $adaptations = []): self
+    public static function create(Workspace $workspace, string $name, ProductType $type, Money $sellingPrice, array $variants = [], array $adaptations = []): self
     {
         return new self($workspace, $name, $type, $sellingPrice, $variants, $adaptations);
     }
@@ -69,7 +70,7 @@ class Gabarit
      * @param list<string> $variants
      * @param list<string> $adaptations
      */
-    public function describe(string $name, ?ProductType $type, Money $sellingPrice, array $variants, array $adaptations): void
+    public function describe(string $name, ProductType $type, Money $sellingPrice, array $variants, array $adaptations): void
     {
         $name = trim($name);
         if ('' === $name) {
@@ -82,7 +83,7 @@ class Gabarit
         $this->name = $name;
         $this->type = $type;
         $this->sellingPrice = $sellingPrice;
-        $this->variants = array_values(array_unique(array_filter(array_map('trim', $variants), static fn (string $variant): bool => '' !== $variant)));
+        $this->variants = $type->offerVariants($variants);
         $this->adaptations = TextList::clean($adaptations);
     }
 
@@ -96,7 +97,17 @@ class Gabarit
         return $this->name;
     }
 
-    public function type(): ?ProductType
+    public function renameVariant(string $from, string $to): void
+    {
+        $this->variants = VariantLabel::renamed($this->variants, $from, $to);
+    }
+
+    public function usesVariant(string $variant): bool
+    {
+        return null !== VariantLabel::find($this->variants, $variant);
+    }
+
+    public function type(): ProductType
     {
         return $this->type;
     }

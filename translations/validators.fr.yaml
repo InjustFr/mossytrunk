@@ -30,6 +30,7 @@ product.reference.tooLong: 'La référence ne peut pas dépasser {{ limit }} car
 product.required: 'Choisissez un produit.'
 productType.code.invalid: 'Le code fait 1 à 8 lettres ou chiffres.'
 productType.color.required: 'Choisissez une couleur.'
+productType.required: 'Choisissez un type.'
 productType.invalid: 'Type invalide.'
 productType.name.required: 'Le nom du type est obligatoire.'
 products.atLeastOne: 'Ajoutez au moins un produit.'

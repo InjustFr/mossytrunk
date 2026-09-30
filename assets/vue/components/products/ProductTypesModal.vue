@@ -10,7 +10,7 @@ import ProductTypeList from './ProductTypeList.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { nextTypeColor } from '../../composables/useTypeColor.js';
 
-const emit = defineEmits(['saved']);
+const emit = defineEmits(['saved', 'renamed']);
 const open = defineModel('open', { type: Boolean, required: true });
 const { types, create, update } = useProductTypes();
 const { t } = useI18n();
@@ -27,7 +27,7 @@ const title = computed(() => {
     return editing.value === NEW ? t('products.types.new') : t('products.types.edit', { name: editing.value.name });
 });
 
-const submit = (payload) => (editing.value === NEW ? create(payload.name, payload.color, payload.code) : update(editing.value.id, payload));
+const submit = (payload) => (editing.value === NEW ? create(payload.name, payload.color, payload.code, payload.variants, payload.prefixesNames) : update(editing.value.id, payload));
 
 function onSaved(name) {
     emit('saved', name, editing.value === NEW);
@@ -55,6 +55,7 @@ function onSaved(name) {
                     :default-color="nextTypeColor(types)"
                     :submit="submit"
                     @saved="onSaved"
+                    @renamed="emit('renamed')"
                     @cancel="editing = null"
                 />
             </div>

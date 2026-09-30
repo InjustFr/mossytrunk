@@ -4,22 +4,23 @@ import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { PackageMinus, TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import TypeMark from '../ui/TypeMark.vue';
-import { UNTYPED } from '../../composables/useProductFilters.js';
 
 const props = defineProps({
     types: { type: Array, required: true },
     missingCostCount: { type: Number, default: 0 },
     lowStockCount: { type: Number, default: 0 },
     typeColors: { type: Map, required: true },
+    variantOptions: { type: Array, default: () => [] },
 });
 const typeId = defineModel('typeId', { type: String, required: true });
+const variants = defineModel('variants', { type: Array, default: () => [] });
 const search = defineModel('search', { type: String, required: true });
 const missingCost = defineModel('missingCost', { type: Boolean, default: false });
 const lowStock = defineModel('lowStock', { type: Boolean, default: false });
 const { t } = useI18n();
 
 const ALL = '__all__';
-const chips = computed(() => [{ id: ALL, name: t('products.filters.all'), mark: false }, ...props.types.map((type) => ({ ...type, mark: true })), { id: UNTYPED, name: t('products.untyped'), mark: false }]);
+const chips = computed(() => [{ id: ALL, name: t('products.filters.all'), mark: false }, ...props.types.map((type) => ({ ...type, mark: true }))]);
 
 const selectedChip = computed({
     get: () => typeId.value || ALL,
@@ -47,6 +48,15 @@ const selectedChip = computed({
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.missingCost', missingCostCount) }}
         </Toggle>
+        <ToggleGroupRoot
+            v-if="typeId && variantOptions.length"
+            v-model="variants"
+            type="multiple"
+            class="product-filters__chips product-filters__variants"
+            :aria-label="t('products.filters.byVariant')"
+        >
+            <ToggleGroupItem v-for="variant in variantOptions" :key="variant" :value="variant" class="product-filters__chip product-filters__chip--variant">{{ variant }}</ToggleGroupItem>
+        </ToggleGroupRoot>
     </div>
 </template>
 
@@ -70,6 +80,9 @@ const selectedChip = computed({
 .product-filters__chip:hover { border-color: var(--color-ink); }
 .product-filters__chip:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .product-filters__chip[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
+.product-filters__variants { flex-basis: 100%; }
+.product-filters__chip--variant { padding: 0.125rem var(--space-3); font-size: 0.8rem; }
+.product-filters__chip--variant[data-state="on"] { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent-strong); }
 
 .product-filters__missing {
     display: inline-flex;

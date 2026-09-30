@@ -104,6 +104,7 @@ final class ConventionSeasonStory extends Story
         $rules = [
             $rule('3 stickers pour 10 €', [new ConditionSpec(3, $sticker)], DiscountAction::fixedPrice(Money::cents(1_000))),
             $rule('2 prints et 1 sticker pour 30 €', [new ConditionSpec(2, $print), new ConditionSpec(1, $sticker)], DiscountAction::fixedPrice(Money::cents(3_000))),
+            $rule('Prints A3 : −10 %', [new ConditionSpec(1, $print, 'A3')], DiscountAction::percentOff(1_000)),
             $rule('T-shirt et tote bag : −5 €', [new ConditionSpec(1, $others[0]), new ConditionSpec(1, $others[1])], DiscountAction::amountOff(Money::cents(500))),
             $rule(
                 'Pin\'s et zine : −10 % (Angoulême)',
@@ -166,7 +167,7 @@ final class ConventionSeasonStory extends Story
     {
         $product = ProductFactory::createOne([
             'workspace' => $this->workspace,
-            'type' => $type,
+            'type' => $type ?? throw new \LogicException('Every product has a type.'),
             'reference' => $reference,
             'name' => $name,
             'sellingPrice' => Money::cents($selling),

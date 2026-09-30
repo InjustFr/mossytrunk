@@ -54,7 +54,7 @@ test('create "2 prints and 1 sticker for 15 €", start it today and delete it',
     await expect(item).toHaveCount(0);
 });
 
-test('a product condition and an amount off, edited afterwards', async ({ page, request }) => {
+test('a product variant condition and an amount off, edited afterwards', async ({ page, request }) => {
     const tshirt = await createProduct(request, { name: unique('T-shirt'), sellingPrice: 2_500, variants: ['S', 'M'] });
     const name = unique('T-shirt −5 €');
 
@@ -63,21 +63,23 @@ test('a product condition and an amount off, edited afterwards', async ({ page, 
     const form = page.getByRole('dialog', { name: 'Nouvelle remise' }).locator('form');
     await form.getByLabel('Nom').fill(name);
     await form.getByRole('group', { name: 'Cible de la condition 1' }).getByRole('button', { name: 'Produit' }).click();
-    await choose(page, form.getByRole('combobox', { name: 'Produit de la condition 1' }), tshirt.name);
+    await choose(page, form.getByRole('combobox', { name: 'Produit de la condition 1' }), tshirt.displayName);
+    await choose(page, form.getByRole('combobox', { name: 'Variante de la condition 1' }), 'M');
     await form.getByRole('group', { name: 'Type d\'action' }).getByRole('button', { name: 'Remise en €' }).click();
     await form.getByRole('group', { name: 'Action', exact: true }).locator('input').fill('5');
     await form.getByRole('button', { name: 'Créer la remise' }).click();
 
     const item = page.getByTestId(`discount-rule-${name}`);
-    await expect(item).toContainText(`1 × ${tshirt.name} −5,00`);
+    await expect(item).toContainText(`1 × ${tshirt.displayName} · M −5,00`);
 
     await item.getByRole('button', { name: `Modifier ${name}` }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier la remise' }).locator('form');
+    await expect(edit.getByRole('combobox', { name: 'Variante de la condition 1' })).toContainText('M');
     await edit.getByRole('group', { name: 'Type d\'action' }).getByRole('button', { name: 'Remise en %' }).click();
     await edit.getByLabel('Pourcentage de remise').fill('20');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
-    await expect(item).toContainText(`1 × ${tshirt.name} −20 %`);
+    await expect(item).toContainText(`1 × ${tshirt.displayName} · M −20 %`);
     await expect(item).toContainText('5,00');
 });
 

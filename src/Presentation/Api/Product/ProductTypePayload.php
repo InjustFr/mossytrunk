@@ -8,6 +8,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class ProductTypePayload
 {
+    /**
+     * @param list<string>|null $variants
+     */
     public function __construct(
         #[Assert\NotBlank(message: 'productType.name.required')]
         #[Assert\Length(max: 100)]
@@ -16,6 +19,9 @@ final readonly class ProductTypePayload
         public ?string $color = null,
         #[Assert\Regex(pattern: '/^\s*[A-Za-z0-9]{1,8}\s*$|^\s*$/', message: 'productType.code.invalid')]
         public ?string $code = null,
+        #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank'), new Assert\Length(max: 100)])]
+        public ?array $variants = null,
+        public ?bool $prefixesNames = null,
     ) {
     }
 }

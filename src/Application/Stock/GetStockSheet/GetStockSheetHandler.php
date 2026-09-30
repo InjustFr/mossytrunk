@@ -48,7 +48,7 @@ final readonly class GetStockSheetHandler
                     (string) $product->id(),
                     $variant,
                     $product->sellable($variant)->label(),
-                    $product->type()?->name(),
+                    $product->type()->name(),
                     $onHand[$key] ?? 0,
                     $sold[$key] ?? 0,
                 );

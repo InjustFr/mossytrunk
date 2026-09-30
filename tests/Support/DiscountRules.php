@@ -14,13 +14,13 @@ final class DiscountRules
         return new DiscountRuleDefinition($name, array_values($conditions), 'fixedPrice', $cents);
     }
 
-    public static function product(string $productId, int $quantity): ConditionDefinition
+    public static function product(string $productId, int $quantity, ?string $variant = null): ConditionDefinition
     {
-        return new ConditionDefinition(ConditionDefinition::PRODUCT, $productId, $quantity);
+        return new ConditionDefinition(ConditionDefinition::PRODUCT, $productId, $quantity, $variant);
     }
 
-    public static function type(string $typeId, int $quantity): ConditionDefinition
+    public static function type(string $typeId, int $quantity, ?string $variant = null): ConditionDefinition
     {
-        return new ConditionDefinition(ConditionDefinition::TYPE, $typeId, $quantity);
+        return new ConditionDefinition(ConditionDefinition::TYPE, $typeId, $quantity, $variant);
     }
 }

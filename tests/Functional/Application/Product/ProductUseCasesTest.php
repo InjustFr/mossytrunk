@@ -77,8 +77,8 @@ final class ProductUseCasesTest extends KernelTestCase
 
         $references = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference', 'displayName');
 
-        self::assertSame('PRD-CLA', $references['Clairière']);
-        self::assertEqualsCanonicalizing(['PRD-CLA', 'PRI-FOR', 'PRI-FOR-2'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference'));
+        self::assertSame('MIS-CLA', $references['Clairière']);
+        self::assertEqualsCanonicalizing(['MIS-CLA', 'PRI-FOR', 'PRI-FOR-2'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'reference'));
     }
 
     public function testReferenceIsChosenAtCreationAndChangedLater(): void
@@ -118,7 +118,7 @@ final class ProductUseCasesTest extends KernelTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         $product = self::getContainer()->get(ListProductsHandler::class)()[0];
-        self::assertSame('PRD-TSH', $product->reference);
+        self::assertSame('MIS-TSH', $product->reference);
         self::assertSame('T-shirt bio', $product->name);
         self::assertSame(2_500, $product->sellingPrice);
         self::assertSame(900, $product->buyingPrice, 'editing a product never changes its buying price');

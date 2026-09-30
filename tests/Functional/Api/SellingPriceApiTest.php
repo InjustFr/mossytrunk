@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -16,7 +17,7 @@ final class SellingPriceApiTest extends WebTestCase
     public function testFixAnImportedPriceThenRecordThePastOne(): void
     {
         $client = self::signedInClient();
-        $client->jsonRequest('POST', '/api/products', ['name' => 'Sticker', 'sellingPrice' => 9_999]);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Sticker', 'sellingPrice' => 9_999, 'typeId' => ProductTypesApi::create($client)]);
         $productId = Json::string(self::body($client), 'id');
         $importedId = Json::string(self::product($client, $productId), 'priceHistory', 0, 'id');
 

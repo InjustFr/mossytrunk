@@ -9,7 +9,8 @@ import ConfirmButton from '../ui/ConfirmButton.vue';
 import FormField from '../ui/FormField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
-import VariantsInput from '../products/VariantsInput.vue';
+import VariantPicker from '../products/VariantPicker.vue';
+import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
     declination: { type: Object, required: true },
@@ -18,6 +19,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['tick', 'withdraw']);
 const { t } = useI18n();
+const { variantsOf } = useProductTypes();
 
 const form = reactive({ productName: '', sellingPrice: null, variants: [] });
 const errors = ref({});
@@ -31,7 +33,7 @@ const dirty = computed(() => form.productName !== props.declination.productName
     || form.sellingPrice !== props.declination.sellingPrice
     || form.variants.join('|') !== props.declination.variants.join('|'));
 const done = (adaptation) => props.declination.doneAdaptations.includes(adaptation);
-const typePrefix = computed(() => props.declination.gabarit.typeName);
+const typePrefix = computed(() => (props.declination.gabarit.prefixesNames ? props.declination.gabarit.typeName : null));
 
 async function onSubmit() {
     saving.value = true;
@@ -86,7 +88,7 @@ async function onSubmit() {
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
                 <FormField as="group" :label="t('designs.declination.variants')" :error="errors.variants">
-                    <VariantsInput v-model="form.variants" />
+                    <VariantPicker v-model="form.variants" :options="variantsOf(declination.gabarit.typeId)" />
                 </FormField>
                 <div v-if="dirty" class="declination__actions">
                     <BaseButton type="submit" variant="secondary" :loading="saving">{{ t('designs.declination.save') }}</BaseButton>

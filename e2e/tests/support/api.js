@@ -3,14 +3,22 @@ import { unique, uniqueDay } from './unique.js';
 
 /** Arrange helpers: create data through the JSON API to keep UI tests focused. */
 
-export async function createType(request, name = unique('Type')) {
-    const response = await request.post('/api/product-types', { data: { name } });
+export async function createType(request, name = unique('Type'), { variants = [], prefixesNames = true } = {}) {
+    const response = await request.post('/api/product-types', { data: { name, variants, prefixesNames } });
     expect(response.status()).toBe(201);
     return response.json();
 }
 
+let unprefixedType = null;
+
+async function typeKeepingNames(request) {
+    unprefixedType ??= await createType(request, unique('Divers'), { prefixesNames: false });
+    return unprefixedType;
+}
+
 export async function createProduct(request, { name = unique('Produit'), sellingPrice = 400, buyingPrice = 0, variants = [], type = null } = {}) {
-    const response = await request.post('/api/products', { data: { name, sellingPrice, variants, typeId: type?.id ?? null } });
+    type ??= await typeKeepingNames(request);
+    const response = await request.post('/api/products', { data: { name, sellingPrice, variants, typeId: type.id } });
     expect(response.status()).toBe(201);
     const id = (await response.json()).id;
     if (buyingPrice > 0) {
@@ -18,8 +26,8 @@ export async function createProduct(request, { name = unique('Produit'), selling
             await restock(request, { id }, { variant, quantity: 100, totalPaid: buyingPrice * 100 });
         }
     }
-    const displayName = type ? `${type.name} ${name}` : name;
-    return { id, name, displayName, sellingPrice, buyingPrice, variants };
+    const displayName = type.prefixesNames ? `${type.name} ${name}` : name;
+    return { id, name, displayName, sellingPrice, buyingPrice, variants, type };
 }
 
 export async function createEvent(request, { name = unique('Convention'), startDate = uniqueDay(), endDate = null } = {}) {

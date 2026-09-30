@@ -10,8 +10,8 @@ use App\Domain\Discount\DiscountRule;
 final readonly class DiscountRuleView
 {
     /**
-     * @param list<array{kind: string, id: string, name: string, quantity: int}> $conditions
-     * @param array{kind: string, value: int}                                    $action
+     * @param list<array{kind: string, id: string, name: string, variant: ?string, quantity: int}> $conditions
+     * @param array{kind: string, value: int}                                                      $action
      */
     public function __construct(
         public string $id,
@@ -34,6 +34,7 @@ final readonly class DiscountRuleView
                 'kind' => $condition->kind(),
                 'id' => (string) $condition->targetId(),
                 'name' => $condition->targetName(),
+                'variant' => $condition->variant(),
                 'quantity' => $condition->quantity(),
             ], $rule->conditions()),
             ['kind' => $rule->action()->kind()->value, 'value' => $rule->action()->value()],

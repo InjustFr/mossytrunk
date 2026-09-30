@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Discount;
 
 use App\Domain\Discount\Exception\ConditionQuantityTooSmall;
+use App\Domain\Product\VariantLabel;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -27,6 +28,9 @@ abstract class DiscountCondition
     #[ORM\Column]
     private int $quantity;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    protected ?string $variant = null;
+
     protected function __construct(DiscountRule $rule, int $quantity)
     {
         if ($quantity < 1) {
@@ -37,19 +41,48 @@ abstract class DiscountCondition
         $this->quantity = $quantity;
     }
 
-    abstract public function matches(Ulid $productId, ?Ulid $typeId): bool;
+    abstract protected function matchesTarget(Ulid $productId, Ulid $typeId): bool;
 
-    abstract public function targets(object $target): bool;
+    abstract protected function isOn(object $target): bool;
+
+    abstract protected function specificityOfTarget(): int;
+
+    abstract protected function nameOfTarget(): string;
 
     abstract public function kind(): string;
 
     abstract public function targetId(): Ulid;
 
-    abstract public function targetName(): string;
-
-    public function isSpecific(): bool
+    public function matches(Ulid $productId, Ulid $typeId, ?string $variant): bool
     {
-        return false;
+        return $this->matchesTarget($productId, $typeId) && (null === $this->variant || VariantLabel::same($this->variant, $variant));
+    }
+
+    public function targets(object $target, ?string $variant): bool
+    {
+        return $this->isOn($target) && VariantLabel::same($this->variant, $variant);
+    }
+
+    public function specificity(): int
+    {
+        return $this->specificityOfTarget() + (null === $this->variant ? 0 : 1);
+    }
+
+    public function targetName(): string
+    {
+        return null === $this->variant ? $this->nameOfTarget() : \sprintf('%s · %s', $this->nameOfTarget(), $this->variant);
+    }
+
+    public function renameVariant(string $from, string $to): void
+    {
+        if (VariantLabel::same($this->variant, $from)) {
+            $this->variant = $to;
+        }
+    }
+
+    public function variant(): ?string
+    {
+        return $this->variant;
     }
 
     public function quantity(): int

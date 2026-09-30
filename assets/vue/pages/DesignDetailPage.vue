@@ -13,6 +13,7 @@ import DeclinationCard from '../components/designs/DeclinationCard.vue';
 import DesignForm from '../components/designs/DesignForm.vue';
 import { useDesign, useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { formatDateTime } from '../composables/useDate.js';
+import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -23,6 +24,7 @@ const props = defineProps({
 const { design, load, update, remove, workOn, decline, adjust, withdraw, tick, validate } = useDesign(props.designId);
 const { board, load: loadBoard } = useDesignBoard();
 const { gabarits, load: loadGabarits } = useGabarits();
+const { load: loadTypes } = useProductTypes();
 const toast = useToast();
 const { t } = useI18n();
 const editOpen = ref(false);
@@ -52,7 +54,7 @@ const onBench = (current) => run(() => workOn(current), t(current ? 'designs.det
 async function submitAdjustment(declination, payload) {
     await adjust(declination.id, payload);
     toast.success(t('designs.detail.adjusted', { name: declination.gabarit.name }));
-    await load();
+    await Promise.all([load(), loadTypes()]);
 }
 
 async function onValidate() {
@@ -77,7 +79,7 @@ async function onSaved({ name }) {
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
+onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]));
 </script>
 
 <template>

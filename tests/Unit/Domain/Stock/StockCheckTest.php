@@ -14,6 +14,7 @@ use App\Domain\Stock\StockCheck;
 use App\Domain\Stock\StockCount;
 use App\Domain\Stock\StockItem;
 use App\Tests\Support\Costs;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -26,7 +27,7 @@ final class StockCheckTest extends TestCase
     protected function setUp(): void
     {
         $this->event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
-        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 100);
+        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get()), 100);
         $this->stock = StockItem::open($this->sticker, null);
         $this->stock->receive(10, Money::cents(1_000), LotOrigin::Purchase, new \DateTimeImmutable('2026-07-01'));
     }

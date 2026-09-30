@@ -25,6 +25,7 @@ final readonly class ProductPayload
         #[Assert\All([new Assert\Type('string'), new Assert\NotBlank(message: 'variant.blank')])]
         #[Assert\Unique(message: 'variant.duplicate')]
         public array $variants = [],
+        #[Assert\NotBlank(message: 'productType.required')]
         #[Assert\Ulid(message: 'productType.invalid')]
         public ?string $typeId = null,
         #[Assert\PositiveOrZero(message: 'product.lowStock.negative')]

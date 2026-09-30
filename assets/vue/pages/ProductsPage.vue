@@ -23,7 +23,7 @@ import { useToast } from '../composables/useToast.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
 const { products, load, create, update, batchUpdate, moveVariant, remove } = useProducts();
-const { types, load: loadTypes } = useProductTypes();
+const { types, load: loadTypes, variantsOf } = useProductTypes();
 const filters = useProductFilters(products);
 const toast = useToast();
 const { t } = useI18n();
@@ -110,6 +110,8 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseCard>
             <ProductFilters
                 v-model:type-id="filters.typeId.value"
+                v-model:variants="filters.variants.value"
+                :variant-options="variantsOf(filters.typeId.value)"
                 v-model:search="filters.search.value"
                 v-model:missing-cost="filters.missingCost.value"
                 v-model:low-stock="filters.lowStock.value"
@@ -121,6 +123,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
             <ProductList
                 v-model:checked-ids="filters.selectedIds.value"
                 :products="filters.filtered.value"
+                :stock-variants="filters.variants.value"
                 :all-selected="filters.allVisibleSelected.value"
                 :type-colors="colors"
                 :selected-id="modalOpen ? editing?.id ?? null : null"
@@ -147,7 +150,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseModal v-model:open="historyOpen" :title="t('products.page.stockTitle', { name: viewingStock?.displayName ?? '' })">
             <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
-        <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" />
+        <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" @renamed="load" />
         <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')">
             <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>

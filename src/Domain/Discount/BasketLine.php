@@ -8,7 +8,7 @@ use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
 /**
- * Input of the discount calculation: `quantity` units of a product (of type `typeId`) at `unitPrice`.
+ * Input of the discount calculation: `quantity` units of a product variant (of type `typeId`) at `unitPrice`.
  */
 final readonly class BasketLine
 {
@@ -16,7 +16,8 @@ final readonly class BasketLine
         public Ulid $productId,
         public Money $unitPrice,
         public int $quantity,
-        public ?Ulid $typeId = null,
+        public Ulid $typeId,
+        public ?string $variant = null,
     ) {
     }
 }

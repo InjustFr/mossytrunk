@@ -1,5 +1,4 @@
 {
-    "untyped": "No type",
     "single": "Single",
     "negative": "Negative",
     "lowStock": "Low stock",
@@ -29,7 +28,8 @@
         "batchUpdated": "{count} product updated. | {count} products updated.",
         "priceSaved": "Price history updated.",
         "priceForgotten": "Price removed from history.",
-        "designed": "Design saved."
+        "designed": "Design saved.",
+        "variantRenamed": "Variant “{from}” renamed “{to}” everywhere, past orders included."
     },
     "detail": {
         "fallbackTitle": "Product",
@@ -57,7 +57,8 @@
         "searchLabel": "Search a product",
         "byType": "Filter by type",
         "lowStock": "{count} low-stock product | {count} low-stock products",
-        "missingCost": "{count} product without buying cost | {count} products without buying cost"
+        "missingCost": "{count} product without buying cost | {count} products without buying cost",
+        "byVariant": "Filter by variant"
     },
     "list": {
         "empty": "No products.",
@@ -98,7 +99,7 @@
         "lowStockThreshold": "Low stock alert",
         "lowStockThresholdHint": "The product is flagged when its stock (per variant) drops to this threshold.",
         "variants": "Variants",
-        "variantsHint": "Color, size, design… Leave empty for a single product.",
+        "variantsHint": "Check the type's variants; a new variant is added to the type. None for a single product.",
         "add": "Add product"
     },
     "batch": {
@@ -192,7 +193,7 @@
         "attachSubmit": "Attach"
     },
     "types": {
-        "intro": "Each product is shown as “Type Name”; the color marks the type in lists and reports.",
+        "intro": "Products are shown as “Type Name” (or just “Name” when the type does not prefix them); the color marks the type in lists and reports. The type's variants are offered to its products.",
         "empty": "No types. Add Print, Sticker… to organize your products.",
         "add": "Add a type",
         "all": "All types",
@@ -208,7 +209,25 @@
         "createOption": "＋ Create a type…",
         "newName": "New type name",
         "nameRequired": "The type name is required.",
-        "createShort": "Create"
+        "createShort": "Create",
+        "none": "No type",
+        "choose": "Choose a type…",
+        "prefixesNames": "Prefix product names",
+        "prefixedExample": "Its products are shown as “{type} Forest”.",
+        "plainExample": "Its products are shown as “Forest”, without the type.",
+        "exampleType": "Print",
+        "variants": {
+            "label": "Variants",
+            "hint": "Offered to its products, in this order. Renaming a variant also renames it in products, discounts and past orders.",
+            "empty": "No variants yet.",
+            "moveUp": "Move {variant} up",
+            "moveDown": "Move {variant} down",
+            "rename": "Rename {variant}",
+            "newLabel": "New name for {variant}",
+            "confirmRename": "Confirm the new name of {variant}",
+            "remove": "Remove {variant}",
+            "duplicate": "Variant “{variant}” already exists."
+        }
     },
     "colors": {
         "label": "Type color",
@@ -236,5 +255,11 @@
         "placeholder": "Add a variant then press Enter",
         "itemLabel": "variant",
         "remove": "Remove {item} {variant}"
+    },
+    "variantPicker": {
+        "label": "Variants",
+        "newVariant": "New variant",
+        "placeholder": "Add a variant, then Enter",
+        "add": "Add the variant"
     }
 }

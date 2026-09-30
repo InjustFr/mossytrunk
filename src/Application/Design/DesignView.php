@@ -10,8 +10,8 @@ use App\Domain\Design\Design;
 final readonly class DesignView
 {
     /**
-     * @param array{id: string, name: string}|null                                                                                                                                                                                                                                 $collection
-     * @param list<array{id: string, gabarit: array{id: string, name: string, typeName: ?string}, productName: string, displayName: string, sellingPrice: int, variants: list<string>, adaptations: list<string>, doneAdaptations: list<string>, ready: bool, productId: ?string}> $declinations
+     * @param array{id: string, name: string}|null                                                                                                                                                                                                                                                                     $collection
+     * @param list<array{id: string, gabarit: array{id: string, name: string, typeId: string, typeName: string, prefixesNames: bool}, productName: string, displayName: string, sellingPrice: int, variants: list<string>, adaptations: list<string>, doneAdaptations: list<string>, ready: bool, productId: ?string}> $declinations
      */
     public function __construct(
         public string $id,
@@ -46,7 +46,9 @@ final readonly class DesignView
                 'gabarit' => [
                     'id' => (string) $declination->gabarit()->id(),
                     'name' => $declination->gabarit()->name(),
-                    'typeName' => $declination->gabarit()->type()?->name(),
+                    'typeId' => (string) $declination->gabarit()->type()->id(),
+                    'typeName' => $declination->gabarit()->type()->name(),
+                    'prefixesNames' => $declination->gabarit()->type()->prefixesNames(),
                 ],
                 'productName' => $declination->productName(),
                 'displayName' => $declination->displayName(),

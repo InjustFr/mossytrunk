@@ -22,6 +22,11 @@ interface ProductRepository
     public function findByName(string $name): ?Product;
 
     /**
+     * @return list<Product>
+     */
+    public function ofType(ProductType $type): array;
+
+    /**
      * @param list<Ulid> $ids
      *
      * @return list<Product> the existing ones, in no particular order

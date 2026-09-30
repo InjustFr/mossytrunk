@@ -14,12 +14,14 @@ import StatusBadge from '../ui/StatusBadge.vue';
 import TypeMark from '../ui/TypeMark.vue';
 import { formatRatio } from '../../composables/useMoney.js';
 import { useSort } from '../../composables/useSort.js';
+import { variantStock } from '../../composables/useVariantStock.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
     selectedId: { type: String, default: null },
     allSelected: { type: Boolean, default: false },
     typeColors: { type: Map, required: true },
+    stockVariants: { type: Array, default: () => [] },
 });
 const emit = defineEmits(['edit', 'move', 'remove', 'toggle-all', 'restock', 'history']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
@@ -27,12 +29,13 @@ const { t } = useI18n();
 
 const knownCost = (product) => product.stockUnitCost > 0;
 const margin = (product) => (knownCost(product) ? product.sellingPrice - product.stockUnitCost : null);
-const stockDetail = (product) => product.stock.map((item) => t('products.list.stockDetail', { variant: item.variant ?? t('products.list.stock'), count: item.onHand })).join(', ');
+const stockOf = (product) => variantStock(product, props.stockVariants);
+const stockDetail = (product) => stockOf(product).entries.map((item) => t('products.list.stockDetail', { variant: item.variant ?? t('products.list.stock'), count: item.onHand })).join(', ');
 
 const columns = {
-    type: (product) => `${product.typeName ?? '￿'} ${product.displayName}`,
+    type: (product) => `${product.typeName} ${product.displayName}`,
     name: (product) => product.displayName,
-    stock: (product) => product.onHand,
+    stock: (product) => stockOf(product).onHand,
     stockUnitCost: (product) => product.stockUnitCost,
     sellingPrice: (product) => product.sellingPrice,
     margin,
@@ -84,16 +87,16 @@ function setChecked(id, checked) {
                     <span class="product-list__reference">{{ product.reference }}</span>
                 </td>
                 <td>
-                    <span class="product-list__type"><TypeMark :color="typeColors.get(product.typeName)" />{{ product.typeName ?? t('products.untyped') }}</span>
+                    <span class="product-list__type"><TypeMark :color="typeColors.get(product.typeName)" />{{ product.typeName }}</span>
                 </td>
                 <td>
                     <span v-if="product.variants.length === 0" class="product-list__muted">{{ t('products.single') }}</span>
                     <span v-else class="product-list__variants" :title="product.variants.join(', ')">{{ product.variants.join(', ') }}</span>
                 </td>
                 <td class="data-table__cell--number product-list__stock" :title="product.variants.length ? stockDetail(product) : null">
-                    <button type="button" class="product-list__on-hand" :aria-label="t('products.list.stockHistory', { name: product.displayName })" @click="emit('history', product)">{{ product.onHand }}</button>
-                    <StatusBadge v-if="product.negativeStock" tone="danger">{{ t('products.negative') }}</StatusBadge>
-                    <StatusBadge v-else-if="product.lowStock" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
+                    <button type="button" class="product-list__on-hand" :aria-label="t('products.list.stockHistory', { name: product.displayName })" @click="emit('history', product)">{{ stockOf(product).onHand }}</button>
+                    <StatusBadge v-if="stockOf(product).negative" tone="danger">{{ t('products.negative') }}</StatusBadge>
+                    <StatusBadge v-else-if="stockOf(product).low" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
                 </td>
                 <td class="data-table__cell--number">
                     <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" :aria-label="t('products.list.unknownCost')" role="img" />

@@ -17,6 +17,7 @@ const { t } = useI18n();
             <TypeMark :color="type.color" />
             <span class="product-type-list__name">{{ type.name }}</span>
             <span class="product-type-list__code">{{ type.code }}</span>
+            <span class="product-type-list__variants">{{ type.variants.join(' · ') }}</span>
             <IconButton :icon="Pencil" :label="t('products.types.edit', { name: type.name })" @click="emit('edit', type)" />
         </li>
     </ul>
@@ -27,7 +28,7 @@ const { t } = useI18n();
 
 .product-type-list__row {
     display: grid;
-    grid-template-columns: auto 1fr auto auto;
+    grid-template-columns: auto auto auto 1fr auto;
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-2) 0;
@@ -42,5 +43,13 @@ const { t } = useI18n();
     font-size: 0.75rem;
     letter-spacing: 0.06rem;
     text-transform: uppercase;
+}
+
+.product-type-list__variants {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 </style>

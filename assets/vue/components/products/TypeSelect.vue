@@ -7,6 +7,9 @@ import TypeColorPicker from './TypeColorPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { nextTypeColor } from '../../composables/useTypeColor.js';
 
+const props = defineProps({
+    allowNone: { type: Boolean, default: false },
+});
 const typeId = defineModel({ type: String, default: '' });
 const { types, create } = useProductTypes();
 const { t } = useI18n();
@@ -21,7 +24,7 @@ const saving = ref(false);
 const input = ref(null);
 
 const options = computed(() => [
-    { value: '', label: t('products.untyped') },
+    ...(props.allowNone ? [{ value: '', label: t('products.types.none') }] : []),
     ...types.value.map((type) => ({ value: type.id, label: type.name })),
     { value: CREATE, label: t('products.types.createOption') },
 ]);
@@ -69,7 +72,7 @@ function cancel() {
 
 <template>
     <div class="type-select">
-        <BaseSelect v-if="!creating" v-model="selected" :options="options" :aria-label="t('products.types.select')" />
+        <BaseSelect v-if="!creating" v-model="selected" :options="options" :placeholder="t('products.types.choose')" :aria-label="t('products.types.select')" />
         <div v-else class="type-select__create">
             <div class="type-select__name">
                 <input

@@ -63,6 +63,9 @@ order:
     no_event_on_date: 'No event on {date, date, medium}. Create the matching event first.'
     outside_event: 'The order date ({date, date, medium}, {date, time, short}) must fall within the dates of the event “{event}”.'
 product:
+    unknown_type_variant: '“{variant}” is not a variant of the type “{type}”.'
+    duplicate_type_variant: 'The variant “{variant}” already exists for this type.'
+    variant_in_use: 'The variant “{variant}” is still used by products, templates or discounts: remove it from them first.'
     duplicate_variant: 'The variant “{variant}” already exists for this product.'
     empty_name: 'The product name is required.'
     empty_reference: 'The product reference is required.'

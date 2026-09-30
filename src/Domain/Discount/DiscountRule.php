@@ -13,6 +13,7 @@ use App\Domain\Discount\Exception\OnlyEligibleProduct;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
+use App\Domain\Product\VariantLabel;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -80,13 +81,13 @@ class DiscountRule
         $built = [];
         foreach ($conditions as $spec) {
             foreach ($built as $condition) {
-                if ($condition->targets($spec->target)) {
+                if ($condition->targets($spec->target, $spec->variant)) {
                     throw new DuplicateConditionTarget($condition->targetName());
                 }
             }
             $built[] = $spec->target instanceof Product
-                ? new ProductCondition($this, $spec->quantity, $spec->target)
-                : new TypeCondition($this, $spec->quantity, $spec->target);
+                ? new ProductCondition($this, $spec->quantity, $spec->target, $spec->variant)
+                : new TypeCondition($this, $spec->quantity, $spec->target, $spec->variant);
         }
 
         $this->name = $name;
@@ -98,33 +99,56 @@ class DiscountRule
         }
     }
 
-    public function replaceProduct(Product $replaced, Product $by): void
+    public function replaceProduct(Product $replaced, ?string $movedVariant, Product $by, ?string $targetVariant): void
     {
-        $source = $this->conditionOn($replaced);
-        if (!$source instanceof ProductCondition) {
-            return;
-        }
+        foreach ($this->conditionsOn($replaced) as $source) {
+            $variant = null === $source->variant() || VariantLabel::same($source->variant(), $movedVariant) ? $targetVariant : $by->variantNamed($source->variant());
+            if (null !== $source->variant() && null === $variant) {
+                $this->conditions->removeElement($source);
+                continue;
+            }
 
-        $target = $this->conditionOn($by);
-        if (null === $target) {
-            $source->retarget($by);
-
-            return;
+            $target = $this->conditionOn($by, $variant);
+            if (null === $target) {
+                $source->retarget($by, $variant);
+                continue;
+            }
+            $target->add($source->quantity());
+            $this->conditions->removeElement($source);
         }
-        $target->add($source->quantity());
-        $this->conditions->removeElement($source);
+        if ($this->conditions->isEmpty()) {
+            throw new OnlyEligibleProduct($this->name, $replaced->displayName());
+        }
     }
 
     public function withdrawProduct(Product $product): void
     {
-        $condition = $this->conditionOn($product);
-        if (null === $condition) {
+        $conditions = $this->conditionsOn($product);
+        if ([] === $conditions) {
             return;
         }
-        if (1 === $this->conditions->count()) {
+        if (\count($conditions) === $this->conditions->count()) {
             throw new OnlyEligibleProduct($this->name, $product->displayName());
         }
-        $this->conditions->removeElement($condition);
+        foreach ($conditions as $condition) {
+            $this->conditions->removeElement($condition);
+        }
+    }
+
+    public function renameVariant(ProductType $type, string $from, string $to): void
+    {
+        foreach ($this->conditions as $condition) {
+            $concerned = $condition instanceof TypeCondition ? $condition->type() === $type : ($condition instanceof ProductCondition && $condition->product()->type() === $type);
+            if ($concerned) {
+                $condition->renameVariant($from, $to);
+            }
+        }
+    }
+
+    public function usesVariant(ProductType $type, string $variant): bool
+    {
+        return $this->conditions->exists(static fn (int $key, DiscountCondition $condition): bool => VariantLabel::same($condition->variant(), $variant)
+            && ($condition instanceof TypeCondition ? $condition->type() === $type : ($condition instanceof ProductCondition && $condition->product()->type() === $type)));
     }
 
     public function listsTypes(): bool
@@ -196,7 +220,7 @@ class DiscountRule
     public function conditionsMostSpecificFirst(): array
     {
         $conditions = $this->conditions();
-        usort($conditions, static fn (DiscountCondition $a, DiscountCondition $b): int => $b->isSpecific() <=> $a->isSpecific());
+        usort($conditions, static fn (DiscountCondition $a, DiscountCondition $b): int => $b->specificity() <=> $a->specificity());
 
         return $conditions;
     }
@@ -216,8 +240,16 @@ class DiscountRule
         return $this->workspace;
     }
 
-    private function conditionOn(Product|ProductType $target): ?DiscountCondition
+    private function conditionOn(Product|ProductType $target, ?string $variant): ?DiscountCondition
     {
-        return $this->conditions->findFirst(static fn (int $key, DiscountCondition $condition): bool => $condition->targets($target));
+        return $this->conditions->findFirst(static fn (int $key, DiscountCondition $condition): bool => $condition->targets($target, $variant));
+    }
+
+    /**
+     * @return list<ProductCondition>
+     */
+    private function conditionsOn(Product $product): array
+    {
+        return array_values(array_filter($this->conditions(), static fn (DiscountCondition $condition): bool => $condition instanceof ProductCondition && $condition->product() === $product));
     }
 }

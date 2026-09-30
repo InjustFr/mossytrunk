@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Product\UpdateProduct;
 
+use App\Application\Product\ProductTypeChoice;
 use App\Application\Product\ReferenceAvailability;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -16,7 +16,7 @@ final readonly class UpdateProductHandler
 {
     public function __construct(
         private ProductRepository $products,
-        private ProductTypeRepository $types,
+        private ProductTypeChoice $types,
         private ReferenceAvailability $availability,
         private StockKeeper $stock,
         private Transaction $transaction,
@@ -36,7 +36,7 @@ final readonly class UpdateProductHandler
         $product->replaceVariants($command->variants);
         $this->stock->forgetUnsold($product);
         $product->alertBelow($command->lowStockThreshold);
-        $product->classify(null === $command->typeId ? null : $this->types->get(Ulid::fromString($command->typeId)));
+        $product->classify($this->types->of($command->typeId));
 
         $this->transaction->commit();
     }

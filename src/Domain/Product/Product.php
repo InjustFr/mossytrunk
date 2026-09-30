@@ -8,7 +8,6 @@ use App\Domain\Identity\Workspace;
 use App\Domain\Product\Exception\DuplicateVariant;
 use App\Domain\Product\Exception\EmptyProductName;
 use App\Domain\Product\Exception\EmptyProductReference;
-use App\Domain\Product\Exception\EmptyVariant;
 use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Exception\LastPriceKept;
 use App\Domain\Product\Exception\NegativeLowStockThreshold;
@@ -35,7 +34,8 @@ use Symfony\Component\Uid\Ulid;
  * - prices are never negative; the buying price is the last purchase price, set by restocking only (0 = unknown).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
- * - a product may have a type; it is then displayed as "{type} {name}" (e.g. "Print Forêt").
+ * - a product always has a type; it is displayed as "{type} {name}" (e.g. "Print Forêt") unless the type does not prefix names.
+ * - its variants are among its type's variants: a variant given to a product is added to its type.
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
@@ -60,8 +60,8 @@ class Product
     private string $name;
 
     #[ORM\ManyToOne(targetEntity: ProductType::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?ProductType $type = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ProductType $type;
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'selling_price_')]
     private Money $sellingPrice;
@@ -87,7 +87,7 @@ class Product
     /**
      * @param list<string> $variants
      */
-    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, array $variants, ?ProductType $type)
+    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, ProductType $type, array $variants)
     {
         $this->id = $id;
         $this->workspace = $workspace;
@@ -106,9 +106,9 @@ class Product
     /**
      * @param list<string> $variants
      */
-    public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, array $variants = [], ?ProductType $type = null): self
+    public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, ProductType $type, array $variants = []): self
     {
-        return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $variants, $type);
+        return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $type, $variants);
     }
 
     public function changeReference(string $reference): void
@@ -124,9 +124,12 @@ class Product
         $this->reference = $reference;
     }
 
-    public function classify(?ProductType $type): void
+    public function classify(ProductType $type): void
     {
         $this->type = $type;
+        foreach ($this->variants as $variant) {
+            $type->offerVariant($variant);
+        }
     }
 
     public function rename(string $name): void
@@ -243,21 +246,21 @@ class Product
 
     public function addVariant(string $variant): void
     {
-        $variant = trim($variant);
-
-        if ('' === $variant) {
-            throw new EmptyVariant();
-        }
-        if ($this->hasVariant($variant)) {
-            throw new DuplicateVariant($variant);
+        if ($this->hasVariant(VariantLabel::clean($variant))) {
+            throw new DuplicateVariant(trim($variant));
         }
 
-        $this->variants[] = $variant;
+        $this->variants[] = $this->type->offerVariant($variant);
     }
 
     public function removeVariant(string $variant): void
     {
-        $this->variants = array_values(array_filter($this->variants, static fn (string $existing): bool => $existing !== $variant));
+        $this->variants = array_values(array_filter($this->variants, static fn (string $existing): bool => !VariantLabel::same($existing, $variant)));
+    }
+
+    public function renameVariant(string $from, string $to): void
+    {
+        $this->variants = array_map(static fn (string $variant): string => VariantLabel::same($variant, $from) ? $to : $variant, $this->variants);
     }
 
     /**
@@ -293,14 +296,12 @@ class Product
             if (null === $variant) {
                 throw new VariantRequired($this->displayName());
             }
-            if (!$this->hasVariant($variant)) {
-                throw new UnknownVariant($this->displayName(), $variant);
-            }
+            $variant = $this->variantNamed($variant) ?? throw new UnknownVariant($this->displayName(), $variant);
         } elseif (null !== $variant) {
             throw new ProductHasNoVariants($this->displayName());
         }
 
-        return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice, $this->type?->id());
+        return new SellableItem($this->id, $variant, $this->displayName(), $this->sellingPrice, $this->buyingPrice, $this->type->id());
     }
 
     public function hasVariants(): bool
@@ -310,7 +311,12 @@ class Product
 
     public function hasVariant(string $variant): bool
     {
-        return \in_array($variant, $this->variants, true);
+        return null !== $this->variantNamed($variant);
+    }
+
+    public function variantNamed(string $variant): ?string
+    {
+        return VariantLabel::find($this->variants, $variant);
     }
 
     public function id(): Ulid
@@ -329,14 +335,14 @@ class Product
     }
 
     /**
-     * How the product is shown everywhere (and snapshotted on orders): "{type} {name}", or the name alone.
+     * How the product is shown everywhere (and snapshotted on orders): "{type} {name}", or the name alone when its type does not prefix names.
      */
     public function displayName(): string
     {
-        return null === $this->type ? $this->name : \sprintf('%s %s', $this->type->name(), $this->name);
+        return $this->type->nameProduct($this->name);
     }
 
-    public function type(): ?ProductType
+    public function type(): ProductType
     {
         return $this->type;
     }

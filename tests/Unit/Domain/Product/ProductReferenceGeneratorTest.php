@@ -9,6 +9,7 @@ use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -19,7 +20,7 @@ final class ProductReferenceGeneratorTest extends TestCase
         $existing = ['PRI-FOR' => true];
         $repository = $this->createStub(ProductRepository::class);
         $repository->method('findByReference')->willReturnCallback(
-            static fn (string $reference): ?Product => isset($existing[$reference]) ? Product::create(TestWorkspace::get(), $reference, 'x', Money::zero()) : null,
+            static fn (string $reference): ?Product => isset($existing[$reference]) ? Product::create(TestWorkspace::get(), $reference, 'x', Money::zero(), TestProductType::get()) : null,
         );
         $generator = new ProductReferenceGenerator($repository);
         $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');

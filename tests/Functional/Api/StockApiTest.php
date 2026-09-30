@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -16,7 +17,7 @@ final class StockApiTest extends WebTestCase
     public function testRestockAndCheckStockAfterAnEvent(): void
     {
         $client = self::signedInClient();
-        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'buyingPrice' => 80, 'lowStockThreshold' => 3]);
+        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client), 'lowStockThreshold' => 3]);
         $eventId = self::created($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
 
         $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $productId, 'quantity' => 10, 'totalPaid' => 1_000]);
@@ -49,7 +50,7 @@ final class StockApiTest extends WebTestCase
     public function testInvalidRestockIsRejected(): void
     {
         $client = self::signedInClient();
-        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400]);
+        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]);
 
         $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $productId, 'quantity' => 0, 'totalPaid' => -1]);
 
@@ -60,7 +61,7 @@ final class StockApiTest extends WebTestCase
     public function testRestockingAVariantOfAProductWithoutVariantsIsRejected(): void
     {
         $client = self::signedInClient();
-        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400]);
+        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]);
 
         $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $productId, 'variant' => 'Rouge', 'quantity' => 2, 'totalPaid' => 100]);
 
@@ -71,9 +72,10 @@ final class StockApiTest extends WebTestCase
     {
         $client = self::signedInClient();
 
-        $client->jsonRequest('POST', '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'lowStockThreshold' => -1]);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client), 'lowStockThreshold' => -1]);
 
         self::assertResponseStatusCodeSame(422);
+        self::assertSame(['lowStockThreshold'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
     }
 
     /**

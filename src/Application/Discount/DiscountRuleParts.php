@@ -30,6 +30,7 @@ final readonly class DiscountRuleParts
             ConditionDefinition::TYPE === $condition->kind
                 ? $this->types->get(Ulid::fromString($condition->targetId))
                 : $this->products->get(Ulid::fromString($condition->targetId)),
+            null === $condition->variant || '' === trim($condition->variant) ? null : $condition->variant,
         ), $definition->conditions);
     }
 

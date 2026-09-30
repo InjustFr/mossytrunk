@@ -12,6 +12,7 @@ final readonly class ConditionSpec
     public function __construct(
         public int $quantity,
         public Product|ProductType $target,
+        public ?string $variant = null,
     ) {
     }
 }

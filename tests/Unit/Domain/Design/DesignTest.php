@@ -12,6 +12,7 @@ use App\Domain\Design\Gabarit;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -101,7 +102,7 @@ final class DesignTest extends TestCase
             $declination->linkProduct(new Ulid());
         }
 
-        $card = $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::cents(300)));
+        $card = $design->decline(Gabarit::create(TestWorkspace::get(), 'Carte', TestProductType::get(), Money::cents(300)));
 
         self::assertSame(DesignStatus::InProgress, $design->status());
         self::assertTrue($design->isCurrent());
@@ -110,7 +111,7 @@ final class DesignTest extends TestCase
 
     public function testAnExistingProductBecomesAFinishedDesign(): void
     {
-        $product = Product::create(TestWorkspace::get(), 'STI-FORET', 'Forêt', Money::cents(450), ['5 cm'], $this->glossy->type());
+        $product = Product::create(TestWorkspace::get(), 'STI-FORET', 'Forêt', Money::cents(450), $this->glossy->type(), ['5 cm']);
 
         $design = Design::fromProduct(TestWorkspace::get(), $product, $this->glossy, null, new \DateTimeImmutable());
 
@@ -141,7 +142,61 @@ final class DesignTest extends TestCase
     {
         $this->expectException(InvalidDesign::class);
 
-        Gabarit::create(TestWorkspace::get(), 'Carte', null, Money::zero(), [], ['Recto', 'Recto']);
+        Gabarit::create(TestWorkspace::get(), 'Carte', TestProductType::get(), Money::zero(), [], ['Recto', 'Recto']);
+    }
+
+    public function testGabaritVariantsAreRegisteredOnItsTypeWhoseSpellingWins(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A4']);
+
+        $gabarit = Gabarit::create(TestWorkspace::get(), 'Tirage', $print, Money::cents(1_500), ['a4', ' A3 ', 'A3']);
+
+        self::assertSame(['A4', 'A3'], $gabarit->variants());
+        self::assertSame(['A4', 'A3'], $print->variants());
+        self::assertTrue($gabarit->usesVariant('a3'));
+        self::assertFalse($gabarit->usesVariant('A5'));
+    }
+
+    public function testADeclinationCanDropVariantsOfItsGabaritAndItsNewOnesJoinTheType(): void
+    {
+        $design = Design::start(TestWorkspace::get(), 'Forêt');
+        $declination = $design->decline($this->glossy);
+
+        $design->adjust($declination->id(), 'Forêt', Money::cents(400), ['8 CM', '10 cm']);
+
+        self::assertSame(['8 cm', '10 cm'], $declination->variants());
+        self::assertSame(['5 cm', '8 cm', '10 cm'], $this->glossy->type()->variants());
+        self::assertSame(['5 cm', '8 cm'], $this->glossy->variants());
+    }
+
+    public function testRenamingAVariantRenamesTheGabaritAndTheDeclinationsOfItsType(): void
+    {
+        $design = Design::start(TestWorkspace::get(), 'Forêt');
+        $sticker = $design->decline($this->glossy);
+        $mat = Gabarit::create(TestWorkspace::get(), 'Sticker mat', TestProductType::get(), Money::cents(400), ['5 cm']);
+        $other = $design->decline($mat);
+
+        $this->glossy->renameVariant('5 CM', 'Petit');
+        $design->renameVariant($this->glossy->type(), '5 CM', 'Petit');
+
+        self::assertSame(['Petit', '8 cm'], $this->glossy->variants());
+        self::assertSame(['Petit', '8 cm'], $sticker->variants());
+        self::assertSame(['5 cm'], $other->variants(), 'a gabarit of another type keeps its variants');
+    }
+
+    public function testOnlyDeclinationsNotProducedYetUseAVariant(): void
+    {
+        $design = $this->readyDesign();
+        $sticker = $this->glossy->type();
+        self::assertTrue($design->usesVariant($sticker, '8 CM'));
+        self::assertFalse($design->usesVariant($this->print->type(), '8 cm'));
+
+        foreach ($design->validate(new \DateTimeImmutable()) as $declination) {
+            $declination->linkProduct(new Ulid());
+        }
+
+        self::assertFalse($design->usesVariant($sticker, '8 cm'));
     }
 
     private function readyDesign(): Design

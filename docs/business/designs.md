@@ -6,10 +6,10 @@ Once every declination is ready, **validating** the design creates one product p
 
 | Concept | Fields |
 |---|---|
-| `Gabarit` | Name (unique per workspace, case-insensitive), product type, default selling price, default variants, **adaptations** (checklist, unique labels) |
+| `Gabarit` | Name (unique per workspace, case-insensitive), product type (required), default selling price, default variants (some of the type's variants), **adaptations** (checklist, unique labels) |
 | `DesignCollection` | Name, description, « sur l'établi » flag |
 | `Design` | Name, optional collection, notes, status `in_progress` / `validated`, « sur l'établi » flag, validation date |
-| `Declination` | Design × gabarit: product name (defaults to the design name), selling price and variants (default to the gabarit's), its adaptations (copied from the gabarit when declined) and the ones done, the product created at validation |
+| `Declination` | Design × gabarit: product name (defaults to the design name), selling price and variants (default to the gabarit's; any of the type's variants can be ticked or unticked, e.g. no A4 for this design), its adaptations (copied from the gabarit when declined) and the ones done, the product created at validation |
 
 Model: `src/Domain/Design/`.
 

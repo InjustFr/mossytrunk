@@ -9,7 +9,9 @@ import FormField from '../ui/FormField.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import TypeSelect from '../products/TypeSelect.vue';
+import VariantPicker from '../products/VariantPicker.vue';
 import VariantsInput from '../products/VariantsInput.vue';
+import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
     gabarits: { type: Array, required: true },
@@ -17,6 +19,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved']);
 const { t } = useI18n();
+const { variantsOf } = useProductTypes();
 
 const empty = () => ({ name: '', typeId: '', sellingPrice: null, variants: [], adaptations: [] });
 const editingId = ref(null);
@@ -27,7 +30,7 @@ const saving = ref(false);
 function edit(gabarit) {
     editingId.value = gabarit?.id ?? null;
     Object.assign(form, gabarit
-        ? { name: gabarit.name, typeId: gabarit.typeId ?? '', sellingPrice: gabarit.sellingPrice, variants: [...gabarit.variants], adaptations: [...gabarit.adaptations] }
+        ? { name: gabarit.name, typeId: gabarit.typeId, sellingPrice: gabarit.sellingPrice, variants: [...gabarit.variants], adaptations: [...gabarit.adaptations] }
         : empty());
     errors.value = {};
 }
@@ -58,7 +61,7 @@ async function onSubmit() {
                 <div class="gabarit-manager__summary">
                     <strong>{{ gabarit.name }}</strong>
                     <span class="gabarit-manager__meta">
-                        {{ gabarit.typeName ?? t('designs.gabarits.noType') }}, <MoneyAmount :cents="gabarit.sellingPrice" />
+                        {{ gabarit.typeName }}, <MoneyAmount :cents="gabarit.sellingPrice" />
                         <template v-if="gabarit.variants.length">, {{ gabarit.variants.join(', ') }}</template>
                     </span>
                     <span v-if="gabarit.adaptations.length" class="gabarit-manager__meta">{{ t('designs.gabarits.toAdapt', { adaptations: gabarit.adaptations.join(', ') }) }}</span>
@@ -80,7 +83,7 @@ async function onSubmit() {
                     <BaseMoneyField v-model="form.sellingPrice" />
                 </FormField>
                 <FormField as="group" :label="t('designs.gabarits.variants')" :error="errors.variants">
-                    <VariantsInput v-model="form.variants" />
+                    <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" />
                 </FormField>
                 <FormField as="group" :label="t('designs.gabarits.adaptations')" :error="errors.adaptations" :hint="t('designs.gabarits.adaptationsHint')">
                     <VariantsInput v-model="form.adaptations" :input-label="t('designs.gabarits.newAdaptation')" :placeholder="t('designs.gabarits.adaptationPlaceholder')" :item-label="t('designs.gabarits.adaptationItem')" />

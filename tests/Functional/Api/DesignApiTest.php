@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -16,7 +17,8 @@ final class DesignApiTest extends WebTestCase
     public function testFromGabaritToProduct(): void
     {
         $client = self::signedInClient();
-        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'sellingPrice' => 250, 'adaptations' => ['Marges 5 mm']]);
+        $postcard = ProductTypesApi::create($client, 'Carte postale');
+        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Carte postale', 'typeId' => $postcard, 'sellingPrice' => 250, 'adaptations' => ['Marges 5 mm']]);
         self::assertResponseStatusCodeSame(201);
         $gabaritId = Json::string(self::body($client), 'id');
 
@@ -40,14 +42,28 @@ final class DesignApiTest extends WebTestCase
         self::assertSame('validated', Json::at(self::body($client), 'standalone', 0, 'status'));
     }
 
-    public function testGabaritNeedsAName(): void
+    public function testGabaritNeedsANameAndAType(): void
     {
         $client = self::signedInClient();
 
         $client->jsonRequest('POST', '/api/gabarits', ['name' => '', 'sellingPrice' => -1]);
 
         self::assertResponseStatusCodeSame(422);
-        self::assertSame(['name', 'sellingPrice'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
+        self::assertSame(['name', 'typeId', 'sellingPrice'], array_column(Json::array(self::body($client), 'violations'), 'propertyPath'));
+    }
+
+    public function testGabaritVariantsJoinItsType(): void
+    {
+        $client = self::signedInClient();
+        $print = ProductTypesApi::create($client, 'Print', ['A4']);
+
+        $client->jsonRequest('POST', '/api/gabarits', ['name' => 'Tirage', 'typeId' => $print, 'sellingPrice' => 1_500, 'variants' => ['a4', 'A3']]);
+        self::assertResponseStatusCodeSame(201);
+
+        $client->jsonRequest('GET', '/api/gabarits');
+        self::assertSame(['A4', 'A3'], Json::at(self::body($client), 0, 'variants'));
+        $client->jsonRequest('GET', '/api/product-types');
+        self::assertSame(['A4', 'A3'], Json::at(self::body($client), 0, 'variants'));
     }
 
     /**

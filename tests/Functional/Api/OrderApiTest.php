@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,7 +18,7 @@ final class OrderApiTest extends WebTestCase
     {
         $client = self::signedInClient();
         $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
-        $product = $this->post($client, '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M']])['id'];
+        $product = $this->post($client, '/api/products', ['name' => 'T-shirt', 'sellingPrice' => 2_000, 'variants' => ['S', 'M'], 'typeId' => ProductTypesApi::create($client)])['id'];
 
         $order = $this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'variant' => 'M', 'quantity' => 2]]]);
         self::assertStringStartsWith('CMD-20260710-', Json::string($order, 'reference'));
@@ -35,7 +36,7 @@ final class OrderApiTest extends WebTestCase
     {
         $client = self::signedInClient();
         $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
-        $product = $this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400])['id'];
+        $product = $this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)])['id'];
         $this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'quantity' => 1]]]);
 
         $client->jsonRequest('DELETE', '/api/orders');

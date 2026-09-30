@@ -14,6 +14,7 @@ use App\Domain\Discount\ValidityPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -23,6 +24,7 @@ final class DiscountCalculatorTest extends TestCase
     private ProductType $stickerType;
     private Product $forest;
     private Product $river;
+    private Product $lake;
     private Product $sticker;
     private Product $holoSticker;
     private Product $tshirt;
@@ -35,9 +37,10 @@ final class DiscountCalculatorTest extends TestCase
         $this->stickerType = ProductType::create(TestWorkspace::get(), 'Sticker', 'STI');
         $this->forest = Product::create(TestWorkspace::get(), 'PRI-FORET', 'Forêt', Money::cents(1_500), variants: ['A4', 'A3'], type: $this->printType);
         $this->river = Product::create(TestWorkspace::get(), 'PRI-RIVIERE', 'Rivière', Money::cents(1_500), type: $this->printType);
+        $this->lake = Product::create(TestWorkspace::get(), 'PRI-LAC', 'Lac', Money::cents(1_500), variants: ['A3'], type: $this->printType);
         $this->sticker = Product::create(TestWorkspace::get(), 'STI-MOUSSE', 'Mousse', Money::cents(400), type: $this->stickerType);
         $this->holoSticker = Product::create(TestWorkspace::get(), 'STI-HOLO', 'Holo', Money::cents(600), type: $this->stickerType);
-        $this->tshirt = Product::create(TestWorkspace::get(), 'TSH', 'T-shirt', Money::cents(2_500));
+        $this->tshirt = Product::create(TestWorkspace::get(), 'TSH', 'T-shirt', Money::cents(2_500), TestProductType::get());
         $this->calculator = new DiscountCalculator();
         $this->now = new \DateTimeImmutable('2026-07-10 15:00', new \DateTimeZone('Europe/Paris'));
     }
@@ -134,6 +137,47 @@ final class DiscountCalculatorTest extends TestCase
         self::assertSame([], $this->calculator->calculate($basket, [$rule], new \DateTimeImmutable('2026-07-12 00:01', $paris)));
     }
 
+    public function testATypeVariantConditionOnlyMatchesThatVariantOfTheTypesProducts(): void
+    {
+        $rule = $this->rule('−5 € sur les prints A3', [new ConditionSpec(1, $this->printType, 'A3')], DiscountAction::amountOff(Money::cents(500)));
+
+        self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1, 'A4'), $this->line($this->river, 1)], [$rule], $this->now));
+        self::assertEquals(
+            [new AppliedDiscount('−5 € sur les prints A3 ×2', Money::cents(1_000), $rule->id())],
+            $this->calculator->calculate([$this->line($this->forest, 1, 'a3'), $this->line($this->forest, 1, 'A4'), $this->line($this->lake, 1, 'A3')], [$rule], $this->now),
+        );
+    }
+
+    public function testAProductVariantConditionOnlyMatchesThatVariantOfThatProduct(): void
+    {
+        $rule = $this->rule('−5 € sur Forêt A3', [new ConditionSpec(1, $this->forest, 'A3')], DiscountAction::amountOff(Money::cents(500)));
+
+        self::assertSame([], $this->calculator->calculate([$this->line($this->forest, 1, 'A4'), $this->line($this->lake, 1, 'A3')], [$rule], $this->now));
+        self::assertEquals(
+            [new AppliedDiscount('−5 € sur Forêt A3', Money::cents(500), $rule->id())],
+            $this->calculator->calculate([$this->line($this->forest, 1, 'A3'), $this->line($this->lake, 1, 'A3')], [$rule], $this->now),
+        );
+    }
+
+    public function testConditionsPickTheirUnitsFromTheMostSpecificToTheLeast(): void
+    {
+        $rule = $this->rule('5 prints pour 60 €', [
+            new ConditionSpec(1, $this->printType),
+            new ConditionSpec(1, $this->printType, 'A3'),
+            new ConditionSpec(2, $this->forest),
+            new ConditionSpec(1, $this->forest, 'A3'),
+        ], DiscountAction::fixedPrice(Money::cents(6_000)));
+        $basket = [
+            new BasketLine($this->forest->id(), Money::cents(3_000), 1, $this->printType->id(), 'A3'),
+            new BasketLine($this->forest->id(), Money::cents(2_900), 1, $this->printType->id(), 'A3'),
+            new BasketLine($this->lake->id(), Money::cents(2_500), 1, $this->printType->id(), 'A3'),
+            new BasketLine($this->forest->id(), Money::cents(2_000), 1, $this->printType->id(), 'A4'),
+            new BasketLine($this->river->id(), Money::cents(1_000), 1, $this->printType->id()),
+        ];
+
+        self::assertEquals([new AppliedDiscount('5 prints pour 60 €', Money::cents(5_400), $rule->id())], $this->calculator->calculate($basket, [$rule], $this->now));
+    }
+
     /**
      * @param list<ConditionSpec> $conditions
      */
@@ -142,8 +186,8 @@ final class DiscountCalculatorTest extends TestCase
         return DiscountRule::create(TestWorkspace::get(), $name, $conditions, $action, $validity);
     }
 
-    private function line(Product $product, int $quantity): BasketLine
+    private function line(Product $product, int $quantity, ?string $variant = null): BasketLine
     {
-        return new BasketLine($product->id(), $product->sellingPrice(), $quantity, $product->type()?->id());
+        return new BasketLine($product->id(), $product->sellingPrice(), $quantity, $product->type()->id(), $variant);
     }
 }

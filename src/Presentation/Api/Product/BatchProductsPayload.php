@@ -6,6 +6,7 @@ namespace App\Presentation\Api\Product;
 
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 final readonly class BatchProductsPayload
 {
@@ -28,6 +29,14 @@ final readonly class BatchProductsPayload
         #[Assert\All([new Assert\Type('string')])]
         public array $removeVariants = [],
     ) {
+    }
+
+    #[Assert\Callback]
+    public function requireTypeWhenChanged(ExecutionContextInterface $context): void
+    {
+        if ($this->changeType && (null === $this->typeId || '' === trim($this->typeId))) {
+            $context->buildViolation('productType.required')->atPath('typeId')->addViolation();
+        }
     }
 
     public function toCommand(): BatchUpdateProducts

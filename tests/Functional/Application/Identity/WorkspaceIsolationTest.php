@@ -69,11 +69,12 @@ final class WorkspaceIsolationTest extends KernelTestCase
     {
         self::actAsMemberOf('Atelier B');
 
-        self::getContainer()->get(CreateProductTypeHandler::class)('Print');
-        self::createProduct('Forêt', 1_500);
+        $type = self::getContainer()->get(CreateProductTypeHandler::class)('Print');
+        self::createProduct('Forêt', 1_500, typeId: (string) $type->id());
         self::getContainer()->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-15')));
 
         self::assertCount(1, self::getContainer()->get(ListProductTypesHandler::class)());
+        self::assertSame(['Print Forêt'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'displayName'));
         self::assertCount(1, self::getContainer()->get(ListEventsHandler::class)());
     }
 

@@ -45,3 +45,5 @@ export:
         payment:
             card: 'Card'
             cash: 'Cash'
+product_type:
+    miscellaneous: 'Miscellaneous'

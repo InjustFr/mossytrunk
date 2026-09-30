@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ImportSales;
 
+use App\Application\Product\CreateProductType\MiscellaneousType;
 use App\Application\Product\CreateProductType\ProductTypeCreator;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
@@ -32,6 +33,7 @@ final class ImportedCatalogue
         private readonly ProductReferenceGenerator $references,
         private readonly ProductTypeRepository $typeRepository,
         private readonly ProductTypeCreator $typeCreator,
+        private readonly MiscellaneousType $miscellaneous,
         private readonly Workspace $workspace,
         private readonly string $freeAmountName,
     ) {
@@ -61,16 +63,19 @@ final class ImportedCatalogue
 
     public function createFor(string $name, ?string $category, Money $sellingPrice): Product
     {
-        $type = null === $category || '' === trim($category) ? null : $this->type(trim($category));
+        if (null === $category || '' === trim($category)) {
+            return $this->create($name, $sellingPrice, $this->miscellaneous->get());
+        }
+        $type = $this->type(trim($category));
 
-        return $this->create(null === $type ? $name : self::withoutPrefix($name, $type->name()), $sellingPrice, $type);
+        return $this->create(self::withoutPrefix($name, $type->name()), $sellingPrice, $type);
     }
 
     public function freeAmount(Money $price): Product
     {
         $product = $this->named($this->freeAmountName);
 
-        return null !== $product && !$product->hasVariants() ? $product : $this->create($this->freeAmountName, $price, null);
+        return null !== $product && !$product->hasVariants() ? $product : $this->create($this->freeAmountName, $price, $this->miscellaneous->get());
     }
 
     public function createdCount(): int
@@ -83,9 +88,9 @@ final class ImportedCatalogue
         return $this->typesCreated;
     }
 
-    private function create(string $name, Money $sellingPrice, ?ProductType $type): Product
+    private function create(string $name, Money $sellingPrice, ProductType $type): Product
     {
-        $product = Product::create($this->workspace, $this->references->generate($type, $name), $name, $sellingPrice, [], $type);
+        $product = Product::create($this->workspace, $this->references->generate($type, $name), $name, $sellingPrice, $type);
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         $this->created[(string) $product->id()] = $product;

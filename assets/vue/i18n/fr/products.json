@@ -1,5 +1,4 @@
 {
-    "untyped": "Sans type",
     "single": "Unique",
     "negative": "Négatif",
     "lowStock": "Stock bas",
@@ -29,7 +28,8 @@
         "batchUpdated": "{count} produit mis à jour. | {count} produits mis à jour.",
         "priceSaved": "Historique des prix mis à jour.",
         "priceForgotten": "Prix supprimé de l'historique.",
-        "designed": "Design enregistré."
+        "designed": "Design enregistré.",
+        "variantRenamed": "Variante « {from} » renommée « {to} » partout, commandes passées comprises."
     },
     "detail": {
         "fallbackTitle": "Produit",
@@ -57,7 +57,8 @@
         "searchLabel": "Rechercher un produit",
         "byType": "Filtrer par type",
         "lowStock": "{count} produit en stock bas | {count} produits en stock bas",
-        "missingCost": "{count} produit sans coût d'achat | {count} produits sans coût d'achat"
+        "missingCost": "{count} produit sans coût d'achat | {count} produits sans coût d'achat",
+        "byVariant": "Filtrer par variante"
     },
     "list": {
         "empty": "Aucun produit.",
@@ -98,7 +99,7 @@
         "lowStockThreshold": "Alerte stock bas",
         "lowStockThresholdHint": "Le produit est signalé quand son stock (par variante) descend à ce seuil.",
         "variants": "Variantes",
-        "variantsHint": "Couleur, taille, design… Laisser vide pour un produit unique.",
+        "variantsHint": "Cochez les variantes du type ; une nouvelle variante est ajoutée au type. Aucune pour un produit unique.",
         "add": "Ajouter le produit"
     },
     "batch": {
@@ -192,7 +193,7 @@
         "attachSubmit": "Rattacher"
     },
     "types": {
-        "intro": "Chaque produit s'affiche « Type Nom » ; la couleur repère le type dans les listes et les rapports.",
+        "intro": "Les produits s'affichent « Type Nom » (ou juste « Nom » si le type ne préfixe pas) ; la couleur repère le type dans les listes et les rapports. Les variantes du type sont proposées à ses produits.",
         "empty": "Aucun type. Ajoutez Print, Sticker… pour classer vos produits.",
         "add": "Ajouter un type",
         "all": "Tous les types",
@@ -208,7 +209,25 @@
         "createOption": "＋ Créer un type…",
         "newName": "Nom du nouveau type",
         "nameRequired": "Le nom du type est obligatoire.",
-        "createShort": "Créer"
+        "createShort": "Créer",
+        "none": "Sans type",
+        "choose": "Choisir un type…",
+        "prefixesNames": "Préfixer le nom des produits",
+        "prefixedExample": "Ses produits s'affichent « {type} Forêt ».",
+        "plainExample": "Ses produits s'affichent « Forêt », sans le type.",
+        "exampleType": "Print",
+        "variants": {
+            "label": "Variantes",
+            "hint": "Proposées à ses produits, dans cet ordre. Renommer une variante la renomme aussi dans les produits, les remises et les commandes passées.",
+            "empty": "Aucune variante pour l'instant.",
+            "moveUp": "Monter {variant}",
+            "moveDown": "Descendre {variant}",
+            "rename": "Renommer {variant}",
+            "newLabel": "Nouveau nom de {variant}",
+            "confirmRename": "Valider le nouveau nom de {variant}",
+            "remove": "Retirer {variant}",
+            "duplicate": "La variante « {variant} » existe déjà."
+        }
     },
     "colors": {
         "label": "Couleur du type",
@@ -236,5 +255,11 @@
         "placeholder": "Ajouter une variante puis Entrée",
         "itemLabel": "la variante",
         "remove": "Retirer {item} {variant}"
+    },
+    "variantPicker": {
+        "label": "Variantes",
+        "newVariant": "Nouvelle variante",
+        "placeholder": "Ajouter une variante puis Entrée",
+        "add": "Ajouter la variante"
     }
 }

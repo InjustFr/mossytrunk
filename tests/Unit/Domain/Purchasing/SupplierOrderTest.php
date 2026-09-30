@@ -11,6 +11,7 @@ use App\Domain\Purchasing\Supplier;
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Purchasing\SupplierOrderStatus;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -23,8 +24,8 @@ final class SupplierOrderTest extends TestCase
     protected function setUp(): void
     {
         $this->printer = Supplier::create(TestWorkspace::get(), 'Imprimerie du Lac', 'contact@lac.test');
-        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400));
-        $this->print = Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_500), variants: ['A5', 'A4']);
+        $this->sticker = Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get());
+        $this->print = Product::create(TestWorkspace::get(), 'PRI', 'Print', Money::cents(1_500), variants: ['A5', 'A4'], type: TestProductType::get());
     }
 
     public function testAnOrderStartsOrderedWithItsTotal(): void
@@ -85,7 +86,7 @@ final class SupplierOrderTest extends TestCase
 
     public function testFiveEurosOfDeliveryOverFiveLinesAddOneEuroToEach(): void
     {
-        $products = array_map(static fn (int $index): Product => Product::create(TestWorkspace::get(), "P$index", "Produit $index", Money::cents(100)), range(1, 5));
+        $products = array_map(static fn (int $index): Product => Product::create(TestWorkspace::get(), "P$index", "Produit $index", Money::cents(100), TestProductType::get()), range(1, 5));
         $order = SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), array_map(
             static fn (Product $product): PurchasedItem => new PurchasedItem($product->sellable(null), 10, Money::cents(1_000)),
             $products,

@@ -8,6 +8,7 @@ use App\Domain\Design\Exception\DeclinationAlreadyProduced;
 use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Design\Exception\UnknownAdaptation;
 use App\Domain\Product\Product;
+use App\Domain\Product\VariantLabel;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Types\Types;
@@ -99,7 +100,7 @@ class Declination
 
         $this->productName = $productName;
         $this->sellingPrice = $sellingPrice;
-        $this->variants = array_values(array_unique(array_filter(array_map('trim', $variants), static fn (string $variant): bool => '' !== $variant)));
+        $this->variants = $this->gabarit->type()->offerVariants($variants);
     }
 
     public function tick(string $adaptation, bool $done): void
@@ -122,9 +123,17 @@ class Declination
 
     public function displayName(): string
     {
-        $type = $this->gabarit->type();
+        return $this->gabarit->type()->nameProduct($this->productName);
+    }
 
-        return null === $type ? $this->productName : \sprintf('%s %s', $type->name(), $this->productName);
+    public function renameVariant(string $from, string $to): void
+    {
+        $this->variants = VariantLabel::renamed($this->variants, $from, $to);
+    }
+
+    public function usesVariant(string $variant): bool
+    {
+        return !$this->isProduced() && null !== VariantLabel::find($this->variants, $variant);
     }
 
     public function linkProduct(Ulid $productId): void

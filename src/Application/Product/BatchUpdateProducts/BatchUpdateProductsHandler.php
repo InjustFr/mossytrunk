@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Product\BatchUpdateProducts;
 
+use App\Application\Product\ProductTypeChoice;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -19,7 +19,7 @@ final readonly class BatchUpdateProductsHandler
 {
     public function __construct(
         private ProductRepository $products,
-        private ProductTypeRepository $types,
+        private ProductTypeChoice $types,
         private StockKeeper $stock,
         private Transaction $transaction,
     ) {
@@ -27,7 +27,7 @@ final readonly class BatchUpdateProductsHandler
 
     public function __invoke(BatchUpdateProducts $command): int
     {
-        $type = $command->changeType && null !== $command->typeId ? $this->types->get(Ulid::fromString($command->typeId)) : null;
+        $type = $command->changeType ? $this->types->of($command->typeId) : null;
 
         $ids = array_values(array_unique($command->productIds));
         foreach ($ids as $id) {
@@ -36,7 +36,7 @@ final readonly class BatchUpdateProductsHandler
             if (null !== $command->sellingPriceCents) {
                 $product->reprice(Money::cents($command->sellingPriceCents));
             }
-            if ($command->changeType) {
+            if (null !== $type) {
                 $product->classify($type);
             }
             foreach ($command->removeVariants as $variant) {

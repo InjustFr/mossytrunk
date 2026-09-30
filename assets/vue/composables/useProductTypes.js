@@ -14,21 +14,28 @@ export function useProductTypes() {
         types.value = await api.get('/api/product-types');
     }
 
-    async function create(name, color, code = null) {
-        const type = await api.post('/api/product-types', { name, color, code });
+    async function create(name, color, code = null, variants = [], prefixesNames = true) {
+        const type = await api.post('/api/product-types', { name, color, code, variants, prefixesNames });
         types.value = [...types.value, type].sort(byName);
         return type;
     }
 
-    async function update(id, { name, color, code }) {
-        await api.put(`/api/product-types/${id}`, { name, color, code });
-        types.value = types.value.map((type) => (type.id === id ? { ...type, name: name.trim(), color, code: code.trim().toUpperCase() } : type)).sort(byName);
+    async function update(id, { name, color, code, variants, prefixesNames }) {
+        await api.put(`/api/product-types/${id}`, { name, color, code, variants, prefixesNames });
+        await load();
     }
+
+    async function renameVariant(id, from, to) {
+        await api.post(`/api/product-types/${id}/variant-renaming`, { from, to });
+        await load();
+    }
+
+    const variantsOf = (typeId) => types.value.find((type) => type.id === typeId)?.variants ?? [];
 
     async function suggestCode(name) {
         if (name.trim() === '') return '';
         return (await api.peek(`/api/product-types/code-suggestion?${new URLSearchParams({ name })}`)).code;
     }
 
-    return { types, load, create, update, suggestCode };
+    return { types, load, create, update, renameVariant, variantsOf, suggestCode };
 }

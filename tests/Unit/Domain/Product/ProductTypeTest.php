@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit\Domain\Product;
 
+use App\Domain\Product\Exception\DuplicateTypeVariant;
+use App\Domain\Product\Exception\EmptyVariant;
 use App\Domain\Product\Exception\InvalidProduct;
+use App\Domain\Product\Exception\UnknownTypeVariant;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
+use App\Tests\Support\DomainExceptions;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -109,7 +113,98 @@ final class ProductTypeTest extends TestCase
         $print->rename('Affiche');
         self::assertSame('Affiche Forêt', $product->displayName());
 
-        $product->classify(null);
+        $print->prefixNames(false);
         self::assertSame('Forêt', $product->displayName());
+    }
+
+    public function testVariantsAreEmptyAndNamesPrefixedByDefault(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+
+        self::assertSame([], $print->variants());
+        self::assertTrue($print->prefixesNames());
+        self::assertSame('Print Forêt', $print->nameProduct('Forêt'));
+
+        $print->prefixNames(false);
+        self::assertFalse($print->prefixesNames());
+        self::assertSame('Forêt', $print->nameProduct('Forêt'));
+    }
+
+    public function testAnOfferedVariantIsReusedCaseInsensitivelyWithTheTypeSpelling(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+
+        self::assertSame('A3', $print->offerVariant(' A3 '));
+        self::assertSame('A3', $print->offerVariant('a3'));
+        self::assertSame(['A3', 'A4'], $print->offerVariants(['a3', 'A4', ' ', 'a4']));
+        self::assertSame(['A3', 'A4'], $print->variants());
+        self::assertTrue($print->offersVariant(' a4 '));
+        self::assertFalse($print->offersVariant('A5'));
+    }
+
+    public function testAnEmptyVariantIsNotOffered(): void
+    {
+        $this->expectException(EmptyVariant::class);
+
+        ProductType::create(TestWorkspace::get(), 'Print', 'PRI')->offerVariant('  ');
+    }
+
+    public function testDefinedVariantsReplaceTheListInTheirOrder(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->offerVariants(['A3', 'A4']);
+
+        $print->defineVariants(['A5', ' A4 ', 'A3']);
+
+        self::assertSame(['A5', 'A4', 'A3'], $print->variants());
+    }
+
+    public function testDefinedVariantsAreUnique(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A3', 'A4']);
+
+        DomainExceptions::assertThrown(new DuplicateTypeVariant('a4'), static fn () => $print->defineVariants(['A4', 'a4']));
+
+        self::assertSame(['A3', 'A4'], $print->variants());
+    }
+
+    public function testDefinedVariantsAreNotEmpty(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+
+        DomainExceptions::assertThrown(new EmptyVariant(), static fn () => $print->defineVariants(['A4', '  ']));
+
+        self::assertSame([], $print->variants());
+    }
+
+    public function testRenamingAVariantKeepsItsPlaceAndReturnsTheFormerSpelling(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A4', 'A3']);
+
+        self::assertSame('A4', $print->renameVariant('a4', ' A4 portrait '));
+        self::assertSame(['A4 portrait', 'A3'], $print->variants());
+
+        self::assertSame('A3', $print->renameVariant('A3', 'a3'));
+        self::assertSame(['A4 portrait', 'a3'], $print->variants());
+    }
+
+    public function testRenamingAnUnknownVariantIsRefused(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A4']);
+
+        DomainExceptions::assertThrown(new UnknownTypeVariant('Print', 'A5'), static fn () => $print->renameVariant('A5', 'A6'));
+    }
+
+    public function testRenamingOntoAnotherVariantIsRefused(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
+        $print->defineVariants(['A4', 'A3']);
+
+        DomainExceptions::assertThrown(new DuplicateTypeVariant('a3'), static fn () => $print->renameVariant('A4', ' a3 '));
+
+        self::assertSame(['A4', 'A3'], $print->variants());
     }
 }

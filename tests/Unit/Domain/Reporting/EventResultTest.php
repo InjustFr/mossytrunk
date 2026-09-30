@@ -14,6 +14,7 @@ use App\Domain\Reporting\UrssafContribution;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -30,9 +31,9 @@ final class EventResultTest extends TestCase
         $event->addExpense('Stand', Money::cents(15_000));
         $event->addExpense('Train', Money::cents(5_000));
 
-        $sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 100);
-        $tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S', 'M']), 800);
-        $print = Product::create(TestWorkspace::get(), 'PRT', 'Print', Money::cents(1_500)); // unknown buying price
+        $sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get()), 100);
+        $tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), TestProductType::get(), ['S', 'M']), 800);
+        $print = Product::create(TestWorkspace::get(), 'PRT', 'Print', Money::cents(1_500), TestProductType::get()); // unknown buying price
         $at = new \DateTimeImmutable('2026-07-10 14:00', new \DateTimeZone('Europe/Paris'));
 
         $orders = [

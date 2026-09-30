@@ -17,11 +17,13 @@ final readonly class DiscountConditionPayload
         public string $id = '',
         #[Assert\Positive(message: 'quantity.atLeastOne')]
         public int $quantity = 1,
+        #[Assert\Length(max: 100)]
+        public ?string $variant = null,
     ) {
     }
 
     public function toDefinition(): ConditionDefinition
     {
-        return new ConditionDefinition($this->kind, $this->id, $this->quantity);
+        return new ConditionDefinition($this->kind, $this->id, $this->quantity, $this->variant);
     }
 }

@@ -11,6 +11,7 @@ use App\Domain\Stock\Exception\InvalidStock;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockItem;
 use App\Tests\Support\Costs;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +21,7 @@ final class StockItemTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 90);
+        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get()), 90);
     }
 
     public function testOldestLotIsSoldFirst(): void
@@ -147,7 +148,7 @@ final class StockItemTest extends TestCase
 
     public function testAbsorbingAnotherItemKeepsItsLotsAndBalance(): void
     {
-        $tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S', 'M']), 900);
+        $tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), TestProductType::get(), ['S', 'M']), 900);
         $small = StockItem::open($tshirt, 'S');
         $small->receive(3, Money::cents(2_700), LotOrigin::Purchase, self::at('2026-01-01'));
         $medium = StockItem::open($tshirt, 'M');
@@ -172,7 +173,7 @@ final class StockItemTest extends TestCase
     {
         $this->expectException(InvalidProduct::class);
 
-        StockItem::open(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S']), null);
+        StockItem::open(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), TestProductType::get(), ['S']), null);
     }
 
     private function stock(): StockItem

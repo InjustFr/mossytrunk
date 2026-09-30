@@ -7,7 +7,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import FormField from '../ui/FormField.vue';
 import TypeSelect from './TypeSelect.vue';
-import VariantsInput from './VariantsInput.vue';
+import VariantPicker from './VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useProducts } from '../../composables/useProducts.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
@@ -25,7 +25,7 @@ const errors = ref({});
 const saving = ref(false);
 
 const isEditing = computed(() => props.product !== null);
-const { types } = useProductTypes();
+const { types, variantsOf, load: loadTypes } = useProductTypes();
 const { suggestReference } = useProducts();
 const referenceSuggestion = useSuggestion(
     toRef(form, 'reference'),
@@ -34,10 +34,9 @@ const referenceSuggestion = useSuggestion(
     { follow: props.product === null },
 );
 
-// Products are shown as "{type} {name}" everywhere, e.g. type Print + name "Forêt" = "Print Forêt".
 const displayName = computed(() => {
-    const type = types.value.find((t) => t.id === form.typeId);
-    return [type?.name, form.name.trim()].filter(Boolean).join(' ');
+    const type = types.value.find((candidate) => candidate.id === form.typeId);
+    return [type?.prefixesNames ? type.name : null, form.name.trim()].filter(Boolean).join(' ');
 });
 
 watch(() => props.product, (product) => {
@@ -68,6 +67,7 @@ async function onSubmit() {
             lowStockThreshold: form.lowStockThreshold ?? 0,
         });
         emit('saved', displayName.value);
+        await loadTypes();
         if (!isEditing.value) {
             Object.assign(form, emptyForm());
             referenceSuggestion.reset(true);
@@ -117,7 +117,7 @@ async function onSubmit() {
             </FormField>
 
             <FormField as="group" :label="t('products.form.variants')" :error="errors.variants" :hint="t('products.form.variantsHint')">
-                <VariantsInput v-model="form.variants" />
+                <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" />
             </FormField>
 
             <div class="product-form__actions">

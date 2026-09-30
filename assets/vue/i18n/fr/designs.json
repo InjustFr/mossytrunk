@@ -91,7 +91,6 @@
     },
     "gabarits": {
         "empty": "Aucun gabarit. Un gabarit décrit un support (tirage 15×15, sticker brillant…) et ce qu'il faut adapter pour y poser un design.",
-        "noType": "Sans type",
         "toAdapt": "À adapter : {adaptations}",
         "edit": "Modifier {name}",
         "editTitle": "Modifier le gabarit",

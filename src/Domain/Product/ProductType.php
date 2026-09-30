@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Product;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Product\Exception\DuplicateTypeVariant;
 use App\Domain\Product\Exception\EmptyTypeName;
 use App\Domain\Product\Exception\InvalidTypeCode;
 use App\Domain\Product\Exception\InvalidTypeColor;
+use App\Domain\Product\Exception\UnknownTypeVariant;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -43,6 +46,13 @@ class ProductType
     #[ORM\Column(length: 7)]
     private string $color;
 
+    /** @var list<string> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $variants = [];
+
+    #[ORM\Column(options: ['default' => true])]
+    private bool $prefixesNames = true;
+
     private function __construct(Ulid $id, Workspace $workspace, string $name, string $code, string $color)
     {
         $this->id = $id;
@@ -55,6 +65,82 @@ class ProductType
     public static function create(Workspace $workspace, string $name, string $code, string $color = self::PALETTE[0]): self
     {
         return new self(new Ulid(), $workspace, $name, $code, $color);
+    }
+
+    public function offerVariant(string $variant): string
+    {
+        $variant = VariantLabel::clean($variant);
+        $existing = VariantLabel::find($this->variants, $variant);
+        if (null !== $existing) {
+            return $existing;
+        }
+
+        $this->variants[] = $variant;
+
+        return $variant;
+    }
+
+    /**
+     * @param list<string> $variants
+     *
+     * @return list<string>
+     */
+    public function offerVariants(array $variants): array
+    {
+        $offered = [];
+        foreach ($variants as $variant) {
+            if ('' !== trim($variant)) {
+                $offered[] = $this->offerVariant($variant);
+            }
+        }
+
+        return array_values(array_unique($offered));
+    }
+
+    /**
+     * @param list<string> $variants
+     */
+    public function defineVariants(array $variants): void
+    {
+        $defined = [];
+        foreach ($variants as $variant) {
+            $variant = VariantLabel::clean($variant);
+            if (null !== VariantLabel::find($defined, $variant)) {
+                throw new DuplicateTypeVariant($variant);
+            }
+            $defined[] = $variant;
+        }
+
+        $this->variants = $defined;
+    }
+
+    public function renameVariant(string $from, string $to): string
+    {
+        $current = VariantLabel::find($this->variants, $from) ?? throw new UnknownTypeVariant($this->name, $from);
+        $to = VariantLabel::clean($to);
+        $namesake = VariantLabel::find($this->variants, $to);
+        if (null !== $namesake && $namesake !== $current) {
+            throw new DuplicateTypeVariant($to);
+        }
+
+        $this->variants = array_map(static fn (string $variant): string => $variant === $current ? $to : $variant, $this->variants);
+
+        return $current;
+    }
+
+    public function offersVariant(string $variant): bool
+    {
+        return null !== VariantLabel::find($this->variants, $variant);
+    }
+
+    public function prefixNames(bool $prefixes): void
+    {
+        $this->prefixesNames = $prefixes;
+    }
+
+    public function nameProduct(string $productName): string
+    {
+        return $this->prefixesNames ? \sprintf('%s %s', $this->name, $productName) : $productName;
     }
 
     public static function paletteColor(int $index): string
@@ -118,6 +204,19 @@ class ProductType
     public function color(): string
     {
         return $this->color;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function variants(): array
+    {
+        return $this->variants;
+    }
+
+    public function prefixesNames(): bool
+    {
+        return $this->prefixesNames;
     }
 
     public function workspace(): Workspace

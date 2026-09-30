@@ -8,6 +8,7 @@ import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import BaseSelect from '../ui/BaseSelect.vue';
 import FormField from '../ui/FormField.vue';
 import IconButton from '../ui/IconButton.vue';
 import { regularPrice, savingOn } from '../../composables/useRulePrice.js';
@@ -28,7 +29,7 @@ const ACTIONS = [
     { value: 'percentOff', label: 'discounts.form.percentOff' },
 ];
 
-const emptyCondition = () => ({ kind: 'type', id: '', quantity: 1 });
+const emptyCondition = () => ({ kind: 'type', id: '', variant: '', quantity: 1 });
 const emptyForm = () => ({ name: '', conditions: [emptyCondition()], actionKind: 'fixedPrice', amount: null, percent: null, startsOn: '', endsOn: '' });
 const form = reactive(emptyForm());
 const errors = ref({});
@@ -39,7 +40,7 @@ watch(() => props.rule, (rule) => {
     Object.assign(form, rule
         ? {
             name: rule.name,
-            conditions: rule.conditions.map(({ kind, id, quantity }) => ({ kind, id, quantity })),
+            conditions: rule.conditions.map(({ kind, id, variant, quantity }) => ({ kind, id, variant: variant ?? '', quantity })),
             actionKind: rule.action.kind,
             amount: rule.action.kind === 'percentOff' ? null : rule.action.value,
             percent: rule.action.kind === 'percentOff' ? rule.action.value / 100 : null,
@@ -50,9 +51,15 @@ watch(() => props.rule, (rule) => {
     errors.value = {};
 }, { immediate: true });
 
-const productOptions = computed(() => props.products.map((product) => ({ value: product.id, label: product.name })));
+const productOptions = computed(() => props.products.map((product) => ({ value: product.id, label: product.displayName })));
 const typeOptions = computed(() => props.types.map((type) => ({ value: type.id, label: type.name })));
 const optionsFor = (condition) => (condition.kind === 'type' ? typeOptions.value : productOptions.value);
+const targetOf = (condition) => (condition.kind === 'type' ? props.types : props.products).find((target) => target.id === condition.id);
+const variantsOf = (condition) => targetOf(condition)?.variants ?? [];
+const variantOptions = (condition) => [
+    { value: '', label: t('discounts.form.allVariants') },
+    ...variantsOf(condition).map((variant) => ({ value: variant, label: variant })),
+];
 
 const action = computed(() => ({
     kind: form.actionKind,
@@ -79,8 +86,18 @@ function setKind(condition, kind) {
     if (kind && kind !== condition.kind) {
         condition.kind = kind;
         condition.id = '';
+        condition.variant = '';
     }
 }
+
+function setTarget(condition, id) {
+    if (id !== condition.id) {
+        condition.id = id;
+        condition.variant = '';
+    }
+}
+
+const conditionError = (index) => errors.value[`conditions[${index}].id`] ?? errors.value[`conditions[${index}].variant`];
 
 function removeCondition(index) {
     form.conditions.splice(index, 1);
@@ -92,7 +109,7 @@ async function onSubmit() {
     try {
         await props.submit({
             name: form.name,
-            conditions: form.conditions.map((condition) => ({ kind: condition.kind, id: condition.id, quantity: Number(condition.quantity) || 0 })),
+            conditions: form.conditions.map((condition) => ({ kind: condition.kind, id: condition.id, variant: condition.variant || null, quantity: Number(condition.quantity) || 0 })),
             action: action.value,
             startsOn: form.startsOn || null,
             endsOn: form.endsOn || null,
@@ -132,19 +149,30 @@ async function onSubmit() {
                             <ToggleGroupItem value="type" class="discount-rule-form__kind">{{ t('discounts.form.type') }}</ToggleGroupItem>
                             <ToggleGroupItem value="product" class="discount-rule-form__kind">{{ t('discounts.form.product') }}</ToggleGroupItem>
                         </ToggleGroupRoot>
-                        <BaseCombobox
-                            v-model="condition.id"
-                            :options="optionsFor(condition)"
-                            :aria-label="condition.kind === 'type' ? t('discounts.form.conditionType', { number: index + 1 }) : t('discounts.form.conditionProduct', { number: index + 1 })"
-                            :placeholder="condition.kind === 'type' ? t('discounts.form.chooseType') : t('discounts.form.searchProduct')"
+                        <div class="discount-rule-form__target">
+                            <BaseCombobox
+                                :model-value="condition.id"
+                                :options="optionsFor(condition)"
+                                :aria-label="condition.kind === 'type' ? t('discounts.form.conditionType', { number: index + 1 }) : t('discounts.form.conditionProduct', { number: index + 1 })"
+                                :placeholder="condition.kind === 'type' ? t('discounts.form.chooseType') : t('discounts.form.searchProduct')"
+                                @update:model-value="(id) => setTarget(condition, id ?? '')"
+                            />
+                        </div>
+                        <BaseSelect
+                            v-if="variantsOf(condition).length"
+                            v-model="condition.variant"
+                            class="discount-rule-form__variant"
+                            :options="variantOptions(condition)"
+                            :aria-label="t('discounts.form.conditionVariant', { number: index + 1 })"
                         />
                         <IconButton
+                            class="discount-rule-form__remove"
                             :icon="Trash2"
                             :label="t('discounts.form.removeCondition', { number: index + 1 })"
                             :disabled="form.conditions.length === 1"
                             @click="removeCondition(index)"
                         />
-                        <span v-if="errors[`conditions[${index}].id`]" class="discount-rule-form__condition-error" role="alert">{{ errors[`conditions[${index}].id`] }}</span>
+                        <span v-if="conditionError(index)" class="discount-rule-form__condition-error" role="alert">{{ conditionError(index) }}</span>
                     </li>
                 </ol>
                 <BaseButton variant="ghost" class="discount-rule-form__add" @click="form.conditions.push(emptyCondition())">
@@ -212,6 +240,8 @@ async function onSubmit() {
     align-items: center;
     gap: var(--space-2);
 }
+.discount-rule-form__condition :deep(.discount-rule-form__remove) { grid-column: 4; grid-row: 1; }
+.discount-rule-form__condition :deep(.discount-rule-form__variant) { grid-column: 3; grid-row: 2; }
 .discount-rule-form__condition-error { grid-column: 1 / -1; color: var(--color-danger); font-size: 0.85rem; }
 .discount-rule-form__add { align-self: flex-start; }
 
@@ -242,7 +272,9 @@ async function onSubmit() {
 
 @media (max-width: 43.75rem) {
     .discount-rule-form__condition { grid-template-columns: 6rem minmax(0, 1fr) auto; }
-    .discount-rule-form__condition > :nth-child(3) { grid-column: 1 / -1; grid-row: 2; }
+    .discount-rule-form__condition :deep(.discount-rule-form__remove) { grid-column: 3; grid-row: 1; }
+    .discount-rule-form__target { grid-column: 1 / -1; grid-row: 2; }
+    .discount-rule-form__condition :deep(.discount-rule-form__variant) { grid-column: 1 / -1; grid-row: 3; }
     .discount-rule-form__action,
     .discount-rule-form__row { grid-template-columns: 1fr; }
 }

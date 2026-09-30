@@ -14,6 +14,7 @@ use App\Domain\Product\Product;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Ulid;
@@ -27,8 +28,8 @@ final class OrderTest extends TestCase
     protected function setUp(): void
     {
         $this->event = Event::schedule(TestWorkspace::get(), 'Japan Expo', 'Villepinte', DateRange::fromDates(new \DateTimeImmutable('2026-07-09'), new \DateTimeImmutable('2026-07-12')));
-        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400)), 80);
-        $this->tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), ['S', 'M']), 900);
+        $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get()), 80);
+        $this->tshirt = Costs::bought(Product::create(TestWorkspace::get(), 'TS', 'T-shirt', Money::cents(2_000), TestProductType::get(), ['S', 'M']), 900);
     }
 
     public function testTotalsAndCostOfGoods(): void
@@ -192,7 +193,7 @@ final class OrderTest extends TestCase
 
     public function testMovedSalesKeepTheirPricesAndMergeWithTheSameItemAtTheSamePrices(): void
     {
-        $tee = Costs::bought(Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), ['M']), 900);
+        $tee = Costs::bought(Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), TestProductType::get(), ['M']), 900);
         $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [
             new OrderedItem($this->tshirt->sellable('M'), 1),
             new OrderedItem($tee->sellable('M'), 2),
@@ -211,7 +212,7 @@ final class OrderTest extends TestCase
     public function testMovedSalesAtAnotherPriceStayOnTheirOwnLine(): void
     {
         $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($this->sticker->sellable(null), 2)], []);
-        $cheaper = Costs::bought(Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300)), 80);
+        $cheaper = Costs::bought(Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300), TestProductType::get()), 80);
         $order2 = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($cheaper->sellable(null), 1), new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         $order->moveSales($this->sticker->id(), null, $cheaper->sellable(null));

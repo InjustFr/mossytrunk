@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { forgetService } from './support/api.js';
+import { createProduct, forgetService } from './support/api.js';
 
 test('add SumUp from the settings: its API key is never shown again', async ({ page, request }) => {
     await forgetService(request, 'sumup');
@@ -42,7 +42,7 @@ test('add SumUp from the settings: its API key is never shown again', async ({ p
 });
 
 test('delete every order, then every product, after a warning', async ({ page, request }) => {
-    const product = await (await request.post('/api/products', { data: { name: 'Badge à effacer', sellingPrice: 300 } })).json();
+    const product = await createProduct(request, { name: 'Badge à effacer', sellingPrice: 300 });
     const event = await request.post('/api/events', { data: { name: 'Salon à effacer', location: 'Nantes', startDate: '2037-05-10', endDate: '2037-05-10' } });
     expect(event.status()).toBe(201);
     const order = await request.post('/api/orders', { data: { placedAt: '2037-05-10T11:00', lines: [{ productId: product.id, variant: null, quantity: 1 }] } });

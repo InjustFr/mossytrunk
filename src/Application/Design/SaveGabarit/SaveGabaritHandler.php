@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Design\SaveGabarit;
 
+use App\Application\Product\ProductTypeChoice;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Design\Exception\GabaritAlreadyExists;
 use App\Domain\Design\Gabarit;
 use App\Domain\Design\GabaritRepository;
-use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -17,7 +17,7 @@ final readonly class SaveGabaritHandler
 {
     public function __construct(
         private GabaritRepository $gabarits,
-        private ProductTypeRepository $types,
+        private ProductTypeChoice $types,
         private WorkspaceContext $workspace,
         private Transaction $transaction,
     ) {
@@ -25,7 +25,7 @@ final readonly class SaveGabaritHandler
 
     public function __invoke(SaveGabarit $command): Gabarit
     {
-        $type = null === $command->typeId ? null : $this->types->get(Ulid::fromString($command->typeId));
+        $type = $this->types->of($command->typeId);
         $namesake = $this->gabarits->findByName($command->name);
 
         if (null === $command->gabaritId) {

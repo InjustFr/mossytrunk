@@ -45,3 +45,5 @@ export:
         payment:
             card: 'Carte'
             cash: 'Espèces'
+product_type:
+    miscellaneous: 'Divers'

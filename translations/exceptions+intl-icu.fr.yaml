@@ -63,6 +63,9 @@ order:
     no_event_on_date: 'Aucun événement le {date, date, short}. Créez d''abord l''événement correspondant.'
     outside_event: 'La date de la commande ({date, date, short} {date, time, short}) doit être comprise dans les dates de l''événement « {event} ».'
 product:
+    unknown_type_variant: '« {variant} » n''est pas une variante du type « {type} ».'
+    duplicate_type_variant: 'La variante « {variant} » existe déjà pour ce type.'
+    variant_in_use: 'La variante « {variant} » est encore utilisée par des produits, gabarits ou remises : retirez-la d''abord de ceux-ci.'
     duplicate_variant: 'La variante « {variant} » existe déjà pour ce produit.'
     empty_name: 'Le nom du produit est obligatoire.'
     empty_reference: 'La référence du produit est obligatoire.'

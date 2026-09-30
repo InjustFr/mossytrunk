@@ -16,7 +16,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 const { types } = useProductTypes();
-const typeOptions = computed(() => [{ value: '', label: t('products.untyped') }, ...types.value.map((type) => ({ value: type.id, label: type.name }))]);
+const typeOptions = computed(() => types.value.map((type) => ({ value: type.id, label: type.name })));
 
 const form = reactive({
     changeSellingPrice: false, sellingPrice: null,
@@ -33,7 +33,7 @@ async function onSubmit() {
         const result = await props.submit({
             sellingPrice: form.changeSellingPrice ? form.sellingPrice ?? -1 : null,
             changeType: form.changeType,
-            typeId: form.changeType && form.typeId ? form.typeId : null,
+            typeId: form.changeType ? form.typeId || null : null,
             addVariants: form.addVariants,
             removeVariants: form.removeVariants,
         });
@@ -61,8 +61,8 @@ async function onSubmit() {
 
             <div class="product-batch-form__option">
                 <label class="product-batch-form__toggle"><BaseCheckbox v-model="form.changeType" /> {{ t('products.batch.changeType') }}</label>
-                <FormField v-if="form.changeType" :label="t('products.batch.newType')">
-                    <BaseSelect v-model="form.typeId" :options="typeOptions" />
+                <FormField v-if="form.changeType" as="group" :label="t('products.batch.newType')" :error="errors.typeId">
+                    <BaseSelect v-model="form.typeId" :options="typeOptions" :placeholder="t('products.types.choose')" :aria-label="t('products.batch.newType')" />
                 </FormField>
             </div>
 

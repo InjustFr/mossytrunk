@@ -20,7 +20,10 @@ final readonly class ProductTypeCreator
     ) {
     }
 
-    public function create(string $name, ?string $color = null, ?string $code = null): ProductType
+    /**
+     * @param list<string> $variants
+     */
+    public function create(string $name, ?string $color = null, ?string $code = null, array $variants = [], bool $prefixesNames = true): ProductType
     {
         if (null !== $this->types->findByName($name)) {
             throw new TypeAlreadyExists(trim($name));
@@ -32,6 +35,8 @@ final readonly class ProductTypeCreator
             $this->codeOf($name, $code),
             $color ?? ProductType::paletteColor(\count($this->types->all())),
         );
+        $type->defineVariants($variants);
+        $type->prefixNames($prefixesNames);
         $this->types->add($type);
 
         return $type;

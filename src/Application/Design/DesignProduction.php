@@ -31,8 +31,8 @@ final readonly class DesignProduction
                 $this->references->generate($type, $declination->productName()),
                 $declination->productName(),
                 $declination->sellingPrice(),
-                $declination->variants(),
                 $type,
+                $declination->variants(),
             );
             $this->products->add($product);
             $declination->linkProduct($product->id());

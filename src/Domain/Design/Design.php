@@ -11,6 +11,7 @@ use App\Domain\Design\Exception\NothingToValidate;
 use App\Domain\Design\Exception\SameProductTwice;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductType;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -208,6 +209,20 @@ class Design
                 throw new AlreadyDeclined($gabarit->name());
             }
         }
+    }
+
+    public function renameVariant(ProductType $type, string $from, string $to): void
+    {
+        foreach ($this->declinations as $declination) {
+            if ($declination->gabarit()->type() === $type) {
+                $declination->renameVariant($from, $to);
+            }
+        }
+    }
+
+    public function usesVariant(ProductType $type, string $variant): bool
+    {
+        return $this->declinations->exists(static fn (int $key, Declination $declination): bool => $declination->gabarit()->type() === $type && $declination->usesVariant($variant));
     }
 
     public function declination(Ulid $declinationId): Declination

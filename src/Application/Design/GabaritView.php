@@ -15,8 +15,8 @@ final readonly class GabaritView
     public function __construct(
         public string $id,
         public string $name,
-        public ?string $typeId,
-        public ?string $typeName,
+        public string $typeId,
+        public string $typeName,
         public int $sellingPrice,
         public array $variants,
         public array $adaptations,
@@ -28,8 +28,8 @@ final readonly class GabaritView
         return new self(
             (string) $gabarit->id(),
             $gabarit->name(),
-            null === $gabarit->type() ? null : (string) $gabarit->type()->id(),
-            $gabarit->type()?->name(),
+            (string) $gabarit->type()->id(),
+            $gabarit->type()->name(),
             $gabarit->sellingPrice()->amount(),
             $gabarit->variants(),
             $gabarit->adaptations(),

@@ -127,8 +127,8 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         self::createProduct('Aquarelle', 12_000);
 
         $products = self::getContainer()->get(ListProductsHandler::class)();
-        self::assertSame(['Print Forêt', 'Sticker Mousse', 'Aquarelle'], array_column($products, 'displayName'));
-        self::assertSame('Print', $products[0]->typeName);
+        self::assertSame(['Aquarelle', 'Print Forêt', 'Sticker Mousse'], array_column($products, 'displayName'));
+        self::assertSame(['Miscellaneous', 'Print', 'Sticker'], array_column($products, 'typeName'));
 
         self::getContainer()->get(UpdateProductTypeHandler::class)($print, 'Affiche', '#4f6d8f');
         self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'Forêt', 1_500, [], $sticker));

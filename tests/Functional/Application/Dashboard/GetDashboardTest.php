@@ -52,8 +52,8 @@ final class GetDashboardTest extends KernelTestCase
         self::assertSame(3_000, $dashboard->byYear[1]['turnover']);
         self::assertSame(['Japan Expo'], array_column($dashboard->events, 'name'));
         self::assertSame($dashboard->total['result'], $dashboard->events[0]['result']);
-        self::assertSame([['id' => $print, 'name' => 'Print', 'typeName' => null, 'quantity' => 10, 'sales' => 15_000]], $dashboard->products);
-        self::assertSame([['name' => null, 'quantity' => 10, 'sales' => 15_000]], $dashboard->types);
+        self::assertSame([['id' => $print, 'name' => 'Print', 'typeName' => 'Miscellaneous', 'quantity' => 10, 'sales' => 15_000]], $dashboard->products);
+        self::assertSame([['name' => 'Miscellaneous', 'quantity' => 10, 'sales' => 15_000]], $dashboard->types);
     }
 
     public function testEventsAreRankedByResultAndSalesGroupedByType(): void
@@ -74,7 +74,7 @@ final class GetDashboardTest extends KernelTestCase
 
         self::assertSame([$good, $bad], array_column($dashboard->events, 'id'));
         self::assertSame(['Print Forêt', 'Sticker'], array_column($dashboard->products, 'name'));
-        self::assertSame([['name' => 'Print', 'quantity' => 2, 'sales' => 3_000], ['name' => null, 'quantity' => 1, 'sales' => 400]], $dashboard->types);
+        self::assertSame([['name' => 'Print', 'quantity' => 2, 'sales' => 3_000], ['name' => 'Miscellaneous', 'quantity' => 1, 'sales' => 400]], $dashboard->types);
         self::assertSame(1, $dashboard->productsWithoutCost);
     }
 

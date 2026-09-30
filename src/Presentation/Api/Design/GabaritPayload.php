@@ -17,6 +17,7 @@ final readonly class GabaritPayload
         #[Assert\NotBlank(message: 'template.name.required')]
         #[Assert\Length(max: 255)]
         public string $name = '',
+        #[Assert\NotBlank(message: 'productType.required')]
         #[Assert\Ulid(message: 'productType.invalid')]
         public ?string $typeId = null,
         #[Assert\PositiveOrZero(message: 'sellingPrice.negative')]

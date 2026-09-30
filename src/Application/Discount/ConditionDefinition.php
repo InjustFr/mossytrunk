@@ -13,6 +13,7 @@ final readonly class ConditionDefinition
         public string $kind,
         public string $targetId,
         public int $quantity,
+        public ?string $variant = null,
     ) {
     }
 }

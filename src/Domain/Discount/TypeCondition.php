@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Product\Exception\UnknownTypeVariant;
 use App\Domain\Product\ProductType;
+use App\Domain\Product\VariantLabel;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Ulid;
 
@@ -15,20 +17,16 @@ class TypeCondition extends DiscountCondition
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     private ProductType $type;
 
-    public function __construct(DiscountRule $rule, int $quantity, ProductType $type)
+    public function __construct(DiscountRule $rule, int $quantity, ProductType $type, ?string $variant = null)
     {
         parent::__construct($rule, $quantity);
         $this->type = $type;
+        $this->variant = null === $variant ? null : (VariantLabel::find($type->variants(), $variant) ?? throw new UnknownTypeVariant($type->name(), $variant));
     }
 
-    public function matches(Ulid $productId, ?Ulid $typeId): bool
+    public function type(): ProductType
     {
-        return null !== $typeId && $this->type->id()->equals($typeId);
-    }
-
-    public function targets(object $target): bool
-    {
-        return $target === $this->type;
+        return $this->type;
     }
 
     public function kind(): string
@@ -41,7 +39,22 @@ class TypeCondition extends DiscountCondition
         return $this->type->id();
     }
 
-    public function targetName(): string
+    protected function matchesTarget(Ulid $productId, Ulid $typeId): bool
+    {
+        return $this->type->id()->equals($typeId);
+    }
+
+    protected function isOn(object $target): bool
+    {
+        return $target === $this->type;
+    }
+
+    protected function specificityOfTarget(): int
+    {
+        return 0;
+    }
+
+    protected function nameOfTarget(): string
     {
         return $this->type->name();
     }

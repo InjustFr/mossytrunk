@@ -139,7 +139,7 @@ final readonly class GetDashboardHandler
     {
         $typeNames = [];
         foreach ($this->products->findByIds(array_map(static fn (ProductSales $product) => $product->productId, $sales)) as $product) {
-            $typeNames[(string) $product->id()] = $product->type()?->name();
+            $typeNames[(string) $product->id()] = $product->type()->name();
         }
 
         return $typeNames;

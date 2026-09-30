@@ -54,8 +54,9 @@ test('fix an imported selling price and date it, then record the price it had be
 test('an existing product gets its design, then a new declination becomes a new product', async ({ page, request }) => {
     const glossy = unique('Brillant');
     const card = unique('Carte');
+    const glossyType = await createType(request, unique('Brillant'));
     const cardType = await createType(request, unique('Carte'));
-    for (const [name, typeId, adaptations] of [[glossy, null, []], [card, cardType.id, ['Marges 5 mm']]]) {
+    for (const [name, typeId, adaptations] of [[glossy, glossyType.id, []], [card, cardType.id, ['Marges 5 mm']]]) {
         expect((await request.post('/api/gabarits', { data: { name, typeId, sellingPrice: 300, adaptations } })).status()).toBe(201);
     }
     const product = await createProduct(request, { name: unique('Héron'), sellingPrice: 450 });
@@ -63,7 +64,7 @@ test('an existing product gets its design, then a new declination becomes a new 
     await page.goto(`/products/${product.id}`);
     const design = page.getByRole('region', { name: 'Design' });
     await design.getByRole('button', { name: 'Créer son design' }).click();
-    await choose(page, design.getByRole('combobox', { name: 'Gabarit' }), glossy);
+    await choose(page, design.getByRole('combobox', { name: 'Gabarit' }), `${glossy} (${glossyType.name})`);
     await design.getByRole('button', { name: 'Créer le design' }).click();
 
     await expect(page.getByRole('heading', { level: 1, name: product.name })).toBeVisible();

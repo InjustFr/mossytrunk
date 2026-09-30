@@ -7,6 +7,7 @@ namespace App\Tests\Unit\Domain\Integration;
 use App\Domain\Integration\ExternalItem;
 use App\Domain\Product\Product;
 use App\Domain\Shared\Money;
+use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
 
@@ -23,7 +24,7 @@ final class ExternalItemTest extends TestCase
         $item = ExternalItem::seen(TestWorkspace::get(), 'etsy', '7', 'Tote bag', 'Noir', new \DateTimeImmutable('2030-01-01'));
         self::assertFalse($item->isLinked());
 
-        $tote = Product::create(TestWorkspace::get(), 'TOTE', 'Tote', Money::cents(1_500), ['Noir', 'Vert']);
+        $tote = Product::create(TestWorkspace::get(), 'TOTE', 'Tote', Money::cents(1_500), TestProductType::get(), ['Noir', 'Vert']);
         $item->link($tote->sellable('Noir'));
 
         self::assertTrue($item->isLinked());

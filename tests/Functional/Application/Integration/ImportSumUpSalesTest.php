@@ -15,6 +15,7 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
+use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Shared\Money;
@@ -69,7 +70,9 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $sticker = $products[$index];
         self::assertSame(400, $sticker->sellingPrice);
         self::assertSame(0, $sticker->buyingPrice);
-        self::assertSame('PRD-STI', $sticker->reference);
+        self::assertSame('MIS-STI', $sticker->reference);
+        self::assertSame('Miscellaneous', $sticker->typeName);
+        self::assertSame('Sticker Mousse', $sticker->displayName, 'the miscellaneous type does not prefix names');
     }
 
     public function testOrdersWithoutEventAreNotImportedAndReportedOnce(): void
@@ -208,7 +211,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
         self::assertSame(2, $report->ordersImported);
         self::assertSame(1, $report->productsCreated);
-        self::assertSame(['Free amount'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'name'));
+        self::assertSame([['Free amount', 'Miscellaneous']], array_map(static fn ($product): array => [$product->name, $product->typeName], self::getContainer()->get(ListProductsHandler::class)()));
         self::assertEqualsCanonicalizing([700, 2_500], array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'total'));
     }
 
@@ -291,6 +294,18 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $report = $this->import();
 
         self::assertSame(2, $report->productsCreated, '"Sticker Mousse" is the existing typed product');
+    }
+
+    public function testProductsWithoutCategoryJoinTheMiscellaneousTypeCreatedOnce(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        self::createProduct('Badge', 300);
+
+        $this->import();
+
+        $types = array_map(static fn ($type): array => [$type->name, $type->code, $type->prefixesNames], self::getContainer()->get(ListProductTypesHandler::class)());
+        self::assertSame([['Miscellaneous', 'MIS', false], ['Print', 'PRI', true]], $types);
+        self::assertSame(['Badge' => 'Miscellaneous', 'Sticker Mousse' => 'Miscellaneous', 'Tote bag' => 'Miscellaneous', 'A4 (Fougère)' => 'Print'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'typeName', 'name'));
     }
 
     private function import(): ImportReport

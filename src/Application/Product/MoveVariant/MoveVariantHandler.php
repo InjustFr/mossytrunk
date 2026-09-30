@@ -59,7 +59,7 @@ final readonly class MoveVariantHandler
         }
         if (null === $variant || !$source->hasVariants()) {
             foreach ($this->discountRules->all() as $rule) {
-                $rule->replaceProduct($source, $target);
+                $rule->replaceProduct($source, $variant, $target, $targetVariant);
             }
             $this->products->remove($source);
         }
@@ -76,7 +76,6 @@ final readonly class MoveVariantHandler
             $this->references->generate($source->type(), trim($name)),
             $name,
             $source->sellingPrice(),
-            [],
             $source->type(),
         );
         $product->bought($source->buyingPrice());

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,7 +18,7 @@ final class SupplierOrderApiTest extends WebTestCase
     {
         $client = self::signedInClient();
         $supplierId = self::created($client, '/api/suppliers', ['name' => 'Imprimerie du Lac', 'contact' => 'lac@example.test']);
-        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400]);
+        $productId = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]);
 
         $orderId = self::created($client, '/api/supplier-orders', ['supplierId' => $supplierId, 'orderedOn' => '2026-09-01', 'lines' => [['productId' => $productId, 'quantity' => 100, 'totalPrice' => 2_000]]]);
 

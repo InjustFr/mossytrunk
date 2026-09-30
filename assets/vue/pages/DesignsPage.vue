@@ -75,7 +75,7 @@ async function onValidateCollection(collection) {
 
 async function onGabaritSaved(name) {
     toast.success(t('designs.page.gabaritSaved', { name }));
-    await loadGabarits();
+    await Promise.all([loadGabarits(), loadTypes()]);
 }
 
 onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));

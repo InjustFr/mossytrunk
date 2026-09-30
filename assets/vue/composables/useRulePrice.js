@@ -2,8 +2,12 @@ import { t } from '../i18n/index.js';
 import { formatCents } from './useMoney.js';
 import { intlLocale } from '../i18n/locale.js';
 
+const sameVariant = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const offers = (product, variant) => !variant || product.variants.some((candidate) => sameVariant(candidate, variant));
+const targets = (product, condition) => (condition.kind === 'type' ? product.typeId === condition.id : product.id === condition.id);
+
 const matching = (products, condition) => products
-    .filter((product) => (condition.kind === 'type' ? product.typeId === condition.id : product.id === condition.id))
+    .filter((product) => targets(product, condition) && offers(product, condition.variant))
     .map((product) => product.sellingPrice);
 
 export function regularPrice(products, conditions) {

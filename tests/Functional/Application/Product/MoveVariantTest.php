@@ -67,7 +67,7 @@ final class MoveVariantTest extends KernelTestCase
         self::assertEqualsCanonicalizing([['Tee — M', 3], ['T-shirt — S', 1]], array_map(static fn (array $line): array => [$line['label'], $line['quantity']], $lines));
     }
 
-    public function testMovingTheLastVariantRemovesTheProductAndMovesItsDiscounts(): void
+    public function testMovingTheLastVariantRemovesTheProductAndMovesItsDiscountsOntoTheTargetVariant(): void
     {
         $old = $this->product('Vieux print', 1_500, ['A4']);
         $print = $this->product('Print', 1_500, ['A3']);
@@ -76,7 +76,10 @@ final class MoveVariantTest extends KernelTestCase
         $this->move(new MoveVariant($old, 'A4', $print, null, 'A4'));
 
         self::assertSame(['Print'], array_column($this->products(), 'name'));
-        self::assertSame(['Print'], array_column(self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions, 'name'));
+        self::assertSame([['Print · A4', 'A4', 2]], array_map(
+            static fn (array $condition): array => [$condition['name'], $condition['variant'], $condition['quantity']],
+            self::getContainer()->get(ListDiscountRulesHandler::class)()[0]->conditions,
+        ));
     }
 
     public function testATargetSoldWithoutVariantCannotGetAFirstOne(): void
