@@ -13,6 +13,7 @@ use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Product\MoveVariant\MoveVariant;
@@ -161,6 +162,32 @@ final class StockUseCasesTest extends KernelTestCase
         $this->clear();
 
         self::assertSame(0, $this->product($this->tshirt)->onHand);
+    }
+
+    public function testAUniqueProductGivenVariantsKeepsItsStockOnTheFirstOne(): void
+    {
+        $this->restock($this->sticker, null, 10, 1_000);
+
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->sticker, 'Sticker', 400, ['M', 'S'], lowStockThreshold: 5));
+        $this->clear();
+
+        self::assertSame([
+            ['variant' => 'M', 'onHand' => 10, 'low' => false, 'negative' => false],
+            ['variant' => 'S', 'onHand' => 0, 'low' => true, 'negative' => false],
+        ], $this->product($this->sticker)->stock);
+        self::assertSame(100, $this->product($this->sticker)->stockUnitCost);
+    }
+
+    public function testAProductLosingAllItsVariantsKeepsTheirStock(): void
+    {
+        $tote = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Tote')->id();
+        $this->restock($this->tshirt, 'S', 4, 3_600);
+        $this->restock($this->tshirt, 'M', 2, 1_800);
+
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($this->tshirt, 'T-shirt', 2_000, [], $tote));
+        $this->clear();
+
+        self::assertSame([['variant' => null, 'onHand' => 6, 'low' => true, 'negative' => false]], $this->product($this->tshirt)->stock);
     }
 
     public function testStockBelongsToTheWorkspace(): void

@@ -8,6 +8,9 @@ use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
+use App\Application\Product\ListProducts\ProductView;
+use App\Application\Stock\Restock\Restock;
+use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Shared\Exception\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
@@ -47,6 +50,30 @@ final class BatchUpdateProductsTest extends KernelTestCase
         $variants = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'variants', 'name');
         self::assertSame(['A4', 'A3'], $variants['Forêt']);
         self::assertSame(['A4', 'A3'], $variants['Rivière']);
+    }
+
+    public function testKeepsTheStockOfEveryVariantStillSold(): void
+    {
+        $sticker = $this->product('Mousse', 400, ['A5']);
+        $print = $this->product('Forêt', 1_500, ['A5', 'A4']);
+        $this->restock($sticker, 'A5', 12);
+        $this->restock($print, 'A5', 7);
+        $this->restock($print, 'A4', 3);
+
+        $this->batch(new BatchUpdateProducts([$sticker, $print], sellingPriceCents: 900));
+
+        self::assertSame([12, 10], [$this->onHand('Mousse'), $this->onHand('Forêt')]);
+    }
+
+    public function testAUniqueProductMovedToATypeWithVariantsKeepsItsStock(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print', variants: ['A5', 'A4'])->id();
+        $zine = $this->product('Zine', 1_000);
+        $this->restock($zine, null, 138);
+
+        $this->batch(new BatchUpdateProducts([$zine], changeType: true, typeId: $print, addVariants: ['A4']));
+
+        self::assertSame(138, $this->onHand('Zine'));
     }
 
     public function testChangeType(): void
@@ -95,6 +122,19 @@ final class BatchUpdateProductsTest extends KernelTestCase
 
         $this->batch(new BatchUpdateProducts([$zine], changeType: true, typeId: $print, addVariants: ['A5']));
         self::assertSame(['A5'], self::getContainer()->get(ListProductsHandler::class)()[0]->variants);
+    }
+
+    private function restock(string $productId, ?string $variant, int $quantity): void
+    {
+        self::getContainer()->get(RestockHandler::class)(new Restock($productId, $variant, $quantity, $quantity * 100));
+        self::getContainer()->get('doctrine')->getManager()->clear();
+    }
+
+    private function onHand(string $name): int
+    {
+        $product = array_values(array_filter(self::getContainer()->get(ListProductsHandler::class)(), static fn (ProductView $view): bool => $view->name === $name))[0];
+
+        return $product->onHand;
     }
 
     private function batch(BatchUpdateProducts $command): int

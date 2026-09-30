@@ -34,7 +34,7 @@ final readonly class UpdateProductHandler
         $product->rename($command->name);
         $product->reprice(Money::cents($command->sellingPriceCents));
         $product->replaceVariants($command->variants);
-        $this->stock->forgetUnsold($product);
+        $this->stock->followVariants($product);
         $product->alertBelow($command->lowStockThreshold);
         $product->classify($this->types->of($command->typeId));
         $product->assertVariantChosen();

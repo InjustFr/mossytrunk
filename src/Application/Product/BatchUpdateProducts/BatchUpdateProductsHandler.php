@@ -48,7 +48,7 @@ final readonly class BatchUpdateProductsHandler
                 }
             }
             $product->assertVariantChosen();
-            $this->stock->forgetUnsold($product);
+            $this->stock->followVariants($product);
         }
 
         $this->transaction->commit();

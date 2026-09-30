@@ -68,12 +68,16 @@ final readonly class StockKeeper
         }
     }
 
-    public function forgetUnsold(Product $product): void
+    public function followVariants(Product $product): void
     {
         foreach ($this->stock->ofProduct($product->id()) as $item) {
-            if (!$this->stillSells($product, $item->variant())) {
-                $this->stock->remove($item);
+            if ($this->stillSells($product, $item->variant())) {
+                continue;
             }
+            if ($this->switchedBetweenUniqueAndVariants($product, $item->variant())) {
+                $this->stock->for($product, $product->variants()[0] ?? null)->absorb($item);
+            }
+            $this->stock->remove($item);
         }
     }
 
@@ -86,6 +90,11 @@ final readonly class StockKeeper
 
         $this->stock->for($target, $targetVariant)->absorb($from);
         $this->stock->remove($from);
+    }
+
+    private function switchedBetweenUniqueAndVariants(Product $product, ?string $variant): bool
+    {
+        return (null === $variant) === $product->hasVariants();
     }
 
     private function stillSells(Product $product, ?string $variant): bool
