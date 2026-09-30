@@ -358,6 +358,35 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(['Print Forêt', 'Print Rivière'], array_column(self::getContainer()->get(ListProductsHandler::class)(), 'displayName'));
     }
 
+    public function testAProductOfATypePrefixingNamesIsMatchedByItsOwnNameAndSoleVariant(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $sticker = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Sticker', variants: ['mat'])->id();
+        self::createProduct('Black kitties Vase Sticker', 300, 0, ['mat'], $sticker);
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-BK', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(300), [ExternalSales::line('Black kitties Vase Sticker', Money::cents(300), 1)]),
+        ]);
+
+        $report = $this->import();
+
+        self::assertSame([1, 0], [$report->ordersImported, $report->productsCreated]);
+        $order = self::getContainer()->get(ListOrdersHandler::class)()[0];
+        self::assertSame('Sticker Black kitties Vase Sticker — mat', self::getContainer()->get(GetOrderHandler::class)($order->id)->lines[0]['label']);
+    }
+
+    public function testAnOwnNameSharedByProductsOfSeveralTypesIsNotGuessed(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $types = self::getContainer()->get(CreateProductTypeHandler::class);
+        self::createProduct('Mousse', 300, typeId: (string) $types('Sticker')->id());
+        self::createProduct('Mousse', 1_500, typeId: (string) $types('Print')->id());
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-MO', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(300), [ExternalSales::line('Mousse', Money::cents(300), 1)]),
+        ]);
+
+        self::assertSame(1, $this->import()->productsCreated);
+    }
+
     public function testTypedProductsAreMatchedByDisplayName(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');

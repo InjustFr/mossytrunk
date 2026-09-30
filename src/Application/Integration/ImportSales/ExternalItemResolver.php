@@ -76,12 +76,12 @@ final class ExternalItemResolver
             return $this->withVariant($byReference, $variant, $line);
         }
 
-        $product = $this->catalogue->named($name, $line->category);
+        $product = $this->catalogue->named($name, $line->category) ?? $this->catalogue->namedWithoutType($name);
         if (null !== $variant) {
             return $this->matchedWithVariant($product, $name, $variant, $line);
         }
         if (null !== $product) {
-            return $product->hasVariants() ? null : $this->sold($product, null, $line);
+            return $this->withoutVariant($product, $line);
         }
 
         foreach (self::splitVariant($name) as [$productName, $candidate]) {
@@ -116,19 +116,32 @@ final class ExternalItemResolver
         return null;
     }
 
-    private function withVariant(Product $product, ?string $variant, ExternalLine $line): ?SellableItem
+    private function withoutVariant(Product $product, ExternalLine $line): ?SellableItem
     {
         if (!$product->hasVariants()) {
             return $this->sold($product, null, $line);
         }
-        $known = null === $variant ? null : self::matchingVariant($product, $variant);
+        $variants = $product->variants();
+
+        return 1 === \count($variants) ? $this->sold($product, $variants[0], $line) : null;
+    }
+
+    private function withVariant(Product $product, ?string $variant, ExternalLine $line): ?SellableItem
+    {
+        if (null === $variant) {
+            return $this->withoutVariant($product, $line);
+        }
+        if (!$product->hasVariants()) {
+            return $this->sold($product, null, $line);
+        }
+        $known = self::matchingVariant($product, $variant);
 
         return null === $known ? null : $this->sold($product, $known, $line);
     }
 
     private function created(string $name, ?string $variant, ExternalLine $line): ?SellableItem
     {
-        $product = $this->catalogue->named($name, $line->category);
+        $product = $this->catalogue->named($name, $line->category) ?? $this->catalogue->namedWithoutType($name);
         if (null === $variant) {
             return null === $product ? $this->sold($this->catalogue->createFor($name, $line->category, $line->unitPrice), null, $line) : null;
         }

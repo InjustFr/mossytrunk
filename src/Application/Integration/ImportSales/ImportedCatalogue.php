@@ -23,6 +23,9 @@ final class ImportedCatalogue
     /** @var array<string, Product>|null */
     private ?array $byTypeAndName = null;
 
+    /** @var array<string, Product|null>|null */
+    private ?array $byOwnName = null;
+
     /** @var array<string, Product> */
     private array $created = [];
 
@@ -49,6 +52,11 @@ final class ImportedCatalogue
         }
 
         return $this->typedIndex()[self::typedKey(trim($category), self::withoutPrefix(trim($displayName), trim($category)))] ?? null;
+    }
+
+    public function namedWithoutType(string $name): ?Product
+    {
+        return $this->ownNameIndex()[mb_strtolower(trim($name))] ?? null;
     }
 
     public function withReference(string $reference): ?Product
@@ -98,6 +106,7 @@ final class ImportedCatalogue
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         $this->typedIndex()[self::typedKey($product->type()->name(), $product->name())] ??= $product;
+        $this->byOwnName = self::withOwnName($this->ownNameIndex(), $product);
         $this->created[(string) $product->id()] = $product;
 
         return $product;
@@ -131,6 +140,35 @@ final class ImportedCatalogue
         }
 
         return $this->byTypeAndName;
+    }
+
+    /**
+     * @return array<string, Product|null>
+     */
+    private function ownNameIndex(): array
+    {
+        if (null === $this->byOwnName) {
+            $index = [];
+            foreach ($this->products->all() as $product) {
+                $index = self::withOwnName($index, $product);
+            }
+            $this->byOwnName = $index;
+        }
+
+        return $this->byOwnName;
+    }
+
+    /**
+     * @param array<string, Product|null> $index
+     *
+     * @return array<string, Product|null>
+     */
+    private static function withOwnName(array $index, Product $product): array
+    {
+        $key = mb_strtolower(trim($product->name()));
+        $index[$key] = \array_key_exists($key, $index) && $index[$key] !== $product ? null : $product;
+
+        return $index;
     }
 
     private static function typedKey(string $typeName, string $name): string
