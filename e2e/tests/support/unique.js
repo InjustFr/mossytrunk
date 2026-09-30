@@ -12,3 +12,5 @@ export function uniqueDay(offsetDays = 0) {
     const day = new Date(Date.UTC(2040, 0, 1) + (slot + offsetDays) * 86_400_000);
     return day.toISOString().slice(0, 10);
 }
+
+export const uniqueTypeCode = () => `T${process.env.TEST_PARALLEL_INDEX ?? 0}${Date.now().toString(36).slice(-4)}${Math.floor(Math.random() * 1_296).toString(36).padStart(2, '0')}`.toUpperCase();

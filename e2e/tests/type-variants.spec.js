@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
-import { unique } from './support/unique.js';
+import { unique, uniqueTypeCode } from './support/unique.js';
 import { createProduct, createType, restock } from './support/api.js';
 
 test('a type owns its variants: rename one everywhere, then filter products by variant with the stock of those variants', async ({ page, request }) => {
@@ -17,6 +17,8 @@ test('a type owns its variants: rename one everywhere, then filter products by v
         await creation.getByLabel('Nouvelle variante').press('Enter');
     }
     await creation.getByRole('button', { name: 'Code et affichage' }).click();
+    await creation.getByRole('textbox', { name: /^Code/ }).clear();
+    await creation.getByRole('textbox', { name: /^Code/ }).fill(uniqueTypeCode());
     await expect(creation.getByRole('switch', { name: 'Préfixer le nom des produits' })).toBeChecked();
     await expect(creation.getByText(`Ses produits s'affichent « ${print} Forêt ».`)).toBeVisible();
     await creation.getByRole('button', { name: 'Créer le type' }).click();

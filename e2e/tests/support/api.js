@@ -1,10 +1,10 @@
 import { expect } from '@playwright/test';
-import { unique, uniqueDay } from './unique.js';
+import { unique, uniqueDay, uniqueTypeCode } from './unique.js';
 
 /** Arrange helpers: create data through the JSON API to keep UI tests focused. */
 
 export async function createType(request, name = unique('Type'), { variants = [], prefixesNames = true } = {}) {
-    const response = await request.post('/api/product-types', { data: { name, variants, prefixesNames } });
+    const response = await request.post('/api/product-types', { data: { name, code: uniqueTypeCode(), variants, prefixesNames } });
     expect(response.status()).toBe(201);
     return response.json();
 }
