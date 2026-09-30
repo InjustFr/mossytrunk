@@ -12,11 +12,12 @@ final readonly class ProductTypeView
         public string $id,
         public string $name,
         public string $code,
+        public string $color,
     ) {
     }
 
     public static function fromType(ProductType $type): self
     {
-        return new self((string) $type->id(), $type->name(), $type->code());
+        return new self((string) $type->id(), $type->name(), $type->code(), $type->color());
     }
 }

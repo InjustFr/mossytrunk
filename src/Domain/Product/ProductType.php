@@ -20,6 +20,8 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\UniqueConstraint(name: 'product_type_workspace_code', columns: ['workspace_id', 'code'])]
 class ProductType
 {
+    public const array PALETTE = ['#5b7f3a', '#b5654a', '#4f6d8f', '#c29a2e', '#8a6d8f', '#2f7f7a', '#7a5238', '#c07a8a', '#a3485a', '#6b7a2f', '#3f5a4c', '#9c7b5b'];
+
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
@@ -35,11 +37,15 @@ class ProductType
     #[ORM\Column(length: 8)]
     private string $code;
 
-    private function __construct(Ulid $id, Workspace $workspace, string $name, string $code)
+    #[ORM\Column(length: 7)]
+    private string $color;
+
+    private function __construct(Ulid $id, Workspace $workspace, string $name, string $code, string $color)
     {
         $this->id = $id;
         $this->workspace = $workspace;
         $this->rename($name);
+        $this->recolor($color);
 
         if (1 !== preg_match('/^[A-Z0-9]{1,8}$/', $code)) {
             throw InvalidProduct::invalidTypeCode($code);
@@ -47,9 +53,14 @@ class ProductType
         $this->code = $code;
     }
 
-    public static function create(Workspace $workspace, string $name, string $code): self
+    public static function create(Workspace $workspace, string $name, string $code, string $color = self::PALETTE[0]): self
     {
-        return new self(new Ulid(), $workspace, $name, $code);
+        return new self(new Ulid(), $workspace, $name, $code, $color);
+    }
+
+    public static function paletteColor(int $index): string
+    {
+        return self::PALETTE[$index % \count(self::PALETTE)];
     }
 
     /**
@@ -72,6 +83,16 @@ class ProductType
         $this->name = $name;
     }
 
+    public function recolor(string $color): void
+    {
+        $color = strtolower(trim($color));
+        if (1 !== preg_match('/^#[0-9a-f]{6}$/', $color)) {
+            throw InvalidProduct::invalidTypeColor($color);
+        }
+
+        $this->color = $color;
+    }
+
     public function id(): Ulid
     {
         return $this->id;
@@ -85,6 +106,11 @@ class ProductType
     public function code(): string
     {
         return $this->code;
+    }
+
+    public function color(): string
+    {
+        return $this->color;
     }
 
     public function workspace(): Workspace

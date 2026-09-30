@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
+import { Tags } from '@lucide/vue';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -9,6 +10,7 @@ import ProductFilters from '../components/products/ProductFilters.vue';
 import MoveVariantForm from '../components/products/MoveVariantForm.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import ProductList from '../components/products/ProductList.vue';
+import ProductTypesModal from '../components/products/ProductTypesModal.vue';
 import RestockForm from '../components/products/RestockForm.vue';
 import StockHistory from '../components/products/StockHistory.vue';
 import SelectionBar from '../components/products/SelectionBar.vue';
@@ -26,8 +28,9 @@ const filters = useProductFilters(products);
 const toast = useToast();
 const { restock } = useStock();
 
-const colors = computed(() => typeColors(types.value.map((type) => type.name)));
+const colors = computed(() => typeColors(types.value));
 const modalOpen = ref(false);
+const typesOpen = ref(false);
 const batchOpen = ref(false);
 const moving = ref(null);
 const moveOpen = computed({ get: () => moving.value !== null, set: (open) => { if (!open) moving.value = null; } });
@@ -81,6 +84,11 @@ async function onRemove(product) {
     }
 }
 
+async function onTypeSaved(name, created) {
+    toast.success(created ? `Type « ${name} » créé.` : `Type « ${name} » modifié.`);
+    await load();
+}
+
 async function onBatchSaved(count) {
     toast.success(`${plural(count, 'produit mis à jour', 'produits mis à jour')}.`);
     batchOpen.value = false;
@@ -94,6 +102,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 <template>
     <AppLayout title="Produits">
         <template #actions>
+            <BaseButton variant="secondary" @click="typesOpen = true"><Tags size="1rem" aria-hidden="true" /> Types de produit</BaseButton>
             <BaseButton @click="openCreate">Nouveau produit</BaseButton>
         </template>
 
@@ -137,6 +146,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         <BaseModal v-model:open="historyOpen" :title="`Réserve de ${viewingStock?.displayName ?? ''}`">
             <StockHistory v-if="viewingStock" :product="viewingStock" />
         </BaseModal>
+        <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" />
         <BaseModal v-model:open="batchOpen" title="Modifier la sélection">
             <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>

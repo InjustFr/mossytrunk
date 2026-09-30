@@ -68,7 +68,10 @@ final class ConventionSeasonStory extends Story
         UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'demo@mossytrunk.local', 'workspace' => $workspace]);
         $this->workspace = $workspace;
 
-        $type = static fn (string $name, string $code): ProductType => ProductTypeFactory::createOne(['workspace' => $workspace, 'name' => $name, 'code' => $code]);
+        $colorIndex = 0;
+        $type = static function (string $name, string $code) use ($workspace, &$colorIndex): ProductType {
+            return ProductTypeFactory::createOne(['workspace' => $workspace, 'name' => $name, 'code' => $code, 'color' => ProductType::paletteColor($colorIndex++)]);
+        };
         $sticker = $type('Sticker', 'STI');
         $print = $type('Print', 'PRI');
 

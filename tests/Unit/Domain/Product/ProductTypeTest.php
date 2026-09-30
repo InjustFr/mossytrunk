@@ -46,6 +46,40 @@ final class ProductTypeTest extends TestCase
         ProductType::create(TestWorkspace::get(), 'Print', 'pri-1');
     }
 
+    public function testColorIsNormalized(): void
+    {
+        $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI', ' #4F6D8F ');
+        self::assertSame('#4f6d8f', $print->color());
+
+        $print->recolor('#C29A2E');
+        self::assertSame('#c29a2e', $print->color());
+    }
+
+    /**
+     * @return iterable<array{string}>
+     */
+    public static function invalidColors(): iterable
+    {
+        yield [''];
+        yield ['red'];
+        yield ['#abc'];
+        yield ['#12345g'];
+    }
+
+    #[DataProvider('invalidColors')]
+    public function testColorMustBeHex(string $color): void
+    {
+        $this->expectException(InvalidProduct::class);
+
+        ProductType::create(TestWorkspace::get(), 'Print', 'PRI')->recolor($color);
+    }
+
+    public function testPaletteColorsCycle(): void
+    {
+        self::assertSame(ProductType::PALETTE[0], ProductType::paletteColor(0));
+        self::assertSame(ProductType::PALETTE[1], ProductType::paletteColor(\count(ProductType::PALETTE) + 1));
+    }
+
     public function testTypedProductIsDisplayedAsTypeThenName(): void
     {
         $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');

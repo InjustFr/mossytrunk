@@ -8,10 +8,11 @@ use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
-use App\Application\Product\RenameProductType\RenameProductTypeHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
+use App\Application\Product\UpdateProductType\UpdateProductTypeHandler;
 use App\Domain\Product\InvalidProduct;
+use App\Domain\Product\ProductType;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -37,6 +38,41 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         self::assertSame(['Pringles' => 'PRI2', 'Print' => 'PRI'], array_column($types, 'code', 'name'));
     }
 
+    public function testColorIsChosenOrTakenFromThePalette(): void
+    {
+        $create = self::getContainer()->get(CreateProductTypeHandler::class);
+        $create('Print');
+        $create('Sticker');
+        $create('Zine', '#A3485A');
+
+        $types = self::getContainer()->get(ListProductTypesHandler::class)();
+
+        self::assertSame(
+            ['Print' => ProductType::PALETTE[0], 'Sticker' => ProductType::PALETTE[1], 'Zine' => '#a3485a'],
+            array_column($types, 'color', 'name'),
+        );
+    }
+
+    public function testNameAndColorAreEdited(): void
+    {
+        $print = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Print')->id();
+
+        self::getContainer()->get(UpdateProductTypeHandler::class)($print, 'Affiche', '#2f7f7a');
+
+        $types = self::getContainer()->get(ListProductTypesHandler::class)();
+        self::assertSame(['Affiche' => '#2f7f7a'], array_column($types, 'color', 'name'));
+    }
+
+    public function testEditedNameStaysUnique(): void
+    {
+        $create = self::getContainer()->get(CreateProductTypeHandler::class);
+        $create('Print');
+        $sticker = (string) $create('Sticker')->id();
+
+        $this->expectException(InvalidProduct::class);
+        self::getContainer()->get(UpdateProductTypeHandler::class)($sticker, 'PRINT', '#2f7f7a');
+    }
+
     public function testNamesAreUniqueCaseInsensitive(): void
     {
         self::getContainer()->get(CreateProductTypeHandler::class)('Print');
@@ -58,7 +94,7 @@ final class ProductTypeUseCasesTest extends KernelTestCase
         self::assertSame(['Print Forêt', 'Sticker Mousse', 'Aquarelle'], array_column($products, 'displayName'));
         self::assertSame('Print', $products[0]->typeName);
 
-        self::getContainer()->get(RenameProductTypeHandler::class)($print, 'Affiche');
+        self::getContainer()->get(UpdateProductTypeHandler::class)($print, 'Affiche', '#4f6d8f');
         self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct((string) $forest, 'Forêt', 1_500, [], $sticker));
         self::getContainer()->get('doctrine')->getManager()->clear();
 

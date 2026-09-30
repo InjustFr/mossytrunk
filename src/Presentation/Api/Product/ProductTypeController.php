@@ -7,7 +7,7 @@ namespace App\Presentation\Api\Product;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Product\ListProductTypes\ProductTypeView;
-use App\Application\Product\RenameProductType\RenameProductTypeHandler;
+use App\Application\Product\UpdateProductType\UpdateProductTypeHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,13 +27,13 @@ final class ProductTypeController extends AbstractController
     #[Route('', name: 'api_product_types_create', methods: ['POST'])]
     public function create(#[MapRequestPayload] ProductTypePayload $payload, CreateProductTypeHandler $createType): JsonResponse
     {
-        return $this->json(ProductTypeView::fromType($createType($payload->name)), Response::HTTP_CREATED);
+        return $this->json(ProductTypeView::fromType($createType($payload->name, $payload->color)), Response::HTTP_CREATED);
     }
 
-    #[Route('/{id}', name: 'api_product_types_rename', requirements: ['id' => Requirement::ULID], methods: ['PUT'])]
-    public function rename(string $id, #[MapRequestPayload] ProductTypePayload $payload, RenameProductTypeHandler $renameType): Response
+    #[Route('/{id}', name: 'api_product_types_update', requirements: ['id' => Requirement::ULID], methods: ['PUT'])]
+    public function update(string $id, #[MapRequestPayload] UpdateProductTypePayload $payload, UpdateProductTypeHandler $updateType): Response
     {
-        $renameType($id, $payload->name);
+        $updateType($id, $payload->name, $payload->color);
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

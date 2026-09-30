@@ -58,6 +58,11 @@ final class InvalidProduct extends DomainException
         return new self('Le nom du type est obligatoire.');
     }
 
+    public static function invalidTypeColor(string $color): self
+    {
+        return new self(\sprintf('« %s » n\'est pas une couleur valide (format #rrggbb).', $color));
+    }
+
     public static function typeAlreadyExists(string $name): self
     {
         return new self(\sprintf('Le type « %s » existe déjà.', $name));

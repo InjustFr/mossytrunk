@@ -2,17 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Product\RenameProductType;
+namespace App\Application\Product\UpdateProductType;
 
 use App\Application\Transaction;
 use App\Domain\Product\InvalidProduct;
 use App\Domain\Product\ProductTypeRepository;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Renaming a type changes how its products are displayed from now on; past orders keep their snapshot.
- */
-final readonly class RenameProductTypeHandler
+final readonly class UpdateProductTypeHandler
 {
     public function __construct(
         private ProductTypeRepository $types,
@@ -20,7 +17,7 @@ final readonly class RenameProductTypeHandler
     ) {
     }
 
-    public function __invoke(string $typeId, string $name): void
+    public function __invoke(string $typeId, string $name, string $color): void
     {
         $type = $this->types->get(Ulid::fromString($typeId));
 
@@ -30,6 +27,7 @@ final readonly class RenameProductTypeHandler
         }
 
         $type->rename($name);
+        $type->recolor($color);
         $this->transaction->commit();
     }
 }

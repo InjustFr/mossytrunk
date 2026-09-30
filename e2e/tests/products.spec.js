@@ -47,7 +47,7 @@ test('shows validation errors inline', async ({ page }) => {
     await expect(form.getByText('Le nom est obligatoire.')).toBeVisible();
 });
 
-test('create a type inline and display products as "Type Nom"', async ({ page }) => {
+test('create a type inline with its colour and display products as "Type Nom"', async ({ page, request }) => {
     const typeName = unique('Print');
 
     await page.goto('/produits');
@@ -55,8 +55,11 @@ test('create a type inline and display products as "Type Nom"', async ({ page })
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Type' }), '＋ Créer un type…');
     await form.getByLabel('Nom du nouveau type').fill(typeName);
+    await form.getByRole('option', { name: 'Framboise' }).click();
     await form.getByRole('button', { name: 'Créer', exact: true }).click();
     await expect(form.getByRole('combobox', { name: 'Type' })).toHaveText(typeName);
+    const types = await (await request.get('/api/product-types')).json();
+    expect(types.find((type) => type.name === typeName).color).toBe('#a3485a');
 
     await form.getByLabel('Nom').fill('Forêt');
     await expect(form.getByText(`Affiché « ${typeName} Forêt »`)).toBeVisible();
@@ -150,4 +153,40 @@ test('delete a product', async ({ page, request }) => {
 
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${doomed.name} » supprimé.`);
     await expect(page.getByRole('row').filter({ hasText: doomed.name })).toHaveCount(0);
+});
+
+test('create a product type with a colour, then rename it and give it a custom colour offered to other types', async ({ page, request }) => {
+    const name = unique('Carte');
+    const renamed = unique('Affiche');
+
+    await page.goto('/produits');
+    await page.getByRole('button', { name: 'Types de produit' }).click();
+    const types = page.getByRole('dialog', { name: 'Types de produit' });
+    await types.getByRole('button', { name: 'Ajouter un type' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Nouveau type de produit' });
+    await dialog.getByLabel('Nom').fill(name);
+    await dialog.getByRole('option', { name: 'Sarcelle' }).click();
+    await dialog.getByRole('button', { name: 'Créer le type' }).click();
+    await expect(page.getByTestId('toast')).toContainText(`Type « ${name} » créé.`);
+    await expect(types.getByRole('listitem').filter({ hasText: name })).toBeVisible();
+
+    await types.getByRole('button', { name: `Modifier le type ${name}` }).click();
+    const edit = page.getByRole('dialog', { name: `Modifier le type ${name}` });
+    await expect(edit.getByRole('option', { name: 'Sarcelle' })).toHaveAttribute('aria-selected', 'true');
+    await edit.getByLabel('Nom').fill(renamed);
+    await edit.getByRole('button', { name: 'Couleur personnalisée' }).click();
+    const custom = page.getByRole('dialog', { name: 'Couleur personnalisée' });
+    await custom.getByLabel('Code hexadécimal').fill('#123abc');
+    await custom.getByLabel('Code hexadécimal').press('Enter');
+    await custom.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await expect(edit.getByRole('option', { name: 'Personnalisée #123ABC' })).toHaveAttribute('aria-selected', 'true');
+    await edit.getByRole('button', { name: 'Enregistrer' }).click();
+
+    await expect(page.getByTestId('toast').filter({ hasText: `Type « ${renamed} » modifié.` })).toBeVisible();
+    await expect(types).toContainText(renamed);
+    const saved = (await (await request.get('/api/product-types')).json()).find((type) => type.name === renamed);
+    expect(saved.color).toBe('#123abc');
+
+    await types.getByRole('button', { name: 'Ajouter un type' }).click();
+    await expect(page.getByRole('dialog', { name: 'Nouveau type de produit' }).getByRole('option', { name: 'Personnalisée #123ABC' })).toBeVisible();
 });

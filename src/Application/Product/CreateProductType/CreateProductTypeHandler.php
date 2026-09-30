@@ -12,6 +12,7 @@ use App\Domain\Product\ProductTypeRepository;
 
 /**
  * Creates a product type; its code is derived from the name and made unique (PRI, PRI2…).
+ * Without a chosen colour, it takes the next one of the palette.
  */
 final readonly class CreateProductTypeHandler
 {
@@ -22,9 +23,9 @@ final readonly class CreateProductTypeHandler
     ) {
     }
 
-    public function __invoke(string $name): ProductType
+    public function __invoke(string $name, ?string $color = null): ProductType
     {
-        $type = $this->create($name);
+        $type = $this->create($name, $color);
         $this->transaction->commit();
 
         return $type;
@@ -33,7 +34,7 @@ final readonly class CreateProductTypeHandler
     /**
      * Creates without committing, for use inside another use case (e.g. SumUp import).
      */
-    public function create(string $name): ProductType
+    public function create(string $name, ?string $color = null): ProductType
     {
         if (null !== $this->types->findByName($name)) {
             throw InvalidProduct::typeAlreadyExists(trim($name));
@@ -45,7 +46,8 @@ final readonly class CreateProductTypeHandler
             $code = $base.$i;
         }
 
-        $type = ProductType::create($this->workspace->current(), $name, $code);
+        $color ??= ProductType::paletteColor(\count($this->types->all()));
+        $type = ProductType::create($this->workspace->current(), $name, $code, $color);
         $this->types->add($type);
 
         return $type;

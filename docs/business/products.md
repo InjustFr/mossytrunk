@@ -16,8 +16,10 @@ Model: `src/Domain/Product/Product.php` (Doctrine entity), `ProductType.php`, `S
 
 ## Product types
 
-A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, derived from the name at creation and made unique `PRI2`…).
-Types are created from `/api/product-types` or **inline from the product form** (« ＋ Créer un type… »). Renaming a type renames how its products are displayed; past orders keep their snapshot.
+A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, derived from the name at creation and made unique `PRI2`…, and a `color`).
+Types are managed from `/produits` (header button « Types de produit »: list, « Ajouter un type », edit name and colour), created **inline from the product form** (« ＋ Créer un type… ») or by an import; the code never changes. Renaming a type renames how its products are displayed; past orders keep their snapshot.
+
+The colour marks the type everywhere it is shown (product list and filters, dashboard best sellers, event order recap). It is picked from a palette of 12 colours, or chosen freely (« Couleur personnalisée »: colour area, hue slider, hex code); a custom colour used by a type is offered in the palette of every type of the workspace. A type created without a colour (import) takes the next palette colour.
 
 ## Rules
 
@@ -29,6 +31,7 @@ Types are created from `/api/product-types` or **inline from the product form** 
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when untyped. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |
 | P7 | Within a workspace, type names are unique (case-insensitive) and type codes are unique, 1–8 uppercase letters/digits | `CreateProductTypeHandler`, `RenameProductTypeHandler`, `ProductType` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
+| P19 | A type colour is a `#rrggbb` hex colour (stored lowercase). Without one, a new type takes palette colour n° (number of types) | `ProductType::recolor()`, `CreateProductTypeHandler` | `ProductTypeTest`, `ProductTypeUseCasesTest` |
 | P5 | **What is sold is a (product ULID, variant) tuple.** A product with variants requires one of *its* variants; a unique product accepts no variant | `Product::sellable(?variant)` → `SellableItem` | `ProductTest` |
 
 `SellableItem` is the only way to obtain a sellable tuple, so an order line can never reference an invalid product/variant pair. It also carries the selling and buying prices at the time of sale: orders **snapshot** them, so later price changes never alter past orders.
@@ -82,11 +85,11 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
 | `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`) |
-| `CreateProductType` / `RenameProductType` / `ListProductTypes` | `POST` / `PUT /{id}` / `GET /api/product-types` `{name}` |
+| `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?}` / `PUT /{id}` `{name, color}` / `GET /api/product-types` → `{id, name, code, color}` |
 
 `ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
 
-UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with a colour mark, one colour per type in alphabetical order), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
+UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with its colour mark), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
 Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).
 
 **Product page** `/produits/{id}` (`ProductDetailPage.vue`, product names in the list link to it): key figures (reference, type, variants, selling price, stock cost, margin, stock with badge, units sold this year and ever), « Stock » (lots per variant, oldest sold first), « Mouvements » (paginated timeline, links to the order, supplier order or event), « Prix de vente » (history, current price first with the change from the previous one; each entry can be edited or deleted, « Ajouter un prix passé ») and « Design » (link to its design, or « Créer son design » / « Rattacher à un design »). Header: « Modifier », « Réapprovisionner ».

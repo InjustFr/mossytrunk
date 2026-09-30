@@ -22,7 +22,7 @@ final class ProductTypeFactory extends PersistentObjectFactory
     {
         $name = ucfirst(self::faker()->unique()->word());
 
-        return ['workspace' => WorkspaceFactory::new(), 'name' => $name, 'code' => ProductType::codeFor($name)];
+        return ['workspace' => WorkspaceFactory::new(), 'name' => $name, 'code' => ProductType::codeFor($name), 'color' => self::faker()->randomElement(ProductType::PALETTE)];
     }
 
     protected function initialize(): static
