@@ -108,7 +108,7 @@ catalogue with variants, discount rules, past events with expenses and orders (d
 
 - Unit test (`tests/Unit`) every business rule (entities, value objects, domain services).
 - Functional test (`tests/Functional`) for every use-case handler (real DB, KernelTestCase) and API endpoints (WebTestCase).
-- Playwright (`e2e/tests`) for user journeys. In `test` env the connectors' gateways are fakes: `Connector\SumUp\SumUpGateway` → `FakeSumUpGateway`, `Connector\Etsy\EtsyGateway` → `FakeEtsyGateway` (fixture `tests/Fixtures/etsy/receipts.json`, fake OAuth that redirects straight to the callback).
+- Playwright (`e2e/tests`) for user journeys. Specs run in parallel (2 workers, 4 in CI) on one shared workspace: build data with `unique()`/`uniqueDay()`; a spec that changes workspace-wide state (settings, connected services, the user's language) goes in the serial `workspace-wide` project (`WORKSPACE_WIDE` in `e2e/playwright.config.js`), which runs after the others. In `test` env the connectors' gateways are fakes: `Connector\SumUp\SumUpGateway` → `FakeSumUpGateway`, `Connector\Etsy\EtsyGateway` → `FakeEtsyGateway` (fixture `tests/Fixtures/etsy/receipts.json`, fake OAuth that redirects straight to the callback).
 
 ## Git
 

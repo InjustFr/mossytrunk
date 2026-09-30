@@ -1,6 +1,14 @@
+x-php: &php-healthcheck
+  test: ["CMD-SHELL", "curl -f http://localhost:2019/metrics || exit 1"]
+  interval: 10s
+  start_period: 60s
+  start_interval: 1s
+
 services:
   php:
+    image: mossytrunk-dev
     build: .
+    healthcheck: *php-healthcheck
     depends_on:
       database:
         condition: service_healthy
@@ -25,6 +33,7 @@ services:
     working_dir: /app/e2e
     environment:
       BASE_URL: http://php-e2e
+      CI: ${CI:-}
       MAILPIT_URL: http://mailpit:8025
     volumes:
       - ./:/app
@@ -33,7 +42,9 @@ services:
       - mailpit
 
   php-e2e:
+    image: mossytrunk-dev
     build: .
+    healthcheck: *php-healthcheck
     profiles: [e2e]
     depends_on:
       database:
@@ -60,9 +71,11 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-app}
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
+      start_interval: 1s
     volumes:
       - database_data:/var/lib/postgresql:rw
 

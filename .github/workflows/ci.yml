@@ -22,7 +22,19 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - run: docker compose build php
+      - name: Pull service images in the background
+        run: nohup docker compose --profile e2e pull --quiet --ignore-buildable database mailpit node playwright > /tmp/pull.log 2>&1 &
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: dev
+          load: true
+          tags: mossytrunk-dev
+          cache-from: type=gha,scope=dev
+          cache-to: type=gha,scope=dev,mode=max
 
       - run: make ci
 
@@ -64,5 +76,7 @@ jobs:
           tags: |
             ${{ env.IMAGE }}:${{ steps.tag.outputs.sha }}
             ${{ env.IMAGE }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: |
+            type=gha,scope=prod
+            type=gha,scope=dev
+          cache-to: type=gha,scope=prod,mode=max
