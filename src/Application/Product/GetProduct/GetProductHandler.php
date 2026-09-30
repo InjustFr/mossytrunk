@@ -76,7 +76,7 @@ final readonly class GetProductHandler
                     'variant' => $item->variant(),
                     'quantity' => $lot->quantity(),
                     'cost' => $lot->totalCost()->amount(),
-                    'link' => null === $lot->sourceId() ? null : '/commandes-fournisseurs/'.$lot->sourceId(),
+                    'link' => null === $lot->sourceId() ? null : '/supplier-orders/'.$lot->sourceId(),
                     'label' => null,
                 ];
             }
@@ -90,7 +90,7 @@ final readonly class GetProductHandler
                         'variant' => $line->variant(),
                         'quantity' => -$line->quantity(),
                         'cost' => $line->cost()->amount(),
-                        'link' => '/commandes/'.$order->id(),
+                        'link' => '/orders/'.$order->id(),
                         'label' => $order->event()?->name() ?? $this->connectors->labelOf($order->source()),
                     ];
                 }
@@ -105,7 +105,7 @@ final readonly class GetProductHandler
                         'variant' => $line->variant(),
                         'quantity' => -$line->missing(),
                         'cost' => $line->lossCost()->amount(),
-                        'link' => '/evenements/'.$check->event()->id(),
+                        'link' => '/events/'.$check->event()->id(),
                         'label' => $check->event()->name(),
                     ];
                 }

@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 #[AsController]
-#[Route('/evenements/{id}/inventaire', name: 'event_stock_check', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+#[Route('/events/{id}/stock-check', name: 'event_stock_check', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
 final readonly class StockCheckPageController
 {
     public function __construct(private VuePage $page)

@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/parametres/{service}/connexion', name: 'service_connect', requirements: ['service' => RouteRequirement::SERVICE], methods: ['GET'])]
+#[Route('/settings/{service}/connect', name: 'service_connect', requirements: ['service' => RouteRequirement::SERVICE], methods: ['GET'])]
 final readonly class ConnectServiceController
 {
     public function __construct(private AuthorizationFlow $flow)
@@ -29,7 +29,7 @@ final readonly class ConnectServiceController
         try {
             return new RedirectResponse($startAuthorization($service, $this->flow->callbackUrl($service), $state, self::base64Url(hash('sha256', $verifier, true))));
         } catch (DomainException) {
-            return $this->flow->outcome($service, 'indisponible');
+            return $this->flow->outcome($service, 'unavailable');
         }
     }
 

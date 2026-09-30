@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/comptabilite', name: 'accounting', methods: ['GET'])]
+#[Route('/accounting', name: 'accounting', methods: ['GET'])]
 final readonly class AccountingPageController
 {
     public function __construct(private VuePage $page)

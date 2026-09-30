@@ -48,7 +48,7 @@ function openCollection(collection = null) {
 async function onDesignSaved({ name, id }) {
     designOpen.value = false;
     toast.success(`Design « ${name} » commencé.`);
-    visit(`/creations/${id}`);
+    visit(`/designs/${id}`);
 }
 
 async function onCollectionSaved(name) {

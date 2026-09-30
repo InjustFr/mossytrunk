@@ -12,7 +12,7 @@ const emit = defineEmits(['dismiss']);
             <p class="import-problem__message">{{ problem.message }}</p>
             <p v-if="problem.dates.length" class="import-problem__detail">
                 Dates sans marché : <strong>{{ problem.dates.join(', ') }}</strong>
-                — <a href="/evenements">Créer un marché</a>
+                — <a href="/events">Créer un marché</a>
             </p>
         </div>
         <button type="button" class="import-problem__close" aria-label="Fermer le message" @click="emit('dismiss')"><X size="1rem" aria-hidden="true" /></button>

@@ -13,7 +13,7 @@ use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
-#[Route('/mot-de-passe/oublie', name: 'password_forgot', methods: ['GET', 'POST'])]
+#[Route('/password/forgot', name: 'password_forgot', methods: ['GET', 'POST'])]
 final class ForgotPasswordController extends AbstractController
 {
     private const string CSRF_ID = 'forgot_password';

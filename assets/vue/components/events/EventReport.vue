@@ -52,7 +52,7 @@ const lines = computed(() => [
                 <div class="event-report__line"><dt>Remises accordées</dt><dd><MoneyAmount :cents="report.orders.discounts ? -report.orders.discounts : 0" /></dd></div>
             </dl>
             <OrderRecap :groups="report.orders.groups" :type-colors="typeColors" />
-            <p class="event-report__more"><a :href="`/commandes?event=${eventId}`">Voir les commandes</a></p>
+            <p class="event-report__more"><a :href="`/orders?event=${eventId}`">Voir les commandes</a></p>
         </template>
     </ResultReceipt>
 </template>

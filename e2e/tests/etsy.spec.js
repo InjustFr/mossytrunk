@@ -7,11 +7,11 @@ test('connect the Etsy shop, import its orders and link an unknown listing to a 
     const print = await createProduct(request, { name: 'Print Forêt Etsy', sellingPrice: 1_800, variants: ['A4', 'A3'] });
 
     await forgetService(request, 'etsy');
-    await page.goto('/parametres');
+    await page.goto('/settings');
     await page.getByRole('button', { name: 'Ajouter un service' }).click();
     await page.getByRole('dialog', { name: 'Ajouter un service' }).getByRole('button', { name: /^Etsy/ }).click();
     const form = page.getByRole('dialog', { name: 'Ajouter Etsy' });
-    await expect(form.locator('code')).toContainText('/parametres/etsy/retour');
+    await expect(form.locator('code')).toContainText('/settings/etsy/callback');
     await form.getByRole('textbox', { name: 'Keystring', exact: true }).fill('keystring123');
     await form.locator('input[type="password"]').fill('shared-secret');
     await form.getByRole('button', { name: 'Ajouter Etsy' }).click();
@@ -23,7 +23,7 @@ test('connect the Etsy shop, import its orders and link an unknown listing to a 
     await expect(page.getByTestId('toast').last()).toContainText('Etsy connecté');
     await expect(services).toContainText('Atelier Mousse sur Etsy');
 
-    await page.goto('/commandes');
+    await page.goto('/orders');
     await page.getByRole('button', { name: 'Importer depuis Etsy' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 commande importée');
     await page.getByRole('button', { name: 'Associer les articles' }).click();

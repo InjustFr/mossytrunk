@@ -51,7 +51,7 @@ async function onSubmit() {
                 <h3 class="declination__gabarit">{{ declination.gabarit.name }}</h3>
                 <p class="declination__product">{{ declination.displayName }}</p>
             </div>
-            <a v-if="declination.productId" :href="`/produits/${declination.productId}`" class="declination__product-link">Voir le produit</a>
+            <a v-if="declination.productId" :href="`/products/${declination.productId}`" class="declination__product-link">Voir le produit</a>
             <StatusBadge v-else-if="declination.ready" tone="success">Prête</StatusBadge>
             <StatusBadge v-else tone="warning">{{ declination.adaptations.length - declination.doneAdaptations.length }} à adapter</StatusBadge>
             <ConfirmButton

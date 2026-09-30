@@ -67,7 +67,7 @@ async function onValidate() {
 async function onRemove() {
     await remove();
     toast.success(`Design « ${design.value.name} » supprimé.`);
-    visit('/creations');
+    visit('/designs');
 }
 
 async function onSaved({ name }) {
@@ -81,7 +81,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard()]));
 
 <template>
     <AppLayout :title="design?.name ?? 'Design'">
-        <template #back><a class="back-link" href="/creations"><ArrowLeft size="0.875rem" aria-hidden="true" /> Créations</a></template>
+        <template #back><a class="back-link" href="/designs"><ArrowLeft size="0.875rem" aria-hidden="true" /> Créations</a></template>
         <template #actions>
             <template v-if="design">
                 <ConfirmButton v-if="!hasProducts" variant="ghost" label="Supprimer" :message="`Le design « ${design.name} » et ses déclinaisons seront supprimés.`" @confirm="onRemove" />

@@ -52,5 +52,5 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 ## UI
 
 - **Produits**: « Réserve » column with « Stock bas » / « Négatif » badges (variant detail in the tooltip), « Coût » = stock cost, filter « produits en stock bas » (`?stock=bas`), row actions « Réapprovisionner » and « Historique de la réserve » (lots strip, oldest first, and lot table). The product form has « Alerte stock bas ».
-- **Événement**: « Faire l'inventaire » (past or ongoing events) opens `/evenements/{id}/inventaire`; a warning banner lists unexplained units with « Classer l'écart ». The events comparison table shows a warning icon.
+- **Événement**: « Faire l'inventaire » (past or ongoing events) opens `/events/{id}/stock-check`; a warning banner lists unexplained units with « Classer l'écart ». The events comparison table shows a warning icon.
 - **Carnet de bord**: a notice counts products in low or negative stock.

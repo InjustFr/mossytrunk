@@ -19,9 +19,9 @@ final class AuthenticationTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request('GET', '/produits');
+        $client->request('GET', '/products');
 
-        self::assertResponseRedirects('/connexion');
+        self::assertResponseRedirects('/login');
     }
 
     public function testAnonymousApiCallsAreUnauthorized(): void
@@ -40,15 +40,15 @@ final class AuthenticationTest extends WebTestCase
         $link = $this->linkFromLastEmail();
 
         $client->request('GET', $link);
-        self::assertResponseRedirects('/mot-de-passe/definir');
-        $client->request('GET', '/mot-de-passe/definir');
+        self::assertResponseRedirects('/password/set');
+        $client->request('GET', '/password/set');
         self::assertTrue(self::props($client)['invitation']);
 
-        $client->request('POST', '/mot-de-passe/definir', ['_csrf_token' => self::props($client)['csrfToken'], 'password' => 'correct horse battery', 'confirmation' => 'correct horse battery']);
-        self::assertResponseRedirects('/connexion');
+        $client->request('POST', '/password/set', ['_csrf_token' => self::props($client)['csrfToken'], 'password' => 'correct horse battery', 'confirmation' => 'correct horse battery']);
+        self::assertResponseRedirects('/login');
 
         $this->signIn($client, 'Louis@example.com', 'correct horse battery');
-        self::assertResponseRedirects('/tableau-de-bord');
+        self::assertResponseRedirects('/dashboard');
         $client->jsonRequest('GET', '/api/products');
         self::assertResponseIsSuccessful();
     }
@@ -68,7 +68,7 @@ final class AuthenticationTest extends WebTestCase
     {
         $client = self::createClient();
 
-        $client->request('GET', '/mot-de-passe/definir/'.str_repeat('a', 72));
+        $client->request('GET', '/password/set/'.str_repeat('a', 72));
         $client->followRedirect();
 
         self::assertResponseStatusCodeSame(400);
@@ -81,9 +81,9 @@ final class AuthenticationTest extends WebTestCase
         self::getContainer()->get(CreateUserHandler::class)(new CreateUser('louis@example.com', 'Atelier'));
 
         foreach (['louis@example.com' => 1, 'nobody@example.com' => 0] as $email => $emailsSent) {
-            $client->request('GET', '/mot-de-passe/oublie');
-            $client->request('POST', '/mot-de-passe/oublie', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email]);
-            self::assertResponseRedirects('/mot-de-passe/oublie');
+            $client->request('GET', '/password/forgot');
+            $client->request('POST', '/password/forgot', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email]);
+            self::assertResponseRedirects('/password/forgot');
             self::assertEmailCount($emailsSent);
             $client->followRedirect();
             self::assertTrue(self::props($client)['sent']);
@@ -106,8 +106,8 @@ final class AuthenticationTest extends WebTestCase
 
     private function signIn(KernelBrowser $client, string $email, string $password): void
     {
-        $client->request('GET', '/connexion');
-        $client->request('POST', '/connexion', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email, 'password' => $password]);
+        $client->request('GET', '/login');
+        $client->request('POST', '/login', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email, 'password' => $password]);
     }
 
     /** @return array<string, mixed> */
@@ -126,7 +126,7 @@ final class AuthenticationTest extends WebTestCase
         $messages = self::getMailerMessages();
         $email = end($messages);
         self::assertInstanceOf(Email::class, $email);
-        self::assertSame(1, preg_match('#https?://[^/]+(/mot-de-passe/definir/[0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
+        self::assertSame(1, preg_match('#https?://[^/]+(/password/set/[0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
 
         return $matches[1];
     }

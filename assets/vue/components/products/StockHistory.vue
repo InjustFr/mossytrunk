@@ -44,7 +44,7 @@ onMounted(async () => {
                     <tr v-for="lot in item.lots" :key="lot.id" :class="{ 'stock-history__lot--exhausted': lot.remaining === 0 }">
                         <td>{{ formatDate(lot.receivedAt) }}</td>
                         <td>
-                            <a v-if="lot.origin === 'supplier_order' && lot.sourceId" :href="`/commandes-fournisseurs/${lot.sourceId}`">{{ LOT_ORIGINS[lot.origin] }}</a>
+                            <a v-if="lot.origin === 'supplier_order' && lot.sourceId" :href="`/supplier-orders/${lot.sourceId}`">{{ LOT_ORIGINS[lot.origin] }}</a>
                             <template v-else>{{ LOT_ORIGINS[lot.origin] }}</template>
                         </td>
                         <td class="stock-history__number">{{ lot.quantity }}</td>

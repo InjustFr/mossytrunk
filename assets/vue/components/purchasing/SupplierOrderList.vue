@@ -27,7 +27,7 @@ defineProps({
         </template>
         <template #default="{ rows }">
             <tr v-for="order in rows" :key="order.id">
-                <td><a :href="`/commandes-fournisseurs/${order.id}`">{{ order.reference }}</a></td>
+                <td><a :href="`/supplier-orders/${order.id}`">{{ order.reference }}</a></td>
                 <td>{{ order.supplier.name }}</td>
                 <td>{{ formatDate(order.orderedOn) }}</td>
                 <td class="data-table__cell--number">

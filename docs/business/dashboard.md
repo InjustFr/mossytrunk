@@ -1,6 +1,6 @@
 # Dashboard (Carnet de bord)
 
-Results **per month and per year**, all events together. Home page of the app (`/` → `/tableau-de-bord`).
+Results **per month and per year**, all events together. Home page of the app (`/` → `/dashboard`).
 
 Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [event report](event-report.md)),
 `MonthlyResults.php` (bucketing); use case `GetDashboard` → `GET /api/dashboard[?year=YYYY]`; UI `DashboardPage.vue`.
@@ -19,7 +19,7 @@ Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [ev
 
 ## Display
 
-- A warning when products were never bought (their cost counts as 0 €, so the result is overstated), linking to them on `/produits`; another when products are low or negative in stock.
+- A warning when products were never bought (their cost counts as 0 €, so the result is overstated), linking to them on `/products`; another when products are low or negative in stock.
 - Year selector; the year's result as a receipt: chiffre d'affaires − coût d'achat − dépenses − URSSAF = résultat, with the result as a share of the turnover and the number of orders and events.
 - Bar chart of the monthly result from a zero baseline (green gain, red loss, value on each bar, hover/focus for figures).
 - The year's events as bars of their result (B6), and the best sellers (B7).

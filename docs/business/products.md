@@ -17,7 +17,7 @@ Model: `src/Domain/Product/Product.php` (Doctrine entity), `ProductType.php`, `S
 ## Product types
 
 A managed list (`ProductType`: `name` and short `code` unique within the workspace such as `PRI`, and a `color`). The code prefixes the references suggested for its products; it is **suggested** from the first three letters of the name (made unique `PRI2`…), and the user may type another one at creation and change it later (existing product references do not change).
-Types are managed from `/produits` (header button « Types de produit »: list, « Ajouter un type », edit name, code and colour), created **inline from the product form** (« ＋ Créer un type… », suggested code) or by an import (suggested code). Renaming a type renames how its products are displayed; past orders keep their snapshot.
+Types are managed from `/products` (header button « Types de produit »: list, « Ajouter un type », edit name, code and colour), created **inline from the product form** (« ＋ Créer un type… », suggested code) or by an import (suggested code). Renaming a type renames how its products are displayed; past orders keep their snapshot.
 
 The colour marks the type everywhere it is shown (product list and filters, dashboard best sellers, event order recap). It is picked from a palette of 12 colours, or chosen freely (« Couleur personnalisée »: colour area, hue slider, hex code); a custom colour used by a type is offered in the palette of every type of the workspace. A type created without a colour (import) takes the next palette colour.
 
@@ -56,7 +56,7 @@ A product split per variant (« Mug Lichen », « Mug Fougère ») can be gather
 | P12 | Every order line of the moved (product, variant) now sells the target: name and variant change, **prices stay** as sold. A line merges into a line of the same order already selling the target at the same prices | `Order::moveSales()`, `OrderLine::reassign()` | `OrderTest`, `MoveVariantTest` |
 | P13 | A source left without anything to sell (whole product moved, or its last variant) is **deleted**; discount conditions on it target the product it went into instead (quantities added when that product already has a condition) | `MoveVariantHandler`, `DiscountRule::replaceProduct()` | `DiscountRuleTest`, `MoveVariantTest` |
 
-UI: row action « Faire de … une variante » / « Déplacer une variante de … » on `/produits`. For a whole product, the form suggests the name without its last word as the target and that word as the variant (« Mug Lichen » → « Mug » + Lichen).
+UI: row action « Faire de … une variante » / « Déplacer une variante de … » on `/products`. For a whole product, the form suggests the name without its last word as the target and that word as the variant (« Mug Lichen » → « Mug » + Lichen).
 
 ## Deleting a product
 
@@ -69,7 +69,7 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | P17 | Every selling price a product has had is kept with its date (creation, then each change; setting the same price records nothing). Products that existed before the history start with their current price at their creation date | `Product::reprice()`, `SellingPriceChange` | `ProductTest`, `GetProductTest` |
 | P18 | The price history can be corrected: add a past price with its day, change an entry's price or day, delete an entry (never the last one). Days are Europe/Paris, never in the future. The **selling price is always the entry with the latest day**, so correcting the current entry fixes the price without adding a line. Past orders keep their own price snapshots | `Product::recordPrice()`, `amendPrice()`, `forgetPrice()` | `ProductTest`, `SellingPriceApiTest` |
 
-UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` — « Zone de danger »: delete every product, behind a warning and a confirmation.
+UI: trash icon on each row of `/products`, with a confirmation. `/settings` — « Zone de danger »: delete every product, behind a warning and a confirmation.
 
 ## Use cases & API
 
@@ -91,7 +91,7 @@ UI: trash icon on each row of `/produits`, with a confirmation. `/parametres` �
 
 `ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
 
-UI: `/produits` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with its colour mark), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
-Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/produits?prix-achat=manquant`, linked from the dashboard warning).
+UI: `/products` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with its colour mark), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
+Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/products?purchase-price=missing`, linked from the dashboard warning).
 
-**Product page** `/produits/{id}` (`ProductDetailPage.vue`, product names in the list link to it): key figures (reference, type, variants, selling price, stock cost, margin, stock with badge, units sold this year and ever), « Stock » (lots per variant, oldest sold first), « Mouvements » (paginated timeline, links to the order, supplier order or event), « Prix de vente » (history, current price first with the change from the previous one; each entry can be edited or deleted, « Ajouter un prix passé ») and « Design » (link to its design, or « Créer son design » / « Rattacher à un design »). Header: « Modifier », « Réapprovisionner ».
+**Product page** `/products/{id}` (`ProductDetailPage.vue`, product names in the list link to it): key figures (reference, type, variants, selling price, stock cost, margin, stock with badge, units sold this year and ever), « Stock » (lots per variant, oldest sold first), « Mouvements » (paginated timeline, links to the order, supplier order or event), « Prix de vente » (history, current price first with the change from the previous one; each entry can be edited or deleted, « Ajouter un prix passé ») and « Design » (link to its design, or « Créer son design » / « Rattacher à un design »). Header: « Modifier », « Réapprovisionner ».

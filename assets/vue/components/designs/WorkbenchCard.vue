@@ -10,7 +10,7 @@ const remaining = computed(() => props.design.adaptationsTotal - props.design.ad
 </script>
 
 <template>
-    <a :href="`/creations/${design.id}`" class="workbench-card">
+    <a :href="`/designs/${design.id}`" class="workbench-card">
         <span v-if="design.collection" class="workbench-card__collection">{{ design.collection.name }}</span>
         <span class="workbench-card__name">{{ design.name }}</span>
         <span class="workbench-card__gabarits">

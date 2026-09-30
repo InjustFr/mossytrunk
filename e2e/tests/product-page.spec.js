@@ -8,7 +8,7 @@ test('the product page shows stock, movements and selling price history', async 
     const product = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400 });
     await restock(request, product, { quantity: 20, totalPaid: 1_000 });
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(product.name);
     await page.getByRole('link', { name: product.name }).click();
 
@@ -30,7 +30,7 @@ test('the product page shows stock, movements and selling price history', async 
 test('fix an imported selling price and date it, then record the price it had before', async ({ page, request }) => {
     const product = await createProduct(request, { name: unique('Import'), sellingPrice: 99_900 });
 
-    await page.goto(`/produits/${product.id}`);
+    await page.goto(`/products/${product.id}`);
     const prices = page.getByRole('region', { name: 'Prix de vente' });
     await prices.getByRole('button', { name: /^Modifier le prix du/ }).click();
     await prices.getByLabel('Prix (€)').fill('4,50');
@@ -60,7 +60,7 @@ test('an existing product gets its design, then a new declination becomes a new 
     }
     const product = await createProduct(request, { name: unique('Héron'), sellingPrice: 450 });
 
-    await page.goto(`/produits/${product.id}`);
+    await page.goto(`/products/${product.id}`);
     const design = page.getByRole('region', { name: 'Design' });
     await design.getByRole('button', { name: 'Créer son design' }).click();
     await choose(page, design.getByRole('combobox', { name: 'Gabarit' }), glossy);

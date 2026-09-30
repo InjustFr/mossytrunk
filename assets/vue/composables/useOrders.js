@@ -4,7 +4,7 @@ import { useApi } from './useApi.js';
 export function useOrders() {
     const api = useApi();
     const orders = ref([]);
-    // Pre-selected by links such as /commandes?event=<id> from an event report.
+    // Pre-selected by links such as /orders?event=<id> from an event report.
     const eventFilter = ref(new URLSearchParams(window.location.search).get('event') ?? '');
 
     async function load() {

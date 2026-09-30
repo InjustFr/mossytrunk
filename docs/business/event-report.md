@@ -4,7 +4,7 @@ At the end of an event the user wants to know what was sold, what was spent and 
 The report is **computed on the fly** from the event and its orders — nothing is stored.
 
 Model: `src/Domain/Reporting/EventResult.php`, `SalesFigures.php` (formula shared with the [dashboard](dashboard.md)), `UrssafContribution.php`, `ProductSales.php`;
-use case `GetEventReport` → `GET /api/events/{id}/report`; UI: report card on `/evenements/{id}` (`EventReport.vue`).
+use case `GetEventReport` → `GET /api/events/{id}/report`; UI: report card on `/events/{id}` (`EventReport.vue`).
 
 ## Formula
 

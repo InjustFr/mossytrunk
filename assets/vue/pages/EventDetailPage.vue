@@ -65,11 +65,11 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 
 <template>
     <AppLayout :title="event?.name ?? 'Événement'">
-        <template #back><a class="back-link" href="/evenements"><ArrowLeft size="0.875rem" aria-hidden="true" /> Marchés & salons</a></template>
+        <template #back><a class="back-link" href="/events"><ArrowLeft size="0.875rem" aria-hidden="true" /> Marchés & salons</a></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>
-                <BaseButton variant="secondary" :href="`/evenements/${event.id}/inventaire`">Faire l'inventaire</BaseButton>
+                <BaseButton variant="secondary" :href="`/events/${event.id}/stock-check`">Faire l'inventaire</BaseButton>
                 <BaseButton @click="openExpense()">Ajouter une dépense</BaseButton>
             </template>
         </template>

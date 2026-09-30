@@ -41,7 +41,7 @@ async function onSubmit() {
     try {
         await takeStockCheck(props.eventId, counted.value.map((line) => ({ productId: line.productId, variant: line.variant, counted: counts[keyOf(line)] })));
         toast.success(`Inventaire enregistré : ${plural(counted.value.length, 'article compté', 'articles comptés')}.`);
-        visit(`/evenements/${props.eventId}`);
+        visit(`/events/${props.eventId}`);
     } catch (exception) {
         error.value = exception.message;
     } finally {
@@ -57,7 +57,7 @@ onMounted(async () => {
 
 <template>
     <AppLayout title="Inventaire">
-        <template #back><a class="back-link" :href="`/evenements/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? 'Événement' }}</a></template>
+        <template #back><a class="back-link" :href="`/events/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? 'Événement' }}</a></template>
         <template #actions>
             <BaseButton :loading="saving" :disabled="counted.length === 0" @click="onSubmit">Enregistrer l'inventaire</BaseButton>
         </template>

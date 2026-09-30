@@ -7,7 +7,7 @@ test('schedule an event and track its expenses', async ({ page }) => {
     const start = uniqueDay();
     const end = uniqueDay(2);
 
-    await page.goto('/evenements');
+    await page.goto('/events');
     await page.getByRole('button', { name: 'Nouveau marché ou salon' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau marché ou salon' }).locator('form');
     await form.getByLabel('Nom').fill(name);
@@ -44,7 +44,7 @@ test('schedule an event and track its expenses', async ({ page }) => {
 
 test('refuses overlapping events', async ({ page }) => {
     const day = uniqueDay();
-    await page.goto('/evenements');
+    await page.goto('/events');
     const form = page.getByRole('dialog').locator('form');
 
     for (const name of [unique('Premier'), unique('Second')]) {
@@ -73,7 +73,7 @@ test('event report details expenses, orders, URSSAF and the result', async ({ pa
         expect(response.status()).toBe(201);
     }
 
-    await page.goto(`/evenements/${event.id}`);
+    await page.goto(`/events/${event.id}`);
     const report = page.locator('.event-report');
     await expect(report.locator('.receipt__line')).toHaveText([
         /Chiffre d'affaires\s*160,00/,
@@ -118,7 +118,7 @@ test('order recap groups sales by type, product and variant', async ({ page, req
     });
     expect(response.status()).toBe(201);
 
-    await page.goto(`/evenements/${event.id}`);
+    await page.goto(`/events/${event.id}`);
     const recap = page.getByTestId('order-recap');
     const group = recap.locator('.order-recap__group', { hasText: printType.name });
     await expect(group.locator('.order-recap__row--group')).toContainText('3 art.');
@@ -137,7 +137,7 @@ test('pick a multi-day range from the calendar', async ({ page }) => {
     const end = uniqueDay(2);
     const name = unique('Festival');
 
-    await page.goto('/evenements');
+    await page.goto('/events');
     await page.getByRole('button', { name: 'Nouveau marché ou salon' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau marché ou salon' }).locator('form');
     await form.getByLabel('Nom').fill(name);

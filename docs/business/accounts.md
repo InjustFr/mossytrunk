@@ -32,8 +32,8 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 
 | Page | URL |
 |---|---|
-| Connexion | `/connexion` |
-| Mot de passe oublié | `/mot-de-passe/oublie` |
-| Choix du mot de passe (invitation or reset link) | `/mot-de-passe/definir/{token}` → `/mot-de-passe/definir` |
-| Déconnexion (POST) | `/deconnexion` |
-| Paramètres | `/parametres` — API `GET /api/workspace/settings`; services connectés: `/api/services` (see [imports.md](imports.md)) |
+| Connexion | `/login` |
+| Mot de passe oublié | `/password/forgot` |
+| Choix du mot de passe (invitation or reset link) | `/password/set/{token}` → `/password/set` |
+| Déconnexion (POST) | `/logout` |
+| Paramètres | `/settings` — API `GET /api/workspace/settings`; services connectés: `/api/services` (see [imports.md](imports.md)) |

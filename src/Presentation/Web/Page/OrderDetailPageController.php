@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 #[AsController]
-#[Route('/commandes/{id}', name: 'order_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+#[Route('/orders/{id}', name: 'order_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
 final readonly class OrderDetailPageController
 {
     public function __construct(private VuePage $page)

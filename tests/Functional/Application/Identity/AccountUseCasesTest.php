@@ -118,7 +118,7 @@ final class AccountUseCasesTest extends KernelTestCase
         $messages = self::getMailerMessages();
         $email = end($messages);
         self::assertInstanceOf(Email::class, $email);
-        self::assertSame(1, preg_match('#/mot-de-passe/definir/([0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
+        self::assertSame(1, preg_match('#/password/set/([0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
 
         return $matches[1];
     }

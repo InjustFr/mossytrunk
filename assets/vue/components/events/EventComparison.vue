@@ -53,7 +53,7 @@ const headers = [
         <template #default="{ rows }">
             <tr v-for="event in rows" :key="event.id">
                 <td>
-                    <a :href="`/evenements/${event.id}`">{{ event.name }}</a>
+                    <a :href="`/events/${event.id}`">{{ event.name }}</a>
                     <PackageSearch
                         v-if="event.unexplainedUnits > 0"
                         class="event-comparison__missing"

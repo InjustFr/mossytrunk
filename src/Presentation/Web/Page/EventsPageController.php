@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/evenements', name: 'events', methods: ['GET'])]
+#[Route('/events', name: 'events', methods: ['GET'])]
 final readonly class EventsPageController
 {
     public function __construct(private VuePage $page)

@@ -14,7 +14,7 @@ test('dashboard shows the results of a year, month by month', async ({ page, req
     expect(response.status()).toBe(201);
 
     await page.goto('/');
-    await expect(page).toHaveURL(/\/tableau-de-bord$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
     await choose(page, page.getByRole('combobox', { name: 'Année' }), '2035');
 
     // CA 100 − achats 25 − dépenses 20 − URSSAF 12,80 = 42,20

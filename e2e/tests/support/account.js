@@ -4,7 +4,7 @@ export const E2E_PASSWORD = 'mossytrunk-e2e-password';
 export const AUTH_STATE = '.auth/user.json';
 
 export async function signIn(page, email = E2E_EMAIL, password = E2E_PASSWORD) {
-    await page.goto('/connexion');
+    await page.goto('/login');
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Mot de passe').fill(password);
     await page.getByRole('button', { name: 'Se connecter' }).click();

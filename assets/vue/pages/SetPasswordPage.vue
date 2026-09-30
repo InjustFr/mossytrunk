@@ -17,14 +17,14 @@ defineProps({
     <AuthLayout :title="invitation ? 'Bienvenue' : 'Nouveau mot de passe'">
         <template v-if="linkError">
             <AuthMessage>{{ linkError }}</AuthMessage>
-            <a href="/mot-de-passe/oublie">Recevoir un nouveau lien</a>
+            <a href="/password/forgot">Recevoir un nouveau lien</a>
         </template>
         <template v-else>
             <p class="set-password__intro">
                 {{ invitation ? 'Choisissez le mot de passe de votre compte.' : 'Choisissez votre nouveau mot de passe.' }}
             </p>
             <AuthMessage v-if="error">{{ error }}</AuthMessage>
-            <form class="set-password__form" method="post" action="/mot-de-passe/definir" data-turbo="false">
+            <form class="set-password__form" method="post" action="/password/set" data-turbo="false">
                 <input type="hidden" name="_csrf_token" :value="csrfToken">
                 <FormField label="Mot de passe" :hint="`Au moins ${minLength} caractères.`">
                     <input type="password" name="password" autocomplete="new-password" :minlength="minLength" required autofocus>
@@ -37,7 +37,7 @@ defineProps({
         </template>
 
         <template #footer>
-            <a href="/connexion">Retour à la connexion</a>
+            <a href="/login">Retour à la connexion</a>
         </template>
     </AuthLayout>
 </template>

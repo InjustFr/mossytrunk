@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 #[AsController]
-#[Route('/produits/{id}', name: 'product_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+#[Route('/products/{id}', name: 'product_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
 final readonly class ProductDetailPageController
 {
     public function __construct(private VuePage $page)

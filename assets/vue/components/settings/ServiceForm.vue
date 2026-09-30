@@ -24,7 +24,7 @@ const options = reactive({
 const errors = ref({});
 const saving = ref(false);
 
-const callbackUrl = computed(() => `${window.location.origin}/parametres/${props.service.key}/retour`);
+const callbackUrl = computed(() => `${window.location.origin}/settings/${props.service.key}/callback`);
 
 function hint(field) {
     const value = connection?.values[field.name];

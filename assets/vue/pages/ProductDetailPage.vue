@@ -77,7 +77,7 @@ async function onPriceForgotten(changeId) {
 
 function onDesigned(designId) {
     toast.success('Design enregistré.');
-    visit(`/creations/${designId}`);
+    visit(`/designs/${designId}`);
 }
 
 onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]));
@@ -85,7 +85,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
 
 <template>
     <AppLayout :title="product?.displayName ?? 'Produit'">
-        <template #back><a class="back-link" href="/produits"><ArrowLeft size="0.875rem" aria-hidden="true" /> Produits</a></template>
+        <template #back><a class="back-link" href="/products"><ArrowLeft size="0.875rem" aria-hidden="true" /> Produits</a></template>
         <template #actions>
             <template v-if="product">
                 <BaseButton variant="secondary" @click="editOpen = true">Modifier</BaseButton>

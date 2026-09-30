@@ -14,7 +14,7 @@ test('place an order with automatic bundle discount while seeing the list', asyn
         action: { kind: 'fixedPrice', value: 1_000 },
     });
 
-    await page.goto('/commandes');
+    await page.goto('/orders');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
     await fillDate(form.getByRole('group', { name: 'Date', exact: true }), `${event.startDate}T14:30`);
@@ -60,7 +60,7 @@ test('place an order with automatic bundle discount while seeing the list', asyn
 test('warns when no event exists at the order date', async ({ page, request }) => {
     const sticker = await createProduct(request, { name: unique('Sticker') });
 
-    await page.goto('/commandes');
+    await page.goto('/orders');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande' }).locator('form');
     await fillDate(form.getByRole('group', { name: 'Date', exact: true }), '2099-12-31T10:00');
@@ -80,10 +80,10 @@ test('delete an order from its detail page', async ({ page, request }) => {
     });
     const order = await response.json();
 
-    await page.goto(`/commandes/${order.id}`);
+    await page.goto(`/orders/${order.id}`);
     await page.getByRole('button', { name: 'Supprimer la commande' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer la suppression' }).click();
 
-    await expect(page).toHaveURL(/\/commandes$/);
+    await expect(page).toHaveURL(/\/orders$/);
     await expect(page.getByRole('row').filter({ hasText: order.reference })).toHaveCount(0);
 });

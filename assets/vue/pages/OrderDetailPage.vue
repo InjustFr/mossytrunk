@@ -20,7 +20,7 @@ const { order, load, remove } = useOrder(props.orderId);
 
 async function onDelete() {
     await remove();
-    visit('/commandes');
+    visit('/orders');
 }
 
 onMounted(load);
@@ -28,7 +28,7 @@ onMounted(load);
 
 <template>
     <AppLayout :title="order ? `Commande ${order.reference}` : 'Commande'">
-        <template #back><a class="back-link" href="/commandes"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes</a></template>
+        <template #back><a class="back-link" href="/orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes</a></template>
         <template #actions>
             <ConfirmButton v-if="order" label="Supprimer la commande" confirm-label="Confirmer la suppression" @confirm="onDelete" />
         </template>
@@ -36,7 +36,7 @@ onMounted(load);
         <div v-if="order" class="order-detail-page">
             <p class="order-detail-page__meta">
                 {{ formatDateTime(order.placedAt) }} ·
-                <a v-if="order.event" :href="`/evenements/${order.event.id}`">{{ order.event.name }}</a>
+                <a v-if="order.event" :href="`/events/${order.event.id}`">{{ order.event.name }}</a>
                 <template v-else>Boutique {{ order.sourceLabel }}</template>
                 <span v-if="order.source !== 'manual'"> · importée depuis {{ order.sourceLabel }}</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>

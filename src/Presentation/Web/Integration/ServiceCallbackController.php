@@ -13,7 +13,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/parametres/{service}/retour', name: 'service_callback', requirements: ['service' => RouteRequirement::SERVICE], methods: ['GET'])]
+#[Route('/settings/{service}/callback', name: 'service_callback', requirements: ['service' => RouteRequirement::SERVICE], methods: ['GET'])]
 final readonly class ServiceCallbackController
 {
     public function __construct(private AuthorizationFlow $flow)
@@ -26,15 +26,15 @@ final readonly class ServiceCallbackController
         $code = $request->query->getString('code');
 
         if (null === $pending || '' === $code || !hash_equals($pending['state'], $request->query->getString('state'))) {
-            return $this->flow->outcome($service, 'refuse');
+            return $this->flow->outcome($service, 'refused');
         }
 
         try {
             $completeAuthorization($service, $code, $pending['verifier'], $this->flow->callbackUrl($service));
         } catch (DomainException) {
-            return $this->flow->outcome($service, 'erreur');
+            return $this->flow->outcome($service, 'error');
         }
 
-        return $this->flow->outcome($service, 'connecte');
+        return $this->flow->outcome($service, 'connected');
     }
 }

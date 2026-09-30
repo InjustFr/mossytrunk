@@ -16,7 +16,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
-#[Route('/connexion', name: 'login', methods: ['GET', 'POST'])]
+#[Route('/login', name: 'login', methods: ['GET', 'POST'])]
 final class LoginController extends AbstractController
 {
     public function __construct(

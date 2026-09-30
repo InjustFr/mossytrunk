@@ -37,7 +37,7 @@ Model: `src/Domain/Integration/`, `src/Application/Integration/` (ports `SalesCo
 | `ListServices` | `GET /api/services` → every service with its fields and defaults, and the workspace's connection (values, options, status, items to link) |
 | `AddConnection` | `POST /api/services` `{service, fields, salesContext?, unknownItems?}` → 201; violations on `[field]` |
 | `UpdateConnection` / `RemoveConnection` | `PUT` / `DELETE /api/services/{service}` |
-| `Authorize` | `GET /parametres/{service}/connexion` → service → `GET /parametres/{service}/retour` → `/parametres?service=…&connexion=connecte\|refuse\|erreur\|indisponible`; `DELETE /api/services/{service}/authorization` disconnects |
+| `Authorize` | `GET /settings/{service}/connect` → service → `GET /settings/{service}/callback` → `/settings?service=…&connection=connected\|refused\|error\|unavailable`; `DELETE /api/services/{service}/authorization` disconnects |
 | `ImportSales` | `POST /api/services/{service}/import` → `{service, label, ordersImported, ordersAlreadyImported, productsCreated, typesCreated, ordersWithoutEvent, datesWithoutEvent, ordersWaitingForItems, itemsToLink, salesWithoutItems}` |
 | `ListExternalItems` / `LinkExternalItem` | `GET /api/services/{service}/items`, `PUT /api/services/{service}/items/{id}` `{productId, variant}` |
 

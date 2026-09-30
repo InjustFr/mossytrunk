@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Requirement\Requirement;
 
 #[AsController]
-#[Route('/creations/{id}', name: 'design_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
+#[Route('/designs/{id}', name: 'design_show', requirements: ['id' => Requirement::ULID], methods: ['GET'])]
 final readonly class DesignDetailPageController
 {
     public function __construct(private VuePage $page)

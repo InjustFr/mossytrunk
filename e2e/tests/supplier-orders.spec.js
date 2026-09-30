@@ -7,7 +7,7 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     const product = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500, variants: ['A4'] });
     const supplier = unique('Imprimerie');
 
-    await page.goto('/commandes-fournisseurs');
+    await page.goto('/supplier-orders');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande fournisseur' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Fournisseur' }), '＋ Nouveau fournisseur…');
@@ -45,7 +45,7 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await expect(page.getByTestId('toast').last()).toContainText('déballée');
     await expect(page.getByText('Reçue', { exact: true })).toBeVisible();
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(product.name);
     const productRow = page.getByRole('row').filter({ hasText: product.name });
     await expect(productRow).toContainText('24');

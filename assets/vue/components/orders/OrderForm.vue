@@ -48,7 +48,7 @@ async function onSubmit() {
                 Rattachée à <strong>{{ draft.preview.value.event.name }}</strong>
             </p>
             <p v-else-if="draft.preview.value" class="order-form__event order-form__event--missing" role="alert">
-                Aucun événement à cette date. <a href="/evenements">Créer un événement</a>
+                Aucun événement à cette date. <a href="/events">Créer un événement</a>
             </p>
 
             <OrderLinePicker :products="products" @add="draft.add" />

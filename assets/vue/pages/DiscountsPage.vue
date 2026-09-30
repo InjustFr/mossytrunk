@@ -53,7 +53,7 @@ async function onRemove(rule) {
     await load();
 }
 
-const requestedRuleId = new URLSearchParams(window.location.search).get('remise');
+const requestedRuleId = new URLSearchParams(window.location.search).get('rule');
 
 function openRequestedRule() {
     if (!requestedRuleId) {

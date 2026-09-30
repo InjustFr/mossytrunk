@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
-#[Route('/mot-de-passe/definir', name: 'password_set', methods: ['GET', 'POST'])]
+#[Route('/password/set', name: 'password_set', methods: ['GET', 'POST'])]
 final class SetPasswordController extends AbstractController
 {
     public const string SESSION_TOKEN = 'password_token';

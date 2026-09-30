@@ -5,7 +5,7 @@ import { createEvent, createProduct, restock } from './support/api.js';
 test('restock a product twice and read its lots, oldest first', async ({ page, request }) => {
     const product = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400 });
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(product.name);
     const row = page.getByRole('row').filter({ hasText: product.name });
     await expect(row.getByText('Stock bas')).toBeVisible();
@@ -35,7 +35,7 @@ test('an inventory with missing units flags a missing order until it is dismisse
     await restock(request, product, { quantity: 10, totalPaid: 2_000 });
     const event = await createEvent(request);
 
-    await page.goto(`/evenements/${event.id}`);
+    await page.goto(`/events/${event.id}`);
     await page.getByRole('link', { name: "Faire l'inventaire" }).click();
     await page.getByLabel('Rechercher un article').fill(product.name);
     const count = page.getByLabel(`Quantité comptée de ${product.name}`);
@@ -45,7 +45,7 @@ test('an inventory with missing units flags a missing order until it is dismisse
     await page.getByRole('button', { name: "Enregistrer l'inventaire" }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('Inventaire enregistré');
-    await expect(page).toHaveURL(new RegExp(`/evenements/${event.id}$`));
+    await expect(page).toHaveURL(new RegExp(`/events/${event.id}$`));
     const banner = page.getByRole('alert').filter({ hasText: 'Commande manquante probable' });
     await expect(banner).toContainText('3 articles');
     await expect(banner).toContainText('24,00');

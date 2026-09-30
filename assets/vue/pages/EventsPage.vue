@@ -13,7 +13,7 @@ import { useToast } from '../composables/useToast.js';
 
 const { upcoming, past, load, create } = useEvents();
 const toast = useToast();
-const modalOpen = ref(new URLSearchParams(window.location.search).has('nouveau'));
+const modalOpen = ref(new URLSearchParams(window.location.search).has('new'));
 
 async function onSaved(name) {
     toast.success(`Événement « ${name} » créé.`);

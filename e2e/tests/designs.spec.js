@@ -7,7 +7,7 @@ test('create a gabarit, decline a design on it, tick its adaptations and validat
     const response = await request.post('/api/gabarits', { data: { name: gabarit, sellingPrice: 250, adaptations: ['Marges 5 mm', 'Texte au dos'] } });
     expect(response.status()).toBe(201);
 
-    await page.goto('/creations');
+    await page.goto('/designs');
     await page.getByRole('button', { name: 'Nouveau design' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau design' }).locator('form');
     await form.getByLabel('Nom du design').fill(design);
@@ -27,7 +27,7 @@ test('create a gabarit, decline a design on it, tick its adaptations and validat
     await expect(page.getByTestId('toast').last()).toContainText('1 produit créé');
     await expect(card.getByRole('link', { name: 'Voir le produit' })).toBeVisible();
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(design);
     await expect(page.getByRole('row').filter({ hasText: design })).toContainText('2,50');
 });

@@ -17,21 +17,21 @@ final class ServiceAuthorizationTest extends WebTestCase
         $client = self::signedInClient();
         self::addEtsy($client);
 
-        $client->request('GET', '/parametres/etsy/connexion');
+        $client->request('GET', '/settings/etsy/connect');
         $authorization = (string) $client->getResponse()->headers->get('Location');
-        self::assertStringStartsWith('http://localhost/parametres/etsy/retour?code=fake-code&state=', $authorization);
+        self::assertStringStartsWith('http://localhost/settings/etsy/callback?code=fake-code&state=', $authorization);
 
         $client->request('GET', $authorization);
-        self::assertResponseRedirects('/parametres?service=etsy&connexion=connecte');
+        self::assertResponseRedirects('/settings?service=etsy&connection=connected');
     }
 
     public function testWithoutEtsyAddedTheConnectionIsUnavailable(): void
     {
         $client = self::signedInClient();
 
-        $client->request('GET', '/parametres/etsy/connexion');
+        $client->request('GET', '/settings/etsy/connect');
 
-        self::assertResponseRedirects('/parametres?service=etsy&connexion=indisponible');
+        self::assertResponseRedirects('/settings?service=etsy&connection=unavailable');
     }
 
     public function testAServiceWithoutAuthorizationCannotBeConnected(): void
@@ -39,20 +39,20 @@ final class ServiceAuthorizationTest extends WebTestCase
         $client = self::signedInClient();
         $client->jsonRequest('POST', '/api/services', ['service' => 'sumup', 'fields' => ['merchant_code' => 'MCODE', 'api_key' => 'sup_sk_test']]);
 
-        $client->request('GET', '/parametres/sumup/connexion');
+        $client->request('GET', '/settings/sumup/connect');
 
-        self::assertResponseRedirects('/parametres?service=sumup&connexion=indisponible');
+        self::assertResponseRedirects('/settings?service=sumup&connection=unavailable');
     }
 
     public function testACallbackWithAnotherStateIsRefused(): void
     {
         $client = self::signedInClient();
         self::addEtsy($client);
-        $client->request('GET', '/parametres/etsy/connexion');
+        $client->request('GET', '/settings/etsy/connect');
 
-        $client->request('GET', '/parametres/etsy/retour?code=fake-code&state=forged');
+        $client->request('GET', '/settings/etsy/callback?code=fake-code&state=forged');
 
-        self::assertResponseRedirects('/parametres?service=etsy&connexion=refuse');
+        self::assertResponseRedirects('/settings?service=etsy&connection=refused');
     }
 
     private static function addEtsy(KernelBrowser $client): void

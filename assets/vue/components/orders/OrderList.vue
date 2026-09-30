@@ -53,7 +53,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                 <tr v-if="day" class="order-list__day">
                     <th scope="rowgroup" colspan="3">
                         <span class="order-list__date">{{ formatDay(order.placedAt) }}</span>
-                        <a v-if="order.eventId" class="order-list__event" :href="`/evenements/${order.eventId}`">{{ order.eventName }}</a>
+                        <a v-if="order.eventId" class="order-list__event" :href="`/events/${order.eventId}`">{{ order.eventName }}</a>
                         <span v-else class="order-list__event order-list__event--online">Boutique {{ order.sourceLabel }}</span>
                     </th>
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
@@ -69,7 +69,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="data-table__cell--number order-list__total"><MoneyAmount :cents="order.total" /></td>
                     <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__reference">
-                        <a :href="`/commandes/${order.id}`">{{ order.reference }}</a>
+                        <a :href="`/orders/${order.id}`">{{ order.reference }}</a>
                         <span v-if="order.source !== 'manual'" class="order-list__badge">{{ order.sourceLabel }}</span>
                     </td>
                 </tr>

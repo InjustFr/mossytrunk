@@ -2,7 +2,7 @@
 
 The workspace connects its Etsy shop once; its **paid receipts** then go through the generic [import](imports.md). This page lists what is specific to Etsy.
 
-Configuration: « Paramètres › Services connectés › Ajouter un service › Etsy »: each workspace brings its own Etsy developer app — « Keystring » and « Shared secret » (stored encrypted); the app must declare the return address shown in the form, `<site>/parametres/etsy/retour`. Then « Connecter la boutique ».
+Configuration: « Paramètres › Services connectés › Ajouter un service › Etsy »: each workspace brings its own Etsy developer app — « Keystring » and « Shared secret » (stored encrypted); the app must declare the return address shown in the form, `<site>/settings/etsy/callback`. Then « Connecter la boutique ».
 Defaults: sales **online** (no event), unknown items **ask me**, line prices **listed**.
 
 Code: `src/Infrastructure/Connector/Etsy/` — `EtsyConnector` (`AuthorizingConnector`), `EtsyApiGateway`, `EtsyPayloadMapper`, `FakeEtsyGateway` (test env: fake consent that redirects straight back, fixture `tests/Fixtures/etsy/receipts.json`).

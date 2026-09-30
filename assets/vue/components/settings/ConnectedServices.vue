@@ -43,13 +43,13 @@ function status(service) {
                     </div>
                 </dl>
                 <p v-if="service.connection.itemsToLink" class="connected-services__waiting">
-                    <a href="/commandes">{{ plural(service.connection.itemsToLink, 'article à associer', 'articles à associer') }}</a>
+                    <a href="/orders">{{ plural(service.connection.itemsToLink, 'article à associer', 'articles à associer') }}</a>
                 </p>
             </div>
             <div class="connected-services__actions">
                 <BaseButton
                     v-if="service.authorizes && service.connection.configured && !service.connection.authorized"
-                    :href="`/parametres/${service.key}/connexion`"
+                    :href="`/settings/${service.key}/connect`"
                     data-turbo="false"
                 >
                     Connecter la boutique

@@ -21,7 +21,7 @@ defineProps({
         <template v-else>
             <p class="forgot-password__intro">Indiquez votre email : nous vous enverrons un lien pour choisir un nouveau mot de passe.</p>
             <AuthMessage v-if="error">{{ error }}</AuthMessage>
-            <form class="forgot-password__form" method="post" action="/mot-de-passe/oublie" data-turbo="false">
+            <form class="forgot-password__form" method="post" action="/password/forgot" data-turbo="false">
                 <input type="hidden" name="_csrf_token" :value="csrfToken">
                 <FormField label="Email">
                     <input type="email" name="email" :value="email" autocomplete="email" required autofocus>
@@ -31,7 +31,7 @@ defineProps({
         </template>
 
         <template #footer>
-            <a href="/connexion">Retour à la connexion</a>
+            <a href="/login">Retour à la connexion</a>
         </template>
     </AuthLayout>
 </template>

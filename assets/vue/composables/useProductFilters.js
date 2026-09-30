@@ -1,16 +1,16 @@
 import { computed, ref } from 'vue';
 
 export const UNTYPED = '__untyped__';
-export const MISSING_COST_PARAM = 'prix-achat';
+export const MISSING_COST_PARAM = 'purchase-price';
 export const STOCK_PARAM = 'stock';
 
 /** Type + text filters over a product list, and a selection limited to what is visible. */
 export function useProductFilters(products) {
     const typeId = ref('');
     const search = ref('');
-    const missingCost = ref(new URLSearchParams(window.location.search).get(MISSING_COST_PARAM) === 'manquant');
+    const missingCost = ref(new URLSearchParams(window.location.search).get(MISSING_COST_PARAM) === 'missing');
     const missingCostCount = computed(() => products.value.filter((product) => product.buyingPrice === 0).length);
-    const lowStock = ref(new URLSearchParams(window.location.search).get(STOCK_PARAM) === 'bas');
+    const lowStock = ref(new URLSearchParams(window.location.search).get(STOCK_PARAM) === 'low');
     const lowStockCount = computed(() => products.value.filter((product) => product.lowStock).length);
     const selectedIds = ref([]);
 

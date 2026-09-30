@@ -14,7 +14,7 @@ export async function latestEmailTo(request, email) {
 }
 
 export async function passwordLinkFrom(message) {
-    return new URL(message.HTML.match(/https?:\/\/[^"'\s<]+\/mot-de-passe\/definir\/[0-9a-f]+/)[0]).pathname;
+    return new URL(message.HTML.match(/https?:\/\/[^"'\s<]+\/password\/set\/[0-9a-f]+/)[0]).pathname;
 }
 
 export async function clearEmailsTo(request, email) {

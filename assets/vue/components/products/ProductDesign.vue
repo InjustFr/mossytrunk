@@ -44,7 +44,7 @@ async function onSubmit() {
 
 <template>
     <div class="product-design">
-        <a v-if="design" :href="`/creations/${design.id}`" class="product-design__link">
+        <a v-if="design" :href="`/designs/${design.id}`" class="product-design__link">
             <Palette size="1.25rem" aria-hidden="true" />
             <span>
                 <strong>{{ design.name }}</strong>
@@ -57,7 +57,7 @@ async function onSubmit() {
                 <BaseButton variant="secondary" :disabled="gabarits.length === 0" @click="mode = 'create'">Créer son design</BaseButton>
                 <BaseButton variant="ghost" :disabled="gabarits.length === 0 || designs.length === 0" @click="mode = 'attach'">Rattacher à un design</BaseButton>
             </div>
-            <p v-if="gabarits.length === 0" class="product-design__hint">Créez d'abord un gabarit depuis la page <a href="/creations">Créations</a>.</p>
+            <p v-if="gabarits.length === 0" class="product-design__hint">Créez d'abord un gabarit depuis la page <a href="/designs">Créations</a>.</p>
             <form v-if="mode" class="product-design__form" novalidate @submit.prevent="onSubmit">
                 <FormField v-if="mode === 'attach'" as="group" label="Design">
                     <BaseSelect v-model="form.designId" :options="designOptions" aria-label="Design" placeholder="Choisir un design" />

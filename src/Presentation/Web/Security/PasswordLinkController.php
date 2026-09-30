@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/mot-de-passe/definir/{token}', name: 'password_set_link', requirements: ['token' => '[0-9a-f]{40,}'], methods: ['GET'])]
+#[Route('/password/set/{token}', name: 'password_set_link', requirements: ['token' => '[0-9a-f]{40,}'], methods: ['GET'])]
 final class PasswordLinkController extends AbstractController
 {
     public function __invoke(Request $request, string $token): RedirectResponse

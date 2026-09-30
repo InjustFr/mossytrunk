@@ -14,7 +14,7 @@ test('products split per variant are gathered into one product, their sales with
     expect(response.status()).toBe(201);
     const order = await response.json();
 
-    await page.goto('/produits');
+    await page.goto('/products');
     const search = page.getByLabel('Rechercher un produit');
     await search.fill(lichen.name);
     await page.getByRole('button', { name: `Faire de ${lichen.name} une variante` }).click();
@@ -38,6 +38,6 @@ test('products split per variant are gathered into one product, their sales with
     await expect(rows).toHaveCount(1);
     await expect(rows).toContainText('Lichen, Fougère');
 
-    await page.goto(`/commandes/${order.id}`);
+    await page.goto(`/orders/${order.id}`);
     await expect(page.getByRole('cell', { name: `${mug} — Lichen` })).toBeVisible();
 });

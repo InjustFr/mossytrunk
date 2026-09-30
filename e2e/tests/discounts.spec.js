@@ -13,7 +13,7 @@ test('create "2 prints and 1 sticker for 15 €", start it today and delete it',
     const event = await createEvent(request);
     const name = unique('2 prints et 1 sticker pour 15 €');
 
-    await page.goto('/remises');
+    await page.goto('/discounts');
     await page.getByRole('button', { name: 'Nouvelle remise' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle remise' }).locator('form');
     await form.getByLabel('Nom').fill(name);
@@ -58,7 +58,7 @@ test('a product condition and an amount off, edited afterwards', async ({ page, 
     const tshirt = await createProduct(request, { name: unique('T-shirt'), sellingPrice: 2_500, variants: ['S', 'M'] });
     const name = unique('T-shirt −5 €');
 
-    await page.goto('/remises');
+    await page.goto('/discounts');
     await page.getByRole('button', { name: 'Nouvelle remise' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle remise' }).locator('form');
     await form.getByLabel('Nom').fill(name);
@@ -89,7 +89,7 @@ test('stopping a running discount ends it yesterday; an expired discount has no 
     });
     expect(response.status()).toBe(201);
 
-    await page.goto('/remises');
+    await page.goto('/discounts');
     const item = page.getByTestId(`discount-rule-${name}`);
     await expect(item).toContainText('En cours');
     await item.getByRole('switch').uncheck();

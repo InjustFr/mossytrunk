@@ -3,7 +3,7 @@ import { forgetService } from './support/api.js';
 
 test('add SumUp from the settings: its API key is never shown again', async ({ page, request }) => {
     await forgetService(request, 'sumup');
-    await page.goto('/tableau-de-bord');
+    await page.goto('/dashboard');
     await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Paramètres' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Paramètres' })).toBeVisible();
 
@@ -48,15 +48,15 @@ test('delete every order, then every product, after a warning', async ({ page, r
     const order = await request.post('/api/orders', { data: { placedAt: '2037-05-10T11:00', lines: [{ productId: product.id, variant: null, quantity: 1 }] } });
     expect(order.status()).toBe(201);
 
-    await page.goto('/parametres');
+    await page.goto('/settings');
     await expect(page.getByText('Ces suppressions sont définitives')).toBeVisible();
 
     await page.getByRole('button', { name: 'Supprimer toutes les commandes' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Annuler' }).click();
-    await page.goto('/commandes');
+    await page.goto('/orders');
     await expect(page.getByRole('link', { name: 'Salon à effacer' })).toBeVisible();
 
-    await page.goto('/parametres');
+    await page.goto('/settings');
     await page.getByRole('button', { name: 'Supprimer toutes les commandes' }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Tout supprimer' }).click();
     await expect(page.getByTestId('toast').filter({ hasText: 'Commandes supprimées' })).toBeVisible();
@@ -65,8 +65,8 @@ test('delete every order, then every product, after a warning', async ({ page, r
     await page.getByRole('alertdialog').getByRole('button', { name: 'Tout supprimer' }).click();
     await expect(page.getByTestId('toast').filter({ hasText: 'Produits supprimés' })).toBeVisible();
 
-    await page.goto('/commandes');
+    await page.goto('/orders');
     await expect(page.getByRole('link', { name: 'Salon à effacer' })).toHaveCount(0);
-    await page.goto('/produits');
+    await page.goto('/products');
     await expect(page.getByText('Badge à effacer')).toHaveCount(0);
 });

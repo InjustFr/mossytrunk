@@ -19,7 +19,7 @@ defineProps({
         <TransitionGroup name="order-totals__discount">
             <div v-for="discount in discounts" :key="discount.label" class="order-totals__row order-totals__row--discount">
                 <dt>
-                    <a v-if="linkRules && discount.ruleId" :href="`/remises?remise=${discount.ruleId}`" class="order-totals__rule">{{ discount.label }}</a>
+                    <a v-if="linkRules && discount.ruleId" :href="`/discounts?rule=${discount.ruleId}`" class="order-totals__rule">{{ discount.label }}</a>
                     <template v-else>{{ discount.label }}</template>
                 </dt>
                 <dd>− <MoneyAmount :cents="discount.amount" /></dd>

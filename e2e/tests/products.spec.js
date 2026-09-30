@@ -9,7 +9,7 @@ test('create a product with variants and a suggested reference, then change its 
     const name = unique('T-shirt');
     const reference = uniqueCode('TSH-');
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await form.getByLabel('Nom').fill(name);
@@ -45,7 +45,7 @@ test('create a product with variants and a suggested reference, then change its 
 });
 
 test('shows validation errors inline', async ({ page }) => {
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog').locator('form');
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
@@ -56,7 +56,7 @@ test('shows validation errors inline', async ({ page }) => {
 test('create a type inline with its colour and display products as "Type Nom"', async ({ page, request }) => {
     const typeName = unique('Print');
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('button', { name: 'Nouveau produit' }).click();
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Type' }), '＋ Créer un type…');
@@ -84,7 +84,7 @@ test('filter by type and edit the selection in batch', async ({ page, request })
     const fougere = await createProduct(request, { name: 'Fougère', sellingPrice: 450, type: sticker });
     const other = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500 });
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: sticker.name }).click();
     await expect(page.getByRole('row').filter({ hasText: other.displayName })).toHaveCount(0);
     await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
@@ -113,7 +113,7 @@ test('long lists are paginated', async ({ page, request }) => {
         await createProduct(request, { name: `Modèle ${String(i).padStart(2, '0')}`, sellingPrice: 300, type });
     }
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: type.name }).click();
 
     const pagination = page.getByRole('navigation', { name: 'Pagination' });
@@ -133,7 +133,7 @@ test('the dashboard leads to the products never bought', async ({ page, request 
     const unknown = await createProduct(request, { name: unique('Mystère'), sellingPrice: 1_000, buyingPrice: 0 });
     const known = await createProduct(request, { name: unique('Connu'), sellingPrice: 1_000, buyingPrice: 400 });
 
-    await page.goto('/tableau-de-bord');
+    await page.goto('/dashboard');
     await page.getByRole('status').getByRole('link', { name: "Voir les produits sans coût d'achat" }).click();
 
     const missingCost = page.getByRole('button', { name: /sans coût d'achat/ });
@@ -152,7 +152,7 @@ test('the dashboard leads to the products never bought', async ({ page, request 
 test('delete a product', async ({ page, request }) => {
     const doomed = await createProduct(request, { name: unique('Obsolète') });
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(doomed.name);
     await page.getByRole('button', { name: `Supprimer ${doomed.name}` }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer ?' }).click();
@@ -166,7 +166,7 @@ test('create a product type with a colour and a suggested code, then rename it, 
     const renamed = unique('Affiche');
     const code = uniqueCode('A').slice(0, 8);
 
-    await page.goto('/produits');
+    await page.goto('/products');
     await page.getByRole('button', { name: 'Types de produit' }).click();
     const types = page.getByRole('dialog', { name: 'Types de produit' });
     await types.getByRole('button', { name: 'Ajouter un type' }).click();

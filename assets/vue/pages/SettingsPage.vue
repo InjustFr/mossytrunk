@@ -26,19 +26,19 @@ const allAdded = computed(() => services.services.value.every((service) => servi
 const available = computed(() => services.services.value.map((service) => service.label).join(' ou '));
 
 const CONNECTION_OUTCOMES = {
-    connecte: ['success', (label) => `${label} connecté : ses commandes s'importent depuis la page Commandes.`],
-    refuse: ['error', (label) => `La connexion à ${label} a été annulée.`],
-    erreur: ['error', (label) => `${label} n'a pas pu confirmer la connexion. Réessayez.`],
-    indisponible: ['error', (label) => `Complétez d'abord les accès de ${label}.`],
+    connected: ['success', (label) => `${label} connecté : ses commandes s'importent depuis la page Commandes.`],
+    refused: ['error', (label) => `La connexion à ${label} a été annulée.`],
+    error: ['error', (label) => `${label} n'a pas pu confirmer la connexion. Réessayez.`],
+    unavailable: ['error', (label) => `Complétez d'abord les accès de ${label}.`],
 };
 
 function announceConnectionOutcome() {
     const params = new URLSearchParams(window.location.search);
-    const outcome = CONNECTION_OUTCOMES[params.get('connexion')];
+    const outcome = CONNECTION_OUTCOMES[params.get('connection')];
     if (!outcome) return;
     const service = services.services.value.find((candidate) => candidate.key === params.get('service'));
     toast[outcome[0]](outcome[1](service?.label ?? 'Le service'));
-    params.delete('connexion');
+    params.delete('connection');
     params.delete('service');
     window.history.replaceState(window.history.state, '', `${window.location.pathname}${params.size ? `?${params}` : ''}`);
 }

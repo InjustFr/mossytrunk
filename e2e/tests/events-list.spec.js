@@ -11,7 +11,7 @@ test('events list shows each event turnover and result', async ({ page, request 
     });
     expect(response.status()).toBe(201);
 
-    await page.goto('/evenements');
+    await page.goto('/events');
     const item = page.getByRole('listitem').filter({ hasText: event.name });
     await expect(item).toContainText('Dépenses engagées');
     await expect(item).toContainText('100,00');
@@ -23,7 +23,7 @@ test('events are split between upcoming and past ones', async ({ page, request }
     const past = await createEvent(request, { name: unique('Salon passé'), startDate: '2019-05-04' });
     const upcoming = await createEvent(request, { name: unique('Salon à venir') });
 
-    await page.goto('/evenements');
+    await page.goto('/events');
     const upcomingSection = page.getByRole('region', { name: 'À venir' });
     const pastSection = page.getByRole('region', { name: 'Passés' });
 

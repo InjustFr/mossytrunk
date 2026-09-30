@@ -115,7 +115,7 @@ final class ImportPoliciesTest extends KernelTestCase
     private function connectEtsy(?SalesContext $salesContext = null, ?UnknownItems $unknownItems = null): void
     {
         ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'etsy', ['keystring' => 'keystring123', 'shared_secret' => 'shared-secret'], $salesContext, $unknownItems);
-        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/parametres/etsy/retour');
+        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/settings/etsy/callback');
     }
 
     private function import(string $service): ImportReport

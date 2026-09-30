@@ -38,7 +38,7 @@ const eventBars = computed(() => dashboard.value.events.map((event) => ({
     meta: formatDate(event.startDate),
     value: event.result,
     turnover: event.turnover,
-    href: `/evenements/${event.id}`,
+    href: `/events/${event.id}`,
 })));
 
 onMounted(() => Promise.all([load(), loadTypes()]));
@@ -56,7 +56,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 Le tableau de bord se remplit avec les commandes de vos événements : créez un événement, puis saisissez ses commandes ou importez-les depuis un service connecté.
             </p>
             <div class="dashboard-page__welcome-actions">
-                <BaseButton @click="visit('/evenements?nouveau')">Créer un événement</BaseButton>
+                <BaseButton @click="visit('/events?new')">Créer un événement</BaseButton>
             </div>
         </section>
 
@@ -65,7 +65,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 <TriangleAlert size="1rem" aria-hidden="true" />
                 <span>
                     {{ plural(dashboard.productsWithoutCost, 'produit n\'a', 'produits n\'ont') }} jamais été acheté{{ dashboard.productsWithoutCost > 1 ? 's' : '' }} : leur coût compte pour 0 €, le résultat est donc surestimé.
-                    <a href="/produits?prix-achat=manquant">Voir les produits sans coût d'achat</a>
+                    <a href="/products?purchase-price=missing">Voir les produits sans coût d'achat</a>
                 </span>
             </p>
             <p v-if="dashboard.productsLowOnStock + dashboard.productsOutOfStock > 0" class="dashboard-page__check" role="status">
@@ -73,7 +73,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 <span>
                     <template v-if="dashboard.productsOutOfStock > 0">{{ plural(dashboard.productsOutOfStock, 'produit a', 'produits ont') }} un stock négatif. </template>
                     <template v-if="dashboard.productsLowOnStock > 0">{{ plural(dashboard.productsLowOnStock, 'produit arrive', 'produits arrivent') }} sous leur seuil de stock bas. </template>
-                    <a href="/produits?stock=bas">Voir les produits à réapprovisionner</a>
+                    <a href="/products?stock=low">Voir les produits à réapprovisionner</a>
                 </span>
             </p>
             <ResultReceipt :title="`Résultat ${dashboard.year}`" :turnover="dashboard.total.turnover" :lines="receiptLines" :result="dashboard.total.result" result-test="year-result">

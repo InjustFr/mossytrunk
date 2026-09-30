@@ -11,7 +11,7 @@ setup('the invited e2e user chooses a password and signs in', async ({ page, req
     await expect(page.getByText('Mot de passe enregistré')).toBeVisible();
 
     await signIn(page);
-    await expect(page).toHaveURL(/\/tableau-de-bord$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
 
     await page.context().storageState({ path: AUTH_STATE });
 });

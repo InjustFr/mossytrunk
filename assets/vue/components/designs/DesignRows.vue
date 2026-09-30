@@ -13,7 +13,7 @@ defineProps({
     <EmptyState v-if="designs.length === 0">{{ empty }}</EmptyState>
     <ul v-else class="design-rows">
         <li v-for="design in designs" :key="design.id" class="design-rows__row">
-            <a :href="`/creations/${design.id}`" class="design-rows__name">{{ design.name }}</a>
+            <a :href="`/designs/${design.id}`" class="design-rows__name">{{ design.name }}</a>
             <span class="design-rows__gabarits">{{ design.declinations.map((d) => d.gabarit.name).join(', ') || 'Pas encore décliné' }}</span>
             <StatusBadge v-if="design.status === 'validated'" tone="success">Sorti de l'atelier le {{ formatDate(design.validatedAt) }}</StatusBadge>
             <StatusBadge v-else-if="design.current" tone="warning">Sur l'établi</StatusBadge>

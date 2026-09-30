@@ -9,25 +9,25 @@ defineProps({
 });
 
 const groups = [
-    { label: null, links: [{ href: '/tableau-de-bord', label: 'Carnet de bord', icon: LayoutDashboard }] },
+    { label: null, links: [{ href: '/dashboard', label: 'Carnet de bord', icon: LayoutDashboard }] },
     {
         label: 'Ventes',
         links: [
-            { href: '/commandes', label: 'Commandes', icon: Receipt },
-            { href: '/evenements', label: 'Marchés & salons', icon: CalendarDays },
-            { href: '/remises', label: 'Remises', icon: Percent },
+            { href: '/orders', label: 'Commandes', icon: Receipt },
+            { href: '/events', label: 'Marchés & salons', icon: CalendarDays },
+            { href: '/discounts', label: 'Remises', icon: Percent },
         ],
     },
     {
         label: 'Atelier',
         links: [
-            { href: '/creations', label: 'Créations', icon: Palette },
-            { href: '/produits', label: 'Produits', icon: Tag },
-            { href: '/commandes-fournisseurs', label: 'Fournisseurs', icon: Truck },
+            { href: '/designs', label: 'Créations', icon: Palette },
+            { href: '/products', label: 'Produits', icon: Tag },
+            { href: '/supplier-orders', label: 'Fournisseurs', icon: Truck },
         ],
     },
-    { label: 'Bureau', links: [{ href: '/comptabilite', label: 'Comptabilité', icon: Landmark }] },
-    { label: null, bottom: true, links: [{ href: '/parametres', label: 'Paramètres', icon: Settings }] },
+    { label: 'Bureau', links: [{ href: '/accounting', label: 'Comptabilité', icon: Landmark }] },
+    { label: null, bottom: true, links: [{ href: '/settings', label: 'Paramètres', icon: Settings }] },
 ];
 
 const session = useSession();
@@ -68,7 +68,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                     <div v-if="session" class="app-layout__account">
                         <p class="app-layout__workspace" :title="session.workspace">{{ session.workspace }}</p>
                         <p class="app-layout__email" :title="session.email">{{ session.email }}</p>
-                        <form method="post" action="/deconnexion" data-turbo="false">
+                        <form method="post" action="/logout" data-turbo="false">
                             <input type="hidden" name="_csrf_token" :value="session.logoutToken">
                             <button type="submit" class="app-layout__logout">
                                 <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />

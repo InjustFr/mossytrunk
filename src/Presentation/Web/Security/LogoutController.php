@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/deconnexion', name: 'logout', methods: ['POST'])]
+#[Route('/logout', name: 'logout', methods: ['POST'])]
 final class LogoutController
 {
     public function __invoke(): never

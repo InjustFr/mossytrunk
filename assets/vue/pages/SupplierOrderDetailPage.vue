@@ -49,7 +49,7 @@ async function onRemove() {
     try {
         await remove(props.orderId);
         toast.success(`Commande ${order.value.reference} supprimée.`);
-        visit('/commandes-fournisseurs');
+        visit('/supplier-orders');
     } catch (error) {
         toast.error(error.message);
     }
@@ -66,7 +66,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts()]));
 
 <template>
     <AppLayout :title="order?.reference ?? 'Commande fournisseur'">
-        <template #back><a class="back-link" href="/commandes-fournisseurs"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes fournisseurs</a></template>
+        <template #back><a class="back-link" href="/supplier-orders"><ArrowLeft size="0.875rem" aria-hidden="true" /> Commandes fournisseurs</a></template>
         <template #actions>
             <template v-if="isOrdered && !receiving">
                 <ConfirmButton variant="ghost" label="Supprimer" :message="`La commande ${order.reference} sera supprimée définitivement.`" @confirm="onRemove" />

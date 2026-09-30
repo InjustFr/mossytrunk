@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('switch URSSAF periodicity and download the orders of a period as CSV', async ({ page }) => {
-    await page.goto('/comptabilite');
+    await page.goto('/accounting');
     await expect(page.getByRole('heading', { name: 'Déclarations URSSAF' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Chaque trimestre' }).click();

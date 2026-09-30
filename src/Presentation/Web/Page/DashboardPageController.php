@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/tableau-de-bord', name: 'dashboard', methods: ['GET'])]
+#[Route('/dashboard', name: 'dashboard', methods: ['GET'])]
 final readonly class DashboardPageController
 {
     public function __construct(private VuePage $page)

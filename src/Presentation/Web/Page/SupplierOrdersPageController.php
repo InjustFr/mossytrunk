@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/commandes-fournisseurs', name: 'supplier_orders', methods: ['GET'])]
+#[Route('/supplier-orders', name: 'supplier_orders', methods: ['GET'])]
 final readonly class SupplierOrdersPageController
 {
     public function __construct(private VuePage $page)

@@ -6,9 +6,9 @@ test.describe('signed out', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
 
     test('pages require signing in', async ({ page }) => {
-        await page.goto('/produits');
+        await page.goto('/products');
 
-        await expect(page).toHaveURL(/\/connexion$/);
+        await expect(page).toHaveURL(/\/login$/);
         await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible();
     });
 
@@ -20,7 +20,7 @@ test.describe('signed out', () => {
 
     test('forgot password sends a link that sets a new password', async ({ page, request }) => {
         await clearEmailsTo(request, RESET_EMAIL);
-        await page.goto('/connexion');
+        await page.goto('/login');
         await page.getByRole('link', { name: 'Mot de passe oublié ?' }).click();
         await expect(page.getByRole('heading', { name: 'Mot de passe oublié' })).toBeVisible();
         await page.getByLabel('Email').fill(RESET_EMAIL);
@@ -34,7 +34,7 @@ test.describe('signed out', () => {
         await page.getByRole('button', { name: 'Enregistrer le mot de passe' }).click();
 
         await signIn(page, RESET_EMAIL);
-        await expect(page).toHaveURL(/\/tableau-de-bord$/);
+        await expect(page).toHaveURL(/\/dashboard$/);
     });
 });
 
@@ -45,14 +45,14 @@ test('signing out returns to the login page', async ({ browser }) => {
 
     await page.getByRole('button', { name: 'Se déconnecter' }).click();
 
-    await expect(page).toHaveURL(/\/connexion$/);
-    await page.goto('/commandes');
-    await expect(page).toHaveURL(/\/connexion$/);
+    await expect(page).toHaveURL(/\/login$/);
+    await page.goto('/orders');
+    await expect(page).toHaveURL(/\/login$/);
     await context.close();
 });
 
 test('the sidebar shows the signed-in account', async ({ page }) => {
-    await page.goto('/tableau-de-bord');
+    await page.goto('/dashboard');
 
     await expect(page.getByText(E2E_EMAIL)).toBeVisible();
     await expect(page.getByText('E2E', { exact: true })).toBeVisible();

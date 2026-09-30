@@ -18,7 +18,7 @@ defineProps({
         <AuthMessage v-if="notice" variant="success">{{ notice }}</AuthMessage>
         <AuthMessage v-if="error">{{ error }}</AuthMessage>
 
-        <form class="login-form" method="post" action="/connexion" data-turbo="false">
+        <form class="login-form" method="post" action="/login" data-turbo="false">
             <input type="hidden" name="_csrf_token" :value="csrfToken">
             <FormField label="Email">
                 <input type="email" name="email" :value="lastEmail" autocomplete="email" required autofocus>
@@ -34,7 +34,7 @@ defineProps({
         </form>
 
         <template #footer>
-            <a href="/mot-de-passe/oublie">Mot de passe oublié ?</a>
+            <a href="/password/forgot">Mot de passe oublié ?</a>
         </template>
     </AuthLayout>
 </template>

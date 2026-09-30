@@ -16,7 +16,7 @@ defineProps({
             <span :class="['event-list__when', { 'event-list__when--ongoing': event.timing === 'ongoing' }]">
                 {{ event.timing === 'ongoing' ? 'En cours' : fromToday(event.startDate) }}
             </span>
-            <a class="event-list__link" :href="`/evenements/${event.id}`">
+            <a class="event-list__link" :href="`/events/${event.id}`">
                 <span class="event-list__name">{{ event.name }}</span>
                 <span class="event-list__meta">
                     {{ event.location }}, {{ formatDate(event.startDate) }}<template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>

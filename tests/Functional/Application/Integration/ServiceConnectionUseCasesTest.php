@@ -95,7 +95,7 @@ final class ServiceConnectionUseCasesTest extends KernelTestCase
     public function testChangingTheAccessOfAnAuthorizedServiceDisconnectsIt(): void
     {
         ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'etsy', ['keystring' => 'keystring123', 'shared_secret' => 'shared-secret']);
-        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/parametres/etsy/retour');
+        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/settings/etsy/callback');
 
         $this->update('etsy', ['keystring' => 'keystring123', 'shared_secret' => '']);
         self::assertTrue($this->services()['etsy']->connection?->authorized);

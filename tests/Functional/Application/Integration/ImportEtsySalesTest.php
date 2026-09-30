@@ -30,7 +30,7 @@ final class ImportEtsySalesTest extends KernelTestCase
     use ActsAsUser;
     use CreatesProducts;
 
-    private const string CALLBACK = 'https://app.test/parametres/etsy/retour';
+    private const string CALLBACK = 'https://app.test/settings/etsy/callback';
 
     private string $sticker;
     private string $print;

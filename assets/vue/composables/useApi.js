@@ -35,7 +35,7 @@ async function send(method, url, body) {
     }
 
     if (response.status === 401) {
-        visit('/connexion');
+        visit('/login');
     }
 
     const payload = await response.json().catch(() => null);

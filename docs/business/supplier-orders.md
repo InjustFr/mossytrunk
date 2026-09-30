@@ -39,7 +39,7 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 
 ## UI
 
-- **Fournisseurs** (`/commandes-fournisseurs`): orders filtered « À réceptionner » / « Reçues » / « Toutes »; « Nouvelle commande » opens a drawer (supplier with inline creation, date, product lines with quantity and total price, « Remise globale » and « Frais de livraison », each line's resulting unit cost shown live); « Fournisseurs » manages the supplier list.
-- **Commande fournisseur** (`/commandes-fournisseurs/{id}`): facts and lines (ordered, received with the gap, price paid, real unit cost vs planned). While « Commandée »: « Modifier », « Supprimer », « Déballer le colis ».
+- **Fournisseurs** (`/supplier-orders`): orders filtered « À réceptionner » / « Reçues » / « Toutes »; « Nouvelle commande » opens a drawer (supplier with inline creation, date, product lines with quantity and total price, « Remise globale » and « Frais de livraison », each line's resulting unit cost shown live); « Fournisseurs » manages the supplier list.
+- **Commande fournisseur** (`/supplier-orders/{id}`): facts and lines (ordered, received with the gap, price paid, real unit cost vs planned). While « Commandée »: « Modifier », « Supprimer », « Déballer le colis ».
 - **Déballage** (reception) is a guided, line-by-line check: « Tout est arrivé » or a counted quantity, the gap and the recomputed unit cost update live, then a summary before « Valider le déballage ».
 - The product stock history links « Commande fournisseur » lots to their order.

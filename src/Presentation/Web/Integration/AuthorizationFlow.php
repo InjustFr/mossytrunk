@@ -38,7 +38,7 @@ final readonly class AuthorizationFlow
 
     public function outcome(string $service, string $outcome): RedirectResponse
     {
-        return new RedirectResponse('/parametres?'.http_build_query(['service' => $service, 'connexion' => $outcome]));
+        return new RedirectResponse('/settings?'.http_build_query(['service' => $service, 'connection' => $outcome]));
     }
 
     private static function sessionKey(string $service): string
