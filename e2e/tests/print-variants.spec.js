@@ -16,7 +16,7 @@ test('a design drops A4 from its Print declination, and a discount on A3 prints 
     const gabarits = page.getByRole('dialog', { name: 'Gabarits' });
     await gabarits.getByLabel('Nom du gabarit').fill(gabarit);
     await choose(page, gabarits.getByRole('combobox', { name: 'Type', exact: true }), printType.name);
-    await gabarits.getByLabel('Prix de vente (€)').fill('20');
+    await gabarits.getByLabel('Prix de vente').fill('20');
     const offered = gabarits.getByRole('group', { name: 'Variantes proposées' });
     for (const variant of ['A5', 'A4', 'A3']) {
         await offered.getByRole('button', { name: variant, exact: true }).click();
@@ -43,7 +43,7 @@ test('a design drops A4 from its Print declination, and a discount on A3 prints 
     await page.getByRole('button', { name: "Sortir de l'atelier" }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Créer les produits' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 produit créé');
-    await expect(card).toContainText('A5, A3');
+    await expect(card).toContainText('A5 / A3');
 
     const product = (await (await request.get('/api/products')).json()).find((candidate) => candidate.name === design);
     expect(product.typeId).toBe(printType.id);
@@ -56,8 +56,8 @@ test('a design drops A4 from its Print declination, and a discount on A3 prints 
     await choose(page, ruleForm.getByRole('combobox', { name: 'Type de la condition 1' }), printType.name);
     await choose(page, ruleForm.getByRole('combobox', { name: 'Variante de la condition 1' }), 'A3');
     await ruleForm.getByRole('group', { name: 'Type d\'action' }).getByRole('button', { name: 'Remise en %' }).click();
-    await ruleForm.getByLabel('Pourcentage de remise').fill('10');
-    await ruleForm.getByLabel('Pourcentage de remise').press('Tab');
+    await ruleForm.getByRole('spinbutton', { name: 'Pourcentage' }).fill('10');
+    await ruleForm.getByRole('spinbutton', { name: 'Pourcentage' }).press('Tab');
     await expect(ruleForm.getByTestId('discount-rule-pricing')).toContainText('20,00');
     await expect(ruleForm.getByTestId('discount-rule-pricing')).toContainText('18,00');
     await ruleForm.getByRole('button', { name: 'Créer la remise' }).click();
@@ -69,7 +69,7 @@ test('a design drops A4 from its Print declination, and a discount on A3 prints 
     await fillDate(orderForm.getByRole('group', { name: 'Date', exact: true }), `${event.startDate}T14:30`);
     for (const variant of ['A3', 'A5']) {
         await choose(page, orderForm.getByRole('combobox', { name: 'Produit' }), `${product.displayName} — 20,00 €`);
-        await choose(page, orderForm.getByRole('combobox', { name: 'Variante' }), variant);
+        await orderForm.getByRole('group', { name: 'Variante' }).getByRole('button', { name: variant, exact: true }).click();
         await orderForm.getByRole('button', { name: 'Ajouter', exact: true }).click();
     }
 

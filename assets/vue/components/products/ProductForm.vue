@@ -5,7 +5,11 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import FormActions from '../ui/FormActions.vue';
+import FormDisclosure from '../ui/FormDisclosure.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
+import ProductTag from './ProductTag.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantPicker from './VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
@@ -34,10 +38,10 @@ const referenceSuggestion = useSuggestion(
     { follow: props.product === null },
 );
 
-const displayName = computed(() => {
-    const type = types.value.find((candidate) => candidate.id === form.typeId);
-    return [type?.prefixesNames ? type.name : null, form.name.trim()].filter(Boolean).join(' ');
-});
+const type = computed(() => types.value.find((candidate) => candidate.id === form.typeId) ?? null);
+const displayName = computed(() => [type.value?.prefixesNames ? type.value.name : null, form.name.trim()].filter(Boolean).join(' '));
+const moreOpen = ref(false);
+const moreSummary = computed(() => [form.reference, t('products.form.lowStockSummary', { threshold: form.lowStockThreshold ?? 0 })].filter(Boolean).join(', '));
 
 watch(() => props.product, (product) => {
     Object.assign(form, product
@@ -88,54 +92,51 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField as="group" :label="t('products.form.type')" :error="errors.typeId">
-                <TypeSelect v-model="form.typeId" />
-            </FormField>
+            <ProductTag :name="displayName" :reference="form.reference" :price="form.sellingPrice" :variants="form.variants" :color="type?.color" />
 
-            <FormField :label="t('products.form.name')" :error="errors.name" :hint="displayName ? t('products.form.displayed', { name: displayName }) : t('products.form.nameExample')">
-                <input v-model="form.name" type="text" required>
-            </FormField>
-
-            <FormField :label="t('products.form.reference')" :error="errors.reference" :hint="t(isEditing ? 'products.form.referenceUnique' : 'products.form.referenceSuggested')">
-                <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited()">
-            </FormField>
-
-            <div class="product-form__row">
-                <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
-                    <BaseMoneyField v-model="form.sellingPrice" />
+            <FormSection>
+                <FormField as="group" :label="t('products.form.type')" :error="errors.typeId">
+                    <TypeSelect v-model="form.typeId" />
                 </FormField>
-                <div class="product-form__cost">
-                    <span class="product-form__cost-label">{{ t('products.form.buyingPrice') }}</span>
-                    <strong v-if="isEditing && product.buyingPrice > 0"><MoneyAmount :cents="product.buyingPrice" /></strong>
-                    <span v-else class="product-form__cost-unknown">{{ t('products.form.notBoughtYet') }}</span>
-                    <span class="product-form__cost-hint">{{ t('products.form.buyingPriceHint') }}</span>
-                </div>
-            </div>
+                <FormField :label="t('products.form.name')" :error="errors.name">
+                    <input v-model="form.name" type="text" required :placeholder="t('products.form.namePlaceholder')">
+                </FormField>
+                <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
+                    <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
+                </FormField>
+                <FormField as="group" :label="t('products.form.variants')" :error="errors.variants">
+                    <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />
+                </FormField>
+            </FormSection>
 
-            <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.form.lowStockThresholdHint')">
-                <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" />
-            </FormField>
+            <FormDisclosure v-model:open="moreOpen" :title="t('products.form.more')" :summary="moreSummary">
+                <FormField :label="t('products.form.reference')" :error="errors.reference" :hint="isEditing ? null : t('products.form.referenceSuggested')">
+                    <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited()">
+                </FormField>
+                <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.form.lowStockThresholdHint')">
+                    <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" class="product-form__threshold" />
+                </FormField>
+                <FormField as="group" :label="t('products.form.buyingPrice')" :hint="t('products.form.buyingPriceHint')">
+                    <p class="product-form__fact">
+                        <MoneyAmount v-if="isEditing && product.buyingPrice > 0" :cents="product.buyingPrice" />
+                        <template v-else>{{ t('products.form.notBoughtYet') }}</template>
+                    </p>
+                </FormField>
+            </FormDisclosure>
 
-            <FormField as="group" :label="t('products.form.variants')" :error="errors.variants" :hint="t('products.form.variantsHint')">
-                <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" />
-            </FormField>
-
-            <div class="product-form__actions">
+            <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ t(isEditing ? 'products.save' : 'products.form.add') }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.product-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.product-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.product-form__cost { display: flex; flex-direction: column; gap: var(--space-1); }
-.product-form__cost-label { font-weight: 500; }
-.product-form__cost-unknown { color: var(--color-muted); }
-.product-form__cost-hint { color: var(--color-muted); font-size: 0.8rem; }
-.product-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.product-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.product-form__price,
+.product-form__threshold { max-width: 11rem; }
+.product-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; color: var(--color-text); }
 .product-form__error {
     margin: 0;
     padding: var(--space-2) var(--space-3);

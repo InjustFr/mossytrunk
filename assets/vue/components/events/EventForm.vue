@@ -3,7 +3,9 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 
 const props = defineProps({
     event: { type: Object, default: null },
@@ -47,27 +49,28 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="event-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField :label="t('events.form.name')" :error="errors.name">
-                <input v-model="form.name" type="text" required>
-            </FormField>
-            <FormField :label="t('events.form.location')" :error="errors.location">
-                <input v-model="form.location" type="text" required>
-            </FormField>
-            <FormField as="group" :label="t('events.form.dates')" :error="errors.startDate ?? errors.endDate">
-                <BaseDateRangePicker v-model:start="form.startDate" v-model:end="form.endDate" :invalid="Boolean(errors.startDate ?? errors.endDate)" />
-            </FormField>
+            <FormSection>
+                <FormField :label="t('events.form.name')" :error="errors.name">
+                    <input v-model="form.name" type="text" required :placeholder="t('events.form.namePlaceholder')">
+                </FormField>
+                <FormField :label="t('events.form.location')" :error="errors.location">
+                    <input v-model="form.location" type="text" required :placeholder="t('events.form.locationPlaceholder')">
+                </FormField>
+                <FormField as="group" :label="t('events.form.dates')" :error="errors.startDate ?? errors.endDate">
+                    <BaseDateRangePicker v-model:start="form.startDate" v-model:end="form.endDate" :invalid="Boolean(errors.startDate ?? errors.endDate)" />
+                </FormField>
+            </FormSection>
 
-            <div class="event-form__actions">
+            <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('events.form.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ isEditing ? t('events.form.save') : t('events.form.create') }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.event-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.event-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.event-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .event-form__error {
     margin: 0;
     padding: var(--space-2) var(--space-3);

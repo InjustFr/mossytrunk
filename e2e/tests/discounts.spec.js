@@ -21,9 +21,10 @@ test('create "2 prints and 1 sticker for 15 €", start it today and delete it',
     await choose(page, form.getByRole('combobox', { name: 'Type de la condition 1' }), printType.name);
     await form.getByRole('button', { name: 'Ajouter une condition' }).click();
     await choose(page, form.getByRole('combobox', { name: 'Type de la condition 2' }), stickerType.name);
-    await form.getByRole('group', { name: 'Action', exact: true }).locator('input').fill('15');
-    await fillDate(form.getByRole('group', { name: 'Valable du' }), event.startDate);
-    await fillDate(form.getByRole('group', { name: 'Au', exact: true }), event.startDate);
+    await form.getByRole('spinbutton', { name: 'Prix', exact: true }).fill('15');
+    await form.getByRole('button', { name: /^Période/ }).click();
+    await fillDate(form.getByRole('group', { name: /^Début/ }), event.startDate);
+    await fillDate(form.getByRole('group', { name: /^Fin/ }), event.startDate);
     await expect(form.getByTestId('discount-rule-pricing')).toContainText('34,00');
     await expect(form.getByTestId('discount-rule-pricing')).toContainText('15,00');
     await form.getByRole('button', { name: 'Créer la remise' }).click();
@@ -66,7 +67,7 @@ test('a product variant condition and an amount off, edited afterwards', async (
     await choose(page, form.getByRole('combobox', { name: 'Produit de la condition 1' }), tshirt.displayName);
     await choose(page, form.getByRole('combobox', { name: 'Variante de la condition 1' }), 'M');
     await form.getByRole('group', { name: 'Type d\'action' }).getByRole('button', { name: 'Remise en €' }).click();
-    await form.getByRole('group', { name: 'Action', exact: true }).locator('input').fill('5');
+    await form.getByRole('spinbutton', { name: 'Montant', exact: true }).fill('5');
     await form.getByRole('button', { name: 'Créer la remise' }).click();
 
     const item = page.getByTestId(`discount-rule-${name}`);
@@ -76,7 +77,7 @@ test('a product variant condition and an amount off, edited afterwards', async (
     const edit = page.getByRole('dialog', { name: 'Modifier la remise' }).locator('form');
     await expect(edit.getByRole('combobox', { name: 'Variante de la condition 1' })).toContainText('M');
     await edit.getByRole('group', { name: 'Type d\'action' }).getByRole('button', { name: 'Remise en %' }).click();
-    await edit.getByLabel('Pourcentage de remise').fill('20');
+    await edit.getByRole('spinbutton', { name: 'Pourcentage' }).fill('20');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(item).toContainText(`1 × ${tshirt.displayName} · M −20 %`);

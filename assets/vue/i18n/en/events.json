@@ -38,7 +38,9 @@
     },
     "form": {
         "name": "Name",
+        "namePlaceholder": "Makers market",
         "location": "Location",
+        "locationPlaceholder": "Lyon",
         "dates": "Dates",
         "cancel": "Cancel",
         "save": "Save",
@@ -67,7 +69,7 @@
     "expenseForm": {
         "label": "Label",
         "labelPlaceholder": "Stand, train, hotel…",
-        "amount": "Amount (€)",
+        "amount": "Amount",
         "cancel": "Cancel",
         "save": "Save",
         "add": "Add expense"

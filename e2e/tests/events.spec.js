@@ -23,7 +23,7 @@ test('schedule an event and track its expenses', async ({ page }) => {
         await page.getByRole('button', { name: 'Ajouter une dépense' }).click();
         const expense = page.getByRole('dialog', { name: 'Nouvelle dépense' });
         await expense.getByLabel('Libellé').fill(label);
-        await expense.getByLabel('Montant (€)').fill(amount);
+        await expense.getByLabel('Montant').fill(amount);
         await expense.getByRole('button', { name: 'Ajouter la dépense' }).click();
         await expect(expense).toHaveCount(0);
     }
@@ -32,8 +32,8 @@ test('schedule an event and track its expenses', async ({ page }) => {
 
     await page.getByRole('button', { name: 'Modifier Stand' }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier la dépense' });
-    await expect(edit.getByLabel('Montant (€)')).toHaveValue(/^300,00/);
-    await edit.getByLabel('Montant (€)').fill('320');
+    await expect(edit.getByLabel('Montant')).toHaveValue(/^300,00/);
+    await edit.getByLabel('Montant').fill('320');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('Dépense « Stand » modifiée.');
     await expect(page.getByRole('row', { name: /Total/ })).toContainText('409,50');

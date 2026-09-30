@@ -13,7 +13,6 @@ const model = defineModel({ type: String, required: true });
 
 <template>
     <RadioGroupRoot v-model="model" class="service-options" :aria-label="label">
-        <span class="service-options__label" aria-hidden="true">{{ label }}</span>
         <RadioGroupItem v-for="option in options" :key="option.value" :value="option.value" class="service-options__item">
             <span class="service-options__radio"><RadioGroupIndicator class="service-options__dot" /></span>
             <span class="service-options__text">
@@ -25,22 +24,13 @@ const model = defineModel({ type: String, required: true });
 </template>
 
 <style scoped>
-.service-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: var(--space-2); }
-
-.service-options__label {
-    grid-column: 1 / -1;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06rem;
-    text-transform: uppercase;
-    color: var(--color-muted);
-}
+.service-options { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .service-options__item {
     display: flex;
     align-items: flex-start;
     gap: var(--space-3);
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     background: var(--color-surface);
@@ -51,6 +41,7 @@ const model = defineModel({ type: String, required: true });
     transition: border-color var(--transition), background var(--transition);
 }
 
+.service-options__item:hover { border-color: var(--color-border-strong); }
 .service-options__item[data-state='checked'] { border-color: var(--color-accent); background: var(--color-accent-soft); }
 .service-options__item:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
@@ -71,6 +62,6 @@ const model = defineModel({ type: String, required: true });
 .service-options__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--color-accent); }
 
 .service-options__text { display: flex; flex-direction: column; gap: 0.125rem; }
-.service-options__name { font-weight: 600; color: var(--color-ink); }
-.service-options__description { color: var(--color-muted); font-size: 0.85rem; }
+.service-options__name { font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
+.service-options__description { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
 </style>

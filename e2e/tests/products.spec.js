@@ -6,7 +6,7 @@ import { createProduct, createType } from './support/api.js';
 const uniqueCode = (prefix) => `${prefix}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toUpperCase();
 
 test('create a product with variants and a suggested reference, then change its selling price and reference; its buying price comes from stock', async ({ page, request }) => {
-    const type = await createType(request, unique('Textile'));
+    const type = await createType(request, unique('Textile'), { variants: ['Mousse', 'Fougère'] });
     const name = unique('T-shirt');
     const displayName = `${type.name} ${name}`;
     const reference = uniqueCode('TSH-');
@@ -16,12 +16,11 @@ test('create a product with variants and a suggested reference, then change its 
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Type' }), type.name);
     await form.getByLabel('Nom').fill(name);
+    await form.getByRole('button', { name: 'Référence et stock' }).click();
     await expect(form.getByLabel('Référence')).toHaveValue(new RegExp(`^${type.code}-TSH`));
-    await form.getByLabel('Prix de vente (€)').fill('20');
-    await form.getByLabel('Nouvelle variante').fill('Mousse');
-    await form.getByLabel('Nouvelle variante').press('Enter');
-    await form.getByLabel('Nouvelle variante').fill('Fougère');
-    await form.getByLabel('Nouvelle variante').press('Enter');
+    await form.getByLabel('Prix de vente').fill('20');
+    await form.getByRole('button', { name: 'Mousse', exact: true }).click();
+    await form.getByRole('button', { name: 'Fougère', exact: true }).click();
     await expect(form.getByRole('button', { name: 'Fougère', exact: true })).toHaveAttribute('data-state', 'on');
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
@@ -37,10 +36,11 @@ test('create a product with variants and a suggested reference, then change its 
     await row.getByRole('button', { name: `Modifier ${displayName}` }).click();
     const edit = page.getByRole('dialog', { name: 'Modifier le produit' });
     await expect(edit.getByLabel('Nom')).toHaveValue(name);
+    await edit.getByRole('button', { name: 'Référence et stock' }).click();
     await expect(edit.getByLabel('Référence')).toHaveValue(new RegExp(`^${type.code}-TSH`));
     await expect(edit.getByText('Pas encore acheté')).toBeVisible();
     await edit.getByLabel('Référence').fill(reference);
-    await edit.getByLabel('Prix de vente (€)').fill('25');
+    await edit.getByLabel('Prix de vente').fill('25');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('mis à jour');
@@ -73,8 +73,8 @@ test('create a type inline with its colour and display products as "Type Nom"', 
     expect(types.find((type) => type.name === typeName).color).toBe('#a3485a');
 
     await form.getByLabel('Nom').fill('Forêt');
-    await expect(form.getByText(`Affiché « ${typeName} Forêt »`)).toBeVisible();
-    await form.getByLabel('Prix de vente (€)').fill('15');
+    await expect(form.getByRole('figure', { name: "Aperçu de l'étiquette" })).toContainText(`${typeName} Forêt`);
+    await form.getByLabel('Prix de vente').fill('15');
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${typeName} Forêt » ajouté.`);
@@ -83,7 +83,7 @@ test('create a type inline with its colour and display products as "Type Nom"', 
 });
 
 test('filter by type and edit the selection in batch', async ({ page, request }) => {
-    const sticker = await createType(request, unique('Sticker'));
+    const sticker = await createType(request, unique('Sticker'), { variants: ['Mat', 'Brillant'] });
     const mousse = await createProduct(request, { name: 'Mousse', sellingPrice: 400, type: sticker });
     const fougere = await createProduct(request, { name: 'Fougère', sellingPrice: 450, type: sticker });
     const other = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500 });
@@ -96,10 +96,8 @@ test('filter by type and edit the selection in batch', async ({ page, request })
 
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();
     const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
-    await batch.getByLabel('Changer le prix de vente').check();
-    await batch.getByLabel('Nouveau prix de vente (€)').fill('5');
-    await batch.getByRole('textbox', { name: 'Variante à ajouter' }).fill('Brillant');
-    await batch.getByRole('textbox', { name: 'Variante à ajouter' }).press('Enter');
+    await batch.getByLabel('Prix de vente').fill('5');
+    await batch.getByRole('group', { name: 'Variantes à ajouter' }).getByRole('button', { name: 'Brillant' }).click();
     await batch.getByRole('button', { name: 'Appliquer à 2 produits' }).click();
 
     await expect(page.getByTestId('toast')).toContainText('2 produits mis à jour.');
@@ -174,8 +172,9 @@ test('create a product type with a colour and a suggested code, then rename it, 
     const types = page.getByRole('dialog', { name: 'Types de produit' });
     await types.getByRole('button', { name: 'Ajouter un type' }).click();
     const dialog = page.getByRole('dialog', { name: 'Nouveau type de produit' });
-    await dialog.getByRole('textbox', { name: /^Nom / }).fill(name);
-    await expect(dialog.getByRole('textbox', { name: /^Code / })).toHaveValue(/^CAR\d*$/);
+    await dialog.getByRole('textbox', { name: /^Nom/ }).fill(name);
+    await dialog.getByRole('button', { name: 'Code et affichage' }).click();
+    await expect(dialog.getByRole('textbox', { name: /^Code/ })).toHaveValue(/^CAR\d*$/);
     await dialog.getByRole('option', { name: 'Sarcelle' }).click();
     await dialog.getByRole('button', { name: 'Créer le type' }).click();
     await expect(page.getByTestId('toast')).toContainText(`Type « ${name} » créé.`);
@@ -184,8 +183,9 @@ test('create a product type with a colour and a suggested code, then rename it, 
     await types.getByRole('button', { name: `Modifier le type ${name}` }).click();
     const edit = page.getByRole('dialog', { name: `Modifier le type ${name}` });
     await expect(edit.getByRole('option', { name: 'Sarcelle' })).toHaveAttribute('aria-selected', 'true');
-    await edit.getByRole('textbox', { name: /^Nom / }).fill(renamed);
-    await edit.getByRole('textbox', { name: /^Code / }).fill(code.toLowerCase());
+    await edit.getByRole('textbox', { name: /^Nom/ }).fill(renamed);
+    await edit.getByRole('button', { name: 'Code et affichage' }).click();
+    await edit.getByRole('textbox', { name: /^Code/ }).fill(code.toLowerCase());
     await edit.getByRole('button', { name: 'Couleur personnalisée' }).click();
     const custom = page.getByRole('dialog', { name: 'Couleur personnalisée' });
     await custom.getByLabel('Code hexadécimal').fill('#123abc');

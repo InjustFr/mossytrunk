@@ -4,7 +4,9 @@ import { Palette } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -63,17 +65,19 @@ async function onSubmit() {
                 <template #link><a href="/designs">{{ t('products.design.designsPage') }}</a></template>
             </i18n-t>
             <form v-if="mode" class="product-design__form" novalidate @submit.prevent="onSubmit">
-                <FormField v-if="mode === 'attach'" as="group" :label="t('products.design.design')">
-                    <BaseSelect v-model="form.designId" :options="designOptions" :aria-label="t('products.design.design')" :placeholder="t('products.design.chooseDesign')" />
-                </FormField>
-                <FormField as="group" :label="t('products.design.gabarit')" :hint="t('products.design.gabaritHint')">
-                    <BaseSelect v-model="form.gabaritId" :options="gabaritOptions" :aria-label="t('products.design.gabaritLabel')" :placeholder="t('products.design.chooseGabarit')" />
-                </FormField>
                 <p v-if="error" class="product-design__error" role="alert">{{ error }}</p>
-                <div class="product-design__actions">
+                <FormSection>
+                    <FormField v-if="mode === 'attach'" as="group" :label="t('products.design.design')">
+                        <BaseSelect v-model="form.designId" :options="designOptions" :aria-label="t('products.design.design')" :placeholder="t('products.design.chooseDesign')" />
+                    </FormField>
+                    <FormField as="group" :label="t('products.design.gabarit')">
+                        <BaseSelect v-model="form.gabaritId" :options="gabaritOptions" :aria-label="t('products.design.gabaritLabel')" :placeholder="t('products.design.chooseGabarit')" />
+                    </FormField>
+                </FormSection>
+                <FormActions>
                     <BaseButton variant="ghost" @click="mode = null">{{ t('products.cancel') }}</BaseButton>
                     <BaseButton type="submit" :loading="saving">{{ t(mode === 'create' ? 'products.design.createSubmit' : 'products.design.attachSubmit') }}</BaseButton>
-                </div>
+                </FormActions>
             </form>
         </template>
     </div>
@@ -88,7 +92,6 @@ async function onSubmit() {
 .product-design__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
 .product-design__hint { display: block; color: var(--color-muted); font-size: 0.8rem; }
 .product-design__choices { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-.product-design__form { display: flex; flex-direction: column; gap: var(--space-3); }
-.product-design__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.product-design__form { display: flex; flex-direction: column; gap: var(--space-4); }
 .product-design__error { margin: 0; color: var(--color-danger); font-size: 0.85rem; }
 </style>

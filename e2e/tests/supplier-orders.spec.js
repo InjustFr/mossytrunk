@@ -10,7 +10,7 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await page.goto('/supplier-orders');
     await page.getByRole('button', { name: 'Nouvelle commande' }).click();
     const form = page.getByRole('dialog', { name: 'Nouvelle commande fournisseur' }).locator('form');
-    await choose(page, form.getByRole('combobox', { name: 'Fournisseur' }), '＋ Nouveau fournisseur…');
+    await choose(page, form.getByRole('combobox', { name: 'Fournisseur' }), 'Nouveau fournisseur…');
     await form.getByLabel('Nom du nouveau fournisseur').fill(supplier);
     await form.getByRole('button', { name: 'Créer', exact: true }).click();
     await expect(form.getByRole('combobox', { name: 'Fournisseur' })).toHaveText(supplier);
@@ -18,11 +18,11 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await choose(page, form.getByRole('combobox', { name: 'Produit' }), product.name);
     await choose(page, form.getByRole('combobox', { name: 'Variante' }), 'A4');
     await form.getByRole('spinbutton', { name: 'Quantité commandée' }).fill('20');
-    await form.getByLabel('Prix total (€)').fill('60');
+    await form.getByLabel('Prix total', { exact: true }).fill('60');
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
     await expect(form.getByRole('row').filter({ hasText: `${product.name} — A4` })).toContainText('3,00');
-    await form.getByLabel('Frais de livraison (€)').fill('4');
-    await form.getByLabel('Frais de livraison (€)').press('Tab');
+    await form.getByLabel('Frais de livraison').fill('4');
+    await form.getByLabel('Frais de livraison').press('Tab');
     await expect(form.getByRole('row').filter({ hasText: `${product.name} — A4` })).toContainText('3,20');
     await expect(form.getByText('Total payé')).toContainText('64,00');
     await form.getByRole('button', { name: 'Passer la commande' }).click();

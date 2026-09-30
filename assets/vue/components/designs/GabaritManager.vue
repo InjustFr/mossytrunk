@@ -5,7 +5,9 @@ import { Pencil } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import TypeSelect from '../products/TypeSelect.vue';
@@ -72,39 +74,39 @@ async function onSubmit() {
 
         <form class="gabarit-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
-                <h3 class="gabarit-manager__title">{{ editingId ? t('designs.gabarits.editTitle') : t('designs.gabarits.newTitle') }}</h3>
-                <FormField :label="t('designs.gabarits.name')" :error="errors.name" :hint="t('designs.gabarits.nameHint')">
-                    <input v-model="form.name" type="text">
-                </FormField>
-                <FormField as="group" :label="t('designs.gabarits.type')" :error="errors.typeId">
-                    <TypeSelect v-model="form.typeId" />
-                </FormField>
-                <FormField :label="t('designs.gabarits.sellingPrice')" :error="errors.sellingPrice">
-                    <BaseMoneyField v-model="form.sellingPrice" />
-                </FormField>
-                <FormField as="group" :label="t('designs.gabarits.variants')" :error="errors.variants">
-                    <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" />
-                </FormField>
-                <FormField as="group" :label="t('designs.gabarits.adaptations')" :error="errors.adaptations" :hint="t('designs.gabarits.adaptationsHint')">
-                    <VariantsInput v-model="form.adaptations" :input-label="t('designs.gabarits.newAdaptation')" :placeholder="t('designs.gabarits.adaptationPlaceholder')" :item-label="t('designs.gabarits.adaptationItem')" />
-                </FormField>
-                <div class="gabarit-manager__actions">
+                <FormSection :title="editingId ? t('designs.gabarits.editTitle') : t('designs.gabarits.newTitle')">
+                    <FormField :label="t('designs.gabarits.name')" :error="errors.name">
+                        <input v-model="form.name" type="text" :placeholder="t('designs.gabarits.namePlaceholder')">
+                    </FormField>
+                    <FormField as="group" :label="t('designs.gabarits.type')" :error="errors.typeId">
+                        <TypeSelect v-model="form.typeId" />
+                    </FormField>
+                    <FormField :label="t('designs.gabarits.sellingPrice')" :error="errors.sellingPrice">
+                        <BaseMoneyField v-model="form.sellingPrice" class="gabarit-manager__price" />
+                    </FormField>
+                    <FormField as="group" :label="t('designs.gabarits.variants')" :error="errors.variants">
+                        <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />
+                    </FormField>
+                    <FormField as="group" :label="t('designs.gabarits.adaptations')" :error="errors.adaptations" :hint="t('designs.gabarits.adaptationsHint')">
+                        <VariantsInput v-model="form.adaptations" :input-label="t('designs.gabarits.newAdaptation')" :placeholder="t('designs.gabarits.adaptationPlaceholder')" :item-label="t('designs.gabarits.adaptationItem')" />
+                    </FormField>
+                </FormSection>
+                <FormActions>
                     <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('designs.gabarits.cancel') }}</BaseButton>
                     <BaseButton type="submit" :loading="saving">{{ editingId ? t('designs.gabarits.save') : t('designs.gabarits.add') }}</BaseButton>
-                </div>
+                </FormActions>
             </fieldset>
         </form>
     </div>
 </template>
 
 <style scoped>
-.gabarit-manager { display: flex; flex-direction: column; gap: var(--space-4); }
+.gabarit-manager { display: flex; flex-direction: column; gap: var(--space-5); }
 .gabarit-manager__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.gabarit-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 0.0625rem solid var(--color-border); }
+.gabarit-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .gabarit-manager__item--editing { background: var(--color-accent-soft); }
 .gabarit-manager__summary { display: flex; flex-direction: column; }
-.gabarit-manager__meta { color: var(--color-muted); font-size: 0.85rem; }
-.gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-3); }
-.gabarit-manager__title { margin: 0; font-size: 1rem; }
-.gabarit-manager__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.gabarit-manager__meta { color: var(--color-muted); font-size: 0.8125rem; }
+.gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }
+.gabarit-manager__price { max-width: 11rem; }
 </style>

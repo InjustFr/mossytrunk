@@ -6,7 +6,6 @@ import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
-import FormField from '../ui/FormField.vue';
 
 const { t } = useI18n();
 
@@ -57,21 +56,23 @@ function add() {
 
 <template>
     <div class="purchase-line-picker">
-        <FormField :label="t('purchasing.picker.product')">
+        <label class="purchase-line-picker__field purchase-line-picker__product">
+            <span class="purchase-line-picker__label">{{ t('purchasing.picker.product') }}</span>
             <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('purchasing.picker.searchProduct')" />
-        </FormField>
-        <div class="purchase-line-picker__details">
-            <FormField v-if="needsVariant" as="group" :label="t('purchasing.picker.variant')" class="purchase-line-picker__variant">
-                <BaseSelect v-model="variant" :options="variantOptions" :aria-label="t('purchasing.picker.variant')" />
-            </FormField>
-            <FormField as="group" :label="t('purchasing.picker.quantity')" class="purchase-line-picker__quantity">
-                <BaseNumberField v-model="quantity" :min="1" :label="t('purchasing.picker.orderedQuantity')" />
-            </FormField>
-            <FormField :label="t('purchasing.picker.totalPrice')" class="purchase-line-picker__price">
-                <BaseMoneyField v-model="totalPrice" />
-            </FormField>
-            <BaseButton variant="secondary" class="purchase-line-picker__add" @click="add">{{ t('purchasing.picker.add') }}</BaseButton>
+        </label>
+        <div v-if="needsVariant" class="purchase-line-picker__field purchase-line-picker__variant">
+            <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.variant') }}</span>
+            <BaseSelect v-model="variant" :options="variantOptions" :aria-label="t('purchasing.picker.variant')" />
         </div>
+        <div class="purchase-line-picker__field purchase-line-picker__quantity">
+            <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.quantity') }}</span>
+            <BaseNumberField v-model="quantity" :min="1" :label="t('purchasing.picker.orderedQuantity')" />
+        </div>
+        <label class="purchase-line-picker__field purchase-line-picker__price">
+            <span class="purchase-line-picker__label">{{ t('purchasing.picker.totalPrice') }}</span>
+            <BaseMoneyField v-model="totalPrice" />
+        </label>
+        <BaseButton variant="secondary" class="purchase-line-picker__add" @click="add">{{ t('purchasing.picker.add') }}</BaseButton>
         <p v-if="error" class="purchase-line-picker__error" role="alert">{{ error }}</p>
     </div>
 </template>
@@ -79,17 +80,32 @@ function add() {
 <style scoped>
 .purchase-line-picker {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3) var(--space-2);
     padding: var(--space-3);
-    border: 0.0625rem dashed var(--color-border-strong);
     border-radius: var(--radius);
+    background: var(--color-bg);
 }
 
-.purchase-line-picker__details { display: flex; align-items: flex-end; gap: var(--space-2); }
-.purchase-line-picker__variant { flex: 1 1 8rem; min-width: 0; }
-.purchase-line-picker__quantity { flex: 0 0 6.5rem; }
+.purchase-line-picker__field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.purchase-line-picker__label { color: var(--color-muted); font-size: 0.8125rem; }
+.purchase-line-picker__product { flex: 1 1 100%; }
+.purchase-line-picker__variant { flex: 1 1 7rem; }
+.purchase-line-picker__quantity { flex: 0 0 7rem; }
 .purchase-line-picker__price { flex: 0 0 7.5rem; }
+.purchase-line-picker__price :deep(.money-field__input) {
+    width: 100%;
+    min-height: 2.375rem;
+    padding: var(--space-2) var(--space-3);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.purchase-line-picker__price :deep(.money-field__input:focus) { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 0.1875rem var(--color-accent-soft); }
+
 .purchase-line-picker__add { margin-left: auto; }
-.purchase-line-picker__error { margin: 0; color: var(--color-danger); font-size: 0.85rem; }
+.purchase-line-picker__error { flex: 1 1 100%; margin: 0; color: var(--color-danger); font-size: 0.8125rem; }
 </style>

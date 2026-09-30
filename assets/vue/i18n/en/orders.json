@@ -26,15 +26,17 @@
     },
     "draft": {
         "quantityOf": "Quantity {line}",
-        "remove": "Remove {line}"
+        "remove": "Remove {line}",
+        "empty": "No items yet."
     },
     "form": {
         "date": "Date",
-        "attachedTo": "Attached to {event}",
+        "event": "Event",
         "noEvent": "No event on this date.",
         "createEvent": "Create an event",
         "noLines": "Add at least one product.",
-        "submit": "Save order"
+        "submit": "Save order",
+        "items": "Items"
     },
     "picker": {
         "product": "Product",

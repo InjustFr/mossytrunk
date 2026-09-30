@@ -74,8 +74,10 @@ function cancel() {
                 @keydown.enter.prevent="confirm"
                 @keydown.esc.prevent.stop="cancel"
             >
-            <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('purchasing.supplierSelect.create') }}</BaseButton>
-            <BaseButton variant="ghost" @click="cancel">{{ t('purchasing.supplierSelect.cancel') }}</BaseButton>
+            <div class="supplier-select__actions">
+                <BaseButton variant="ghost" @click="cancel">{{ t('purchasing.supplierSelect.cancel') }}</BaseButton>
+                <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('purchasing.supplierSelect.create') }}</BaseButton>
+            </div>
         </div>
         <span v-if="error" class="supplier-select__error" role="alert">{{ error }}</span>
     </div>
@@ -83,7 +85,7 @@ function cancel() {
 
 <style scoped>
 .supplier-select { display: flex; flex-direction: column; gap: var(--space-1); }
-.supplier-select__create { display: flex; gap: var(--space-2); }
-.supplier-select__create input { flex: 1; }
-.supplier-select__error { color: var(--color-danger); font-size: 0.85rem; }
+.supplier-select__create { display: flex; flex-direction: column; gap: var(--space-2); }
+.supplier-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.supplier-select__error { color: var(--color-danger); font-size: 0.8125rem; }
 </style>

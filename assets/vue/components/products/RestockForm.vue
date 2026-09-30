@@ -5,7 +5,9 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 const props = defineProps({
@@ -49,38 +51,35 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="restock-form__error" role="alert">{{ errors.form }}</p>
 
-            <FormField v-if="product.variants.length" as="group" :label="t('products.restock.variant')" :error="errors.variant">
-                <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.restock.variant')" />
-            </FormField>
-
-            <div class="restock-form__row">
+            <FormSection>
+                <FormField v-if="product.variants.length" as="group" :label="t('products.restock.variant')" :error="errors.variant">
+                    <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.restock.variant')" class="restock-form__narrow" />
+                </FormField>
                 <FormField as="group" :label="t('products.restock.quantity')" :error="errors.quantity">
-                    <BaseNumberField v-model="form.quantity" :min="1" :label="t('products.restock.quantity')" />
+                    <BaseNumberField v-model="form.quantity" :min="1" :label="t('products.restock.quantity')" class="restock-form__narrow" />
                 </FormField>
                 <FormField :label="t('products.restock.totalPaid')" :error="errors.totalPaid">
-                    <BaseMoneyField v-model="form.totalPaid" />
+                    <BaseMoneyField v-model="form.totalPaid" class="restock-form__narrow" />
                 </FormField>
-            </div>
+                <FormField as="group" :label="t('products.restock.unitCost')">
+                    <p class="restock-form__fact">
+                        <MoneyAmount v-if="unitCost !== null" :cents="unitCost" />
+                        <template v-else>—</template>
+                    </p>
+                </FormField>
+            </FormSection>
 
-            <p class="restock-form__unit">
-                {{ t('products.restock.unitCost') }}
-                <strong v-if="unitCost !== null"><MoneyAmount :cents="unitCost" /></strong>
-                <span v-else>—</span>
-            </p>
-
-            <div class="restock-form__actions">
+            <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ t('products.restock.submit') }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.restock-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.restock-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.restock-form__unit { display: flex; justify-content: space-between; margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-bg); color: var(--color-muted); }
-.restock-form__unit strong { color: var(--color-ink); }
-.restock-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.restock-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.restock-form :deep(.restock-form__narrow) { max-width: 11rem; }
+.restock-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: var(--color-text); }
 .restock-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

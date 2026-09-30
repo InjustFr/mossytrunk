@@ -74,20 +74,20 @@ function cancel() {
     <div class="type-select">
         <BaseSelect v-if="!creating" v-model="selected" :options="options" :placeholder="t('products.types.choose')" :aria-label="t('products.types.select')" />
         <div v-else class="type-select__create">
-            <div class="type-select__name">
-                <input
-                    ref="input"
-                    v-model="newName"
-                    type="text"
-                    :placeholder="t('products.types.nameExample')"
-                    :aria-label="t('products.types.newName')"
-                    @keydown.enter.prevent="confirm"
-                    @keydown.esc.prevent.stop="cancel"
-                >
+            <input
+                ref="input"
+                v-model="newName"
+                type="text"
+                :placeholder="t('products.types.nameExample')"
+                :aria-label="t('products.types.newName')"
+                @keydown.enter.prevent="confirm"
+                @keydown.esc.prevent.stop="cancel"
+            >
+            <TypeColorPicker v-model="newColor" />
+            <div class="type-select__actions">
                 <BaseButton variant="ghost" @click="cancel">{{ t('products.cancel') }}</BaseButton>
                 <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('products.types.createShort') }}</BaseButton>
             </div>
-            <TypeColorPicker v-model="newColor" />
         </div>
         <span v-if="error" class="type-select__error" role="alert">{{ error }}</span>
     </div>
@@ -95,8 +95,7 @@ function cancel() {
 
 <style scoped>
 .type-select { display: flex; flex-direction: column; gap: var(--space-1); }
-.type-select__create { display: flex; flex-direction: column; gap: var(--space-2); }
-.type-select__name { display: flex; gap: var(--space-2); align-items: center; }
-.type-select__name input { flex: 1; }
+.type-select__create { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
+.type-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .type-select__error { color: var(--color-danger); font-size: 0.85rem; }
 </style>

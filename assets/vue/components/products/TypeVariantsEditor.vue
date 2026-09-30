@@ -105,17 +105,16 @@ async function confirmRenaming() {
                 </template>
             </li>
         </ol>
-        <p v-else class="type-variants__empty">{{ t('products.types.variants.empty') }}</p>
         <div class="type-variants__new">
             <input
                 v-model="draft"
                 type="text"
                 maxlength="100"
-                :placeholder="t('products.variantPicker.placeholder')"
-                :aria-label="t('products.variantPicker.newVariant')"
+                :placeholder="t('products.types.variants.placeholder')"
+                :aria-label="t('products.types.variants.newVariant')"
                 @keydown.enter.prevent="add"
             >
-            <IconButton :icon="Plus" :label="t('products.variantPicker.add')" @click="add" />
+            <IconButton :icon="Plus" :label="t('products.types.variants.add')" @click="add" />
         </div>
         <span v-if="error" class="type-variants__error" role="alert">{{ error }}</span>
     </div>
@@ -138,7 +137,6 @@ async function confirmRenaming() {
 .type-variants__label { flex: 1; color: var(--color-ink); }
 .type-variants .type-variants__rename { flex: 1; min-height: 2rem; padding: var(--space-1) var(--space-2); }
 .type-variants__row :deep(.icon-button:disabled) { opacity: 0.35; cursor: default; pointer-events: none; }
-.type-variants__empty { margin: 0; color: var(--color-muted); font-size: 0.85rem; }
 .type-variants__new { display: flex; align-items: center; gap: var(--space-2); }
 .type-variants__new input { flex: 1; }
 .type-variants__error { color: var(--color-danger); font-size: 0.85rem; }

@@ -4,7 +4,9 @@ import { Pencil } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 
 const { t } = useI18n();
@@ -60,33 +62,32 @@ async function onSubmit() {
 
         <form class="supplier-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
-                <h3 class="supplier-manager__title">{{ editingId ? t('purchasing.suppliers.editTitle') : t('purchasing.suppliers.addTitle') }}</h3>
-                <FormField :label="t('purchasing.suppliers.name')" :error="errors.name">
-                    <input v-model="form.name" type="text">
-                </FormField>
-                <FormField :label="t('purchasing.suppliers.contact')" :error="errors.contact" :hint="t('purchasing.suppliers.contactHint')">
-                    <input v-model="form.contact" type="text">
-                </FormField>
-                <FormField :label="t('purchasing.suppliers.notes')" :error="errors.notes">
-                    <textarea v-model="form.notes" rows="2" />
-                </FormField>
-                <div class="supplier-manager__actions">
+                <FormSection :title="editingId ? t('purchasing.suppliers.editTitle') : t('purchasing.suppliers.addTitle')">
+                    <FormField :label="t('purchasing.suppliers.name')" :error="errors.name">
+                        <input v-model="form.name" type="text">
+                    </FormField>
+                    <FormField :label="t('purchasing.suppliers.contact')" :error="errors.contact" optional>
+                        <input v-model="form.contact" type="text" :placeholder="t('purchasing.suppliers.contactPlaceholder')">
+                    </FormField>
+                    <FormField :label="t('purchasing.suppliers.notes')" :error="errors.notes" optional>
+                        <textarea v-model="form.notes" rows="2" />
+                    </FormField>
+                </FormSection>
+                <FormActions>
                     <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('purchasing.suppliers.cancel') }}</BaseButton>
                     <BaseButton type="submit" :loading="saving">{{ editingId ? t('purchasing.suppliers.save') : t('purchasing.suppliers.add') }}</BaseButton>
-                </div>
+                </FormActions>
             </fieldset>
         </form>
     </div>
 </template>
 
 <style scoped>
-.supplier-manager { display: flex; flex-direction: column; gap: var(--space-4); }
+.supplier-manager { display: flex; flex-direction: column; gap: var(--space-5); }
 .supplier-manager__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
-.supplier-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 0.0625rem solid var(--color-border); }
+.supplier-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .supplier-manager__item--editing { background: var(--color-accent-soft); }
-.supplier-manager__contact { display: block; color: var(--color-muted); font-size: 0.85rem; }
-.supplier-manager__notes { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.85rem; white-space: pre-line; }
-.supplier-manager__form { display: flex; flex-direction: column; gap: var(--space-3); }
-.supplier-manager__title { margin: 0; font-size: 1rem; }
-.supplier-manager__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.supplier-manager__contact { display: block; color: var(--color-muted); font-size: 0.8125rem; }
+.supplier-manager__notes { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.8125rem; white-space: pre-line; }
+.supplier-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }
 </style>

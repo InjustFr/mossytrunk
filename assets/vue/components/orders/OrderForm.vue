@@ -3,7 +3,9 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import OrderDraftLines from './OrderDraftLines.vue';
 import OrderLinePicker from './OrderLinePicker.vue';
 import OrderTotals from './OrderTotals.vue';
@@ -42,69 +44,54 @@ async function onSubmit() {
 <template>
     <form class="order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField as="group" :label="t('orders.form.date')">
-                <BaseDatePicker v-model="draft.placedAt.value" with-time />
-            </FormField>
+            <FormSection>
+                <FormField as="group" :label="t('orders.form.date')">
+                    <BaseDatePicker v-model="draft.placedAt.value" with-time />
+                </FormField>
+                <Transition name="order-form__fade">
+                    <FormField v-if="draft.preview.value" as="group" :label="t('orders.form.event')">
+                        <p v-if="draft.preview.value.event" class="order-form__fact">{{ draft.preview.value.event.name }}</p>
+                        <p v-else class="order-form__fact order-form__fact--missing" role="alert">
+                            {{ t('orders.form.noEvent') }} <a href="/events">{{ t('orders.form.createEvent') }}</a>
+                        </p>
+                    </FormField>
+                </Transition>
+            </FormSection>
 
-            <p v-if="draft.preview.value?.event" class="order-form__event">
-                <i18n-t keypath="orders.form.attachedTo" scope="global"><template #event><strong>{{ draft.preview.value.event.name }}</strong></template></i18n-t>
-            </p>
-            <p v-else-if="draft.preview.value" class="order-form__event order-form__event--missing" role="alert">
-                {{ t('orders.form.noEvent') }} <a href="/events">{{ t('orders.form.createEvent') }}</a>
-            </p>
-
-            <OrderLinePicker :products="products" @add="draft.add" />
-
-            <OrderDraftLines
-                v-if="draft.lines.length > 0"
-                :lines="draft.lines"
-                :products="products"
-                @quantity="draft.setQuantity"
-                @remove="draft.remove"
-            />
+            <FormSection :title="t('orders.form.items')">
+                <OrderLinePicker :products="products" @add="draft.add" />
+                <OrderDraftLines
+                    :lines="draft.lines"
+                    :products="products"
+                    @quantity="draft.setQuantity"
+                    @remove="draft.remove"
+                />
+            </FormSection>
 
             <p v-if="error || draft.previewError.value" class="order-form__error" role="alert">{{ error ?? draft.previewError.value }}</p>
 
-            <footer class="order-form__footer">
+            <div class="order-form__checkout">
                 <OrderTotals
                     v-if="draft.preview.value"
                     :subtotal="draft.preview.value.subtotal"
                     :discounts="draft.preview.value.discounts"
                     :total="draft.preview.value.total"
                 />
-                <div class="order-form__actions">
+                <FormActions sticky>
                     <BaseButton type="submit" :loading="saving" :disabled="draft.lines.length === 0">{{ t('orders.form.submit') }}</BaseButton>
-                </div>
-            </footer>
+                </FormActions>
+            </div>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.order-form { flex: 1; display: flex; flex-direction: column; gap: var(--space-3); }
-.order-form__actions { display: flex; justify-content: flex-end; }
+.order-form { flex: 1; display: flex; flex-direction: column; gap: var(--space-5); }
+.order-form__checkout { display: flex; flex-direction: column; gap: var(--space-4); margin-top: auto; }
 
-.order-form__footer {
-    position: sticky;
-    bottom: calc(-1 * var(--space-5));
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin: auto calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
-    padding: var(--space-4) var(--space-5);
-    border-top: 0.0625rem solid var(--color-border);
-    background: var(--color-surface);
-}
-
-.order-form__event {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-accent-soft);
-    font-size: 0.9rem;
-}
-
-.order-form__event--missing { background: var(--color-danger-soft); color: var(--color-danger); }
+.order-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
+.order-form__fact--missing { font-weight: 400; color: var(--color-danger); }
+.order-form__fact--missing a { color: inherit; }
 
 .order-form__error {
     margin: 0;
@@ -113,4 +100,9 @@ async function onSubmit() {
     background: var(--color-danger-soft);
     color: var(--color-danger);
 }
+
+.order-form__fade-enter-active,
+.order-form__fade-leave-active { transition: opacity var(--transition); }
+.order-form__fade-enter-from,
+.order-form__fade-leave-to { opacity: 0; }
 </style>

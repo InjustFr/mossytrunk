@@ -18,7 +18,7 @@ test('the product page shows stock, movements and selling price history', async 
     await expect(movements).toContainText('+20');
 
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-    await page.getByRole('dialog', { name: 'Modifier le produit' }).getByLabel('Prix de vente (€)').fill('5');
+    await page.getByRole('dialog', { name: 'Modifier le produit' }).getByLabel('Prix de vente').fill('5');
     await page.getByRole('dialog', { name: 'Modifier le produit' }).getByRole('button', { name: 'Enregistrer' }).click();
 
     const prices = page.getByRole('region', { name: 'Prix de vente' });
@@ -33,7 +33,7 @@ test('fix an imported selling price and date it, then record the price it had be
     await page.goto(`/products/${product.id}`);
     const prices = page.getByRole('region', { name: 'Prix de vente' });
     await prices.getByRole('button', { name: /^Modifier le prix du/ }).click();
-    await prices.getByLabel('Prix (€)').fill('4,50');
+    await prices.getByLabel('Prix', { exact: true }).fill('4,50');
     await fillDate(prices.getByRole('group', { name: 'Depuis le' }), '2026-09-01');
     await prices.getByRole('button', { name: 'Enregistrer' }).click();
 
@@ -42,7 +42,7 @@ test('fix an imported selling price and date it, then record the price it had be
     await expect(prices.getByRole('listitem').first()).toContainText('1 sept. 2026');
 
     await prices.getByRole('button', { name: 'Ajouter un prix passé' }).click();
-    await prices.getByLabel('Prix (€)').fill('4');
+    await prices.getByLabel('Prix', { exact: true }).fill('4');
     await fillDate(prices.getByRole('group', { name: 'Depuis le' }), '2026-07-01');
     await prices.getByRole('button', { name: 'Ajouter le prix' }).click();
 

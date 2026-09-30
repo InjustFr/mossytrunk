@@ -87,33 +87,29 @@
     "form": {
         "type": "Type",
         "name": "Nom",
-        "displayed": "Affiché « {name} »",
-        "nameExample": "Ex. « Forêt » pour un Print Forêt",
         "reference": "Référence",
-        "referenceUnique": "Unique dans l'atelier.",
-        "referenceSuggested": "Proposée d'après le type, modifiable.",
-        "sellingPrice": "Prix de vente (€)",
+        "referenceSuggested": "Proposée d'après le type et le nom.",
+        "sellingPrice": "Prix de vente",
         "buyingPrice": "Prix d'achat",
         "notBoughtYet": "Pas encore acheté",
-        "buyingPriceHint": "Mis à jour par les réapprovisionnements et les commandes fournisseurs.",
+        "buyingPriceHint": "Suit les réapprovisionnements et commandes fournisseurs.",
         "lowStockThreshold": "Alerte stock bas",
-        "lowStockThresholdHint": "Le produit est signalé quand son stock (par variante) descend à ce seuil.",
+        "lowStockThresholdHint": "Signalé quand une variante descend à ce seuil.",
         "variants": "Variantes",
-        "variantsHint": "Cochez les variantes du type ; une nouvelle variante est ajoutée au type. Aucune pour un produit unique.",
-        "add": "Ajouter le produit"
+        "add": "Ajouter le produit",
+        "namePlaceholder": "Ex. Forêt",
+        "more": "Référence et stock",
+        "lowStockSummary": "alerte à {threshold}"
     },
     "batch": {
-        "intro": "Les changements cochés s'appliquent aux {count} produit sélectionné. | Les changements cochés s'appliquent aux {count} produits sélectionnés.",
-        "changeSellingPrice": "Changer le prix de vente",
-        "newSellingPrice": "Nouveau prix de vente (€)",
-        "changeType": "Changer le type",
+        "intro": "S'applique au {count} produit sélectionné ; ce qui reste vide ne change pas. | S'applique aux {count} produits sélectionnés ; ce qui reste vide ne change pas.",
         "newType": "Nouveau type",
         "addVariants": "Variantes à ajouter",
-        "addVariantsHint": "Ignorées si le produit les a déjà.",
-        "addVariant": "Variante à ajouter",
         "removeVariants": "Variantes à retirer",
-        "removeVariant": "Variante à retirer",
-        "apply": "Appliquer à {count} produit | Appliquer à {count} produits"
+        "apply": "Appliquer à {count} produit | Appliquer à {count} produits",
+        "unchanged": "Inchangé",
+        "noTypeVariants": "Aucune variante dans leurs types.",
+        "noProductVariants": "Ces produits n'ont pas de variante."
     },
     "selection": {
         "label": "Sélection",
@@ -122,24 +118,32 @@
         "clear": "Désélectionner"
     },
     "move": {
-        "variant": "Variante à déplacer",
-        "intro": "« {name} » devient une variante d'un autre produit, avec toutes ses ventes. Il disparaît ensuite du catalogue.",
+        "variant": "Variante",
         "destination": "Destination",
-        "newProduct": "Nouveau produit",
-        "existingProduct": "Produit existant",
-        "newProductName": "Nom du nouveau produit",
-        "newProductHint": "Même type et mêmes prix que le produit d'origine.",
-        "targetProduct": "Produit de destination",
+        "newProductName": "Nom du produit",
+        "targetProduct": "Produit",
         "searchProduct": "Rechercher un produit…",
-        "targetVariant": "Variante dans le produit de destination",
-        "targetVariantHint": "Créée si elle n'existe pas. Laisser vide pour fusionner avec un produit unique.",
+        "targetVariant": "Dans la variante",
         "summary": "Les ventes passées gardent leur prix et comptent désormais pour {target}.",
-        "submit": "Déplacer"
+        "submit": "Déplacer",
+        "modes": {
+            "new": {
+                "label": "Nouveau produit",
+                "description": "Même type et mêmes prix"
+            },
+            "existing": {
+                "label": "Produit existant",
+                "description": "Rejoint ses variantes"
+            }
+        },
+        "wholeSummary": "« {name} » quitte le catalogue ; ses ventes passées gardent leur prix et comptent désormais pour {target}.",
+        "noVariant": "Aucune (produit unique)",
+        "noTypeVariants": "Ce type n'a pas de variante : ajoutez-les dans « Types de produit »."
     },
     "restock": {
         "variant": "Variante",
         "quantity": "Quantité reçue",
-        "totalPaid": "Prix payé au total (€)",
+        "totalPaid": "Total payé",
         "unitCost": "Coût unitaire",
         "submit": "Ajouter au stock"
     },
@@ -163,7 +167,7 @@
         "cost": "Coût"
     },
     "prices": {
-        "price": "Prix (€)",
+        "price": "Prix",
         "since": "Depuis le",
         "sinceDate": "depuis le {date}",
         "onDate": "le {date}",
@@ -178,7 +182,7 @@
     },
     "design": {
         "openHint": "Ouvrir le design pour le décliner sur un autre gabarit",
-        "intro": "Ce produit n'a pas encore de design. Donnez-lui le sien pour le décliner facilement sur d'autres supports.",
+        "intro": "Pas encore de design : créez-le pour décliner ce produit sur d'autres supports.",
         "create": "Créer son design",
         "attach": "Rattacher à un design",
         "noGabarit": "Créez d'abord un gabarit depuis la page {link}.",
@@ -186,14 +190,13 @@
         "design": "Design",
         "chooseDesign": "Choisir un design",
         "gabarit": "Gabarit de ce produit",
-        "gabaritHint": "Le support sur lequel ce produit est déjà décliné.",
         "gabaritLabel": "Gabarit",
         "chooseGabarit": "Choisir un gabarit",
         "createSubmit": "Créer le design",
         "attachSubmit": "Rattacher"
     },
     "types": {
-        "intro": "Les produits s'affichent « Type Nom » (ou juste « Nom » si le type ne préfixe pas) ; la couleur repère le type dans les listes et les rapports. Les variantes du type sont proposées à ses produits.",
+        "intro": "Chaque type a sa couleur, qui le repère dans les listes, et propose ses variantes à ses produits.",
         "empty": "Aucun type. Ajoutez Print, Sticker… pour classer vos produits.",
         "add": "Ajouter un type",
         "all": "Tous les types",
@@ -202,7 +205,7 @@
         "name": "Nom",
         "nameExample": "Ex. Print, Sticker…",
         "code": "Code",
-        "codeHint": "Préfixe des références suggérées pour ses produits (1 à 8 lettres ou chiffres). Les références existantes ne changent pas.",
+        "codeHint": "Préfixe des références proposées. Les références existantes ne changent pas.",
         "color": "Couleur",
         "create": "Créer le type",
         "select": "Type",
@@ -218,16 +221,22 @@
         "exampleType": "Print",
         "variants": {
             "label": "Variantes",
-            "hint": "Proposées à ses produits, dans cet ordre. Renommer une variante la renomme aussi dans les produits, les remises et les commandes passées.",
-            "empty": "Aucune variante pour l'instant.",
+            "hint": "Renommer une variante la renomme partout, commandes passées comprises.",
             "moveUp": "Monter {variant}",
             "moveDown": "Descendre {variant}",
             "rename": "Renommer {variant}",
             "newLabel": "Nouveau nom de {variant}",
             "confirmRename": "Valider le nouveau nom de {variant}",
             "remove": "Retirer {variant}",
-            "duplicate": "La variante « {variant} » existe déjà."
-        }
+            "duplicate": "La variante « {variant} » existe déjà.",
+            "newVariant": "Nouvelle variante",
+            "placeholder": "Ajouter une variante puis Entrée",
+            "add": "Ajouter la variante"
+        },
+        "more": "Code et affichage",
+        "display": "Affichage",
+        "exampleProduct": "Forêt",
+        "displayedAs": "produits « {name} »"
     },
     "colors": {
         "label": "Couleur du type",
@@ -258,8 +267,12 @@
     },
     "variantPicker": {
         "label": "Variantes",
-        "newVariant": "Nouvelle variante",
-        "placeholder": "Ajouter une variante puis Entrée",
-        "add": "Ajouter la variante"
+        "empty": "Ce type n'a pas de variante : produit unique. Les variantes se gèrent dans « Types de produit ».",
+        "chooseTypeFirst": "Choisissez d'abord un type."
+    },
+    "tag": {
+        "label": "Aperçu de l'étiquette",
+        "namePlaceholder": "Nom du produit",
+        "unique": "Produit unique"
     }
 }

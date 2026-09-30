@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
-import { createEvent, createProduct } from './support/api.js';
+import { createEvent, createProduct, createType } from './support/api.js';
 
 test('products split per variant are gathered into one product, their sales with them', async ({ page, request }) => {
     const mug = unique('Mug');
-    const lichen = await createProduct(request, { name: `${mug} Lichen`, sellingPrice: 1_200 });
-    const fougere = await createProduct(request, { name: `${mug} Fougère`, sellingPrice: 1_200 });
+    const type = await createType(request, unique('Mugs'), { variants: ['Lichen', 'Fougère'], prefixesNames: false });
+    const lichen = await createProduct(request, { name: `${mug} Lichen`, sellingPrice: 1_200, type });
+    const fougere = await createProduct(request, { name: `${mug} Fougère`, sellingPrice: 1_200, type });
     const event = await createEvent(request);
     const response = await request.post('/api/orders', {
         data: { placedAt: `${event.startDate}T11:00`, lines: [{ productId: lichen.id, variant: null, quantity: 2 }] },
@@ -19,17 +20,17 @@ test('products split per variant are gathered into one product, their sales with
     await search.fill(lichen.name);
     await page.getByRole('button', { name: `Faire de ${lichen.name} une variante` }).click();
     let dialog = page.getByRole('dialog', { name: 'Faire une variante de ce produit' });
-    await expect(dialog.getByLabel('Nom du nouveau produit')).toHaveValue(mug);
-    await expect(dialog.getByLabel('Variante dans le produit de destination')).toHaveValue('Lichen');
+    await expect(dialog.getByLabel('Nom du produit')).toHaveValue(mug);
+    await expect(dialog.getByRole('combobox', { name: 'Dans la variante' })).toHaveText('Lichen');
     await dialog.getByRole('button', { name: 'Déplacer' }).click();
     await expect(page.getByTestId('toast')).toContainText(`Déplacé vers « ${mug} — Lichen ».`);
 
     await search.fill(fougere.name);
     await page.getByRole('button', { name: `Faire de ${fougere.name} une variante` }).click();
     dialog = page.getByRole('dialog', { name: 'Faire une variante de ce produit' });
-    await dialog.getByRole('group', { name: 'Destination' }).getByRole('button', { name: 'Produit existant' }).click();
-    await choose(page, dialog.getByRole('combobox', { name: 'Produit de destination' }), mug);
-    await expect(dialog.getByLabel('Variante dans le produit de destination')).toHaveValue('Fougère');
+    await dialog.getByRole('radiogroup', { name: 'Destination' }).getByRole('radio', { name: /^Produit existant/ }).click();
+    await choose(page, dialog.getByRole('combobox', { name: 'Produit', exact: true }), mug);
+    await expect(dialog.getByRole('combobox', { name: 'Dans la variante' })).toHaveText('Fougère');
     await dialog.getByRole('button', { name: 'Déplacer' }).click();
     await expect(page.getByTestId('toast').last()).toContainText(`Déplacé vers « ${mug} — Fougère ».`);
 

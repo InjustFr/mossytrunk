@@ -39,9 +39,9 @@ test('a gabarit needs a type', async ({ page }) => {
     await page.getByRole('button', { name: 'Gabarits' }).click();
     const dialog = page.getByRole('dialog', { name: 'Gabarits' });
     await dialog.getByLabel('Nom du gabarit').fill(unique('Carte'));
-    await dialog.getByLabel('Prix de vente (€)').fill('2');
+    await dialog.getByLabel('Prix de vente').fill('2');
     await dialog.getByRole('button', { name: 'Ajouter le gabarit' }).click();
 
-    await expect(dialog.getByRole('group', { name: 'Type des produits créés' }).getByRole('alert')).toBeVisible();
+    await expect(dialog.getByRole('group', { name: 'Type', exact: true }).getByRole('alert')).toBeVisible();
     await expect(page.getByTestId('toast')).toHaveCount(0);
 });

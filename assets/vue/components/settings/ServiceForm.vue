@@ -3,7 +3,9 @@ import { computed, reactive, ref } from 'vue';
 import { Copy } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 import ServiceOptions from './ServiceOptions.vue';
 import { SALES_CONTEXTS, UNKNOWN_ITEMS } from '../../composables/useServices.js';
@@ -62,15 +64,13 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="service-form__error" role="alert">{{ errors.form }}</p>
 
-            <section class="service-form__section" aria-labelledby="service-form-access">
-                <h3 id="service-form-access" class="service-form__heading">{{ t('settings.form.access') }}</h3>
-                <div v-if="service.authorizes" class="service-form__callback">
-                    <p class="service-form__instructions">{{ t(service.instructions) }}</p>
+            <FormSection :title="t('settings.form.access')" :description="service.authorizes ? t(service.instructions) : null">
+                <FormField v-if="service.authorizes" as="group" :label="t('settings.form.callbackUrl')">
                     <div class="service-form__url">
                         <code>{{ callbackUrl }}</code>
                         <IconButton :icon="Copy" :label="t('settings.form.copyCallback')" @click="copyCallback" />
                     </div>
-                </div>
+                </FormField>
                 <FormField v-for="field in service.fields" :key="field.name" :label="t(field.label)" :error="errors[field.name]" :hint="hint(field)">
                     <input
                         v-model="fields[field.name]"
@@ -81,38 +81,27 @@ async function onSubmit() {
                         :required="field.required"
                     >
                 </FormField>
-            </section>
+            </FormSection>
 
-            <section class="service-form__section" aria-labelledby="service-form-import">
-                <h3 id="service-form-import" class="service-form__heading">{{ t('settings.form.import') }}</h3>
-                <ServiceOptions v-model="options.salesContext" :label="t('settings.form.salesContext')" :options="SALES_CONTEXTS" />
-                <ServiceOptions v-model="options.unknownItems" :label="t('settings.form.unknownItems')" :options="UNKNOWN_ITEMS" />
-            </section>
+            <FormSection :title="t('settings.form.import')">
+                <FormField as="group" :label="t('settings.form.salesContext')">
+                    <ServiceOptions v-model="options.salesContext" :label="t('settings.form.salesContext')" :options="SALES_CONTEXTS" />
+                </FormField>
+                <FormField as="group" :label="t('settings.form.unknownItems')">
+                    <ServiceOptions v-model="options.unknownItems" :label="t('settings.form.unknownItems')" :options="UNKNOWN_ITEMS" />
+                </FormField>
+            </FormSection>
 
-            <div class="service-form__actions">
+            <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('settings.form.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ connection ? t('settings.form.save') : t('settings.form.add', { label: service.label }) }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.service-form .form-lock { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; margin: 0; padding: 0; border: none; }
-.service-form__section { display: flex; flex-direction: column; gap: var(--space-3); }
-
-.service-form__heading {
-    margin: 0;
-    padding-bottom: var(--space-2);
-    border-bottom: 0.0625rem solid var(--color-border);
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 400;
-    color: var(--color-ink);
-}
-
-.service-form__callback { display: flex; flex-direction: column; gap: var(--space-2); }
-.service-form__instructions { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
+.service-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .service-form__url { display: flex; align-items: center; gap: var(--space-2); }
 
 .service-form__url code {
@@ -122,12 +111,10 @@ async function onSubmit() {
     border-radius: var(--radius);
     background: var(--color-bg);
     color: var(--color-ink);
-    font-size: 0.85rem;
+    font-size: 0.8125rem;
     overflow-wrap: anywhere;
     user-select: all;
 }
-
-.service-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 
 .service-form__error {
     margin: 0;

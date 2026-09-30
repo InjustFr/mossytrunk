@@ -26,15 +26,17 @@
     },
     "draft": {
         "quantityOf": "Quantité {line}",
-        "remove": "Supprimer {line}"
+        "remove": "Supprimer {line}",
+        "empty": "Aucun article pour l'instant."
     },
     "form": {
         "date": "Date",
-        "attachedTo": "Rattachée à {event}",
+        "event": "Événement",
         "noEvent": "Aucun événement à cette date.",
         "createEvent": "Créer un événement",
         "noLines": "Ajoutez au moins un produit.",
-        "submit": "Enregistrer la commande"
+        "submit": "Enregistrer la commande",
+        "items": "Articles"
     },
     "picker": {
         "product": "Produit",

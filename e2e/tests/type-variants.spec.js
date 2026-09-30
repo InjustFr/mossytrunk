@@ -11,11 +11,12 @@ test('a type owns its variants: rename one everywhere, then filter products by v
     const types = page.getByRole('dialog', { name: 'Types de produit' });
     await types.getByRole('button', { name: 'Ajouter un type' }).click();
     const creation = page.getByRole('dialog', { name: 'Nouveau type de produit' });
-    await creation.getByRole('textbox', { name: /^Nom / }).fill(print);
+    await creation.getByRole('textbox', { name: /^Nom/ }).fill(print);
     for (const variant of ['A5', 'A4', 'A3']) {
         await creation.getByLabel('Nouvelle variante').fill(variant);
         await creation.getByLabel('Nouvelle variante').press('Enter');
     }
+    await creation.getByRole('button', { name: 'Code et affichage' }).click();
     await expect(creation.getByRole('switch', { name: 'Préfixer le nom des produits' })).toBeChecked();
     await expect(creation.getByText(`Ses produits s'affichent « ${print} Forêt ».`)).toBeVisible();
     await creation.getByRole('button', { name: 'Créer le type' }).click();
@@ -38,7 +39,7 @@ test('a type owns its variants: rename one everywhere, then filter products by v
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Type' }), print);
     await form.getByLabel('Nom').fill('Forêt');
-    await form.getByLabel('Prix de vente (€)').fill('15');
+    await form.getByLabel('Prix de vente').fill('15');
     await form.getByRole('button', { name: 'A5', exact: true }).click();
     await form.getByRole('button', { name: 'A3', exact: true }).click();
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();

@@ -87,33 +87,29 @@
     "form": {
         "type": "Type",
         "name": "Name",
-        "displayed": "Shown as “{name}”",
-        "nameExample": "E.g. “Forest” for a Print Forest",
         "reference": "Reference",
-        "referenceUnique": "Unique in the workspace.",
-        "referenceSuggested": "Suggested from the type, editable.",
-        "sellingPrice": "Selling price (€)",
+        "referenceSuggested": "Suggested from the type and name.",
+        "sellingPrice": "Selling price",
         "buyingPrice": "Buying price",
         "notBoughtYet": "Not bought yet",
-        "buyingPriceHint": "Updated by restocks and supplier orders.",
+        "buyingPriceHint": "Follows restocks and supplier orders.",
         "lowStockThreshold": "Low stock alert",
-        "lowStockThresholdHint": "The product is flagged when its stock (per variant) drops to this threshold.",
+        "lowStockThresholdHint": "Flagged when a variant drops to this level.",
         "variants": "Variants",
-        "variantsHint": "Check the type's variants; a new variant is added to the type. None for a single product.",
-        "add": "Add product"
+        "add": "Add product",
+        "namePlaceholder": "E.g. Forest",
+        "more": "Reference and stock",
+        "lowStockSummary": "alert at {threshold}"
     },
     "batch": {
-        "intro": "Checked changes apply to the {count} selected product. | Checked changes apply to the {count} selected products.",
-        "changeSellingPrice": "Change the selling price",
-        "newSellingPrice": "New selling price (€)",
-        "changeType": "Change the type",
+        "intro": "Applies to the {count} selected product; anything left empty stays as is. | Applies to the {count} selected products; anything left empty stays as is.",
         "newType": "New type",
         "addVariants": "Variants to add",
-        "addVariantsHint": "Ignored if the product already has them.",
-        "addVariant": "Variant to add",
         "removeVariants": "Variants to remove",
-        "removeVariant": "Variant to remove",
-        "apply": "Apply to {count} product | Apply to {count} products"
+        "apply": "Apply to {count} product | Apply to {count} products",
+        "unchanged": "Unchanged",
+        "noTypeVariants": "No variants in their types.",
+        "noProductVariants": "These products have no variants."
     },
     "selection": {
         "label": "Selection",
@@ -122,24 +118,32 @@
         "clear": "Deselect"
     },
     "move": {
-        "variant": "Variant to move",
-        "intro": "“{name}” becomes a variant of another product, with all its sales. It then disappears from the catalog.",
+        "variant": "Variant",
         "destination": "Destination",
-        "newProduct": "New product",
-        "existingProduct": "Existing product",
-        "newProductName": "New product name",
-        "newProductHint": "Same type and prices as the original product.",
-        "targetProduct": "Target product",
+        "newProductName": "Product name",
+        "targetProduct": "Product",
         "searchProduct": "Search a product…",
-        "targetVariant": "Variant in the target product",
-        "targetVariantHint": "Created if it does not exist. Leave empty to merge with a single product.",
+        "targetVariant": "As variant",
         "summary": "Past sales keep their price and now count for {target}.",
-        "submit": "Move"
+        "submit": "Move",
+        "modes": {
+            "new": {
+                "label": "New product",
+                "description": "Same type and prices"
+            },
+            "existing": {
+                "label": "Existing product",
+                "description": "Joins its variants"
+            }
+        },
+        "wholeSummary": "“{name}” leaves the catalog; its past sales keep their price and now count for {target}.",
+        "noVariant": "None (single product)",
+        "noTypeVariants": "This type has no variants: add them in “Product types”."
     },
     "restock": {
         "variant": "Variant",
         "quantity": "Quantity received",
-        "totalPaid": "Total price paid (€)",
+        "totalPaid": "Total paid",
         "unitCost": "Unit cost",
         "submit": "Add to stock"
     },
@@ -163,7 +167,7 @@
         "cost": "Cost"
     },
     "prices": {
-        "price": "Price (€)",
+        "price": "Price",
         "since": "Since",
         "sinceDate": "since {date}",
         "onDate": "on {date}",
@@ -178,7 +182,7 @@
     },
     "design": {
         "openHint": "Open the design to adapt it to another template",
-        "intro": "This product has no design yet. Give it its own to easily adapt it to other media.",
+        "intro": "No design yet: create one to adapt this product to other media.",
         "create": "Create its design",
         "attach": "Attach to a design",
         "noGabarit": "First create a template from the {link} page.",
@@ -186,14 +190,13 @@
         "design": "Design",
         "chooseDesign": "Choose a design",
         "gabarit": "Template of this product",
-        "gabaritHint": "The medium this product is already adapted to.",
         "gabaritLabel": "Template",
         "chooseGabarit": "Choose a template",
         "createSubmit": "Create design",
         "attachSubmit": "Attach"
     },
     "types": {
-        "intro": "Products are shown as “Type Name” (or just “Name” when the type does not prefix them); the color marks the type in lists and reports. The type's variants are offered to its products.",
+        "intro": "Each type has its own color, which marks it in lists, and offers its variants to its products.",
         "empty": "No types. Add Print, Sticker… to organize your products.",
         "add": "Add a type",
         "all": "All types",
@@ -202,7 +205,7 @@
         "name": "Name",
         "nameExample": "E.g. Print, Sticker…",
         "code": "Code",
-        "codeHint": "Prefix of the references suggested for its products (1 to 8 letters or digits). Existing references do not change.",
+        "codeHint": "Prefix of suggested references. Existing references do not change.",
         "color": "Color",
         "create": "Create type",
         "select": "Type",
@@ -218,16 +221,22 @@
         "exampleType": "Print",
         "variants": {
             "label": "Variants",
-            "hint": "Offered to its products, in this order. Renaming a variant also renames it in products, discounts and past orders.",
-            "empty": "No variants yet.",
+            "hint": "Renaming a variant renames it everywhere, past orders included.",
             "moveUp": "Move {variant} up",
             "moveDown": "Move {variant} down",
             "rename": "Rename {variant}",
             "newLabel": "New name for {variant}",
             "confirmRename": "Confirm the new name of {variant}",
             "remove": "Remove {variant}",
-            "duplicate": "Variant “{variant}” already exists."
-        }
+            "duplicate": "Variant “{variant}” already exists.",
+            "newVariant": "New variant",
+            "placeholder": "Add a variant, then Enter",
+            "add": "Add the variant"
+        },
+        "more": "Code and display",
+        "display": "Display",
+        "exampleProduct": "Forest",
+        "displayedAs": "products shown as “{name}”"
     },
     "colors": {
         "label": "Type color",
@@ -258,8 +267,12 @@
     },
     "variantPicker": {
         "label": "Variants",
-        "newVariant": "New variant",
-        "placeholder": "Add a variant, then Enter",
-        "add": "Add the variant"
+        "empty": "This type has no variants: single product. Variants are managed in “Product types”.",
+        "chooseTypeFirst": "Choose a type first."
+    },
+    "tag": {
+        "label": "Tag preview",
+        "namePlaceholder": "Product name",
+        "unique": "Single product"
     }
 }

@@ -43,6 +43,7 @@ const historyOpen = computed({ get: () => viewingStock.value !== null, set: (ope
 
 const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : 'products.page.new'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
+const selectedProducts = computed(() => products.value.filter((product) => filters.selectedIds.value.includes(product.id)));
 const submitBatch = (changes) => batchUpdate({ productIds: filters.selectedIds.value, ...changes });
 
 function openCreate() {
@@ -152,7 +153,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
         </BaseModal>
         <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" @renamed="load" />
         <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')">
-            <ProductBatchForm :count="filters.selectedIds.value.length" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
+            <ProductBatchForm :count="filters.selectedIds.value.length" :products="selectedProducts" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>
     </AppLayout>
 </template>

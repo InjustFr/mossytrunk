@@ -23,15 +23,15 @@ test('place an order with automatic bundle discount while seeing the list', asyn
     await choose(page, form.getByRole('combobox', { name: 'Produit' }), `${tshirt.name} — 20,00 €`);
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
     await expect(form.getByRole('alert')).toContainText('Choisissez une variante');
-    await choose(page, form.getByRole('combobox', { name: 'Variante' }), 'Fougère');
+    await form.getByRole('group', { name: 'Variante' }).getByRole('button', { name: 'Fougère' }).click();
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
 
     await choose(page, form.getByRole('combobox', { name: 'Produit' }), `${sticker.name} — 4,00 €`);
-    await expect(form.getByRole('combobox', { name: 'Variante' })).toHaveCount(0);
+    await expect(form.getByRole('group', { name: 'Variante' })).toHaveCount(0);
     await form.getByLabel('Quantité', { exact: true }).fill('3');
     await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
 
-    await expect(form.getByText(`Rattachée à ${event.name}`)).toBeVisible();
+    await expect(form.getByRole('group', { name: 'Événement' })).toContainText(event.name);
     await expect(form.getByText(bundle.name)).toBeVisible();
     await expect(form.getByTestId('order-total')).toHaveText(/30,00/);
 

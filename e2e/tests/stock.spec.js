@@ -14,7 +14,7 @@ test('restock a product twice and read its lots, oldest first', async ({ page, r
         await row.getByRole('button', { name: `Réapprovisionner ${product.name}` }).click();
         const form = page.getByRole('dialog', { name: `Réapprovisionner ${product.name}` }).locator('form');
         await form.getByRole('spinbutton', { name: 'Quantité reçue' }).fill(quantity);
-        await form.getByLabel('Prix payé au total (€)').fill(total);
+        await form.getByLabel('Total payé').fill(total);
         await form.getByRole('button', { name: 'Ajouter au stock' }).click();
         await expect(page.getByTestId('toast').last()).toContainText(`10 unités ajoutées au stock de « ${product.name} »`);
     }

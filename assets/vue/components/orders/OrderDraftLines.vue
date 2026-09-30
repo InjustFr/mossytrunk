@@ -12,16 +12,20 @@ const emit = defineEmits(['quantity', 'remove']);
 const { t } = useI18n();
 
 const productOf = (line) => props.products.find((p) => p.id === line.productId);
-const label = (line) => {
-    const name = productOf(line)?.displayName ?? '?';
-    return line.variant ? `${name} — ${line.variant}` : name;
-};
+const nameOf = (line) => productOf(line)?.displayName ?? '?';
+const label = (line) => (line.variant ? `${nameOf(line)} — ${line.variant}` : nameOf(line));
 </script>
 
 <template>
+    <p v-if="lines.length === 0" class="order-draft-lines__empty">{{ t('orders.draft.empty') }}</p>
     <TransitionGroup name="order-draft-lines__line" tag="ul" class="order-draft-lines">
         <li v-for="line in lines" :key="line.key" class="order-draft-lines__line">
-            <span class="order-draft-lines__label">{{ label(line) }}</span>
+            <span class="order-draft-lines__label">
+                <span class="order-draft-lines__name">{{ nameOf(line) }}</span>
+                <span class="order-draft-lines__detail">
+                    <template v-if="line.variant">{{ line.variant }} · </template><MoneyAmount :cents="productOf(line)?.sellingPrice ?? 0" />
+                </span>
+            </span>
             <BaseNumberField
                 class="order-draft-lines__quantity"
                 :model-value="line.quantity"
@@ -36,17 +40,24 @@ const label = (line) => {
 </template>
 
 <style scoped>
-.order-draft-lines { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.order-draft-lines { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.order-draft-lines:empty { display: none; }
+.order-draft-lines__empty { margin: 0; color: var(--color-subtle); font-size: 0.875rem; }
 
 .order-draft-lines__line {
     display: grid;
-    grid-template-columns: 1fr auto 5.625rem auto;
+    grid-template-columns: minmax(0, 1fr) 6.5rem 5.5rem auto;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-bg);
+    padding: var(--space-2) 0;
+    border-bottom: 0.0625rem solid var(--color-border);
 }
+
+.order-draft-lines__line:first-child { border-top: 0.0625rem solid var(--color-border); }
+.order-draft-lines__label { display: flex; flex-direction: column; min-width: 0; }
+.order-draft-lines__name { color: var(--color-ink); font-size: 0.9rem; }
+.order-draft-lines__detail { color: var(--color-muted); font-size: 0.8125rem; }
+.order-draft-lines__total { text-align: right; font-variant-numeric: tabular-nums; }
 
 .order-draft-lines__remove {
     display: inline-flex;
@@ -62,8 +73,12 @@ const label = (line) => {
 }
 
 .order-draft-lines__remove:hover { color: var(--color-danger); }
-.order-draft-lines__quantity { width: 7.5rem; }
-.order-draft-lines__total { text-align: right; }
+
+@container form (max-width: 24rem) {
+    .order-draft-lines__line { grid-template-columns: minmax(0, 1fr) 5.5rem auto; row-gap: var(--space-1); }
+    .order-draft-lines__label { grid-column: 1 / -1; }
+    .order-draft-lines__quantity { width: 6.5rem; }
+}
 
 .order-draft-lines__line-enter-active,
 .order-draft-lines__line-leave-active { transition: opacity var(--transition), transform var(--transition); }

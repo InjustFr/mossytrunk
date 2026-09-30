@@ -6,7 +6,9 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import PurchaseLinePicker from './PurchaseLinePicker.vue';
@@ -85,86 +87,135 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="supplier-order-form__error" role="alert">{{ errors.form }}</p>
 
-            <div class="supplier-order-form__row">
+            <FormSection>
                 <FormField as="group" :label="t('purchasing.form.supplier')" :error="errors.supplierId">
                     <SupplierSelect v-model="form.supplierId" :suppliers="suppliers" :save="saveSupplier" />
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
-                    <BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" />
+                    <div class="supplier-order-form__date"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
                 </FormField>
-            </div>
+            </FormSection>
 
-            <section class="supplier-order-form__lines" :aria-label="t('purchasing.form.orderedProducts')">
-                <table v-if="form.lines.length" class="supplier-order-form__table">
-                    <thead>
+            <FormSection :title="t('purchasing.form.orderedProducts')">
+                <table v-if="form.lines.length" class="supplier-order-form__lines">
+                    <thead class="supplier-order-form__head">
                         <tr>
                             <th>{{ t('purchasing.form.product') }}</th>
                             <th>{{ t('purchasing.form.quantity') }}</th>
                             <th>{{ t('purchasing.form.totalPrice') }}</th>
-                            <th class="supplier-order-form__number">{{ t('purchasing.form.unitCost') }}</th>
+                            <th>{{ t('purchasing.form.unitCost') }}</th>
                             <th />
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(line, index) in form.lines" :key="`${line.productId}|${line.variant ?? ''}`">
+                        <tr v-for="(line, index) in form.lines" :key="`${line.productId}|${line.variant ?? ''}`" class="supplier-order-form__line">
                             <td class="supplier-order-form__label">
                                 {{ line.label }}
                                 <span v-if="errors[`lines[${index}].quantity`] || errors[`lines[${index}].totalPrice`]" class="supplier-order-form__line-error" role="alert">
                                     {{ errors[`lines[${index}].quantity`] ?? errors[`lines[${index}].totalPrice`] }}
                                 </span>
                             </td>
-                            <td class="supplier-order-form__quantity"><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
+                            <td><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
-                            <td class="supplier-order-form__number"><MoneyAmount :cents="unitCost(line, index)" /></td>
+                            <td class="supplier-order-form__unit-cost"><span aria-hidden="true">{{ t('purchasing.form.unitCost') }}</span> <MoneyAmount :cents="unitCost(line, index)" /></td>
                             <td><IconButton :icon="X" :label="t('purchasing.form.remove', { label: line.label })" @click="form.lines.splice(index, 1)" /></td>
                         </tr>
                     </tbody>
                     <tfoot>
-                        <tr>
-                            <td colspan="2">{{ t('purchasing.form.products') }}</td>
+                        <tr class="supplier-order-form__subtotal">
+                            <td>{{ t('purchasing.form.products') }}</td>
                             <td><MoneyAmount :cents="subtotal" /></td>
-                            <td colspan="2" />
                         </tr>
                     </tfoot>
                 </table>
                 <p v-if="errors.lines" class="supplier-order-form__line-error" role="alert">{{ errors.lines }}</p>
                 <PurchaseLinePicker :products="products" @add="addLine" />
-            </section>
+            </FormSection>
 
-            <section class="supplier-order-form__extras" :aria-label="t('purchasing.form.extras')">
-                <FormField :label="t('purchasing.form.discount')" :error="errors.discount" :hint="t('purchasing.form.discountHint')">
-                    <BaseMoneyField v-model="form.discount" />
+            <FormSection :title="t('purchasing.form.extras')" :description="t('purchasing.form.extrasHint')">
+                <FormField :label="t('purchasing.form.discount')" :error="errors.discount">
+                    <BaseMoneyField v-model="form.discount" class="supplier-order-form__money" />
                 </FormField>
-                <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees" :hint="t('purchasing.form.deliveryFeesHint')">
-                    <BaseMoneyField v-model="form.deliveryFees" />
+                <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees">
+                    <BaseMoneyField v-model="form.deliveryFees" class="supplier-order-form__money" />
                 </FormField>
                 <p class="supplier-order-form__total">{{ t('purchasing.form.totalPaid') }} <strong><MoneyAmount :cents="total" /></strong></p>
-            </section>
+            </FormSection>
 
-            <div class="supplier-order-form__actions">
+            <FormActions sticky>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('purchasing.form.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ order ? t('purchasing.form.save') : t('purchasing.form.place') }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.supplier-order-form { display: flex; flex-direction: column; gap: var(--space-4); }
-.supplier-order-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.supplier-order-form__lines { display: flex; flex-direction: column; gap: var(--space-3); }
-.supplier-order-form__table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-.supplier-order-form__table th { padding: var(--space-1) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); color: var(--color-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04rem; text-align: left; text-transform: uppercase; }
-.supplier-order-form__table td { padding: var(--space-1) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); vertical-align: middle; }
-.supplier-order-form__table tfoot td { border-bottom: none; font-weight: 600; }
-.supplier-order-form__quantity { width: 7rem; }
-.supplier-order-form__price { width: 7.5rem; }
-.supplier-order-form__number { text-align: right; font-variant-numeric: tabular-nums; }
-.supplier-order-form__table th.supplier-order-form__number { text-align: right; }
-.supplier-order-form__label { min-width: 10rem; }
-.supplier-order-form__line-error { display: block; margin: 0; color: var(--color-danger); font-size: 0.8rem; }
-.supplier-order-form__extras { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-.supplier-order-form__total { grid-column: 1 / -1; display: flex; justify-content: space-between; margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
-.supplier-order-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.supplier-order-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.supplier-order-form__date,
+.supplier-order-form__money { max-width: 11rem; }
+.supplier-order-form__lines,
+.supplier-order-form__lines tbody,
+.supplier-order-form__lines tfoot { display: block; }
+.supplier-order-form__lines { font-size: 0.875rem; }
+
+.supplier-order-form__head {
+    position: absolute;
+    width: 0.0625rem;
+    height: 0.0625rem;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.supplier-order-form__line {
+    display: grid;
+    grid-template-columns: 7rem 7.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) 0;
+    border-bottom: 0.0625rem solid var(--color-border);
+}
+
+.supplier-order-form__line td { padding: 0; }
+.supplier-order-form__label { grid-column: 1 / -1; color: var(--color-ink); font-weight: 500; }
+
+.supplier-order-form__price :deep(.money-field__input) {
+    width: 100%;
+    min-height: 2.375rem;
+    padding: var(--space-2) var(--space-3);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.supplier-order-form__price :deep(.money-field__input:focus) { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 0.1875rem var(--color-accent-soft); }
+.supplier-order-form__unit-cost { color: var(--color-muted); text-align: right; font-variant-numeric: tabular-nums; }
+.supplier-order-form__unit-cost :deep(.money) { margin-left: var(--space-1); color: var(--color-ink); }
+
+.supplier-order-form__subtotal {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.supplier-order-form__subtotal td { padding: 0; }
+.supplier-order-form__line-error { display: block; margin: 0; color: var(--color-danger); font-size: 0.8125rem; }
+
+.supplier-order-form__total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0;
+    padding-top: var(--space-3);
+    border-top: 0.0625rem solid var(--color-border);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.supplier-order-form__total strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 .supplier-order-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

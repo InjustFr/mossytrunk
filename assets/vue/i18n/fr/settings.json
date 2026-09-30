@@ -59,6 +59,7 @@
     "form": {
         "access": "Accès",
         "import": "Import",
+        "callbackUrl": "Adresse de retour",
         "copyCallback": "Copier l'adresse de retour",
         "callbackCopied": "Adresse de retour copiée.",
         "secretKept": "Clé enregistrée ({hint}). Laissez vide pour la garder.",

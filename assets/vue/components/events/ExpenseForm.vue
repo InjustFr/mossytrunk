@@ -3,10 +3,11 @@ import { reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import FormSection from '../ui/FormSection.vue';
 
 const props = defineProps({
-    // Expense being edited, or null to add one.
     expense: { type: Object, default: null },
     submit: { type: Function, required: true },
 });
@@ -40,21 +41,24 @@ async function onSubmit() {
 <template>
     <form class="expense-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField :label="t('events.expenseForm.label')" :error="errors.label">
-                <input v-model="form.label" type="text" :placeholder="t('events.expenseForm.labelPlaceholder')">
-            </FormField>
-            <FormField :label="t('events.expenseForm.amount')" :error="errors.amount">
-                <BaseMoneyField v-model="form.amount" />
-            </FormField>
-            <div class="expense-form__actions">
+            <FormSection>
+                <FormField :label="t('events.expenseForm.label')" :error="errors.label">
+                    <input v-model="form.label" type="text" :placeholder="t('events.expenseForm.labelPlaceholder')">
+                </FormField>
+                <FormField :label="t('events.expenseForm.amount')" :error="errors.amount">
+                    <BaseMoneyField v-model="form.amount" class="expense-form__amount" />
+                </FormField>
+            </FormSection>
+
+            <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('events.expenseForm.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ expense ? t('events.expenseForm.save') : t('events.expenseForm.add') }}</BaseButton>
-            </div>
+            </FormActions>
         </fieldset>
     </form>
 </template>
 
 <style scoped>
-.expense-form { display: flex; flex-direction: column; gap: var(--space-3); }
-.expense-form__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.expense-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.expense-form__amount { max-width: 11rem; }
 </style>

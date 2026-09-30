@@ -36,7 +36,7 @@ const colors = computed(() => availableTypeColors(types.value, color.value));
 
 <style scoped>
 .type-color-picker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-.type-color-picker :deep(.type-color-picker__swatches) { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.type-color-picker :deep(.type-color-picker__swatches) { display: contents; }
 
 .type-color-picker__swatch {
     display: inline-flex;
