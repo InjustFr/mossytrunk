@@ -57,6 +57,8 @@ integration:
     service_already_added: '{service} is already added.'
     unknown_service: 'Unknown service “{service}”.'
 order:
+    line_already_identified: '“{label}” already has a product.'
+    unknown_product_chosen: 'Choose a product from the catalogue.'
     discount_exceeds_subtotal: 'Discounts cannot exceed the order amount.'
     empty: 'An order must contain at least one product.'
     invalid_quantity: 'The quantity must be at least 1.'
@@ -89,6 +91,7 @@ product:
     variant_moved_onto_itself: 'Choose a product other than the original one.'
     variant_required: 'Choose a variant for “{name}”.'
 purchasing:
+    unknown_product_purchased: '“{label}” is not a catalogue product: it cannot be ordered from a supplier.'
     supplier_reference_too_long: 'The supplier reference cannot exceed {max} characters.'
     discount_exceeds_lines: 'The overall discount cannot exceed the price of the products.'
     empty_supplier_name: 'The supplier name is required.'

@@ -11,6 +11,7 @@ use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
+use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
@@ -221,5 +222,16 @@ final class OrderTest extends TestCase
         self::assertSame(['Mug'], array_map(static fn ($line): string => $line->label(), $order->lines()));
         self::assertSame(800, $order->total()->amount());
         self::assertCount(2, $order2->lines());
+    }
+
+    public function testAmountsWithoutProductStayOnTheirOwnLines(): void
+    {
+        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+            new OrderedItem(SellableItem::unknown('Produit inconnu', Money::cents(1_000)), 1),
+            new OrderedItem(SellableItem::unknown('Produit inconnu', Money::cents(200)), 1),
+        ], []);
+
+        self::assertSame([[true, 1_000], [true, 200]], array_map(static fn ($line): array => [$line->sellsUnknownProduct(), $line->total()->amount()], $order->lines()));
+        self::assertTrue($order->costOfGoods()->isZero());
     }
 }

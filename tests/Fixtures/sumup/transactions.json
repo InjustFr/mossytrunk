@@ -1,5 +1,5 @@
 {
-    "_comment": "SumUp transaction resources used by FakeSumUpGateway (test env). Dates in March 2030: e2e tests create a matching event for the 14th-15th only. TFAKE0002 has a categorised line (\"Print A4 (Fougère)\" in category Print).",
+    "_comment": "SumUp transaction resources used by FakeSumUpGateway (test env). Dates in March 2030: e2e tests create a matching event for the 14th-15th only. TFAKE0002 has a categorised line (\"Print A4 (Fougère)\" in category Print). It also has an amount typed on the terminal (« Custom amount », 2 €).",
     "items": [
         {
             "id": "4b1c5d1a-0001-4000-8000-000000000001",
@@ -29,7 +29,7 @@
             "timestamp": "2030-03-15T15:40:00.000Z",
             "status": "SUCCESSFUL",
             "type": "PAYMENT",
-            "amount": 39.0,
+            "amount": 41.0,
             "tip_amount": 0.0,
             "currency": "EUR",
             "products": [
@@ -57,6 +57,14 @@
                     "total_price": 20.0,
                     "total_with_vat": 20.0,
                     "category": "Print"
+                },
+                {
+                    "name": "Custom amount",
+                    "price": 2.0,
+                    "quantity": 1,
+                    "total_price": 2.0,
+                    "total_with_vat": 2.0,
+                    "vat_amount": 0.0
                 }
             ]
         },

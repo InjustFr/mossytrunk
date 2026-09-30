@@ -51,10 +51,7 @@ final readonly class OrderPricing
      */
     public function discounts(array $items, \DateTimeImmutable $placedAt): array
     {
-        $basket = array_map(
-            static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId, $ordered->item->variant),
-            $items,
-        );
+        $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
 
         return $this->calculator->calculate($basket, $this->discountRules->all(), $placedAt);
     }

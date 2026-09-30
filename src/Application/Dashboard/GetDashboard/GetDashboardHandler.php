@@ -138,7 +138,7 @@ final readonly class GetDashboardHandler
     private function typeNamesOf(array $sales): array
     {
         $typeNames = [];
-        foreach ($this->products->findByIds(array_map(static fn (ProductSales $product) => $product->productId, $sales)) as $product) {
+        foreach ($this->products->findByIds(ProductSales::productIds($sales)) as $product) {
             $typeNames[(string) $product->id()] = $product->type()->name();
         }
 

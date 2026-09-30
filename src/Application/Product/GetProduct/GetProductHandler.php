@@ -83,7 +83,7 @@ final readonly class GetProductHandler
         }
         foreach ($orders as $order) {
             foreach ($order->lines() as $line) {
-                if ($line->productId()->equals($productId)) {
+                if ($line->productId()?->equals($productId) ?? false) {
                     $movements[] = [
                         'date' => $order->placedAt()->format(\DateTimeInterface::ATOM),
                         'kind' => 'sale',

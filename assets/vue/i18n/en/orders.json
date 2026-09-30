@@ -51,7 +51,9 @@
         "product": "Product",
         "quantity": "Qty",
         "unitPrice": "Unit price",
-        "total": "Total"
+        "total": "Total",
+        "unknownProductHint": "Amount typed on the terminal without a product: it counts in the turnover, not in the stock.",
+        "identify": "Choose the product"
     },
     "list": {
         "empty": "No orders.",
@@ -77,5 +79,16 @@
     "payment": {
         "card": "Card",
         "cash": "Cash"
+    },
+    "identify": {
+        "title": "Choose the product",
+        "intro": "The sale keeps its price and date; the product leaves the stock like any sale.",
+        "line": "{quantity} × amount typed at",
+        "product": "Product",
+        "variant": "Variant",
+        "chooseProduct": "Choose a product.",
+        "cancel": "Cancel",
+        "save": "Link",
+        "saved": "Sale linked to “{name}”."
     }
 }

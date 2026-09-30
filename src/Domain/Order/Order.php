@@ -13,6 +13,7 @@ use App\Domain\Order\Exception\NegativeShippingCost;
 use App\Domain\Order\Exception\OrderOutsideEvent;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
+use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -219,7 +220,7 @@ class Order
     public function moveSales(Ulid $productId, ?string $variant, SellableItem $to): void
     {
         foreach ($this->lines() as $line) {
-            if (!$line->productId()->equals($productId) || $line->variant() !== $variant) {
+            if (!($line->productId()?->equals($productId) ?? false) || $line->variant() !== $variant) {
                 continue;
             }
 
@@ -231,6 +232,17 @@ class Order
             $twin->add($line->quantity(), $line->cost());
             $this->lines->removeElement($line);
         }
+    }
+
+    public function line(Ulid $lineId): OrderLine
+    {
+        foreach ($this->lines as $line) {
+            if ($line->id()->equals($lineId)) {
+                return $line;
+            }
+        }
+
+        throw new NotFound('order_line', (string) $lineId);
     }
 
     private function lineSelling(SellableItem $item, OrderLine $except): ?OrderLine

@@ -34,6 +34,18 @@ final class SumUpPayloadMapperTest extends TestCase
         self::assertSame(50, $sale->lines[2]->unitPrice->amount());
     }
 
+    public function testKeypadAmountsHaveNoName(): void
+    {
+        $sale = (new SumUpPayloadMapper())->sale([
+            'transaction_code' => 'T1',
+            'timestamp' => '2030-03-14T10:00:00Z',
+            'amount' => 12.0,
+            'products' => [['name' => 'Custom amount', 'price' => 2.0, 'quantity' => 1], ['price' => 10.0, 'quantity' => 1]],
+        ]);
+
+        self::assertSame(['', ''], array_map(static fn (ExternalLine $line): string => $line->name, $sale->lines));
+    }
+
     public function testCashPaymentsAreToldApartFromCardOnes(): void
     {
         $mapper = new SumUpPayloadMapper();

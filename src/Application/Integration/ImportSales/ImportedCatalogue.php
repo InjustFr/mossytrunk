@@ -35,7 +35,6 @@ final class ImportedCatalogue
         private readonly ProductTypeCreator $typeCreator,
         private readonly MiscellaneousType $miscellaneous,
         private readonly Workspace $workspace,
-        private readonly string $freeAmountName,
     ) {
     }
 
@@ -71,13 +70,6 @@ final class ImportedCatalogue
         return $this->create(self::withoutPrefix($name, $type->name()), $sellingPrice, $type);
     }
 
-    public function freeAmount(Money $price): Product
-    {
-        $product = $this->named($this->freeAmountName);
-
-        return null !== $product && !$product->hasVariants() ? $product : $this->create($this->freeAmountName, $price, $this->miscellaneous->get());
-    }
-
     public function createdCount(): int
     {
         return \count($this->created);
@@ -90,7 +82,11 @@ final class ImportedCatalogue
 
     private function create(string $name, Money $sellingPrice, ProductType $type): Product
     {
-        $product = Product::create($this->workspace, $this->references->generate($type, $name), $name, $sellingPrice, $type);
+        return $this->created(Product::create($this->workspace, $this->references->generate($type, $name), $name, $sellingPrice, $type));
+    }
+
+    private function created(Product $product): Product
+    {
         $this->products->add($product);
         $this->index()[mb_strtolower($product->displayName())] = $product;
         $this->created[(string) $product->id()] = $product;

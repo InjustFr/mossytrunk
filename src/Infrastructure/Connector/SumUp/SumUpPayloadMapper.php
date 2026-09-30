@@ -12,6 +12,8 @@ use App\Infrastructure\Http\Json;
 
 final class SumUpPayloadMapper
 {
+    private const string KEYPAD_AMOUNT = 'custom amount';
+
     /**
      * @param array<string, mixed> $transaction
      */
@@ -45,7 +47,7 @@ final class SumUpPayloadMapper
      */
     private static function line(array $product): ExternalLine
     {
-        $name = trim(Json::string($product['name'] ?? ''));
+        $name = self::name($product);
 
         return new ExternalLine(
             mb_strtolower($name),
@@ -55,6 +57,16 @@ final class SumUpPayloadMapper
             self::variant($product),
             self::category($product),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $product
+     */
+    private static function name(array $product): string
+    {
+        $name = trim(Json::string($product['name'] ?? ''));
+
+        return self::KEYPAD_AMOUNT === mb_strtolower($name) ? '' : $name;
     }
 
     /**

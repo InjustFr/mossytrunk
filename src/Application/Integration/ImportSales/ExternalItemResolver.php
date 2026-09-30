@@ -25,6 +25,7 @@ final class ExternalItemResolver
         private readonly ServiceConnection $connection,
         private readonly LinePrices $linePrices,
         private readonly \DateTimeImmutable $now,
+        private readonly string $unknownProduct,
     ) {
         foreach ($this->items->ofService($connection->service()) as $item) {
             $this->remembered[$item->itemKey()] = $item;
@@ -35,7 +36,7 @@ final class ExternalItemResolver
     {
         $name = trim($line->name);
         if ('' === $name) {
-            return $this->catalogue->freeAmount($line->unitPrice)->sellable(null)->at($line->unitPrice);
+            return SellableItem::unknown($this->unknownProduct, $line->unitPrice);
         }
 
         $variant = null === $line->variant || '' === trim($line->variant) ? null : trim($line->variant);

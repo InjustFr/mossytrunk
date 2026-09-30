@@ -27,6 +27,7 @@ export function useOrder(orderId) {
     }
 
     const remove = () => api.del(`/api/orders/${orderId}`);
+    const identifyLine = (lineId, payload) => api.put(`/api/orders/${orderId}/lines/${lineId}/product`, payload);
 
-    return { order, load, remove };
+    return { order, load, remove, identifyLine };
 }

@@ -111,7 +111,7 @@ final class ProductTest extends TestCase
         $product = Costs::bought(Product::create(TestWorkspace::get(), 'TS-01', 'T-shirt', Money::cents(2_000), TestProductType::get(), ['Mousse', 'Fougère']), 800);
 
         $item = $product->sellable('Mousse');
-        self::assertTrue($item->productId->equals($product->id()));
+        self::assertTrue($product->id()->equals($item->productId));
         self::assertSame('Mousse', $item->variant);
         self::assertSame(2_000, $item->sellingPrice->amount());
         self::assertSame(800, $item->buyingPrice->amount());
@@ -265,7 +265,7 @@ final class ProductTest extends TestCase
         $print = ProductType::create(TestWorkspace::get(), 'Print', 'PRI');
         $product = Product::create(TestWorkspace::get(), 'PRI-FOR', 'Forêt', Money::cents(1_500), $print);
 
-        self::assertTrue($product->sellable(null)->typeId->equals($print->id()));
+        self::assertTrue($print->id()->equals($product->sellable(null)->typeId));
     }
 
     public function testAProductIsArchivedAndRestored(): void

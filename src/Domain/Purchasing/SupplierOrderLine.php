@@ -62,7 +62,7 @@ class SupplierOrderLine
 
         $this->id = new Ulid();
         $this->order = $order;
-        $this->productId = $purchased->item->productId;
+        $this->productId = $purchased->productId;
         $this->variant = $purchased->item->variant;
         $this->label = $purchased->item->label();
         $this->orderedQuantity = $purchased->quantity;

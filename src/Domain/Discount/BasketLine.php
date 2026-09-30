@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Discount;
 
+use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
@@ -19,5 +20,10 @@ final readonly class BasketLine
         public Ulid $typeId,
         public ?string $variant = null,
     ) {
+    }
+
+    public static function of(SellableItem $item, int $quantity): ?self
+    {
+        return null === $item->productId || null === $item->typeId ? null : new self($item->productId, $item->sellingPrice, $quantity, $item->typeId, $item->variant);
     }
 }

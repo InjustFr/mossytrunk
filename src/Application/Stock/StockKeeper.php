@@ -33,17 +33,21 @@ final readonly class StockKeeper
 
         return array_map(function (OrderedItem $ordered) use ($checks): OrderedItem {
             $item = $ordered->item;
+            $productId = $item->productId;
+            if (null === $productId) {
+                return $ordered->costing(Money::zero());
+            }
             $quantity = $ordered->quantity;
             $cost = Money::zero();
 
             foreach ($checks as $check) {
-                $explained = $check->explain($item->productId, $item->variant, $quantity);
+                $explained = $check->explain($productId, $item->variant, $quantity);
                 $quantity -= $explained->quantity;
                 $cost = $cost->add($explained->cost);
             }
 
             if ($quantity > 0) {
-                $stock = $this->stock->for($this->products->get($item->productId), $item->variant);
+                $stock = $this->stock->for($this->products->get($productId), $item->variant);
                 $cost = $cost->add($stock->withdraw($quantity, $item->buyingPrice));
             }
 
@@ -54,7 +58,8 @@ final readonly class StockKeeper
     public function putBack(Order $order): void
     {
         foreach ($order->lines() as $line) {
-            $product = $this->products->findByIds([$line->productId()])[0] ?? null;
+            $productId = $line->productId();
+            $product = null === $productId ? null : $this->products->findByIds([$productId])[0] ?? null;
             if (null === $product || !$this->stillSells($product, $line->variant())) {
                 continue;
             }

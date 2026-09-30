@@ -12,9 +12,9 @@ use App\Domain\Shared\DateRange;
 final readonly class OrderView
 {
     /**
-     * @param list<array{productId: string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
-     * @param array{id: string, name: string}|null                                                                               $event
-     * @param list<array{label: string, amount: int, ruleId: ?string}>                                                           $discounts
+     * @param list<array{id: string, productId: ?string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
+     * @param array{id: string, name: string}|null                                                                                            $event
+     * @param list<array{label: string, amount: int, ruleId: ?string}>                                                                        $discounts
      */
     public function __construct(
         public string $id,
@@ -46,7 +46,8 @@ final readonly class OrderView
             $sourceLabel,
             $order->paymentMethod()?->value,
             array_map(static fn (OrderLine $line): array => [
-                'productId' => (string) $line->productId(),
+                'id' => (string) $line->id(),
+                'productId' => null === $line->productId() ? null : (string) $line->productId(),
                 'label' => $line->label(),
                 'quantity' => $line->quantity(),
                 'unitPrice' => $line->unitPrice()->amount(),

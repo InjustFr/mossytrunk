@@ -22,7 +22,7 @@ order:
     source:
         manual: 'Manual entry'
 import:
-    free_amount: 'Free amount'
+    unknown_product: 'Unknown product'
     discount: '{service} discount'
 export:
     orders:

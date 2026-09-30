@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Order;
 
 use App\Domain\Order\Exception\InvalidOrderQuantity;
+use App\Domain\Order\Exception\LineAlreadyIdentified;
+use App\Domain\Order\Exception\UnknownProductChosen;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
@@ -27,8 +29,8 @@ class OrderLine
     #[ORM\JoinColumn(name: 'order_id', nullable: false, onDelete: 'CASCADE')]
     private Order $order;
 
-    #[ORM\Column(type: UlidType::NAME)]
-    private Ulid $productId;
+    #[ORM\Column(type: UlidType::NAME, nullable: true)]
+    private ?Ulid $productId;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $variant;
@@ -66,7 +68,7 @@ class OrderLine
 
     public function sells(SellableItem $item): bool
     {
-        return $this->productId->equals($item->productId) && $this->variant === $item->variant;
+        return null !== $this->productId && null !== $item->productId && $this->productId->equals($item->productId) && $this->variant === $item->variant;
     }
 
     /**
@@ -77,6 +79,21 @@ class OrderLine
         $this->productId = $item->productId;
         $this->variant = $item->variant;
         $this->productName = $item->productName;
+    }
+
+    public function identify(SellableItem $item, Money $cost): void
+    {
+        if (!$this->sellsUnknownProduct()) {
+            throw new LineAlreadyIdentified($this->label());
+        }
+        if (!$item->isKnown()) {
+            throw new UnknownProductChosen();
+        }
+
+        $this->productId = $item->productId;
+        $this->variant = $item->variant;
+        $this->productName = $item->productName;
+        $this->cost = $cost;
     }
 
     public function sameUnitAmountsAs(self $other): bool
@@ -109,9 +126,14 @@ class OrderLine
         return $this->id;
     }
 
-    public function productId(): Ulid
+    public function productId(): ?Ulid
     {
         return $this->productId;
+    }
+
+    public function sellsUnknownProduct(): bool
+    {
+        return null === $this->productId;
     }
 
     public function variant(): ?string

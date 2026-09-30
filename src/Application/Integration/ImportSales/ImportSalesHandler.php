@@ -62,8 +62,8 @@ final readonly class ImportSalesHandler
         uasort($sales, static fn (ExternalSale $a, ExternalSale $b): int => $a->placedAt <=> $b->placedAt);
         $alreadyImported = array_flip($this->orders->importedExternalIds($service, array_map(strval(...), array_keys($sales))));
 
-        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $this->miscellaneous, $connection->workspace(), $this->translator->trans('import.free_amount'));
-        $resolver = new ExternalItemResolver($catalogue, $this->items, $connection, $description->linePrices, $this->clock->now());
+        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $this->miscellaneous, $connection->workspace());
+        $resolver = new ExternalItemResolver($catalogue, $this->items, $connection, $description->linePrices, $this->clock->now(), $this->translator->trans('import.unknown_product'));
         $atEvent = SalesContext::AtEvent === $connection->salesContext();
 
         $imported = $withoutEvent = $waiting = $empty = 0;

@@ -31,6 +31,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`.
 | O9 | `total = subtotal − discounts`; `costOfGoods = Σ line costs`; gross margin = total − cost of goods | `Order::total()`, `costOfGoods()`, `OrderView` | `OrderTest` |
 | O10 | An event cannot be rescheduled if some of its orders would fall outside the new dates | `UpdateEventHandler` (`OrderRepository::countOutside()`) | `OrderUseCasesTest` |
 | O11 | Imported orders keep their source and external id (unique within the workspace) so re-importing never duplicates them | `Order::imported()` | [imports.md](imports.md) |
+| O13 | An imported line may have **no product** (« Produit inconnu »: an amount typed on the card terminal, see [sumup-import.md](sumup-import.md) S10). It never merges with another line, takes no stock, costs nothing and matches no discount. It can later be **linked to a product and variant** (once): it keeps its unit price, takes the product's name, and its units leave the stock like a sale on the order's date (cost from the lots, K rules). Discounts are not recomputed | `SellableItem::unknown()`, `OrderLine::identify()`, `IdentifyOrderLineHandler` | `OrderTest`, `ImportSumUpSalesTest`, `OrderApiTest` |
 | O12 | Every order of the workspace can be deleted at once; products and events stay. A later import brings the services' sales back | `DeleteAllOrdersHandler` | `DeleteAllOrdersTest` |
 
 ## Use cases & API
@@ -42,6 +43,7 @@ Model: `src/Domain/Order/Order.php`, `OrderLine.php`, `OrderedItem.php`.
 | `ListOrders` | `GET /api/orders[?eventId=]` (most recent first) |
 | `GetOrder` | `GET /api/orders/{id}` (lines, discounts, totals, cost of goods, margin) |
 | `DeleteOrder` | `DELETE /api/orders/{id}` |
+| `IdentifyOrderLine` | `PUT /api/orders/{id}/lines/{lineId}/product` `{productId, variant?}` → 204 (422 when the line already has a product) |
 | `DeleteAllOrders` | `DELETE /api/orders` → `{deleted}` |
 
-UI: `/orders` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total, payment method (Carte / Espèces) and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/orders/{id}` — detail with margin and delete. `/settings` — « Zone de danger »: delete every order, behind a warning and a confirmation.
+UI: `/orders` — order history (filter by event), grouped by **day and event** with the day's total and number of orders; each order shows its time, articles, discounts, total, payment method (Carte / Espèces) and (secondary) its reference. Side by side, the new-order form: date, product → variant (only when needed) → quantity, live preview of the matching event, and a footer pinned at the bottom with discounts, total and the save button. On save: toast, list refresh without page reload, new row highlighted. `/orders/{id}` — detail with margin and delete; a line without product is a warning badge « Produit inconnu » with « Choisir le produit » (product and variant, in a modal). `/settings` — « Zone de danger »: delete every order, behind a warning and a confirmation.

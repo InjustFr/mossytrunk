@@ -108,7 +108,7 @@ class SupplierOrder
         $this->lines->clear();
         foreach ($items as $position => $purchased) {
             foreach ($this->lines as $line) {
-                if ($line->isFor($purchased->item->productId, $purchased->item->variant)) {
+                if ($line->isFor($purchased->productId, $purchased->item->variant)) {
                     throw new OrderedTwice($purchased->item->label());
                 }
             }

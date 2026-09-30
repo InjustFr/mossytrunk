@@ -12,12 +12,15 @@ use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ImportSales\ImportReport;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
 use App\Application\Order\GetOrder\GetOrderHandler;
+use App\Application\Order\IdentifyOrderLine\IdentifyOrderLine;
+use App\Application\Order\IdentifyOrderLine\IdentifyOrderLineHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
+use App\Domain\Order\Exception\LineAlreadyIdentified;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Connector\SumUp\FakeSumUpGateway;
 use App\Tests\Support\ActsAsUser;
@@ -111,7 +114,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
         self::assertSame(1, $report->productsCreated, 'only Sticker Mousse is new');
         $orders = self::getContainer()->get(ListOrdersHandler::class)();
-        self::assertSame(3, $orders[0]->itemCount);
+        self::assertSame(4, $orders[0]->itemCount, 'Tote bag, Sticker Mousse, Print A4 Fougère and a typed amount');
     }
 
     public function testImportedOrdersTakeTheirUnitsFromStockInChronologicalOrder(): void
@@ -199,20 +202,48 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(['PRI-FOR', 'PRI-RIV'], array_column($products, 'reference'));
     }
 
-    public function testLinesWithoutNameAreSoldAsAFreeAmountAtTheirOwnPrice(): void
+    public function testLinesWithoutNameAreImportedAsUnknownProductsAtTheirOwnPrice(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
             ExternalSales::sumUp('TX-FREE1', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(700), [ExternalSales::line('', Money::cents(700), 1)]),
-            ExternalSales::sumUp('TX-FREE2', new \DateTimeImmutable('2030-03-14T13:00:00Z'), Money::cents(2_500), [ExternalSales::line(' ', Money::cents(2_500), 1, 'Print')]),
+            ExternalSales::sumUp('TX-FREE2', new \DateTimeImmutable('2030-03-14T13:00:00Z'), Money::cents(1_200), [ExternalSales::line(' ', Money::cents(1_000), 1, 'Print'), ExternalSales::line('', Money::cents(200), 1)]),
         ]);
 
         $report = $this->import();
 
         self::assertSame(2, $report->ordersImported);
-        self::assertSame(1, $report->productsCreated);
-        self::assertSame([['Free amount', 'Miscellaneous']], array_map(static fn ($product): array => [$product->name, $product->typeName], self::getContainer()->get(ListProductsHandler::class)()));
-        self::assertEqualsCanonicalizing([700, 2_500], array_column(self::getContainer()->get(ListOrdersHandler::class)(), 'total'));
+        self::assertSame(0, $report->productsCreated);
+        self::assertSame([], self::getContainer()->get(ListProductsHandler::class)());
+        $orders = array_column(self::getContainer()->get(ListOrdersHandler::class)(), null, 'reference');
+        self::assertSame([700, 1_200], [$orders['TX-FREE1']->total, $orders['TX-FREE2']->total]);
+        $lines = self::getContainer()->get(GetOrderHandler::class)($orders['TX-FREE2']->id)->lines;
+        self::assertEqualsCanonicalizing([[null, 'Unknown product', 1_000], [null, 'Unknown product', 200]], array_map(static fn (array $line): array => [$line['productId'], $line['label'], $line['unitPrice']], $lines));
+    }
+
+    public function testAnUnknownProductLineIsLinkedLaterAndTakesStock(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $print = self::createProduct('Print', 1_500, 0, ['A4', 'A3']);
+        self::getContainer()->get(RestockHandler::class)(new Restock($print, 'A3', 5, 2_000));
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-FREE', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(2_400), [ExternalSales::line('', Money::cents(1_200), 2)]),
+        ]);
+        $this->import();
+        $orderId = self::getContainer()->get(ListOrdersHandler::class)()[0]->id;
+        $lineId = self::getContainer()->get(GetOrderHandler::class)($orderId)->lines[0]['id'];
+
+        self::getContainer()->get(IdentifyOrderLineHandler::class)(new IdentifyOrderLine($orderId, $lineId, $print, 'a3'));
+        self::getContainer()->get('doctrine')->getManager()->clear();
+
+        $order = self::getContainer()->get(GetOrderHandler::class)($orderId);
+        self::assertSame([$print, 'Print — A3', 1_200, 800], [$order->lines[0]['productId'], $order->lines[0]['label'], $order->lines[0]['unitPrice'], $order->lines[0]['cost']]);
+        self::assertSame(2_400, $order->total);
+        $stock = array_column(self::getContainer()->get(ListProductsHandler::class)()[0]->stock, 'onHand', 'variant');
+        self::assertSame(3, $stock['A3']);
+
+        $this->expectException(LineAlreadyIdentified::class);
+        self::getContainer()->get(IdentifyOrderLineHandler::class)(new IdentifyOrderLine($orderId, $lineId, $print, 'A4'));
     }
 
     public function testDiscountedLinesNeitherLowerTheProductPriceNorTheOrderTotal(): void

@@ -33,3 +33,23 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await page.getByLabel('Rechercher un produit').fill('Tote bag');
     await expect(page.getByRole('row').filter({ hasText: 'Tote bag' })).toContainText('0,00');
 });
+
+test('an amount typed on the terminal is imported without product, then linked to one', async ({ page, request }) => {
+    await addSumUp(request);
+    await request.post('/api/events', { data: { name: 'Salon de printemps 2030', location: 'Lyon', startDate: '2030-03-14', endDate: '2030-03-15' } });
+    await request.post('/api/services/sumup/import');
+
+    await page.goto('/orders');
+    await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
+    await page.getByRole('row').filter({ hasText: 'TFAKE0002' }).getByRole('link', { name: 'TFAKE0002' }).click();
+    await expect(page.getByRole('row').filter({ hasText: 'Produit inconnu' })).toContainText('2,00');
+
+    await page.getByRole('button', { name: 'Choisir le produit' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Choisir le produit' });
+    await choose(page, dialog.getByRole('combobox', { name: 'Produit' }), 'Tote bag');
+    await dialog.getByRole('button', { name: 'Associer' }).click();
+
+    await expect(page.getByTestId('toast')).toContainText('Vente associée à « Tote bag ».');
+    await expect(page.getByRole('row').filter({ hasText: 'Produit inconnu' })).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: 'Tote bag' })).toHaveCount(2);
+});

@@ -51,7 +51,9 @@
         "product": "Produit",
         "quantity": "Qté",
         "unitPrice": "Prix unitaire",
-        "total": "Total"
+        "total": "Total",
+        "unknownProductHint": "Montant saisi sur le terminal sans produit : il compte dans le chiffre d'affaires, pas dans le stock.",
+        "identify": "Choisir le produit"
     },
     "list": {
         "empty": "Aucune commande.",
@@ -77,5 +79,16 @@
     "payment": {
         "card": "Carte",
         "cash": "Espèces"
+    },
+    "identify": {
+        "title": "Choisir le produit",
+        "intro": "Le prix et la date de la vente ne changent pas ; le produit sort du stock comme une vente normale.",
+        "line": "{quantity} × montant saisi à",
+        "product": "Produit",
+        "variant": "Variante",
+        "chooseProduct": "Choisissez un produit.",
+        "cancel": "Annuler",
+        "save": "Associer",
+        "saved": "Vente associée à « {name} »."
     }
 }

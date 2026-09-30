@@ -57,6 +57,8 @@ integration:
     service_already_added: '{service} est déjà ajouté.'
     unknown_service: 'Service inconnu « {service} ».'
 order:
+    line_already_identified: '« {label} » a déjà un produit.'
+    unknown_product_chosen: 'Choisissez un produit du catalogue.'
     discount_exceeds_subtotal: 'Les remises ne peuvent pas dépasser le montant de la commande.'
     empty: 'Une commande doit contenir au moins un produit.'
     invalid_quantity: 'La quantité doit être d''au moins 1.'
@@ -89,6 +91,7 @@ product:
     variant_moved_onto_itself: 'Choisissez un autre produit que celui d''origine.'
     variant_required: 'Choisissez une variante pour « {name} ».'
 purchasing:
+    unknown_product_purchased: '« {label} » n''est pas un produit du catalogue : il ne peut pas être commandé à un fournisseur.'
     supplier_reference_too_long: 'La référence fournisseur ne peut pas dépasser {max} caractères.'
     discount_exceeds_lines: 'La remise globale ne peut pas dépasser le prix des produits.'
     empty_supplier_name: 'Le nom du fournisseur est obligatoire.'

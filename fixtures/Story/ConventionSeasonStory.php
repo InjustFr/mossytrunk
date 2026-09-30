@@ -321,7 +321,7 @@ final class ConventionSeasonStory extends Story
                 $items[] = (new OrderedItem($item, $quantity))->costing($this->stockOf($product, $variant)->withdraw($quantity, $item->buyingPrice));
             }
 
-            $basket = array_map(static fn (OrderedItem $ordered): BasketLine => new BasketLine($ordered->item->productId, $ordered->item->sellingPrice, $ordered->quantity, $ordered->item->typeId), $items);
+            $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
             $this->entityManager->persist(Order::place($event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt)));
         }
     }

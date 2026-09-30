@@ -22,7 +22,7 @@ order:
     source:
         manual: 'Saisie'
 import:
-    free_amount: 'Montant libre'
+    unknown_product: 'Produit inconnu'
     discount: 'Remise {service}'
 export:
     orders:

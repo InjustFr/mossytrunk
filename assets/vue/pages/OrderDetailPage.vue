@@ -1,15 +1,19 @@
 <script setup>
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { ArrowLeft } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
+import IdentifyLineForm from '../components/orders/IdentifyLineForm.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
 import PaymentMethod from '../components/orders/PaymentMethod.vue';
 import { useOrder } from '../composables/useOrders.js';
+import { useProducts } from '../composables/useProducts.js';
+import { useToast } from '../composables/useToast.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
 
@@ -18,14 +22,24 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { order, load, remove } = useOrder(props.orderId);
+const { order, load, remove, identifyLine } = useOrder(props.orderId);
+const { products, load: loadProducts } = useProducts();
+const toast = useToast();
+const identifying = ref(null);
+const identifyOpen = computed({ get: () => identifying.value !== null, set: (open) => { if (!open) identifying.value = null; } });
+
+async function onIdentified(name) {
+    identifying.value = null;
+    toast.success(t('orders.identify.saved', { name }));
+    await load();
+}
 
 async function onDelete() {
     await remove();
     visit('/orders');
 }
 
-onMounted(load);
+onMounted(() => Promise.all([load(), loadProducts()]));
 </script>
 
 <template>
@@ -45,7 +59,7 @@ onMounted(load);
             </p>
             <div class="order-detail-page__grid">
                 <BaseCard :title="t('orders.detail.items')">
-                    <OrderLines :lines="order.lines" />
+                    <OrderLines :lines="order.lines" identifiable @identify="identifying = $event" />
                 </BaseCard>
                 <div class="order-detail-page__side">
                     <BaseCard :title="t('orders.detail.amount')">
@@ -57,6 +71,10 @@ onMounted(load);
                 </div>
             </div>
         </div>
+
+        <BaseModal v-model:open="identifyOpen" :title="t('orders.identify.title')">
+            <IdentifyLineForm v-if="identifying" :line="identifying" :products="products" :submit="(payload) => identifyLine(identifying.id, payload)" @saved="onIdentified" @cancel="identifying = null" />
+        </BaseModal>
     </AppLayout>
 </template>
 

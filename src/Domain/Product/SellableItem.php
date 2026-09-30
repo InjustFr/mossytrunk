@@ -18,13 +18,23 @@ final readonly class SellableItem
      * @internal use Product::sellable()
      */
     public function __construct(
-        public Ulid $productId,
+        public ?Ulid $productId,
         public ?string $variant,
         public string $productName,
         public Money $sellingPrice,
         public Money $buyingPrice,
-        public Ulid $typeId,
+        public ?Ulid $typeId,
     ) {
+    }
+
+    public static function unknown(string $label, Money $sellingPrice): self
+    {
+        return new self(null, null, $label, $sellingPrice, Money::zero(), null);
+    }
+
+    public function isKnown(): bool
+    {
+        return null !== $this->productId;
     }
 
     public function at(Money $sellingPrice): self
@@ -39,6 +49,6 @@ final readonly class SellableItem
 
     public function isSameAs(self $other): bool
     {
-        return $this->productId->equals($other->productId) && $this->variant === $other->variant;
+        return null !== $this->productId && null !== $other->productId && $this->productId->equals($other->productId) && $this->variant === $other->variant;
     }
 }

@@ -27,7 +27,7 @@ final readonly class GetEventReportHandler
         $result = EventResult::of($event, $this->orders->list($event->id()));
 
         $products = [];
-        foreach ($this->products->findByIds(array_map(static fn (ProductSales $sales): Ulid => $sales->productId, $result->productSales)) as $product) {
+        foreach ($this->products->findByIds(ProductSales::productIds($result->productSales)) as $product) {
             $products[$product->id()->toRfc4122()] = $product;
         }
 

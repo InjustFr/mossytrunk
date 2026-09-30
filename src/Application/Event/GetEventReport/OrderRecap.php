@@ -25,7 +25,7 @@ final class OrderRecap
         /** @var array<string, RecapNode> $types */
         $types = [];
         foreach ($sales as $line) {
-            $productKey = $line->productId->toRfc4122();
+            $productKey = $line->productId?->toRfc4122() ?? '';
             $product = $products[$productKey] ?? null;
             $typeName = $product?->type()?->name() ?? '';
 
