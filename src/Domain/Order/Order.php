@@ -55,6 +55,7 @@ class Order
 
     /** @var Collection<int, OrderLine> */
     #[ORM\OneToMany(targetEntity: OrderLine::class, mappedBy: 'order', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $lines;
 
     /** @var list<array{label: string, amount: int}> */
@@ -66,6 +67,7 @@ class Order
 
     /** @var Collection<int, ImportedSale> */
     #[ORM\OneToMany(targetEntity: ImportedSale::class, mappedBy: 'order', cascade: ['persist'])]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $importedSales;
 
     #[ORM\Column(length: 16, nullable: true, enumType: PaymentMethod::class)]

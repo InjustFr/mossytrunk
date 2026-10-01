@@ -272,7 +272,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame([0, 2], [$report->ordersImported, $report->ordersAlreadyImported]);
         $merged = self::getContainer()->get(ListOrdersHandler::class)();
         self::assertCount(1, $merged);
-        self::assertSame([$orders['TX-CARD']->reference, ['TX-CARD', 'TX-CASH'], 2, 2_000], [$merged[0]->reference, $merged[0]->externalReferences, $merged[0]->itemCount, $merged[0]->total]);
+        self::assertSame([$orders['TX-CARD']->reference, ['TX-CASH', 'TX-CARD'], 2, 2_000], [$merged[0]->reference, $merged[0]->externalReferences, $merged[0]->itemCount, $merged[0]->total]);
     }
 
     public function testDiscountedLinesNeitherLowerTheProductPriceNorTheOrderTotal(): void
