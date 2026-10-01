@@ -51,6 +51,7 @@ integration:
     missing_setting: 'Missing setting “{name, select, merchant_code {Merchant code} api_key {API key} keystring {Keystring} shared_secret {Shared secret} other {{name}}}”.'
     service_not_added: '{service} is not added: add it in Settings › Connected services.'
     service_not_authorizing: '{service} does not connect through authorization.'
+    service_not_exporting_catalogue: '{service} cannot export the catalogue.'
     service_not_configured: '{service} is not configured: complete its credentials in Settings › Connected services.'
     service_not_connected: '{service} is not connected: connect it from Settings › Connected services.'
     service_not_registered: 'Unknown service “{service}”.'

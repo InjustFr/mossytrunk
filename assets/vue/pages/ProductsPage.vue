@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { Tags } from '@lucide/vue';
+import { Download, Tags } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -19,6 +19,7 @@ import SelectionBar from '../components/ui/SelectionBar.vue';
 import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
+import { useServices } from '../composables/useServices.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { typeColors } from '../composables/useTypeColor.js';
@@ -123,12 +124,25 @@ async function onBatchSaved(count) {
     await load();
 }
 
-onMounted(() => Promise.all([load(), loadTypes()]));
+const services = useServices();
+const catalogueExports = computed(() => services.services.value.filter((service) => service.exportsCatalogue));
+
+onMounted(() => Promise.all([load(), loadTypes(), services.load()]));
 </script>
 
 <template>
     <AppLayout :title="t('products.page.title')">
         <template #actions>
+            <BaseButton
+                v-for="service in catalogueExports"
+                :key="service.key"
+                :href="`/api/services/${service.key}/catalogue.csv`"
+                variant="secondary"
+                download
+                data-turbo="false"
+            >
+                <Download size="1rem" aria-hidden="true" /> {{ t('products.page.exportFor', { service: service.label }) }}
+            </BaseButton>
             <BaseButton variant="secondary" @click="typesOpen = true"><Tags size="1rem" aria-hidden="true" /> {{ t('products.page.types') }}</BaseButton>
             <BaseButton @click="openCreate">{{ t('products.page.new') }}</BaseButton>
         </template>

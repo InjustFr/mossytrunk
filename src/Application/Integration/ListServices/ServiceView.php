@@ -15,6 +15,7 @@ final readonly class ServiceView
         public string $summary,
         public ?string $instructions,
         public bool $authorizes,
+        public bool $exportsCatalogue,
         public array $fields,
         public string $defaultSalesContext,
         public string $defaultUnknownItems,

@@ -25,6 +25,8 @@ import:
     unknown_product: 'Produit inconnu'
     discount: 'Remise {service}'
 export:
+    catalogue:
+        filename: 'catalogue-{service}-{date}.csv'
     orders:
         filename: 'commandes-{from}-au-{to}.csv'
         column:

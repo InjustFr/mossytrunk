@@ -51,6 +51,7 @@ integration:
     missing_setting: 'Paramètre manquant « {name, select, merchant_code {Code marchand} api_key {Clé API} keystring {Keystring} shared_secret {Shared secret} other {{name}}} ».'
     service_not_added: '{service} n''est pas ajouté : ajoutez-le dans Paramètres › Services connectés.'
     service_not_authorizing: '{service} ne se connecte pas par autorisation.'
+    service_not_exporting_catalogue: '{service} ne sait pas exporter le catalogue.'
     service_not_configured: '{service} n''est pas configuré : complétez ses accès dans Paramètres › Services connectés.'
     service_not_connected: '{service} n''est pas connecté : connectez-le depuis Paramètres › Services connectés.'
     service_not_registered: 'Service inconnu « {service} ».'

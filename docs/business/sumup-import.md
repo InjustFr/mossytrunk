@@ -27,3 +27,15 @@ Code: `src/Infrastructure/Connector/SumUp/` — `SumUpConnector`, `SumUpApiGatew
 | S11 | SumUp spreads a basket discount over the lines: a line is sold at the **higher** of the product's price and SumUp's line price (see I9) | `LinePrices::MayBeDiscounted` | `ImportSumUpSalesTest` |
 | S12 | A product's `description` is its **variant**: a variant of the named product; a product **split per variant** (`<name> <variant>`, `<name> - <variant>`, `<name> (<variant>)` without variants of its own); otherwise, when creating products, a new variant learnt by the named product when it has variants or was created by this import. On another existing product without variants the description is ignored | `SumUpPayloadMapper::variant()`, `ExternalItemResolver` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
 | S13 | The order keeps SumUp's **payment method**: `payment_type` `CASH` → « Espèces », any other value (`POS`, `ECOM`…) → « Carte »; unknown when SumUp sends none | `SumUpPayloadMapper::paymentMethod()` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
+
+## Catalogue export
+
+SumUp offers no catalogue API: Produits › « Exporter pour SumUp » downloads a CSV to import in SumUp (Articles › Importer). Its names are the ones the sales import recognises, so sold items come back linked.
+
+| # | Rule | Where | Tests |
+|---|---|---|---|
+| S20 | The export lists every **non-archived** product (neither it nor its type archived), with its **active** variants only, sorted by type then name | `ExportCatalogueHandler` | `ExportCatalogueTest` |
+| S21 | An item is named by the product's **display name** (type prefix included when the type prefixes names, see I5), its **category** is the type name and its **SKU** the product reference (`<reference>-<variant>` per variant) | `ExportCatalogueHandler`, `SumUpCatalogueCsv` | `ExportCatalogueTest`, `SumUpCatalogueCsvTest` |
+| S22 | Each variant is a **Variations** row under its item row, at the product's selling price (variants share one price); a product without variants is a single row | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |
+| S23 | No tax rate (SumUp applies the account's default) and **no inventory tracking**: stock stays managed in MossyTrunk | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |
+| S24 | SumUp's import template format: comma-separated UTF-8, prices with a dot (`12.50`), English headers (`Item name`, `Variations`, `Price`, `Tax rate (%)`, `Track inventory?`, `Quantity`, `SKU`, `Description`, `Category`) | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |

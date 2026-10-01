@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Integration;
 
 use App\Application\Integration\Exception\ServiceNotAuthorizing;
+use App\Application\Integration\Exception\ServiceNotExportingCatalogue;
 use App\Application\Integration\Exception\ServiceNotRegistered;
 use App\Application\Translator;
 use App\Domain\Order\Order;
@@ -37,6 +38,16 @@ final readonly class Connectors
         $connector = $this->get($service);
         if (!$connector instanceof AuthorizingConnector) {
             throw new ServiceNotAuthorizing($connector->describe()->label);
+        }
+
+        return $connector;
+    }
+
+    public function exporting(string $service): CatalogueExporting
+    {
+        $connector = $this->get($service);
+        if (!$connector instanceof CatalogueExporting) {
+            throw new ServiceNotExportingCatalogue($connector->describe()->label);
         }
 
         return $connector;

@@ -7,6 +7,7 @@
     "page": {
         "title": "Products",
         "types": "Product types",
+        "exportFor": "Export for {service}",
         "new": "New product",
         "editTitle": "Edit product",
         "moveVariantTitle": "Move a variant",

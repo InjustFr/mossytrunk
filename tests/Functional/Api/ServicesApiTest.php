@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Api;
 
 use App\Tests\Support\Json;
+use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -74,5 +75,26 @@ final class ServicesApiTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/services/sumup/import');
         self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testTheSumUpCatalogueDownloadsAsCsv(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Zine', 'sellingPrice' => 1_000, 'typeId' => ProductTypesApi::create($client, 'Livre')]);
+
+        $client->request('GET', '/api/services/sumup/catalogue.csv');
+
+        self::assertResponseIsSuccessful();
+        self::assertResponseHeaderSame('Content-Type', 'text/csv; charset=UTF-8');
+        self::assertResponseHeaderSame('X-Item-Count', '1');
+        self::assertStringStartsWith('attachment; filename=catalogue-sumup-', (string) $client->getResponse()->headers->get('Content-Disposition'));
+        self::assertStringContainsString('Zine,,10.00,,No,,', (string) $client->getResponse()->getContent());
+
+        $client->request('GET', '/api/services/etsy/catalogue.csv');
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('GET', '/api/services');
+        $services = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['etsy' => false, 'sumup' => true], array_combine(array_map(static fn (mixed $service): string => Json::string($service, 'key'), array_values($services)), array_map(static fn (mixed $service): bool => true === Json::at($service, 'exportsCatalogue'), array_values($services))));
     }
 }

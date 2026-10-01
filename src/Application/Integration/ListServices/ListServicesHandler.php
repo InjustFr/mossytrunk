@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Integration\ListServices;
 
 use App\Application\Integration\AuthorizingConnector;
+use App\Application\Integration\CatalogueExporting;
 use App\Application\Integration\Connectors;
 use App\Application\Integration\SalesConnector;
 use App\Application\Integration\ServiceField;
@@ -50,6 +51,7 @@ final readonly class ListServicesHandler
             $description->summary,
             $description->instructions,
             $connector instanceof AuthorizingConnector,
+            $connector instanceof CatalogueExporting,
             array_map(static fn (ServiceField $field): FieldView => new FieldView($field->name, $field->label, $field->secret, $field->required, $field->pattern, $field->patternMessage, $field->hint, $field->maxLength), $description->fields),
             $description->defaultSalesContext->value,
             $description->defaultUnknownItems->value,

@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Connector\SumUp;
 
+use App\Application\Integration\CatalogueExporting;
 use App\Application\Integration\Credentials;
 use App\Application\Integration\LinePrices;
-use App\Application\Integration\SalesConnector;
 use App\Application\Integration\ServiceDescription;
 use App\Application\Integration\ServiceField;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
 
-final readonly class SumUpConnector implements SalesConnector
+final readonly class SumUpConnector implements CatalogueExporting
 {
     public const string KEY = 'sumup';
 
-    public function __construct(private SumUpGateway $gateway)
-    {
+    public function __construct(
+        private SumUpGateway $gateway,
+        private SumUpCatalogueCsv $catalogueCsv,
+    ) {
     }
 
     public function describe(): ServiceDescription
@@ -39,5 +41,10 @@ final readonly class SumUpConnector implements SalesConnector
     public function sales(Credentials $credentials): iterable
     {
         return $this->gateway->successfulPayments(new SumUpCredentials($credentials->get('api_key'), $credentials->get('merchant_code')));
+    }
+
+    public function catalogue(array $items): string
+    {
+        return $this->catalogueCsv->of($items);
     }
 }
