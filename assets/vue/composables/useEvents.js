@@ -6,7 +6,7 @@ export function useEvents() {
     const events = ref([]);
 
     async function load() {
-        events.value = await api.get('/api/events');
+        await api.load('/api/events', events);
     }
 
     const create = (payload) => api.post('/api/events', payload);
@@ -28,9 +28,9 @@ export function useEvent(eventId) {
     const report = ref(null);
 
     async function load() {
-        [event.value, report.value] = await Promise.all([
-            api.get(`/api/events/${eventId}`),
-            api.get(`/api/events/${eventId}/report`),
+        await Promise.all([
+            api.load(`/api/events/${eventId}`, event),
+            api.load(`/api/events/${eventId}/report`, report),
         ]);
     }
 

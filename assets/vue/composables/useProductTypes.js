@@ -12,7 +12,7 @@ export function useProductTypes() {
     const api = useApi();
 
     async function load() {
-        types.value = await api.get('/api/product-types');
+        await api.load('/api/product-types', types);
     }
 
     async function create(name, color, code = null, variants = [], prefixesNames = true) {

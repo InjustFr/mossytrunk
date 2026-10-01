@@ -11,7 +11,7 @@ export function useSuppliers() {
     const suppliers = ref([]);
 
     async function load() {
-        suppliers.value = await api.get('/api/suppliers');
+        await api.load('/api/suppliers', suppliers);
     }
 
     const save = (id, payload) => (id ? api.put(`/api/suppliers/${id}`, payload) : api.post('/api/suppliers', payload));
@@ -25,13 +25,13 @@ export function useSupplierOrders() {
     const orders = ref([]);
 
     async function load() {
-        orders.value = await api.get('/api/supplier-orders');
+        await api.load('/api/supplier-orders', orders);
     }
 
     return {
         orders,
         load,
-        get: (id) => api.get(`/api/supplier-orders/${id}`),
+        loadOne: (id, target) => api.load(`/api/supplier-orders/${id}`, target),
         create: (payload) => api.post('/api/supplier-orders', payload),
         update: (id, payload) => api.put(`/api/supplier-orders/${id}`, payload),
         remove: (id) => api.del(`/api/supplier-orders/${id}`),

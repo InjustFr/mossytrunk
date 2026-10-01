@@ -13,7 +13,7 @@ export function useDashboard() {
     const dashboard = ref(null);
 
     async function load(year = null) {
-        dashboard.value = await api.get(`/api/dashboard${year ? `?year=${year}` : ''}`);
+        await api.load(`/api/dashboard${year ? `?year=${year}` : ''}`, dashboard);
     }
 
     return { dashboard, load };

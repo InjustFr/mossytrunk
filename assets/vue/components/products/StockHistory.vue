@@ -17,7 +17,7 @@ const { productStock } = useStock();
 const { t } = useI18n();
 
 onMounted(async () => {
-    items.value = await productStock(props.product.id);
+    await productStock(props.product.id, items);
 });
 </script>
 

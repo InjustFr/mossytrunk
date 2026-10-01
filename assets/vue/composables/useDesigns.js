@@ -6,7 +6,7 @@ export function useGabarits() {
     const gabarits = ref([]);
 
     async function load() {
-        gabarits.value = await api.get('/api/gabarits');
+        await api.load('/api/gabarits', gabarits);
     }
 
     const save = (id, payload) => (id ? api.put(`/api/gabarits/${id}`, payload) : api.post('/api/gabarits', payload));
@@ -21,7 +21,7 @@ export function useDesignBoard() {
     const board = ref(null);
 
     async function load() {
-        board.value = await api.get('/api/designs');
+        await api.load('/api/designs', board);
     }
 
     return {
@@ -41,7 +41,7 @@ export function useDesign(designId) {
     const base = `/api/designs/${designId}`;
 
     async function load() {
-        design.value = await api.get(base);
+        await api.load(base, design);
     }
 
     return {

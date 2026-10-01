@@ -6,7 +6,7 @@ export function useWorkspaceSettings() {
     const settings = ref(null);
 
     async function load() {
-        settings.value = await api.get('/api/workspace/settings');
+        await api.load('/api/workspace/settings', settings);
     }
 
     return { settings, load };

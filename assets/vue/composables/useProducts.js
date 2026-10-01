@@ -9,7 +9,7 @@ export function useProducts() {
     async function load() {
         loading.value = true;
         try {
-            products.value = await api.get('/api/products');
+            await api.load('/api/products', products);
         } finally {
             loading.value = false;
         }
@@ -24,7 +24,7 @@ export function useProducts() {
     const archive = (id) => api.put(`/api/products/${id}/archive`);
     const restore = (id) => api.del(`/api/products/${id}/archive`);
     const removeAll = () => api.del('/api/products');
-    const get = (id) => api.get(`/api/products/${id}`);
+    const loadOne = (id, target) => api.load(`/api/products/${id}`, target);
     const suggestReference = async (name, typeId) => {
         if (name.trim() === '') return '';
         const query = new URLSearchParams({ name, typeId: typeId ?? '' });
@@ -36,5 +36,5 @@ export function useProducts() {
 
     const activeProducts = computed(() => products.value.filter((product) => !product.archived));
 
-    return { products, activeProducts, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, removeAll, get, suggestReference, designProduct, savePrice, forgetPrice };
+    return { products, activeProducts, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, removeAll, loadOne, suggestReference, designProduct, savePrice, forgetPrice };
 }

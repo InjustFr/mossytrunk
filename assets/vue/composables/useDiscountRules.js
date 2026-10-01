@@ -6,7 +6,7 @@ export function useDiscountRules() {
     const rules = ref([]);
 
     async function load() {
-        rules.value = await api.get('/api/discount-rules');
+        await api.load('/api/discount-rules', rules);
     }
 
     const create = (payload) => api.post('/api/discount-rules', payload);

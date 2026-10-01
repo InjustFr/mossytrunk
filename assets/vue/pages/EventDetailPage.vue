@@ -27,7 +27,7 @@ const toast = useToast();
 const { t } = useI18n();
 const { stockChecks, dismiss } = useStock();
 const checks = ref([]);
-const loadChecks = async () => { checks.value = await stockChecks(props.eventId); };
+const loadChecks = () => stockChecks(props.eventId, checks);
 const editOpen = ref(false);
 const expenseOpen = ref(false);
 const editingExpense = ref(null);

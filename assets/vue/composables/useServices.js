@@ -24,7 +24,7 @@ export function useServices() {
     const ready = computed(() => added.value.filter(isReady));
 
     async function load() {
-        services.value = await api.get('/api/services');
+        await api.load('/api/services', services);
     }
 
     const add = (service, payload) => api.post('/api/services', { service, ...payload });

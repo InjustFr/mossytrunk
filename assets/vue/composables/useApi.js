@@ -15,6 +15,10 @@ export class ApiError extends Error {
     }
 }
 
+const responses = new Map();
+const fetching = new Map();
+let generation = 0;
+
 async function request(method, url, body) {
     begin();
     try {
@@ -22,6 +26,36 @@ async function request(method, url, body) {
     } finally {
         end();
     }
+}
+
+async function change(method, url, body) {
+    try {
+        return await request(method, url, body);
+    } finally {
+        generation += 1;
+        responses.clear();
+    }
+}
+
+function fresh(url, quietly) {
+    if (!fetching.has(url)) {
+        const startedAt = generation;
+        const pending = (quietly ? send('GET', url) : request('GET', url))
+            .then((data) => {
+                if (startedAt === generation) responses.set(url, data);
+                return data;
+            })
+            .finally(() => fetching.delete(url));
+        fetching.set(url, pending);
+    }
+    return fetching.get(url);
+}
+
+async function load(url, target) {
+    const cached = responses.has(url);
+    if (cached) target.value = responses.get(url);
+    target.value = await fresh(url, cached);
+    return target.value;
 }
 
 async function send(method, url, body) {
@@ -55,10 +89,11 @@ async function send(method, url, body) {
 export function useApi() {
     return {
         get: (url) => request('GET', url),
+        load,
         peek: (url) => send('GET', url),
-        post: (url, body = {}) => request('POST', url, body),
-        put: (url, body = {}) => request('PUT', url, body),
-        patch: (url, body = {}) => request('PATCH', url, body),
-        del: (url) => request('DELETE', url),
+        post: (url, body = {}) => change('POST', url, body),
+        put: (url, body = {}) => change('PUT', url, body),
+        patch: (url, body = {}) => change('PATCH', url, body),
+        del: (url) => change('DELETE', url),
     };
 }

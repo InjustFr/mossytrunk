@@ -1,10 +1,11 @@
 /**
  * Top loading bar (YouTube/Nuxt style) covering a whole page change: the Turbo Drive visit AND the
  * API requests the new page makes once mounted. Any code can hold it with begin()/end() (useApi does).
- * The bar lives on <html>, outside the <body> Turbo swaps, and stays visible at least MIN_VISIBLE ms
- * so fast navigations still give feedback.
+ * The bar lives on <html>, outside the <body> Turbo swaps. It only appears when loading lasts longer
+ * than SHOW_DELAY ms, then stays visible at least MIN_VISIBLE ms so it never just flickers.
  */
-const MIN_VISIBLE = 300;
+const SHOW_DELAY = 150;
+const MIN_VISIBLE = 200;
 const SETTLE = 80; // gap tolerated between the visit end and the page's first request
 let pending = 0;
 let element = null;
@@ -12,6 +13,7 @@ let progress = 0;
 let shownAt = 0;
 let trickle = null;
 let settleTimer = null;
+let showTimer = null;
 
 function bar() {
     if (!element) {
@@ -40,6 +42,8 @@ function show() {
 }
 
 function finish() {
+    clearTimeout(showTimer);
+    showTimer = null;
     if (!trickle) return;
     const wait = Math.max(0, MIN_VISIBLE - (performance.now() - shownAt));
     setTimeout(() => {
@@ -58,7 +62,12 @@ function finish() {
 export function begin() {
     clearTimeout(settleTimer);
     pending += 1;
-    show();
+    if (!trickle && !showTimer) {
+        showTimer = setTimeout(() => {
+            showTimer = null;
+            if (pending > 0) show();
+        }, SHOW_DELAY);
+    }
 }
 
 export function end() {

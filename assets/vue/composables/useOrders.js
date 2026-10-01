@@ -9,7 +9,7 @@ export function useOrders() {
 
     async function load() {
         const query = eventFilter.value ? `?eventId=${encodeURIComponent(eventFilter.value)}` : '';
-        orders.value = await api.get(`/api/orders${query}`);
+        await api.load(`/api/orders${query}`, orders);
     }
 
     const place = (payload) => api.post('/api/orders', payload);
@@ -24,7 +24,7 @@ export function useOrder(orderId) {
     const order = ref(null);
 
     async function load() {
-        order.value = await api.get(`/api/orders/${orderId}`);
+        await api.load(`/api/orders/${orderId}`, order);
     }
 
     const remove = () => api.del(`/api/orders/${orderId}`);

@@ -51,7 +51,7 @@ async function onSubmit() {
 }
 
 onMounted(async () => {
-    [sheet.value] = await Promise.all([stockSheet(props.eventId), load()]);
+    await Promise.all([stockSheet(props.eventId, sheet), load()]);
     soldOnly.value = sheet.value.some((line) => line.soldAtEvent > 0);
 });
 </script>

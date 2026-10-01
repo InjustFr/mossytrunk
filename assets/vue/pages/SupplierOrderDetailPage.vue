@@ -25,7 +25,7 @@ const props = defineProps({
     orderId: { type: String, required: true },
 });
 
-const { get, update, remove, receive } = useSupplierOrders();
+const { loadOne, update, remove, receive } = useSupplierOrders();
 const { suppliers, load: loadSuppliers, save: saveSupplier } = useSuppliers();
 const { products, load: loadProducts } = useProducts();
 const { load: loadTypes } = useProductTypes();
@@ -37,7 +37,7 @@ const receiving = ref(false);
 const isOrdered = computed(() => order.value?.status === 'ordered');
 const status = computed(() => (order.value ? SUPPLIER_ORDER_STATUSES[order.value.status] : null));
 
-const load = async () => { order.value = await get(props.orderId); };
+const load = () => loadOne(props.orderId, order);
 
 async function saveAndReload(id, payload) {
     const supplier = await saveSupplier(id, payload);

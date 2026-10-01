@@ -14,7 +14,7 @@ export function useImport(service) {
     const unlinked = computed(() => items.value.filter((item) => !item.linkedTo));
 
     async function loadItems() {
-        items.value = await api.get(`/api/services/${service.key}/items`);
+        await api.load(`/api/services/${service.key}/items`, items);
     }
 
     async function run() {

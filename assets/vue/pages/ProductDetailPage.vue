@@ -27,7 +27,7 @@ const props = defineProps({
     productId: { type: String, required: true },
 });
 
-const { get, update, designProduct, savePrice, forgetPrice } = useProducts();
+const { loadOne, update, designProduct, savePrice, forgetPrice } = useProducts();
 const { restock } = useStock();
 const { gabarits, load: loadGabarits } = useGabarits();
 const { board, load: loadBoard } = useDesignBoard();
@@ -45,7 +45,7 @@ const margin = computed(() => (product.value && product.value.stockUnitCost > 0 
 const designs = computed(() => [...(board.value?.collections.flatMap((c) => c.designs) ?? []), ...(board.value?.standalone ?? [])]);
 
 async function load() {
-    detail.value = await get(props.productId);
+    await loadOne(props.productId, detail);
     version.value += 1;
 }
 

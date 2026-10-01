@@ -37,7 +37,7 @@ export function useAccounting() {
     const overview = ref(null);
 
     async function load(year = null) {
-        overview.value = await api.get(`/api/accounting/urssaf${year ? `?year=${year}` : ''}`);
+        await api.load(`/api/accounting/urssaf${year ? `?year=${year}` : ''}`, overview);
     }
 
     return {
