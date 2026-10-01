@@ -30,6 +30,8 @@ final readonly class OrderSummaryView
         public array $externalReferences,
         public ?string $refundedAt,
         public int $unidentifiedLines,
+        public ?string $channelId,
+        public ?string $channelName,
     ) {
     }
 
@@ -51,6 +53,8 @@ final readonly class OrderSummaryView
             array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales()),
             null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
             \count(array_filter($order->lines(), static fn (OrderLine $line): bool => null === $line->productId())),
+            null === $order->channel() ? null : (string) $order->channel()->id(),
+            $order->channel()?->name(),
         );
     }
 }

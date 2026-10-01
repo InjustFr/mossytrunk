@@ -19,6 +19,40 @@
             "unavailable": "Complete the access details for {label} first."
         }
     },
+    "channels": {
+        "title": "Sales channels",
+        "add": "Add a channel",
+        "intro": "Each channel has its prices. The main channel carries the products' selling price; another channel without its own price follows it. A market channel only has orders placed during an event. Linked to a service, a channel prices the imported sales and the exported catalogue.",
+        "empty": "No channel.",
+        "linkedTo": "Linked to {service}",
+        "notLinked": "Not linked to a service",
+        "edit": "Edit {name}",
+        "editTitle": "Edit {name}",
+        "remove": "Delete {name}",
+        "removeMessage": "Its prices are forgotten: products keep their selling price. Past orders do not change.",
+        "name": "Name",
+        "namePlaceholder": "E.g. Etsy shop",
+        "service": "Linked service",
+        "noService": "None",
+        "serviceHint": "Sales imported from this service are counted at its prices.",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "Add the channel",
+        "created": "Channel “{name}” added.",
+        "updated": "Channel “{name}” updated.",
+        "removed": "Channel “{name}” deleted.",
+        "kind": "Kind",
+        "kinds": {
+            "market": "Market",
+            "online": "Online"
+        },
+        "kindHints": {
+            "market": "Its orders always have an event.",
+            "online": "Sales outside events (online shop…)."
+        },
+        "main": "Selling price",
+        "mainHint": "Main channel: its prices are the products' selling prices."
+    },
     "references": {
         "title": "References",
         "intro": "Choose how MossyTrunk numbers your orders, supplier orders and products. A format mixes your own text with tags replaced at each creation.",

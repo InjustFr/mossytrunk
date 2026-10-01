@@ -16,6 +16,7 @@ final readonly class ProductView
      * @param list<string>                                                          $variants
      * @param list<string>                                                          $activeVariants
      * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}> $stock
+     * @param array<string, int>                                                    $channelPrices
      */
     public function __construct(
         public string $id,
@@ -41,6 +42,7 @@ final readonly class ProductView
         public bool $archivedItself,
         public ?string $collectionId,
         public ?string $collectionName,
+        public array $channelPrices,
     ) {
     }
 
@@ -75,6 +77,20 @@ final readonly class ProductView
             $product->isArchivedItself(),
             null === $collection ? null : (string) $collection->id(),
             $collection?->name(),
+            self::channelPricesOf($product),
         );
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private static function channelPricesOf(Product $product): array
+    {
+        $prices = [];
+        foreach ($product->channelPrices() as $price) {
+            $prices[(string) $price->channel()->id()] = $price->price()->amount();
+        }
+
+        return $prices;
     }
 }

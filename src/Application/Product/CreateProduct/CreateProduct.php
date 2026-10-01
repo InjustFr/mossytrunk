@@ -9,7 +9,8 @@ use App\Domain\Product\Product;
 final readonly class CreateProduct
 {
     /**
-     * @param list<string> $variants
+     * @param list<string>        $variants
+     * @param array<string, ?int> $channelPrices
      */
     public function __construct(
         public string $name,
@@ -18,6 +19,7 @@ final readonly class CreateProduct
         public ?string $typeId = null,
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
         public ?string $reference = null,
+        public array $channelPrices = [],
     ) {
     }
 }

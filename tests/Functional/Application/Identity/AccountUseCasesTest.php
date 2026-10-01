@@ -15,6 +15,8 @@ use App\Domain\Identity\Exception\UnknownPasswordToken;
 use App\Domain\Identity\Language;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
+use App\Domain\Sales\ChannelKind;
+use App\Domain\Sales\SalesChannel;
 use App\Infrastructure\Security\SecurityUser;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
@@ -34,6 +36,9 @@ final class AccountUseCasesTest extends KernelTestCase
 
         self::assertSame('louis@example.com', $user->email());
         self::assertSame('Atelier', $user->workspace()->name());
+        $main = self::getContainer()->get('doctrine')->getRepository(SalesChannel::class)->findOneBy(['workspace' => $user->workspace(), 'main' => true]);
+        self::assertInstanceOf(SalesChannel::class, $main);
+        self::assertSame(ChannelKind::Market, $main->kind());
         self::assertFalse($user->hasPassword());
         self::assertEmailCount(1);
         $email = self::getMailerMessage();

@@ -51,3 +51,5 @@ export:
             mixed: 'Mixte'
 product_type:
     miscellaneous: 'Divers'
+sales:
+    main_channel: 'Marchés'

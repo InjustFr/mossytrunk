@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue';
+import { computed, ref, toValue } from 'vue';
 import { perLocale } from '../i18n/locale.js';
 
 const collator = perLocale((locale) => new Intl.Collator(locale, { numeric: true, sensitivity: 'base' }));
@@ -8,7 +8,7 @@ export function useSort(items, columns, initialKey, initialDirection = 'descendi
     const direction = ref(initialDirection);
 
     const sorted = computed(() => {
-        const value = columns[key.value];
+        const value = toValue(columns)[key.value];
         const factor = direction.value === 'ascending' ? 1 : -1;
         return [...items.value].sort((a, b) => {
             const left = value(a);
@@ -24,7 +24,7 @@ export function useSort(items, columns, initialKey, initialDirection = 'descendi
             return;
         }
         key.value = column;
-        direction.value = typeof columns[column](items.value[0] ?? {}) === 'string' ? 'ascending' : 'descending';
+        direction.value = typeof toValue(columns)[column](items.value[0] ?? {}) === 'string' ? 'ascending' : 'descending';
     }
 
     const ariaSort = (column) => (key.value === column ? direction.value : 'none');

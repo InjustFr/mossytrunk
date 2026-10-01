@@ -54,6 +54,7 @@ final class OrderUseCasesTest extends KernelTestCase
 
         $view = self::getContainer()->get(GetOrderHandler::class)((string) $order->id());
         self::assertSame('Japan Expo', $view->event['name'] ?? null);
+        self::assertSame('Marchés', $view->channelName, 'a manual order goes on the main market channel');
         self::assertSame(3_200, $view->subtotal);
         self::assertSame([['label' => '3 stickers pour 10 €', 'amount' => 200, 'ruleId' => $this->rule]], $view->discounts);
         self::assertSame(3_000, $view->total);

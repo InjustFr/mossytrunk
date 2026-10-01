@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Fixtures\Factory;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Sales\SalesChannel;
 use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
+
+use function Zenstruck\Foundry\Persistence\save;
 
 /** @extends PersistentObjectFactory<Workspace> */
 final class WorkspaceFactory extends PersistentObjectFactory
@@ -23,6 +26,9 @@ final class WorkspaceFactory extends PersistentObjectFactory
 
     protected function initialize(): static
     {
-        return $this->instantiateWith(Instantiator::namedConstructor('create')->disableHydration());
+        return $this->instantiateWith(Instantiator::namedConstructor('create')->disableHydration())
+            ->afterPersist(static function (Workspace $workspace): void {
+                save(SalesChannel::main($workspace, 'Marchés'));
+            });
     }
 }

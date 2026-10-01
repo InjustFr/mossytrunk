@@ -7,12 +7,15 @@ namespace App\Application\Identity\CreateUser;
 use App\Application\Identity\AccountMailer;
 use App\Application\Identity\PasswordTokenIssuer;
 use App\Application\Transaction;
+use App\Application\Translator;
 use App\Domain\Identity\Exception\EmailAlreadyUsed;
 use App\Domain\Identity\PasswordTokenPurpose;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
 use App\Domain\Identity\Workspace;
 use App\Domain\Identity\WorkspaceRepository;
+use App\Domain\Sales\SalesChannel;
+use App\Domain\Sales\SalesChannelRepository;
 
 final readonly class CreateUserHandler
 {
@@ -22,6 +25,8 @@ final readonly class CreateUserHandler
         private PasswordTokenIssuer $tokens,
         private AccountMailer $mailer,
         private Transaction $transaction,
+        private SalesChannelRepository $channels,
+        private Translator $translator,
     ) {
     }
 
@@ -36,6 +41,7 @@ final readonly class CreateUserHandler
         if (null === $workspace) {
             $workspace = Workspace::create($command->workspaceName);
             $this->workspaces->add($workspace);
+            $this->channels->add(SalesChannel::main($workspace, $this->translator->trans('sales.main_channel')));
         }
 
         $user = User::invite($email, $workspace);

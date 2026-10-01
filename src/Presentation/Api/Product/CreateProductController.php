@@ -24,6 +24,7 @@ final class CreateProductController extends AbstractController
             $payload->typeId,
             $payload->lowStockThreshold,
             $payload->reference,
+            $payload->pricesByChannel(),
         ));
 
         return $this->json(['id' => (string) $id], Response::HTTP_CREATED);

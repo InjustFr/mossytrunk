@@ -19,6 +19,7 @@ import SelectionBar from '../components/ui/SelectionBar.vue';
 import { useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
+import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useServices } from '../composables/useServices.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
@@ -30,6 +31,7 @@ const filters = useProductFilters(products);
 const toast = useToast();
 const { t } = useI18n();
 const { restock } = useStock();
+const { channels, load: loadChannels } = useSalesChannels();
 
 const colors = computed(() => typeColors(types.value));
 const modalOpen = ref(false);
@@ -127,7 +129,7 @@ async function onBatchSaved(count) {
 const services = useServices();
 const catalogueExports = computed(() => services.services.value.filter((service) => service.exportsCatalogue));
 
-onMounted(() => Promise.all([load(), loadTypes(), services.load()]));
+onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels()]));
 </script>
 
 <template>
@@ -166,6 +168,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load()]));
                 v-model:checked-ids="filters.selectedIds.value"
                 :products="filters.filtered.value"
                 :stock-variants="filters.variants.value"
+                :channels="channels"
                 :all-selected="filters.allVisibleSelected.value"
                 :type-colors="colors"
                 :selected-id="modalOpen ? editing?.id ?? null : null"
@@ -192,7 +195,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load()]));
         </SelectionBar>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
-            <ProductForm :product="editing" :submit="submit" @saved="onSaved" @cancel="modalOpen = false" />
+            <ProductForm :product="editing" :submit="submit" :channels="channels" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="moveOpen" :title="t(moving?.variants.length ? 'products.page.moveVariantTitle' : 'products.page.makeVariantTitle')">
             <MoveVariantForm v-if="moving" :product="moving" :products="activeProducts" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />
@@ -205,7 +208,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load()]));
         </BaseModal>
         <ProductTypesModal v-model:open="typesOpen" @saved="onTypeSaved" @renamed="load" @changed="load" />
         <BaseModal v-model:open="batchOpen" :title="t('products.page.batchTitle')" :focus-field="false">
-            <ProductBatchForm :count="filters.selectedIds.value.length" :products="selectedProducts" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
+            <ProductBatchForm :count="filters.selectedIds.value.length" :products="selectedProducts" :channels="channels" :submit="submitBatch" @saved="onBatchSaved" @cancel="batchOpen = false" />
         </BaseModal>
     </AppLayout>
 </template>

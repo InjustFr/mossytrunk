@@ -30,6 +30,8 @@ final readonly class BatchProductsPayload
         public array $removeVariants = [],
         #[Assert\PositiveOrZero(message: 'product.lowStock.negative')]
         public ?int $lowStockThreshold = null,
+        #[Assert\Valid]
+        public ?BatchChannelPricePayload $channelPrice = null,
     ) {
     }
 
@@ -43,6 +45,6 @@ final readonly class BatchProductsPayload
 
     public function toCommand(): BatchUpdateProducts
     {
-        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants, $this->lowStockThreshold);
+        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants, $this->lowStockThreshold, $this->channelPrice?->toChange());
     }
 }

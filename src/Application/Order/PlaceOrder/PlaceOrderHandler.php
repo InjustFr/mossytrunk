@@ -6,6 +6,7 @@ namespace App\Application\Order\PlaceOrder;
 
 use App\Application\Order\OrderPricing;
 use App\Application\Reference\ReferenceGenerator;
+use App\Application\Sales\OrderChannel;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Domain\Event\EventRepository;
@@ -27,6 +28,7 @@ final readonly class PlaceOrderHandler
         private StockKeeper $stock,
         private ReferenceGenerator $references,
         private Transaction $transaction,
+        private OrderChannel $orderChannel,
     ) {
     }
 
@@ -35,7 +37,7 @@ final readonly class PlaceOrderHandler
         $event = $this->events->findCovering($command->placedAt) ?? throw new NoEventOnOrderDate($command->placedAt);
 
         $items = $this->stock->withdraw($event, $this->pricing->items($command->lines));
-        $order = Order::place($this->references->next(ReferenceKind::Order, ReferenceSubject::at($command->placedAt)), $event, $command->placedAt, $items, $this->pricing->discounts($items, $command->placedAt));
+        $order = Order::place($this->references->next(ReferenceKind::Order, ReferenceSubject::at($command->placedAt)), $event, $command->placedAt, $items, $this->pricing->discounts($items, $command->placedAt), $this->orderChannel->of(null, $event));
 
         $this->orders->add($order);
         $this->transaction->commit();

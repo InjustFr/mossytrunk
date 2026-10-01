@@ -8,12 +8,15 @@ import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import BatchChannelPrice from './BatchChannelPrice.vue';
 import VariantPicker from './VariantPicker.vue';
+import { channelPriceChangePayload, emptyChannelPriceChange } from '../../composables/useChannelPrices.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
     count: { type: Number, required: true },
     products: { type: Array, required: true },
+    channels: { type: Array, default: () => [] },
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
@@ -26,7 +29,7 @@ const typeOptions = computed(() => [
     ...activeTypes.value.map((type) => ({ value: type.id, label: type.name })),
 ]);
 
-const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], removeVariants: [], lowStockThreshold: null });
+const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], removeVariants: [], lowStockThreshold: null, channelPrice: emptyChannelPriceChange() });
 const errors = ref({});
 const saving = ref(false);
 
@@ -50,6 +53,7 @@ async function onSubmit() {
             addVariants: form.addVariants,
             removeVariants: form.removeVariants,
             lowStockThreshold: Number.isFinite(form.lowStockThreshold) ? form.lowStockThreshold : null,
+            channelPrice: channelPriceChangePayload(form.channelPrice),
         });
         emit('saved', result.updated);
     } catch (error) {
@@ -82,6 +86,8 @@ async function onSubmit() {
                     <VariantPicker v-model="form.removeVariants" :options="removable" :empty="t('products.batch.noProductVariants')" />
                 </FormField>
             </FormSection>
+
+            <BatchChannelPrice v-if="channels.length" v-model="form.channelPrice" :channels="channels" :products="products" :errors="errors" />
 
             <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>

@@ -13,6 +13,7 @@ use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductTypeRepository;
+use App\Domain\Sales\SalesChannelRepository;
 use Psr\Clock\ClockInterface;
 
 final readonly class ExternalItemResolution
@@ -26,6 +27,7 @@ final readonly class ExternalItemResolution
         private MiscellaneousType $miscellaneous,
         private ClockInterface $clock,
         private Translator $translator,
+        private SalesChannelRepository $channels,
     ) {
     }
 
@@ -36,6 +38,6 @@ final readonly class ExternalItemResolution
 
     public function resolver(ImportedCatalogue $catalogue, ServiceConnection $connection, LinePrices $linePrices): ExternalItemResolver
     {
-        return new ExternalItemResolver($catalogue, $this->items, $connection, $linePrices, $this->clock->now(), $this->translator->trans('import.unknown_product'));
+        return new ExternalItemResolver($catalogue, $this->items, $connection, $linePrices, $this->clock->now(), $this->translator->trans('import.unknown_product'), $this->channels->linkedTo($connection->service()));
     }
 }

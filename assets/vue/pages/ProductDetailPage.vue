@@ -20,6 +20,8 @@ import { visit } from '../composables/useNavigation.js';
 import { listUrl } from '../composables/useQueryState.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
+import { useSalesChannels } from '../composables/useSalesChannels.js';
+import { otherChannelsOf, ownPriceOn, priceOn } from '../composables/useChannelPrices.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -32,6 +34,7 @@ const { restock } = useStock();
 const { gabarits, load: loadGabarits } = useGabarits();
 const { board, load: loadBoard } = useDesignBoard();
 const { load: loadTypes } = useProductTypes();
+const { channels, load: loadChannels } = useSalesChannels();
 const toast = useToast();
 const { t } = useI18n();
 
@@ -82,7 +85,7 @@ function onDesigned(designId) {
     visit(`/designs/${designId}`);
 }
 
-onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]));
+onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), loadChannels()]));
 </script>
 
 <template>
@@ -101,6 +104,13 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
                 <div><dt>{{ t('products.detail.type') }}</dt><dd>{{ product.typeName }}</dd></div>
                 <div><dt>{{ t('products.detail.variants') }}</dt><dd>{{ product.variants.join(', ') || t('products.single') }}</dd></div>
                 <div><dt>{{ t('products.detail.sellingPrice') }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
+                <div v-for="channel in otherChannelsOf(channels)" :key="channel.id">
+                    <dt>{{ t('products.form.channelPrice', { channel: channel.name }) }}</dt>
+                    <dd>
+                        <MoneyAmount :cents="priceOn(product, channel)" />
+                        <span v-if="ownPriceOn(product, channel) === null" class="product-page__muted"> · {{ t('products.list.followsSellingPrice') }}</span>
+                    </dd>
+                </div>
                 <div>
                     <dt>{{ t('products.detail.stockCost') }}</dt>
                     <dd>
@@ -152,7 +162,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
         </div>
 
         <BaseModal v-model:open="editOpen" :title="t('products.page.editTitle')">
-            <ProductForm v-if="product" :product="product" :submit="(payload) => update(productId, payload)" @saved="onSaved" @cancel="editOpen = false" />
+            <ProductForm v-if="product" :product="product" :channels="channels" :submit="(payload) => update(productId, payload)" @saved="onSaved" @cancel="editOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="restockOpen" :title="t('products.page.restockTitle', { name: product?.displayName ?? '' })">
             <RestockForm v-if="product" :product="product" :submit="restock" @saved="onRestocked" @cancel="restockOpen = false" />

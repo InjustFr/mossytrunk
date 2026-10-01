@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\CreateProduct;
 
+use App\Application\Product\ChannelPricing;
 use App\Application\Product\ProductReferenceGenerator;
 use App\Application\Product\ProductTypeChoice;
 use App\Application\Product\ReferenceAvailability;
@@ -24,6 +25,7 @@ final readonly class CreateProductHandler
         private ReferenceAvailability $availability,
         private Transaction $transaction,
         private WorkspaceContext $workspace,
+        private ChannelPricing $channelPricing,
     ) {
     }
 
@@ -42,6 +44,7 @@ final readonly class CreateProductHandler
 
         $product->assertVariantChosen();
         $product->alertBelow($command->lowStockThreshold);
+        $this->channelPricing->assign($product, $command->channelPrices);
         $this->products->add($product);
         $this->transaction->commit();
 

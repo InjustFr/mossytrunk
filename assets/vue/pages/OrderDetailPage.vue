@@ -81,6 +81,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
                 {{ formatDateTime(order.placedAt) }} ·
                 <a v-if="order.event" :href="`/events/${order.event.id}`">{{ order.event.name }}</a>
                 <template v-else>{{ t('orders.shop', { source: order.sourceLabel }) }}</template>
+                <template v-if="order.channelName"> · {{ t('orders.detail.channel', { channel: order.channelName }) }}</template>
                 <span v-if="order.source !== 'manual'"> · {{ t('orders.detail.importedFrom', { source: order.sourceLabel }) }}</span>
                 <template v-if="order.paymentMethod"> · <PaymentMethod :method="order.paymentMethod" /></template>
                 <template v-if="order.importedSales.length"> · {{ t('orders.detail.externalReferences', { source: order.sourceLabel, references: order.importedSales.map((sale) => sale.reference).join(', ') }) }}</template>

@@ -120,11 +120,19 @@ reference:
     template_too_long: 'Ce format donnerait des références de plus de {max} caractères.'
     token_without_size: '« {token} » ne prend pas de taille.'
     unknown_token: '« {token} » n''est pas une balise disponible ici.'
+sales:
+    channel_has_orders_without_event: '« {channel} » a {count, plural, one {# commande} other {# commandes}} sans événement : un canal de marché n''en accepte pas.'
+    channel_name_taken: 'Le canal « {name} » existe déjà.'
+    empty_channel_name: 'Le nom du canal est obligatoire.'
+    main_channel_kept: '« {channel} » porte le prix de vente des produits : il ne peut pas être supprimé.'
+    market_order_without_event: '« {channel} » est un canal de marché : ses commandes ont toujours un événement.'
+    service_already_linked: '{service} est déjà lié au canal « {channel} ».'
+    unknown_service: 'Service inconnu « {service} ».'
 shared:
     date_range_ends_before_start: 'La date de fin doit être postérieure ou égale à la date de début.'
     negative_amount: '{subject, select, price {Le prix ne peut pas être négatif.} paid_price {Le prix payé ne peut pas être négatif.} selling_price {Le prix de vente ne peut pas être négatif.} buying_price {Le prix d''achat ne peut pas être négatif.} overall_discount {La remise globale ne peut pas être négative.} delivery_cost {Les frais de livraison ne peuvent pas être négatifs.} other {Le montant ne peut pas être négatif.}}'
     non_positive_amount: '{subject, select, price {Le prix doit être supérieur à zéro.} discount {La remise doit être supérieure à zéro.} expense_amount {Le montant de la dépense doit être supérieur à zéro.} other {Le montant doit être supérieur à zéro.}}'
-    not_found: '{subject, select, external_item {Article} order {Commande} supplier_order {Commande fournisseur} product {Produit} product_type {Type de produit} price {Prix} discount {Remise} supplier {Fournisseur} stock_check {Inventaire} stock_check_line {Ligne d''inventaire} design {Design} adaptation {Déclinaison} template {Gabarit} collection {Collection} event {Événement} workspace {Espace de travail} user {Utilisateur} service {Service} other {Élément}} introuvable ({id}).'
+    not_found: '{subject, select, external_item {Article} order {Commande} supplier_order {Commande fournisseur} product {Produit} product_type {Type de produit} price {Prix} discount {Remise} supplier {Fournisseur} stock_check {Inventaire} stock_check_line {Ligne d''inventaire} design {Design} adaptation {Déclinaison} template {Gabarit} collection {Collection} sales_channel {Canal de vente} event {Événement} workspace {Espace de travail} user {Utilisateur} service {Service} other {Élément}} introuvable ({id}).'
 stock:
     counted_twice: '« {item} » est compté deux fois.'
     empty_stock_check: 'L''inventaire doit compter au moins un article.'

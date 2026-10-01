@@ -13,6 +13,7 @@ use App\Domain\Integration\UnknownItems;
 use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\SellableItem;
+use App\Domain\Sales\SalesChannel;
 
 final class ExternalItemResolver
 {
@@ -26,6 +27,7 @@ final class ExternalItemResolver
         private readonly LinePrices $linePrices,
         private readonly \DateTimeImmutable $now,
         private readonly string $unknownProduct,
+        private readonly ?SalesChannel $channel = null,
     ) {
         foreach ($this->items->ofService($connection->service()) as $item) {
             $this->remembered[$item->itemKey()] = $item;
@@ -182,7 +184,7 @@ final class ExternalItemResolver
         }
 
         try {
-            $item = $product->sellable($variant);
+            $item = $product->sellableOn($this->channel, $variant);
         } catch (InvalidProduct) {
             return null;
         }

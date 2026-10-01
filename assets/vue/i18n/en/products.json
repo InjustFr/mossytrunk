@@ -56,7 +56,8 @@
         "soldEver": "({count} in total)",
         "stock": "Stock",
         "movements": "Movements",
-        "design": "Design"
+        "design": "Design",
+        "channelPrices": "Price per channel"
     },
     "filters": {
         "all": "All",
@@ -94,7 +95,8 @@
         "removeMessage": "It disappears from the catalog and discounts. Past orders keep their lines.",
         "archive": "Archive {name}",
         "restore": "Unarchive {name}",
-        "typeArchived": "Type archived"
+        "typeArchived": "Type archived",
+        "followsSellingPrice": "Follows the selling price"
     },
     "form": {
         "type": "Type",
@@ -111,7 +113,9 @@
         "add": "Add product",
         "namePlaceholder": "E.g. Forest",
         "more": "Reference and stock",
-        "lowStockSummary": "alert at {threshold}"
+        "lowStockSummary": "alert at {threshold}",
+        "channelPrice": "{channel} price",
+        "channelPriceHint": "Empty: follows the selling price."
     },
     "batch": {
         "intro": "Applies to the {count} selected product; anything left empty stays as is. | Applies to the {count} selected products; anything left empty stays as is.",
@@ -123,6 +127,23 @@
         "noTypeVariants": "No variants in their types.",
         "noProductVariants": "These products have no variants.",
         "lowStockThresholdHint": "Empty: each product keeps its own threshold."
+    },
+    "channelPrice": {
+        "title": "Channel price",
+        "intro": "Set or compute a price for every selected product.",
+        "target": "Price to change",
+        "mode": "New price",
+        "modes": {
+            "fixed": "Fixed amount",
+            "derived": "From another price",
+            "sellingPrice": "Follow the {channel} prices"
+        },
+        "newPrice": "Amount",
+        "source": "Starting from",
+        "adjustment": "Adjustment",
+        "adjustmentHint": "In % or €, negative to lower. 0 copies the price.",
+        "unit": "Adjustment unit",
+        "preview": "Preview"
     },
     "selection": {
         "count": "{count} product selected | {count} products selected",

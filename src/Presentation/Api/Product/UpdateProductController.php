@@ -25,6 +25,7 @@ final class UpdateProductController extends AbstractController
             $payload->typeId,
             $payload->lowStockThreshold,
             $payload->reference,
+            $payload->pricesByChannel(),
         ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);

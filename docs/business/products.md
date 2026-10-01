@@ -44,7 +44,7 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 ## Filters & batch edit
 
 The product list can be filtered by type (chips) and text. When a type with variants is chosen, its variants appear as a second row of chips: picking some keeps the products having one of them, and the stock column then shows **only the stock of those variants**. Ticked products (« Tout sélectionner » ticks what is visible)
-can be edited together: selling price, « Alerte stock bas » (empty keeps each product's threshold), type, variants to add (a variant every selected product already has is not offered; skipped on the products already having it), variants to remove. The batch form opens without focusing a field, so a tablet does not pop its keyboard up when only the type or variants change.
+can be edited together: selling price, the price on one sales channel (fixed, or from another channel ± € / % — see [channels.md](channels.md) C7), « Alerte stock bas » (empty keeps each product's threshold), type, variants to add (a variant every selected product already has is not offered; skipped on the products already having it), variants to remove. The batch form opens without focusing a field, so a tablet does not pop its keyboard up when only the type or variants change.
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
@@ -95,7 +95,7 @@ UI: trash icon on each row of `/products`, with a confirmation.
 | `CreateProduct` | `POST /api/products` `{typeId, name, reference?, sellingPrice, variants[], lowStockThreshold?}` (blank reference = suggestion) |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body; no reference = unchanged) |
 | `SuggestProductReference` | `GET /api/products/reference-suggestion?name=&typeId=` → `{reference}` |
-| `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, lowStockThreshold?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
+| `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, lowStockThreshold?, channelPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |
 | `GetProduct` | `GET /api/products/{id}` → product figures, all-time sales, stock per variant with lots, movements (purchases, supplier receptions, returns, inventory surplus, sales, inventory losses; newest first), selling price history, design |
 | `RecordSellingPrice`, `AmendSellingPrice`, `ForgetSellingPrice` | `POST /api/products/{id}/prices`, `PUT` / `DELETE /api/products/{id}/prices/{changeId}` `{price, since: YYYY-MM-DD}` |
 | `DesignProduct` | `POST /api/products/{id}/design` `{gabaritId, designId?, collectionId?}` → `{designId}` (see [designs.md](designs.md) D8) |

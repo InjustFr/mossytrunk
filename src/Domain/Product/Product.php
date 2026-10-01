@@ -19,6 +19,7 @@ use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Product\Exception\VariantRequired;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
+use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -84,6 +85,10 @@ class Product implements Referenced
     #[ORM\OrderBy(['since' => 'ASC'])]
     private Collection $priceHistory;
 
+    /** @var Collection<int, ChannelPrice> */
+    #[ORM\OneToMany(targetEntity: ChannelPrice::class, mappedBy: 'product', cascade: ['persist'], orphanRemoval: true)]
+    private Collection $channelPrices;
+
     #[ORM\Column(options: ['default' => self::DEFAULT_LOW_STOCK_THRESHOLD])]
     private int $lowStockThreshold = self::DEFAULT_LOW_STOCK_THRESHOLD;
 
@@ -99,6 +104,7 @@ class Product implements Referenced
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
         $this->priceHistory = new ArrayCollection();
+        $this->channelPrices = new ArrayCollection();
         $this->changeReference($reference);
         $this->rename($name);
         $this->type = $type;
@@ -160,6 +166,62 @@ class Product implements Referenced
 
         $this->sellingPrice = $sellingPrice;
         $this->priceHistory->add(new SellingPriceChange($this, $sellingPrice, new \DateTimeImmutable()));
+    }
+
+    public function setPriceOn(SalesChannel $channel, Money $price): void
+    {
+        if ($channel->isMain()) {
+            $this->reprice($price);
+
+            return;
+        }
+        if ($price->isNegative()) {
+            throw new NegativeAmount('price');
+        }
+
+        $own = $this->channelPriceOn($channel);
+        if (null === $own) {
+            $this->channelPrices->add(new ChannelPrice($this, $channel, $price));
+        } else {
+            $own->change($price);
+        }
+    }
+
+    public function followSellingPriceOn(SalesChannel $channel): void
+    {
+        $own = $this->channelPriceOn($channel);
+        if (null !== $own) {
+            $this->channelPrices->removeElement($own);
+        }
+    }
+
+    public function priceOn(?SalesChannel $channel): Money
+    {
+        return (null === $channel || $channel->isMain() ? null : $this->channelPriceOn($channel)?->price()) ?? $this->sellingPrice;
+    }
+
+    public function sellableOn(?SalesChannel $channel, ?string $variant): SellableItem
+    {
+        return $this->sellable($variant)->at($this->priceOn($channel));
+    }
+
+    /**
+     * @return list<ChannelPrice>
+     */
+    public function channelPrices(): array
+    {
+        return array_values($this->channelPrices->toArray());
+    }
+
+    private function channelPriceOn(SalesChannel $channel): ?ChannelPrice
+    {
+        foreach ($this->channelPrices as $price) {
+            if ($price->isOn($channel)) {
+                return $price;
+            }
+        }
+
+        return null;
     }
 
     public function recordPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void

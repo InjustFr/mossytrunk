@@ -10,6 +10,7 @@ use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
 use App\Application\Order\OrderPricing;
 use App\Application\Reference\ReferenceGenerator;
+use App\Application\Sales\OrderChannel;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\Translator;
@@ -37,6 +38,7 @@ final readonly class ImportSalesHandler
         private ReferenceGenerator $references,
         private Transaction $transaction,
         private Translator $translator,
+        private OrderChannel $orderChannel,
     ) {
     }
 
@@ -79,8 +81,11 @@ final readonly class ImportSalesHandler
                 $items[] = new OrderedItem($item, $line->quantity);
             }
 
-            $event = $atEvent ? $this->events->findCovering($sale->placedAt) : null;
-            if ($atEvent && null === $event) {
+            $channel = $this->orderChannel->of($service, null);
+            $needsEvent = $atEvent || (null !== $channel && !$channel->acceptsOrderWithoutEvent());
+            $event = $needsEvent ? $this->events->findCovering($sale->placedAt) : null;
+            $channel = $this->orderChannel->of($service, $event);
+            if ($needsEvent && null === $event) {
                 ++$withoutEvent;
                 $datesWithoutEvent[$sale->placedAt->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d')] = true;
                 continue;
@@ -105,6 +110,7 @@ final readonly class ImportSalesHandler
                 $sale->paymentMethod,
                 $atEvent ? $this->pricing->discounts($items, $sale->placedAt) : [],
                 $this->translator->trans('import.discount', ['service' => $description->label]),
+                $channel,
             ));
             ++$imported;
         }

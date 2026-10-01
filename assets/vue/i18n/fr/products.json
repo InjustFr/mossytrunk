@@ -56,7 +56,8 @@
         "soldEver": "({count} au total)",
         "stock": "Réserve",
         "movements": "Mouvements",
-        "design": "Design"
+        "design": "Design",
+        "channelPrices": "Prix par canal"
     },
     "filters": {
         "all": "Tous",
@@ -94,7 +95,8 @@
         "removeMessage": "Il disparaît du catalogue et des remises. Les commandes passées gardent leurs lignes.",
         "archive": "Archiver {name}",
         "restore": "Désarchiver {name}",
-        "typeArchived": "Type archivé"
+        "typeArchived": "Type archivé",
+        "followsSellingPrice": "Suit le prix de vente"
     },
     "form": {
         "type": "Type",
@@ -111,7 +113,9 @@
         "add": "Ajouter le produit",
         "namePlaceholder": "Ex. Forêt",
         "more": "Référence et stock",
-        "lowStockSummary": "alerte à {threshold}"
+        "lowStockSummary": "alerte à {threshold}",
+        "channelPrice": "Prix {channel}",
+        "channelPriceHint": "Vide : suit le prix de vente."
     },
     "batch": {
         "intro": "S'applique au {count} produit sélectionné ; ce qui reste vide ne change pas. | S'applique aux {count} produits sélectionnés ; ce qui reste vide ne change pas.",
@@ -123,6 +127,23 @@
         "noTypeVariants": "Aucune variante dans leurs types.",
         "noProductVariants": "Ces produits n'ont pas de variante.",
         "lowStockThresholdHint": "Vide : chaque produit garde son seuil."
+    },
+    "channelPrice": {
+        "title": "Prix d'un canal",
+        "intro": "Fixez ou calculez un prix pour tous les produits sélectionnés.",
+        "target": "Prix à modifier",
+        "mode": "Nouveau prix",
+        "modes": {
+            "fixed": "Montant fixe",
+            "derived": "D'après un autre prix",
+            "sellingPrice": "Suivre les prix {channel}"
+        },
+        "newPrice": "Montant",
+        "source": "À partir de",
+        "adjustment": "Ajustement",
+        "adjustmentHint": "En % ou en €, négatif pour baisser. 0 copie le prix.",
+        "unit": "Unité de l'ajustement",
+        "preview": "Aperçu"
     },
     "selection": {
         "count": "{count} produit sélectionné | {count} produits sélectionnés",

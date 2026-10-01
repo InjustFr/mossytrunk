@@ -25,7 +25,8 @@
         "confirmRefund": "Confirmer le remboursement",
         "refundMessage": "Le client a rendu ses articles : ils reviennent en stock aujourd'hui et la commande ne compte plus dans le chiffre d'affaires. Elle reste dans l'historique.",
         "refunded": "Commande remboursée.",
-        "refundedOn": "Remboursée le {date}"
+        "refundedOn": "Remboursée le {date}",
+        "channel": "canal {channel}"
     },
     "eventFilter": {
         "label": "Événement",

@@ -26,9 +26,11 @@ use App\Application\Product\MoveVariant\MoveVariant;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
+use App\Application\Sales\SaveChannel\SaveChannelHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Order\Exception\LineAlreadyIdentified;
+use App\Domain\Sales\ChannelKind;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Connector\SumUp\FakeSumUpGateway;
 use App\Tests\Support\ActsAsUser;
@@ -148,6 +150,27 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(['TX-LATE' => 400, 'TX-EARLY' => 100], $costs);
         $product = array_values(array_filter(self::getContainer()->get(ListProductsHandler::class)(), static fn ($view): bool => $view->id === $badge))[0];
         self::assertSame(0, $product->onHand);
+    }
+
+    public function testSalesAreListedAtThePriceOfTheChannelLinkedToTheService(): void
+    {
+        $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
+        $channel = (string) self::getContainer()->get(SaveChannelHandler::class)(null, 'Stand', ChannelKind::Market, 'sumup');
+        $badge = self::createProduct('Badge', 300, 50);
+        self::createProduct('Aimant', 500, 50);
+        self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($badge, 'Badge', 300, [], channelPrices: [$channel => 250]));
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-CHANNEL', new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(900), [
+                ExternalSales::line('Badge', Money::cents(250), 2),
+                ExternalSales::line('Aimant', Money::cents(400), 1),
+            ]),
+        ]);
+
+        $this->import();
+
+        $order = self::getContainer()->get(GetOrderHandler::class)(self::getContainer()->get(ListOrdersHandler::class)()[0]->id);
+        self::assertSame([250, 500], array_column($order->lines, 'unitPrice'));
+        self::assertSame(100, $order->discountTotal, 'only the magnet was sold below its price');
     }
 
     public function testProductWithVariantsButNoVariantInSumUpWaitsToBeLinked(): void

@@ -15,15 +15,18 @@ import VariantPicker from './VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useProducts } from '../../composables/useProducts.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
+import { formatCents } from '../../composables/useMoney.js';
+import { otherChannelsOf } from '../../composables/useChannelPrices.js';
 
 const props = defineProps({
     product: { type: Object, default: null },
     submit: { type: Function, required: true },
+    channels: { type: Array, default: () => [] },
 });
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
-const emptyForm = () => ({ typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10 });
+const emptyForm = () => ({ typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10, channelPrices: {} });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
@@ -40,6 +43,7 @@ const referenceSuggestion = useSuggestion(
 
 const type = computed(() => types.value.find((candidate) => candidate.id === form.typeId) ?? null);
 const displayName = computed(() => [type.value?.prefixesNames ? type.value.name : null, form.name.trim()].filter(Boolean).join(' '));
+const otherChannels = computed(() => otherChannelsOf(props.channels));
 const moreOpen = ref(false);
 const moreSummary = computed(() => [form.reference, t('products.form.lowStockSummary', { threshold: form.lowStockThreshold ?? 0 })].filter(Boolean).join(', '));
 
@@ -52,6 +56,7 @@ watch(() => props.product, (product) => {
             sellingPrice: product.sellingPrice,
             variants: [...product.variants],
             lowStockThreshold: product.lowStockThreshold,
+            channelPrices: { ...product.channelPrices },
         }
         : emptyForm());
     errors.value = {};
@@ -77,6 +82,7 @@ async function onSubmit() {
             sellingPrice: form.sellingPrice ?? -1,
             variants: form.variants,
             lowStockThreshold: form.lowStockThreshold ?? 0,
+            channelPrices: otherChannels.value.map((channel) => ({ channelId: channel.id, price: form.channelPrices[channel.id] ?? null })),
         });
         emit('saved', displayName.value);
         await loadTypes();
@@ -111,6 +117,20 @@ async function onSubmit() {
                 </FormField>
                 <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
+                </FormField>
+                <FormField
+                    v-for="(channel, index) in otherChannels"
+                    :key="channel.id"
+                    :label="t('products.form.channelPrice', { channel: channel.name })"
+                    :error="errors[`channelPrices[${index}].price`]"
+                    :hint="t('products.form.channelPriceHint')"
+                >
+                    <BaseMoneyField
+                        :model-value="form.channelPrices[channel.id] ?? null"
+                        :placeholder="formatCents(form.sellingPrice)"
+                        class="product-form__price"
+                        @update:model-value="(price) => (form.channelPrices[channel.id] = price)"
+                    />
                 </FormField>
                 <FormField as="group" :label="t('products.form.variants')" :error="errors.variants">
                     <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" required :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />

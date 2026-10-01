@@ -17,6 +17,8 @@ use App\Domain\Order\Exception\RefundedOrderLocked;
 use App\Domain\Product\SellableItem;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
+use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
+use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -52,6 +54,10 @@ class Order implements Referenced
     #[ORM\JoinColumn(nullable: true)]
     private ?Event $event;
 
+    #[ORM\ManyToOne(targetEntity: SalesChannel::class)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?SalesChannel $channel = null;
+
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
     private \DateTimeImmutable $placedAt;
 
@@ -85,10 +91,13 @@ class Order implements Referenced
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts
      */
-    private function __construct(string $reference, Workspace $workspace, ?Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, string $source)
+    private function __construct(string $reference, Workspace $workspace, ?Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, string $source, ?SalesChannel $channel)
     {
         if (null !== $event && !$event->covers($placedAt)) {
             throw new OrderOutsideEvent($event->name(), $placedAt);
+        }
+        if (null === $event && null !== $channel && !$channel->acceptsOrderWithoutEvent()) {
+            throw new MarketOrderWithoutEvent($channel->name());
         }
         if ([] === $items) {
             throw new EmptyOrder();
@@ -97,6 +106,7 @@ class Order implements Referenced
         $this->id = new Ulid();
         $this->reference = $reference;
         $this->event = $event;
+        $this->channel = $channel;
         $this->workspace = $workspace;
         $this->shipping = Money::zero();
         $this->placedAt = $placedAt;
@@ -115,22 +125,22 @@ class Order implements Referenced
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts computed by the DiscountCalculator
      */
-    public static function place(string $reference, Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts): self
+    public static function place(string $reference, Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, ?SalesChannel $channel = null): self
     {
-        return new self($reference, $event->workspace(), $event, $placedAt, $items, $discounts, self::MANUAL);
+        return new self($reference, $event->workspace(), $event, $placedAt, $items, $discounts, self::MANUAL, $channel);
     }
 
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $ruleDiscounts
      */
-    public static function imported(string $reference, Workspace $workspace, string $source, string $externalId, string $saleReference, ?Event $event, \DateTimeImmutable $placedAt, array $items, Money $charged, Money $shipping, ?PaymentMethod $paymentMethod, array $ruleDiscounts, string $discountLabel): self
+    public static function imported(string $reference, Workspace $workspace, string $source, string $externalId, string $saleReference, ?Event $event, \DateTimeImmutable $placedAt, array $items, Money $charged, Money $shipping, ?PaymentMethod $paymentMethod, array $ruleDiscounts, string $discountLabel, ?SalesChannel $channel = null): self
     {
         if ($shipping->isNegative()) {
             throw new NegativeShippingCost();
         }
 
-        $order = new self($reference, $workspace, $event, $placedAt, $items, [], $source);
+        $order = new self($reference, $workspace, $event, $placedAt, $items, [], $source, $channel);
         $order->importedSales->add(new ImportedSale($order, $source, $externalId, $saleReference, $paymentMethod));
         $order->paymentMethod = $paymentMethod;
         $order->shipping = $shipping;
@@ -189,6 +199,11 @@ class Order implements Referenced
     public function changeReference(string $reference): void
     {
         $this->reference = $reference;
+    }
+
+    public function channel(): ?SalesChannel
+    {
+        return $this->channel;
     }
 
     public function event(): ?Event

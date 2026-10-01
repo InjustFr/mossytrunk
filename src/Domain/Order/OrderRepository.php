@@ -54,4 +54,6 @@ interface OrderRepository
      * Number of orders of the event whose date falls outside the given period.
      */
     public function countOutside(Ulid $eventId, DateRange $period): int;
+
+    public function countWithoutEventOn(Ulid $channelId): int;
 }

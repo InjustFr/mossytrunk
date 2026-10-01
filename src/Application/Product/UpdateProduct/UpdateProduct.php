@@ -9,7 +9,8 @@ use App\Domain\Product\Product;
 final readonly class UpdateProduct
 {
     /**
-     * @param list<string> $variants
+     * @param list<string>        $variants
+     * @param array<string, ?int> $channelPrices
      */
     public function __construct(
         public string $productId,
@@ -19,6 +20,7 @@ final readonly class UpdateProduct
         public ?string $typeId = null,
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
         public ?string $reference = null,
+        public array $channelPrices = [],
     ) {
     }
 }

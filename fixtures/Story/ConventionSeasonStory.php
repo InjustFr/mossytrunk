@@ -28,6 +28,8 @@ use App\Domain\Product\ProductType;
 use App\Domain\Purchasing\PurchasedItem;
 use App\Domain\Purchasing\Supplier;
 use App\Domain\Purchasing\SupplierOrder;
+use App\Domain\Sales\PriceAdjustment;
+use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockCheck;
@@ -53,6 +55,8 @@ final class ConventionSeasonStory extends Story
 {
     private Workspace $workspace;
 
+    private SalesChannel $market;
+
     /** @var array<string, StockItem> */
     private array $stock = [];
 
@@ -69,6 +73,7 @@ final class ConventionSeasonStory extends Story
         $workspace = WorkspaceFactory::createOne(['name' => 'Atelier Mousse']);
         UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'demo@mossytrunk.local', 'workspace' => $workspace]);
         $this->workspace = $workspace;
+        $this->market = $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['workspace' => $workspace, 'main' => true]) ?? throw new \LogicException('The workspace has no main channel.');
 
         $colorIndex = 0;
         $type = static function (string $name, string $code) use ($workspace, &$colorIndex): ProductType {
@@ -186,9 +191,13 @@ final class ConventionSeasonStory extends Story
      */
     private function etsy(array $stickers, Product $forest): void
     {
+        $shop = $this->persisted(SalesChannel::open($this->workspace, 'Boutique Etsy', service: 'etsy'));
+        foreach ([...$stickers, $forest] as $product) {
+            $product->setPriceOn($shop, PriceAdjustment::byCents(100)->applyTo($product->sellingPrice()));
+        }
         foreach ([[-40, $stickers[0], 3, 0, 350], [-25, $forest, 1, 150, 490], [-6, $stickers[3], 2, 0, 350]] as [$daysAgo, $product, $quantity, $discount, $shipping]) {
             $variant = $product->hasVariants() ? 'A4' : null;
-            $item = $product->sellable($variant);
+            $item = $product->sellableOn($shop, $variant);
             $placedAt = new \DateTimeImmutable(\sprintf('%d days 14:00', $daysAgo));
             $receiptId = (string) (3_100_000_000 + abs($daysAgo));
             $this->entityManager->persist(Order::imported(
@@ -205,6 +214,7 @@ final class ConventionSeasonStory extends Story
                 PaymentMethod::Card,
                 [],
                 'Remise Etsy',
+                $shop,
             ));
         }
         $this->entityManager->persist(ServiceConnection::create($this->workspace, 'etsy', ['keystring' => 'mossydemo'], SalesContext::Online, UnknownItems::LinkByHand));
@@ -326,7 +336,7 @@ final class ConventionSeasonStory extends Story
             }
 
             $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
-            $this->entityManager->persist(Order::place(self::reference('CMD', $placedAt), $event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt)));
+            $this->entityManager->persist(Order::place(self::reference('CMD', $placedAt), $event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt), $this->market));
         }
     }
 

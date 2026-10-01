@@ -15,6 +15,7 @@ import TypeMark from '../ui/TypeMark.vue';
 import { formatRatio } from '../../composables/useMoney.js';
 import { useSort } from '../../composables/useSort.js';
 import { variantStock } from '../../composables/useVariantStock.js';
+import { mainChannelOf, otherChannelsOf, ownPriceOn, priceOn } from '../../composables/useChannelPrices.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -22,6 +23,7 @@ const props = defineProps({
     allSelected: { type: Boolean, default: false },
     typeColors: { type: Map, required: true },
     stockVariants: { type: Array, default: () => [] },
+    channels: { type: Array, default: () => [] },
 });
 const emit = defineEmits(['edit', 'move', 'remove', 'archive', 'restore', 'toggle-all', 'restock', 'history']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
@@ -32,7 +34,11 @@ const margin = (product) => (knownCost(product) ? product.sellingPrice - product
 const stockOf = (product) => variantStock(product, props.stockVariants);
 const stockDetail = (product) => stockOf(product).entries.map((item) => t('products.list.stockDetail', { variant: item.variant ?? t('products.list.stock'), count: item.onHand })).join(', ');
 
-const columns = {
+const channelColumn = (channel) => `channel:${channel.id}`;
+const otherChannels = computed(() => otherChannelsOf(props.channels));
+const sellingPriceHeader = computed(() => mainChannelOf(props.channels)?.name ?? t('products.list.sellingPrice'));
+
+const columns = computed(() => ({
     type: (product) => `${product.typeName} ${product.displayName}`,
     name: (product) => product.displayName,
     collection: (product) => product.collectionName ?? '',
@@ -41,7 +47,8 @@ const columns = {
     sellingPrice: (product) => product.sellingPrice,
     margin,
     sales: (product) => product.sales,
-};
+    ...Object.fromEntries(otherChannels.value.map((channel) => [channelColumn(channel), (product) => priceOn(product, channel)])),
+}));
 
 const { sorted, sortBy, ariaSort } = useSort(toRef(props, 'products'), columns, 'type', 'ascending');
 const salesYear = computed(() => props.products[0]?.salesYear ?? new Date().getFullYear());
@@ -65,7 +72,8 @@ function setChecked(id, checked) {
                 <th>{{ t('products.list.variants') }}</th>
                 <SortableHeader :sort="ariaSort('stock')" numeric @sort="sortBy('stock')">{{ t('products.list.stock') }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('stockUnitCost')" numeric @sort="sortBy('stockUnitCost')">{{ t('products.list.cost') }}</SortableHeader>
-                <SortableHeader :sort="ariaSort('sellingPrice')" numeric @sort="sortBy('sellingPrice')">{{ t('products.list.sellingPrice') }}</SortableHeader>
+                <SortableHeader :sort="ariaSort('sellingPrice')" numeric @sort="sortBy('sellingPrice')">{{ sellingPriceHeader }}</SortableHeader>
+                <SortableHeader v-for="channel in otherChannels" :key="channel.id" :sort="ariaSort(channelColumn(channel))" numeric @sort="sortBy(channelColumn(channel))">{{ channel.name }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('margin')" numeric @sort="sortBy('margin')">{{ t('products.list.margin') }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('sales')" numeric @sort="sortBy('sales')">{{ t('products.list.sales', { year: salesYear }) }}</SortableHeader>
                 <th class="data-table__cell--actions"><VisuallyHidden>{{ t('products.list.actions') }}</VisuallyHidden></th>
@@ -110,6 +118,14 @@ function setChecked(id, checked) {
                     <MoneyAmount :cents="product.stockUnitCost" />
                 </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
+                <td
+                    v-for="channel in otherChannels"
+                    :key="channel.id"
+                    :class="['data-table__cell--number', { 'product-list__follows': ownPriceOn(product, channel) === null }]"
+                    :title="ownPriceOn(product, channel) === null ? t('products.list.followsSellingPrice') : null"
+                >
+                    <MoneyAmount :cents="priceOn(product, channel)" />
+                </td>
                 <td class="data-table__cell--number">
                     <template v-if="knownCost(product)">
                         <MoneyAmount :cents="margin(product)" />
@@ -153,6 +169,7 @@ function setChecked(id, checked) {
 .product-list__reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .product-list__type { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .product-list__collection { white-space: nowrap; }
+.product-list__follows { color: var(--color-subtle); }
 .product-list__muted { color: var(--color-subtle); }
 .product-list__ratio { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .product-list__stock { white-space: nowrap; }

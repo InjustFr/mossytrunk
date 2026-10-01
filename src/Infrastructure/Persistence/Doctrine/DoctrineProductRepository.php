@@ -77,9 +77,11 @@ final readonly class DoctrineProductRepository implements ProductRepository
     public function all(): array
     {
         return $this->entityManager->createQueryBuilder()
-            ->select('p', 't')
+            ->select('p', 't', 'cp', 'c')
             ->from(Product::class, 'p')
             ->leftJoin('p.type', 't')
+            ->leftJoin('p.channelPrices', 'cp')
+            ->leftJoin('cp.channel', 'c')
             ->where('p.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('t.name', 'ASC')

@@ -137,6 +137,20 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return array_values(array_map(static fn (mixed $id): string => \is_scalar($id) ? (string) $id : '', $ids));
     }
 
+    public function countWithoutEventOn(Ulid $channelId): int
+    {
+        return (int) $this->entityManager->createQueryBuilder()
+            ->select('COUNT(o.id)')
+            ->from(Order::class, 'o')
+            ->where('o.channel = :channel')
+            ->andWhere('o.event IS NULL')
+            ->andWhere('o.workspace = :workspace')
+            ->setParameter('channel', $channelId, UlidType::NAME)
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function countOutside(Ulid $eventId, DateRange $period): int
     {
         [$from, $until] = $this->bounds($period);

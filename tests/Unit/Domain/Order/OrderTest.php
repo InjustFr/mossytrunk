@@ -16,6 +16,9 @@ use App\Domain\Order\OrderedItem;
 use App\Domain\Order\PaymentMethod;
 use App\Domain\Product\Product;
 use App\Domain\Product\SellableItem;
+use App\Domain\Sales\ChannelKind;
+use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
+use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
@@ -77,6 +80,19 @@ final class OrderTest extends TestCase
         self::assertSame('CMD-1', $order->reference());
         self::assertEquals([new AppliedDiscount('Remise Etsy', Money::cents(100))], $order->appliedDiscounts());
         self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
+    }
+
+    public function testAMarketChannelOnlyTakesOrdersPlacedAtAnEvent(): void
+    {
+        $items = [new OrderedItem($this->sticker->sellable(null), 1)];
+        $markets = SalesChannel::main(TestWorkspace::get(), 'Marchés');
+        $etsy = SalesChannel::open(TestWorkspace::get(), 'Etsy', ChannelKind::Online, 'etsy');
+
+        self::assertSame($markets, Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), $items, [], $markets)->channel());
+        self::assertSame($etsy, Order::imported('CMD-2', TestWorkspace::get(), 'etsy', '311', 'ETSY-311', null, self::at('2026-10-02 09:00'), $items, Money::cents(400), Money::zero(), PaymentMethod::Card, [], 'Remise Etsy', $etsy)->channel());
+
+        $this->expectException(MarketOrderWithoutEvent::class);
+        Order::imported('CMD-3', TestWorkspace::get(), 'etsy', '312', 'ETSY-312', null, self::at('2026-10-02 09:00'), $items, Money::cents(400), Money::zero(), PaymentMethod::Card, [], 'Remise Etsy', $markets);
     }
 
     public function testSameProductVariantTupleIsMerged(): void

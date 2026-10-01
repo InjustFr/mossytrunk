@@ -14,7 +14,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 final readonly class ProductPayload
 {
     /**
-     * @param list<string> $variants
+     * @param list<string>                   $variants
+     * @param list<ChannelPriceEntryPayload> $channelPrices
      */
     public function __construct(
         #[Assert\NotBlank(message: 'name.required')]
@@ -32,6 +33,21 @@ final readonly class ProductPayload
         public int $lowStockThreshold = Product::DEFAULT_LOW_STOCK_THRESHOLD,
         #[Assert\Length(max: Product::REFERENCE_MAX_LENGTH, maxMessage: 'product.reference.tooLong')]
         public ?string $reference = null,
+        #[Assert\Valid]
+        public array $channelPrices = [],
     ) {
+    }
+
+    /**
+     * @return array<string, ?int>
+     */
+    public function pricesByChannel(): array
+    {
+        $prices = [];
+        foreach ($this->channelPrices as $entry) {
+            $prices[$entry->channelId] = $entry->price;
+        }
+
+        return $prices;
     }
 }
