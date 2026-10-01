@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseCheckbox from '../ui/BaseCheckbox.vue';
 import DataTable from '../ui/DataTable.vue';
@@ -12,6 +13,7 @@ import { formatDay, formatTime } from '../../composables/useDate.js';
 const props = defineProps({
     orders: { type: Array, required: true },
     highlightId: { type: String, default: null },
+    filtered: { type: Boolean, default: false },
 });
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
 
@@ -51,7 +53,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 </script>
 
 <template>
-    <EmptyState v-if="orders.length === 0">{{ t('orders.list.empty') }}</EmptyState>
+    <EmptyState v-if="orders.length === 0">{{ filtered ? t('orders.list.noMatch') : t('orders.list.empty') }}</EmptyState>
     <DataTable remember-page v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
@@ -78,7 +80,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
                     <td class="order-list__day-count" colspan="2">{{ t('orders.list.count', day.count) }}</td>
                 </tr>
-                <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId }]">
+                <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId, 'order-list__row--unassigned': order.unidentifiedLines > 0 }]">
                     <td class="order-list__check">
                         <BaseCheckbox
                             :model-value="checkedIds.includes(order.id)"
@@ -86,7 +88,16 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                             @update:model-value="setChecked(order.id, $event)"
                         />
                     </td>
-                    <td class="order-list__reference"><a :href="`/orders/${order.id}`">{{ order.reference }}</a></td>
+                    <td class="order-list__reference">
+                        <TriangleAlert
+                            v-if="order.unidentifiedLines > 0"
+                            class="order-list__unassigned"
+                            size="0.875rem"
+                            role="img"
+                            :aria-label="t('orders.list.unassigned', order.unidentifiedLines)"
+                        />
+                        <a :href="`/orders/${order.id}`">{{ order.reference }}</a>
+                    </td>
                     <td class="order-list__time">{{ formatTime(order.placedAt) }}</td>
                     <td class="data-table__cell--number">{{ order.itemCount }}</td>
                     <td class="data-table__cell--number">
@@ -124,6 +135,9 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 .order-list__day-count { color: var(--color-muted); font-size: 0.875rem; }
 
 .order-list__time { font-variant-numeric: tabular-nums; }
+.order-list__row--unassigned > td:first-child { box-shadow: inset 0.1875rem 0 0 var(--color-warning); }
+.order-list__row--unassigned { background: var(--color-warning-soft); }
+.order-list__unassigned { margin-right: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 .order-list__payment { color: var(--color-muted); font-size: 0.875rem; }
 .order-list__total { font-weight: 600; }
 .order-list__total--refunded { color: var(--color-subtle); text-decoration: line-through; }

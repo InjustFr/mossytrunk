@@ -19,6 +19,12 @@ export function formatTime(iso) {
     return timeFormatter().format(new Date(iso));
 }
 
+const numericDayFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Paris' }));
+
+export function formatNumericDay(iso) {
+    return numericDayFormatter().format(new Date(iso));
+}
+
 export function formatDateTime(iso) {
     return iso ? dateTimeFormatter().format(new Date(iso)) : '';
 }

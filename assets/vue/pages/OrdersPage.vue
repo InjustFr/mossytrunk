@@ -9,6 +9,7 @@ import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import SelectionBar from '../components/ui/SelectionBar.vue';
 import EventFilter from '../components/orders/EventFilter.vue';
 import OrderForm from '../components/orders/OrderForm.vue';
+import OrderFilters from '../components/orders/OrderFilters.vue';
 import OrderList from '../components/orders/OrderList.vue';
 import ImportProblem from '../components/import/ImportProblem.vue';
 import ExternalItemLinker from '../components/import/ExternalItemLinker.vue';
@@ -16,11 +17,13 @@ import ExternalItemsNotice from '../components/import/ExternalItemsNotice.vue';
 import { useImport } from '../composables/useImport.js';
 import { isReady, useServices } from '../composables/useServices.js';
 import { useEvents } from '../composables/useEvents.js';
+import { useOrderSearch } from '../composables/useOrderSearch.js';
 import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useToast } from '../composables/useToast.js';
 
 const { orders, eventFilter, load, place, removeSelected } = useOrders();
+const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
 const { products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
 const services = useServices();
@@ -72,6 +75,9 @@ watch(eventFilter, () => {
     checkedIds.value = [];
     load();
 });
+watch([search, unassigned], () => {
+    checkedIds.value = [];
+});
 onMounted(async () => {
     await Promise.all([load(), loadProducts(), loadEvents(), services.load()]);
     importers.value = services.added.value.map(useImport);
@@ -111,7 +117,8 @@ onMounted(async () => {
             <template #actions>
                 <EventFilter v-model="eventFilter" :events="events" />
             </template>
-            <OrderList v-model:checked-ids="checkedIds" :orders="orders" :highlight-id="lastPlacedId" />
+            <OrderFilters v-model:search="search" v-model:unassigned="unassigned" :unassigned-count="unassignedCount" />
+            <OrderList v-model:checked-ids="checkedIds" :orders="visible" :filtered="filtering" :highlight-id="lastPlacedId" />
         </BaseCard>
         <SelectionBar :count="checkedIds.length" :summary="t('orders.selection.count', checkedIds.length)" @clear="checkedIds = []">
             <ConfirmButton

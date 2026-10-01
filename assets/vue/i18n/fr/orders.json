@@ -74,7 +74,9 @@
         "source": "Source",
         "selectAll": "Tout sélectionner",
         "select": "Sélectionner la commande {reference}",
-        "refunded": "Remboursée"
+        "refunded": "Remboursée",
+        "noMatch": "Aucune commande ne correspond.",
+        "unassigned": "{count} article à associer à un produit | {count} articles à associer à un produit"
     },
     "margin": {
         "collected": "Encaissé",
@@ -120,5 +122,10 @@
         "confirmDelete": "Supprimer {count} commande ? | Supprimer {count} commandes ?",
         "deleteMessage": "Pour une commande saisie par erreur : elle disparaît, et sa sortie de stock aussi. Cette action est définitive. | Pour des commandes saisies par erreur : elles disparaissent, et leurs sorties de stock aussi. Cette action est définitive.",
         "deleted": "{count} commande supprimée. | {count} commandes supprimées."
+    },
+    "filters": {
+        "searchLabel": "Rechercher une commande",
+        "searchPlaceholder": "N° de commande, date, heure…",
+        "unassigned": "{count} commande avec un article sans produit | {count} commandes avec des articles sans produit"
     }
 }

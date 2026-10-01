@@ -28,6 +28,7 @@ final class OrderApiTest extends WebTestCase
         $orders = Json::decode((string) $listed->getContent());
         self::assertSame(4_000, Json::at($orders, 0, 'total'));
         self::assertSame('Japan Expo', Json::at($orders, 0, 'eventName'));
+        self::assertSame(0, Json::at($orders, 0, 'unidentifiedLines'));
 
         $client->jsonRequest('GET', '/api/orders/'.Json::string($order, 'id'));
         self::assertSame('T-shirt — M', Json::at(Json::decode((string) $client->getResponse()->getContent()), 'lines', 0, 'label'));

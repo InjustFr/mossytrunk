@@ -72,6 +72,35 @@ test('warns when no event exists at the order date', async ({ page, request }) =
     await expect(form.locator('.order-form__error')).toContainText('Créez d\'abord l\'événement');
 });
 
+test('search orders by number, date and time', async ({ page, request }) => {
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+    const place = async (time) => (await (await request.post('/api/orders', {
+        data: { placedAt: `${event.startDate}T${time}`, lines: [{ productId: sticker.id, variant: null, quantity: 1 }] },
+    })).json());
+    const morning = await place('09:15');
+    const afternoon = await place('16:40');
+    const [year, month, day] = event.startDate.split('-');
+    const search = page.getByLabel('Rechercher une commande');
+    const rows = (order) => page.getByRole('row').filter({ hasText: order.reference });
+
+    await page.goto('/orders');
+    await search.fill(afternoon.reference);
+    await expect(rows(afternoon)).toHaveCount(1);
+    await expect(rows(morning)).toHaveCount(0);
+
+    await search.fill(`${day}/${month}/${year} 9h15`);
+    await expect(rows(morning)).toHaveCount(1);
+    await expect(rows(afternoon)).toHaveCount(0);
+
+    await search.fill(`${event.startDate} 16:40`);
+    await expect(rows(afternoon)).toHaveCount(1);
+    await expect(rows(morning)).toHaveCount(0);
+
+    await search.fill('pas une commande');
+    await expect(page.getByText('Aucune commande ne correspond.')).toBeVisible();
+});
+
 test('delete an order from its detail page', async ({ page, request }) => {
     const event = await createEvent(request);
     const sticker = await createProduct(request, { name: unique('Sticker') });

@@ -74,7 +74,9 @@
         "source": "Source",
         "selectAll": "Select all",
         "select": "Select order {reference}",
-        "refunded": "Refunded"
+        "refunded": "Refunded",
+        "noMatch": "No order matches.",
+        "unassigned": "{count} item to link to a product | {count} items to link to a product"
     },
     "margin": {
         "collected": "Collected",
@@ -120,5 +122,10 @@
         "confirmDelete": "Delete {count} order? | Delete {count} orders?",
         "deleteMessage": "For an order entered by mistake: it disappears along with its stock withdrawal. This cannot be undone. | For orders entered by mistake: they disappear along with their stock withdrawals. This cannot be undone.",
         "deleted": "{count} order deleted. | {count} orders deleted."
+    },
+    "filters": {
+        "searchLabel": "Search orders",
+        "searchPlaceholder": "Order number, date, time…",
+        "unassigned": "{count} order with an item without product | {count} orders with items without product"
     }
 }

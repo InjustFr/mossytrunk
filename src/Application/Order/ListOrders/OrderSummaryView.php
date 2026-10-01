@@ -6,6 +6,7 @@ namespace App\Application\Order\ListOrders;
 
 use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
+use App\Domain\Order\OrderLine;
 use App\Domain\Shared\DateRange;
 
 final readonly class OrderSummaryView
@@ -28,6 +29,7 @@ final readonly class OrderSummaryView
         public ?string $paymentMethod,
         public array $externalReferences,
         public ?string $refundedAt,
+        public int $unidentifiedLines,
     ) {
     }
 
@@ -48,6 +50,7 @@ final readonly class OrderSummaryView
             $order->paymentMethod()?->value,
             array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales()),
             null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
+            \count(array_filter($order->lines(), static fn (OrderLine $line): bool => null === $line->productId())),
         );
     }
 }

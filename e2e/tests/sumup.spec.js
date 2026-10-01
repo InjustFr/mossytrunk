@@ -41,7 +41,10 @@ test('an amount typed on the terminal is imported without product, then linked t
 
     await page.goto('/orders');
     await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
-    await page.getByRole('row').filter({ hasText: 'TFAKE0002' }).getByRole('link', { name: /^CMD-/ }).click();
+    await page.getByRole('button', { name: /commandes? avec .* sans produit/ }).click();
+    const unassigned = page.getByRole('row').filter({ hasText: 'TFAKE0002' });
+    await expect(unassigned.getByRole('img', { name: /à associer à un produit/ })).toBeVisible();
+    await unassigned.getByRole('link', { name: /^CMD-/ }).click();
     await expect(page.getByRole('row').filter({ hasText: 'Produit inconnu' })).toContainText('2,00');
 
     await page.getByRole('button', { name: 'Choisir le produit' }).click();
