@@ -72,7 +72,8 @@
         "start": "Start: the discount begins today",
         "edit": "Edit {name}",
         "remove": "Delete {name}",
-        "or": "or"
+        "or": "or",
+        "pricedOn": "prices of {date}"
     },
     "action": {
         "fixedPrice": "for {price}",

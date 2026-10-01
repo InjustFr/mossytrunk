@@ -8,7 +8,9 @@ use App\Application\Stock\ProductStock;
 use App\Application\Stock\StockItemView;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Product\Product;
+use App\Domain\Product\SellingPriceChange;
 use App\Domain\Reporting\ProductSales;
+use App\Domain\Shared\DateRange;
 
 final readonly class ProductView
 {
@@ -17,6 +19,7 @@ final readonly class ProductView
      * @param list<string>                                                          $activeVariants
      * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}> $stock
      * @param array<string, int>                                                    $channelPrices
+     * @param list<array{price: int, sinceDay: string}>                             $priceHistory
      */
     public function __construct(
         public string $id,
@@ -43,6 +46,7 @@ final readonly class ProductView
         public ?string $collectionId,
         public ?string $collectionName,
         public array $channelPrices,
+        public array $priceHistory,
     ) {
     }
 
@@ -78,6 +82,10 @@ final readonly class ProductView
             null === $collection ? null : (string) $collection->id(),
             $collection?->name(),
             self::channelPricesOf($product),
+            array_map(static fn (SellingPriceChange $change): array => [
+                'price' => $change->price()->amount(),
+                'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
+            ], $product->priceHistory()),
         );
     }
 

@@ -138,3 +138,19 @@ test('three items picked among several products are reduced by 2 €', async ({ 
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(item).not.toContainText(eevee.displayName);
 });
+
+test('an expired discount shows the regular price and saving of its own days', async ({ page, request }) => {
+    const print = await createProduct(request, { name: unique('Tirage'), sellingPrice: 500 });
+    expect((await request.post(`/api/products/${print.id}/prices`, { data: { price: 400, since: '2026-07-01' } })).status()).toBe(204);
+    const name = unique('Ancien lot');
+    const response = await request.post('/api/discount-rules', {
+        data: { name, conditions: [{ quantity: 3, targets: [{ kind: 'product', id: print.id }] }], action: { kind: 'fixedPrice', value: 1_000 }, startsOn: '2026-07-08', endsOn: '2026-07-14' },
+    });
+    expect(response.status()).toBe(201);
+
+    await page.goto('/discounts');
+    const rule = page.getByTestId(`discount-rule-${name}`);
+    await expect(rule).toContainText('12,00');
+    await expect(rule).toContainText('2,00');
+    await expect(rule).toContainText('prix du 14 juil. 2026');
+});

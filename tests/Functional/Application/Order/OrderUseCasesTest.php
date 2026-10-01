@@ -16,6 +16,7 @@ use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\PreviewOrder\PreviewOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Application\Product\RecordSellingPrice\RecordSellingPriceHandler;
 use App\Domain\Event\Exception\InvalidEvent;
 use App\Domain\Order\Exception\InvalidOrder;
 use App\Domain\Order\Exception\NoEventOnOrderDate;
@@ -86,6 +87,17 @@ final class OrderUseCasesTest extends KernelTestCase
         $this->expectException(InvalidOrder::class);
 
         $this->place('2026-07-10 15:30', [new RequestedLine($this->sticker, null, 0)]);
+    }
+
+    public function testAnOrderTakesThePriceOfItsDayAndItsDiscountsFollow(): void
+    {
+        self::getContainer()->get(RecordSellingPriceHandler::class)($this->sticker, 350, '2026-07-01');
+
+        $preview = self::getContainer()->get(PreviewOrderHandler::class)(new \DateTimeImmutable('2026-07-10 15:30'), [new RequestedLine($this->sticker, null, 3)]);
+        self::assertSame([1_050, 50, 1_000], [$preview->subtotal, $preview->discountTotal, $preview->total]);
+
+        $order = $this->place('2026-07-10 15:30', [new RequestedLine($this->sticker, null, 1)]);
+        self::assertSame(350, $order->lines()[0]->unitPrice()->amount());
     }
 
     public function testPreviewMatchesPlacedOrder(): void

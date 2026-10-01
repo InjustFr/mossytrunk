@@ -31,16 +31,16 @@ final readonly class OrderPricing
      *
      * @return list<OrderedItem>
      */
-    public function items(array $lines): array
+    public function items(array $lines, \DateTimeImmutable $placedAt): array
     {
-        return array_map(function (RequestedLine $line): OrderedItem {
+        return array_map(function (RequestedLine $line) use ($placedAt): OrderedItem {
             if ($line->quantity < 1) {
                 throw new InvalidOrderQuantity();
             }
 
             $product = $this->products->get(Ulid::fromString($line->productId));
 
-            return new OrderedItem($product->sellable($line->variant), $line->quantity);
+            return new OrderedItem($product->sellableOn(null, $line->variant, $placedAt), $line->quantity);
         }, $lines);
     }
 

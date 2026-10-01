@@ -28,7 +28,7 @@ final readonly class PreviewOrderHandler
     public function __invoke(\DateTimeImmutable $placedAt, array $lines): OrderPreview
     {
         $event = $this->events->findCovering($placedAt);
-        $items = $this->pricing->items($lines);
+        $items = $this->pricing->items($lines, $placedAt);
         $discounts = $this->pricing->discounts($items, $placedAt);
 
         $subtotal = Money::sum(array_map(static fn (OrderedItem $ordered): Money => $ordered->item->sellingPrice->multiply($ordered->quantity), $items));

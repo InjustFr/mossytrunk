@@ -24,6 +24,7 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Product\MoveVariant\MoveVariant;
 use App\Application\Product\MoveVariant\MoveVariantHandler;
+use App\Application\Product\RecordSellingPrice\RecordSellingPriceHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
 use App\Application\Sales\SaveChannel\SaveChannelHandler;
@@ -171,6 +172,22 @@ final class ImportSumUpSalesTest extends KernelTestCase
         $order = self::getContainer()->get(GetOrderHandler::class)(self::getContainer()->get(ListOrdersHandler::class)()[0]->id);
         self::assertSame([250, 500], array_column($order->lines, 'unitPrice'));
         self::assertSame(100, $order->discountTotal, 'only the magnet was sold below its price');
+    }
+
+    public function testSalesAreListedAtThePriceOfTheirDay(): void
+    {
+        $this->scheduleEvent('Japan Expo', '2026-07-09', '2026-07-12');
+        $badge = self::createProduct('Badge', 300, 50);
+        self::getContainer()->get(RecordSellingPriceHandler::class)($badge, 250, '2026-07-01');
+        self::getContainer()->get(FakeSumUpGateway::class)->willReturn([
+            ExternalSales::sumUp('TX-JULY', new \DateTimeImmutable('2026-07-10T12:00:00Z'), Money::cents(250), [ExternalSales::line('Badge', Money::cents(250), 1)]),
+        ]);
+
+        $this->import();
+
+        $order = self::getContainer()->get(GetOrderHandler::class)(self::getContainer()->get(ListOrdersHandler::class)()[0]->id);
+        self::assertSame([250], array_column($order->lines, 'unitPrice'));
+        self::assertSame(0, $order->discountTotal, 'the July price was paid: no discount');
     }
 
     public function testProductWithVariantsButNoVariantInSumUpWaitsToBeLinked(): void

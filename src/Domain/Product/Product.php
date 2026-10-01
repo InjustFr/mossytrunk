@@ -200,9 +200,26 @@ class Product implements Referenced
         return (null === $channel || $channel->isMain() ? null : $this->channelPriceOn($channel)?->price()) ?? $this->sellingPrice;
     }
 
-    public function sellableOn(?SalesChannel $channel, ?string $variant): SellableItem
+    public function sellableOn(?SalesChannel $channel, ?string $variant, ?\DateTimeImmutable $soldAt = null): SellableItem
     {
-        return $this->sellable($variant)->at($this->priceOn($channel));
+        $own = null === $channel || $channel->isMain() ? null : $this->channelPriceOn($channel)?->price();
+        $price = $own ?? (null === $soldAt ? $this->sellingPrice : $this->priceAt($soldAt));
+
+        return $this->sellable($variant)->at($price);
+    }
+
+    public function priceAt(\DateTimeImmutable $moment): Money
+    {
+        $history = $this->priceHistory();
+        $price = [] === $history ? $this->sellingPrice : $history[0]->price();
+        foreach ($history as $change) {
+            if ($change->since() > $moment) {
+                break;
+            }
+            $price = $change->price();
+        }
+
+        return $price;
     }
 
     /**

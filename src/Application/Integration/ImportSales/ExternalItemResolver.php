@@ -20,6 +20,8 @@ final class ExternalItemResolver
     /** @var array<string, ExternalItem> */
     private array $remembered = [];
 
+    private ?\DateTimeImmutable $soldAt = null;
+
     public function __construct(
         private readonly ImportedCatalogue $catalogue,
         private readonly ExternalItemRepository $items,
@@ -34,8 +36,9 @@ final class ExternalItemResolver
         }
     }
 
-    public function resolve(ExternalLine $line): ?SellableItem
+    public function resolve(ExternalLine $line, ?\DateTimeImmutable $soldAt = null): ?SellableItem
     {
+        $this->soldAt = $soldAt;
         $name = trim($line->name);
         if ('' === $name) {
             return SellableItem::unknown($this->unknownProduct, $line->unitPrice);
@@ -179,12 +182,13 @@ final class ExternalItemResolver
 
     private function sold(Product $product, ?string $variant, ExternalLine $line): ?SellableItem
     {
-        if ($this->catalogue->wasCreated($product) && $line->unitPrice->greaterThan($product->sellingPrice())) {
+        $created = $this->catalogue->wasCreated($product);
+        if ($created && $line->unitPrice->greaterThan($product->sellingPrice())) {
             $product->reprice($line->unitPrice);
         }
 
         try {
-            $item = $product->sellableOn($this->channel, $variant);
+            $item = $product->sellableOn($this->channel, $variant, $created ? null : $this->soldAt);
         } catch (InvalidProduct) {
             return null;
         }

@@ -172,6 +172,20 @@ final class ProductTest extends TestCase
         self::assertSame([400, 500], array_map(static fn ($change): int => $change->price()->amount(), $product->priceHistory()));
     }
 
+    public function testThePriceAtAMomentIsTheLatestEntryNotAfterIt(): void
+    {
+        $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(500), TestProductType::get());
+        $now = new \DateTimeImmutable('+1 hour');
+        $product->recordPrice(Money::cents(300), new \DateTimeImmutable('2026-07-08'), $now);
+        $product->recordPrice(Money::cents(400), new \DateTimeImmutable('2026-09-24'), $now);
+
+        self::assertSame(300, $product->priceAt(new \DateTimeImmutable('2026-07-01'))->amount(), 'before the history: its first price');
+        self::assertSame(300, $product->priceAt(new \DateTimeImmutable('2026-07-10 15:00'))->amount());
+        self::assertSame(400, $product->priceAt(new \DateTimeImmutable('2026-09-24 10:00'))->amount());
+        self::assertSame(500, $product->priceAt($now)->amount());
+        self::assertSame(300, $product->sellableOn(null, null, new \DateTimeImmutable('2026-07-10'))->sellingPrice->amount());
+    }
+
     public function testAmendingTheLatestPriceCorrectsTheSellingPriceWithoutANewEntry(): void
     {
         $product = Product::create(TestWorkspace::get(), 'STK-01', 'Sticker', Money::cents(9_999), TestProductType::get());

@@ -72,7 +72,8 @@
         "start": "Lancer : la remise commence aujourd'hui",
         "edit": "Modifier {name}",
         "remove": "Supprimer {name}",
-        "or": "ou"
+        "or": "ou",
+        "pricedOn": "prix du {date}"
     },
     "action": {
         "fixedPrice": "pour {price}",

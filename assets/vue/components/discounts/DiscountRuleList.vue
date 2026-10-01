@@ -6,7 +6,7 @@ import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
 import TypeMark from '../ui/TypeMark.vue';
-import { describeAction, regularPrice, savingOn } from '../../composables/useRulePrice.js';
+import { describeAction, pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatCents } from '../../composables/useMoney.js';
 import { formatDate } from '../../composables/useDate.js';
 
@@ -48,11 +48,13 @@ function period(rule) {
 const status = (key) => t(`discounts.status.${key}`);
 
 function saving(rule) {
-    const regular = regularPrice(props.products, rule.conditions);
+    const day = pricingDay(rule.startsOn, rule.endsOn);
+    const regular = regularPrice(props.products, rule.conditions, day);
     if (!regular) {
         return null;
     }
     return {
+        day,
         regular: range(regular.min, regular.max),
         saved: range(savingOn(regular.min, rule.action), savingOn(regular.max, rule.action)),
     };
@@ -93,7 +95,10 @@ function saving(rule) {
             <dl v-if="saving(rule)" class="discount-rule-list__figures">
                 <div class="discount-rule-list__figure">
                     <dt>{{ t('discounts.list.regularPrice') }}</dt>
-                    <dd>{{ saving(rule).regular }}</dd>
+                    <dd>
+                        {{ saving(rule).regular }}
+                        <span v-if="saving(rule).day" class="discount-rule-list__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(saving(rule).day) }) }}</span>
+                    </dd>
                 </div>
                 <div class="discount-rule-list__figure">
                     <dt>{{ t('discounts.list.customerSaving') }}</dt>
@@ -196,4 +201,5 @@ function saving(rule) {
     .discount-rule-list__item { grid-template-columns: minmax(0, 1fr) auto; }
     .discount-rule-list__main { grid-column: 1 / -1; }
 }
+.discount-rule-list__priced-on { display: block; color: var(--color-muted); font-size: 0.75rem; font-weight: 400; }
 </style>

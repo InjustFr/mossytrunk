@@ -14,7 +14,7 @@ import FormDisclosure from '../ui/FormDisclosure.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
-import { regularPrice, savingOn } from '../../composables/useRulePrice.js';
+import { pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatCents } from '../../composables/useMoney.js';
 import { formatDate } from '../../composables/useDate.js';
 
@@ -78,11 +78,13 @@ const action = computed(() => ({
 }));
 
 const pricing = computed(() => {
-    const regular = regularPrice(props.products, form.conditions);
+    const day = pricingDay(form.startsOn, form.endsOn);
+    const regular = regularPrice(props.products, form.conditions, day);
     if (!regular) {
         return null;
     }
     return {
+        day,
         regular,
         customer: {
             min: regular.min - savingOn(regular.min, action.value),
@@ -254,6 +256,7 @@ async function onSubmit() {
                             <template #customer><strong>{{ range(pricing.customer) }}</strong></template>
                             <template #regular>{{ range(pricing.regular) }}</template>
                         </i18n-t>
+                        <span v-if="pricing.day" class="discount-rule-form__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(pricing.day) }) }}</span>
                     </p>
                 </FormField>
             </FormSection>
@@ -346,4 +349,5 @@ async function onSubmit() {
     .discount-rule-form__condition { grid-template-areas: "quantity times . remove" "group group group group"; }
     .discount-rule-form__target--with-variant { grid-template-columns: minmax(0, 1fr); }
 }
+.discount-rule-form__priced-on { display: block; color: var(--color-muted); font-size: 0.75rem; }
 </style>

@@ -73,7 +73,7 @@ final readonly class ImportSalesHandler
             $items = [];
             $resolved = true;
             foreach ($sale->lines as $line) {
-                $item = $resolver->resolve($line);
+                $item = $resolver->resolve($line, $sale->placedAt);
                 if (null === $item) {
                     $resolved = false;
                     continue;

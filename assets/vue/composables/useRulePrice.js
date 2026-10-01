@@ -7,15 +7,34 @@ const offers = (product, variant) => !variant || product.variants.some((candidat
 const targets = (product, target) => (target.kind === 'type' ? product.typeId === target.id : product.id === target.id);
 const chosen = (condition) => condition.targets.filter((target) => target.id);
 
-const matching = (products, condition) => products
-    .filter((product) => chosen(condition).some((target) => targets(product, target) && offers(product, target.variant)))
-    .map((product) => product.sellingPrice);
+const localDay = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
 
-export function regularPrice(products, conditions) {
+export function pricingDay(startsOn, endsOn, today = localDay(new Date())) {
+    if (endsOn && endsOn < today) return endsOn;
+    if (startsOn && startsOn > today) return startsOn;
+    return null;
+}
+
+export function priceAt(product, day) {
+    const history = product.priceHistory ?? [];
+    if (!day || history.length === 0) return product.sellingPrice;
+    let price = history[0].price;
+    for (const change of history) {
+        if (change.sinceDay > day) break;
+        price = change.price;
+    }
+    return price;
+}
+
+const matching = (products, condition, day) => products
+    .filter((product) => chosen(condition).some((target) => targets(product, target) && offers(product, target.variant)))
+    .map((product) => priceAt(product, day));
+
+export function regularPrice(products, conditions, day = null) {
     let min = 0;
     let max = 0;
     for (const condition of conditions) {
-        const prices = matching(products, condition);
+        const prices = matching(products, condition, day);
         if (chosen(condition).length === 0 || prices.length === 0 || !condition.quantity) {
             return null;
         }
