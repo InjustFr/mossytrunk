@@ -53,7 +53,7 @@ test('refuses overlapping events', async ({ page }) => {
         await form.getByLabel('Lieu').fill('Lyon');
         await fillDateRange(form.getByRole('group', { name: 'Dates', exact: true }), day, day);
         await form.getByRole('button', { name: "Créer l'événement" }).click();
-        await expect(page.getByTestId('toast').or(form.getByRole('alert'))).toBeVisible();
+        await expect(page.getByTestId('toast').or(form.getByRole('alert')).first()).toBeVisible();
     }
 
     await expect(form.getByRole('alert')).toContainText('chevauchent');
