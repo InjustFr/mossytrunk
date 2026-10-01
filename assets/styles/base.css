@@ -44,8 +44,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
     transform-origin: left;
     transform: scaleX(0);
     opacity: 0;
-    transition: transform 200ms ease, opacity 200ms ease;
     pointer-events: none;
 }
 
 .progress-bar--visible { opacity: 1; }
+
+.turbo-progress-bar { display: none; }

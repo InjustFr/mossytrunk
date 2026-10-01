@@ -1,19 +1,17 @@
-/**
- * Top loading bar (YouTube/Nuxt style) covering a whole page change: the Turbo Drive visit AND the
- * API requests the new page makes once mounted. Any code can hold it with begin()/end() (useApi does).
- * The bar lives on <html>, outside the <body> Turbo swaps. It only appears when loading lasts longer
- * than SHOW_DELAY ms, then stays visible at least MIN_VISIBLE ms so it never just flickers.
- */
 const SHOW_DELAY = 150;
-const MIN_VISIBLE = 200;
-const SETTLE = 80; // gap tolerated between the visit end and the page's first request
+const MIN_VISIBLE = 300;
+const SETTLE = 80;
+const CRAWL = 'transform 8s cubic-bezier(0.1, 0.7, 0.3, 1), opacity 150ms ease';
+const COMPLETE = 'transform 200ms ease-out, opacity 250ms ease 200ms';
+const COMPLETED_AFTER = 450;
+
 let pending = 0;
 let element = null;
-let progress = 0;
+let visible = false;
 let shownAt = 0;
-let trickle = null;
-let settleTimer = null;
 let showTimer = null;
+let settleTimer = null;
+let hideTimer = null;
 
 function bar() {
     if (!element) {
@@ -25,56 +23,70 @@ function bar() {
     return element;
 }
 
-function render() {
-    bar().style.transform = `scaleX(${progress})`;
+function currentScale() {
+    const transform = getComputedStyle(bar()).transform;
+    return transform === 'none' ? 0 : new DOMMatrix(transform).a;
+}
+
+function crawlFrom(scale) {
+    const progress = bar();
+    progress.style.transition = 'none';
+    progress.style.transform = `scaleX(${scale})`;
+    progress.getBoundingClientRect();
+    progress.style.transition = CRAWL;
+    progress.style.transform = 'scaleX(0.9)';
 }
 
 function show() {
-    if (trickle) return;
-    progress = 0.08;
+    if (visible) return;
+    const resuming = hideTimer !== null;
+    clearTimeout(hideTimer);
+    hideTimer = null;
+    visible = true;
     shownAt = performance.now();
     bar().classList.add('progress-bar--visible');
-    render();
-    trickle = setInterval(() => {
-        progress += (0.9 - progress) * 0.12;
-        render();
-    }, 200);
+    crawlFrom(resuming ? currentScale() : 0.05);
 }
 
-function finish() {
+function complete() {
     clearTimeout(showTimer);
     showTimer = null;
-    if (!trickle) return;
+    if (!visible) return;
     const wait = Math.max(0, MIN_VISIBLE - (performance.now() - shownAt));
     setTimeout(() => {
-        if (pending > 0) return;
-        clearInterval(trickle);
-        trickle = null;
-        progress = 1;
-        render();
-        setTimeout(() => {
-            if (trickle) return;
-            bar().classList.remove('progress-bar--visible');
-        }, 200);
+        if (pending > 0 || !visible) return;
+        visible = false;
+        const progress = bar();
+        progress.style.transition = COMPLETE;
+        progress.style.transform = 'scaleX(1)';
+        progress.classList.remove('progress-bar--visible');
+        hideTimer = setTimeout(() => {
+            hideTimer = null;
+            progress.style.transition = 'none';
+            progress.style.transform = 'scaleX(0)';
+        }, COMPLETED_AFTER);
     }, wait);
 }
 
 export function begin() {
     clearTimeout(settleTimer);
     pending += 1;
-    if (!trickle && !showTimer) {
-        showTimer = setTimeout(() => {
-            showTimer = null;
-            if (pending > 0) show();
-        }, SHOW_DELAY);
+    if (visible || showTimer) return;
+    if (hideTimer) {
+        show();
+        return;
     }
+    showTimer = setTimeout(() => {
+        showTimer = null;
+        if (pending > 0) show();
+    }, SHOW_DELAY);
 }
 
 export function end() {
     pending = Math.max(0, pending - 1);
     if (pending === 0) {
         clearTimeout(settleTimer);
-        settleTimer = setTimeout(finish, SETTLE);
+        settleTimer = setTimeout(complete, SETTLE);
     }
 }
 

@@ -1,5 +1,5 @@
 import { registerVueControllerComponents } from '@symfony/ux-vue';
-import * as Turbo from '@hotwired/turbo';
+import '@hotwired/turbo';
 import './stimulus_bootstrap.js';
 import './progress-bar.js';
 import './vue/i18n/index.js';
@@ -15,6 +15,3 @@ registerVueControllerComponents(pages);
 const whenIdle = window.requestIdleCallback ?? ((callback) => setTimeout(callback, 1000));
 window.addEventListener('load', () => whenIdle(() => pages.keys().forEach((page) => pages(page).catch(() => {}))), { once: true });
 
-// Turbo Drive (Symfony UX Turbo) swaps pages without a full reload. Its own progress bar is replaced by
-// ours (progress-bar.js), which also covers the API calls of the page being displayed.
-Turbo.session.progressBarDelay = Number.MAX_SAFE_INTEGER;
