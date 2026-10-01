@@ -158,6 +158,21 @@ final class ProductApiTest extends WebTestCase
         self::assertSame('Sticker Mousse', Json::at(Json::decode((string) $client->getResponse()->getContent()), 0, 'displayName'));
     }
 
+    public function testTheLowStockAlertIsSetInBatch(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Mousse', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]);
+        $id = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+
+        $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'lowStockThreshold' => -1]);
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'lowStockThreshold' => 4]);
+        self::assertResponseIsSuccessful();
+        $client->jsonRequest('GET', '/api/products');
+        self::assertSame(4, Json::at(Json::decode((string) $client->getResponse()->getContent()), 0, 'lowStockThreshold'));
+    }
+
     public function testTheListShowsTheStockOfEachVariant(): void
     {
         $client = self::signedInClient();

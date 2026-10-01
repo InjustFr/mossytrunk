@@ -98,6 +98,7 @@ test('filter by type and edit the selection in batch', async ({ page, request })
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();
     const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
     await batch.getByLabel('Prix de vente').fill('5');
+    await batch.getByRole('spinbutton', { name: 'Alerte stock bas' }).fill('2');
     await batch.getByRole('group', { name: 'Variantes à ajouter' }).getByRole('button', { name: 'Brillant' }).click();
     await batch.getByRole('button', { name: 'Appliquer à 2 produits' }).click();
 
@@ -107,6 +108,8 @@ test('filter by type and edit the selection in batch', async ({ page, request })
         await expect(row).toContainText('5,00');
         await expect(row).toContainText('Brillant');
     }
+    const listed = await (await request.get('/api/products')).json();
+    expect(listed.filter((product) => [mousse.id, fougere.id].includes(product.id)).map((product) => product.lowStockThreshold)).toEqual([2, 2]);
 
     await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();

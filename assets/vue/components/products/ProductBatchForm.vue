@@ -3,6 +3,7 @@ import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
@@ -25,7 +26,7 @@ const typeOptions = computed(() => [
     ...activeTypes.value.map((type) => ({ value: type.id, label: type.name })),
 ]);
 
-const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], removeVariants: [] });
+const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], removeVariants: [], lowStockThreshold: null });
 const errors = ref({});
 const saving = ref(false);
 
@@ -48,6 +49,7 @@ async function onSubmit() {
             typeId: changeType.value ? form.typeId : null,
             addVariants: form.addVariants,
             removeVariants: form.removeVariants,
+            lowStockThreshold: Number.isFinite(form.lowStockThreshold) ? form.lowStockThreshold : null,
         });
         emit('saved', result.updated);
     } catch (error) {
@@ -66,6 +68,9 @@ async function onSubmit() {
             <FormSection :description="t('products.batch.intro', count)">
                 <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-batch-form__price" />
+                </FormField>
+                <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.batch.lowStockThresholdHint')">
+                    <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" class="product-batch-form__threshold" />
                 </FormField>
                 <FormField as="group" :label="t('products.form.type')" :error="errors.typeId">
                     <BaseSelect v-model="form.typeId" :options="typeOptions" :aria-label="t('products.batch.newType')" :class="['product-batch-form__type', { 'product-batch-form__type--unchanged': !changeType }]" />
@@ -88,7 +93,8 @@ async function onSubmit() {
 
 <style scoped>
 .product-batch-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.product-batch-form__price { max-width: 11rem; }
+.product-batch-form__price,
+.product-batch-form__threshold { max-width: 11rem; }
 .product-batch-form :deep(.product-batch-form__type) { max-width: 16rem; }
 .product-batch-form :deep(.product-batch-form__type--unchanged) { color: var(--color-muted); }
 .product-batch-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }

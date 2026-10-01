@@ -121,7 +121,8 @@
         "apply": "Appliquer à {count} produit | Appliquer à {count} produits",
         "unchanged": "Inchangé",
         "noTypeVariants": "Aucune variante dans leurs types.",
-        "noProductVariants": "Ces produits n'ont pas de variante."
+        "noProductVariants": "Ces produits n'ont pas de variante.",
+        "lowStockThresholdHint": "Vide : chaque produit garde son seuil."
     },
     "selection": {
         "count": "{count} produit sélectionné | {count} produits sélectionnés",

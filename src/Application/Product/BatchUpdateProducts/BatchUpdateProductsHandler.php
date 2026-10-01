@@ -36,6 +36,9 @@ final readonly class BatchUpdateProductsHandler
             if (null !== $command->sellingPriceCents) {
                 $product->reprice(Money::cents($command->sellingPriceCents));
             }
+            if (null !== $command->lowStockThreshold) {
+                $product->alertBelow($command->lowStockThreshold);
+            }
             if (null !== $type) {
                 $product->classify($type);
             }

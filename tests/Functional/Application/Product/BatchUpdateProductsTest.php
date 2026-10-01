@@ -40,6 +40,17 @@ final class BatchUpdateProductsTest extends KernelTestCase
         self::assertSame(['Forêt' => 1_500, 'Sticker Fougère' => 500, 'Sticker Mousse' => 500], $this->prices());
     }
 
+    public function testSetTheLowStockAlertOfSeveralProducts(): void
+    {
+        $mousse = $this->product('Mousse', 400);
+        $fougere = $this->product('Fougère', 450);
+        $this->product('Forêt', 1_500);
+
+        $this->batch(new BatchUpdateProducts([$mousse, $fougere], lowStockThreshold: 3));
+
+        self::assertSame(['Forêt' => 10, 'Fougère' => 3, 'Mousse' => 3], $this->thresholds());
+    }
+
     public function testAddAndRemoveVariantsOnAllPrints(): void
     {
         $foret = $this->product('Forêt', 1_500, ['A5', 'A4']);
@@ -143,6 +154,17 @@ final class BatchUpdateProductsTest extends KernelTestCase
         self::getContainer()->get('doctrine')->getManager()->clear();
 
         return $updated;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function thresholds(): array
+    {
+        $thresholds = array_column(self::getContainer()->get(ListProductsHandler::class)(), 'lowStockThreshold', 'name');
+        ksort($thresholds);
+
+        return $thresholds;
     }
 
     /**

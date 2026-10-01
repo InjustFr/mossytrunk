@@ -21,6 +21,7 @@ final readonly class BatchUpdateProducts
         public ?string $typeId = null,
         public array $addVariants = [],
         public array $removeVariants = [],
+        public ?int $lowStockThreshold = null,
     ) {
     }
 }
