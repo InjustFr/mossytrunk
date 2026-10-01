@@ -1,6 +1,4 @@
 import Encore from '@symfony/webpack-encore';
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/webpack';
-import { fileURLToPath } from 'node:url';
 
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
@@ -32,23 +30,16 @@ Encore
     .configureMiniCssExtractPlugin(() => {}, (options) => {
         options.ignoreOrder = true;
     })
-    .addPlugin(VueI18nPlugin({
-        include: [fileURLToPath(new URL('./assets/vue/i18n/**/*.json', import.meta.url))],
-        runtimeOnly: true,
-        compositionOnly: true,
-        fullInstall: true,
-        dropMessageCompiler: true,
-        strictMessage: false,
-        escapeHtml: false,
-    }))
     .addLoader({
         test: /@hotwired[\\/]turbo[\\/]dist[\\/]turbo\.es2017-esm\.js$/,
         loader: 'string-replace-loader',
         options: { search: 'const PREFETCH_DELAY = 100;', replace: 'const PREFETCH_DELAY = 0;', strict: true },
     })
     .configureDefinePlugin((options) => {
+        options.__VUE_I18N_FULL_INSTALL__ = JSON.stringify(true);
+        options.__VUE_I18N_LEGACY_API__ = JSON.stringify(false);
         options.__INTLIFY_PROD_DEVTOOLS__ = JSON.stringify(false);
-        options.__INTLIFY_DROP_MESSAGE_COMPILER__ = JSON.stringify(true);
+        options.__INTLIFY_DROP_MESSAGE_COMPILER__ = JSON.stringify(false);
     })
 
     // enables the Symfony UX Stimulus bridge (used in assets/stimulus_bootstrap.js)
