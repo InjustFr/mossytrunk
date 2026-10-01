@@ -13,6 +13,7 @@ import ExpenseList from '../components/events/ExpenseList.vue';
 import StockDiscrepancies from '../components/stock/StockDiscrepancies.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useStock } from '../composables/useStock.js';
+import { listUrl } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 import { useTypeColors } from '../composables/useTypeColor.js';
 
@@ -67,7 +68,7 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 
 <template>
     <AppLayout :title="event?.name ?? t('events.detail.titleFallback')">
-        <template #back><a class="back-link" href="/events"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('events.detail.back') }}</a></template>
+        <template #back><a class="back-link" :href="listUrl('/events')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('events.detail.back') }}</a></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('events.detail.edit') }}</BaseButton>

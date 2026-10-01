@@ -132,6 +132,11 @@ test('long lists are paginated', async ({ page, request }) => {
     await expect(page.getByRole('row').filter({ hasText: `${type.name} Modèle 25` })).toBeVisible();
     await expect(pagination.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
 
+    await page.getByRole('link', { name: `${type.name} Modèle 25` }).click();
+    await expect(page.getByRole('heading', { level: 1, name: `${type.name} Modèle 25` })).toBeVisible();
+    await page.locator('.back-link').click();
+    await expect(pagination).toContainText('21–25 sur 25');
+
     await choose(page, pagination.getByRole('combobox', { name: 'Par page' }), '50');
     await expect(page.getByRole('row')).toHaveCount(26);
     await expect(pagination).toContainText('1–25 sur 25');

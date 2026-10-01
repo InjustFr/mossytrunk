@@ -3,13 +3,19 @@ import { computed } from 'vue';
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui';
 import TablePagination from './TablePagination.vue';
 import { PAGE_SIZES, usePagination } from '../../composables/usePagination.js';
+import { queryNumber } from '../../composables/useQueryState.js';
 
 const props = defineProps({
     items: { type: Array, default: null },
     pageSize: { type: Number, default: 20 },
+    rememberPage: { type: Boolean, default: false },
 });
 
-const pagination = usePagination(computed(() => props.items ?? []), props.pageSize);
+const pagination = usePagination(
+    computed(() => props.items ?? []),
+    props.pageSize,
+    props.rememberPage ? { page: queryNumber('page', 1), pageSize: queryNumber('perPage', props.pageSize) } : undefined,
+);
 const paginated = computed(() => props.items !== null);
 const showPagination = computed(() => paginated.value && pagination.total.value > PAGE_SIZES[0]);
 </script>

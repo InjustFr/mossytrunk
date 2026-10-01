@@ -44,7 +44,7 @@ const headers = [
 </script>
 
 <template>
-    <DataTable :items="sorted" class="event-comparison">
+    <DataTable remember-page :items="sorted" class="event-comparison">
         <template #head>
             <tr>
                 <SortableHeader :sort="ariaSort('name')" @sort="sortBy('name')">{{ t('events.comparison.event') }}</SortableHeader>

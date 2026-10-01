@@ -51,7 +51,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <template>
     <EmptyState v-if="orders.length === 0">{{ t('orders.list.empty') }}</EmptyState>
-    <DataTable v-else :items="grouped" class="order-list">
+    <DataTable v-else remember-page :items="grouped" class="order-list">
         <template #head>
             <tr>
                 <th class="order-list__check">

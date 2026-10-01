@@ -52,7 +52,7 @@ function setChecked(id, checked) {
 
 <template>
     <EmptyState v-if="products.length === 0">{{ t('products.list.empty') }}</EmptyState>
-    <DataTable v-else :items="sorted" class="product-list">
+    <DataTable remember-page v-else :items="sorted" class="product-list">
         <template #head>
             <tr>
                 <th class="product-list__check">

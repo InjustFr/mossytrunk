@@ -16,7 +16,7 @@ defineProps({
 
 <template>
     <EmptyState v-if="orders.length === 0">{{ t('purchasing.list.empty') }}</EmptyState>
-    <DataTable v-else :items="orders" class="supplier-order-list">
+    <DataTable remember-page v-else :items="orders" class="supplier-order-list">
         <template #head>
             <tr>
                 <th>{{ t('purchasing.list.order') }}</th>

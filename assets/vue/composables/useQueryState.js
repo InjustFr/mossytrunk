@@ -45,3 +45,5 @@ export const queryText = (name, fallback = '') => queryState(name, fallback, (va
 export const queryFlag = (name, on) => queryState(name, false, (values) => values[0] === on, (value) => (value ? [on] : []));
 
 export const queryList = (name) => queryState(name, [], (values) => values, (value) => value);
+
+export const queryNumber = (name, fallback) => queryState(name, fallback, (values) => Number.parseInt(values[0], 10) || fallback, (value) => (value === fallback ? [] : [String(value)]));
