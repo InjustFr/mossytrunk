@@ -6,7 +6,7 @@ const files = import.meta.webpackContext('./', { recursive: true, regExp: /^\.\/
 const messages = {};
 for (const path of files.keys()) {
     const [, language, namespace] = path.match(/^\.\/([a-z]{2})\/([a-z-]+)\.json$/);
-    messages[language] = { ...messages[language], [namespace]: files(path) };
+    messages[language] = { ...messages[language], [namespace]: files(path).default };
 }
 
 const twoFormsCountingZeroAsOne = (choice, choicesLength) => {
