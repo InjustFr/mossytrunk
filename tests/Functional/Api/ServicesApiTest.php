@@ -8,6 +8,7 @@ use App\Tests\Support\Json;
 use App\Tests\Support\ProductTypesApi;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 final class ServicesApiTest extends WebTestCase
 {
@@ -96,5 +97,22 @@ final class ServicesApiTest extends WebTestCase
         $client->jsonRequest('GET', '/api/services');
         $services = Json::decode((string) $client->getResponse()->getContent());
         self::assertSame(['etsy' => false, 'sumup' => true], array_combine(array_map(static fn (mixed $service): string => Json::string($service, 'key'), array_values($services)), array_map(static fn (mixed $service): bool => true === Json::at($service, 'exportsCatalogue'), array_values($services))));
+    }
+
+    public function testASumUpCatalogueIsUploaded(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('POST', '/api/services', ['service' => 'sumup', 'fields' => ['merchant_code' => 'MCODE', 'api_key' => 'sup_sk_test'], 'unknownItems' => 'link_by_hand']);
+        $path = tempnam(sys_get_temp_dir(), 'catalogue');
+        file_put_contents($path, "Item name,Variations,Price\r\nBougie,,8.00\r\n");
+
+        $client->request('POST', '/api/services/sumup/catalogue', files: ['file' => new UploadedFile($path, 'catalogue.csv', 'text/csv', test: true)]);
+
+        self::assertResponseIsSuccessful();
+        $report = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([1, 0, 1], [$report['itemsRead'], $report['itemsLinked'], $report['itemsToLink']]);
+
+        $client->request('POST', '/api/services/sumup/catalogue');
+        self::assertResponseStatusCodeSame(422);
     }
 }

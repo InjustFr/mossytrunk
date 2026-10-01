@@ -54,7 +54,11 @@
         "edit": "Edit {label}",
         "remove": "Remove {label}",
         "removeConfirm": "Remove",
-        "removeMessage": "Its access details are forgotten. Orders already imported are kept."
+        "removeMessage": "Its access details are forgotten. Orders already imported are kept.",
+        "importCatalogue": "Import catalogue",
+        "catalogueImported": "{label} catalogue imported: {linked} of {read} item linked to your products. | {label} catalogue imported: {linked} of {read} items linked to your products.",
+        "catalogueCreated": "{count} product created. | {count} products created.",
+        "catalogueToLink": "{count} item left to link from Orders. | {count} items left to link from Orders."
     },
     "form": {
         "access": "Access",

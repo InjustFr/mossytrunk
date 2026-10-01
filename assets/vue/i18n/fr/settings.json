@@ -54,7 +54,11 @@
         "edit": "Modifier {label}",
         "remove": "Retirer {label}",
         "removeConfirm": "Retirer",
-        "removeMessage": "Ses accès sont oubliés. Les commandes déjà importées restent."
+        "removeMessage": "Ses accès sont oubliés. Les commandes déjà importées restent.",
+        "importCatalogue": "Importer le catalogue",
+        "catalogueImported": "Catalogue {label} importé : {linked} article sur {read} associé à vos produits. | Catalogue {label} importé : {linked} articles sur {read} associés à vos produits.",
+        "catalogueCreated": "{count} produit créé. | {count} produits créés.",
+        "catalogueToLink": "{count} article reste à associer depuis Commandes. | {count} articles restent à associer depuis Commandes."
     },
     "form": {
         "access": "Accès",

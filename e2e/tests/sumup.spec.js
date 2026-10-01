@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { addSumUp } from './support/api.js';
+import { addSumUp, createProduct } from './support/api.js';
+import { unique } from './support/unique.js';
 import { choose } from './support/select.js';
 
 test('import SumUp orders: one error for uncovered dates, no duplicates on re-import', async ({ page, request }) => {
@@ -77,4 +78,25 @@ test('two SumUp sales of one customer are merged into one order', async ({ page,
     await page.goto('/orders');
     await choose(page, page.getByRole('combobox', { name: 'Événement' }), 'Salon de printemps 2030');
     await expect(page.getByRole('row').filter({ hasText: /TFAKE000[12]/ })).toHaveCount(1);
+});
+
+test('the catalogue goes to SumUp as a CSV, and SumUp\'s catalogue links its items back', async ({ page, request }) => {
+    await addSumUp(request);
+    const candle = unique('Bougie');
+    await createProduct(request, { name: candle, sellingPrice: 1_800 });
+
+    await page.goto('/products');
+    const download = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Exporter pour SumUp' }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(/^catalogue-sumup-\d{4}-\d{2}-\d{2}\.csv$/);
+
+    await page.goto('/settings');
+    await page.getByLabel('Importer le catalogue').setInputFiles({
+        name: 'sumup.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from(`Item name,Variations,Price,SKU,Category\r\n${candle},,18.00,,\r\n${unique('Inconnue')},,9.00,,\r\n`),
+    });
+    await expect(page.getByTestId('toast').last()).toContainText('Catalogue SumUp importé');
+    await expect(page.getByTestId('toast').last()).toContainText('sur 2');
 });

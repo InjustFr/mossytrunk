@@ -3,6 +3,7 @@ import { Pencil, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
+import CatalogueImportButton from './CatalogueImportButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { SALES_CONTEXTS, UNKNOWN_ITEMS } from '../../composables/useServices.js';
@@ -11,8 +12,9 @@ const { t } = useI18n();
 
 defineProps({
     services: { type: Array, required: true },
+    importing: { type: String, default: null },
 });
-const emit = defineEmits(['edit', 'remove', 'disconnect']);
+const emit = defineEmits(['edit', 'remove', 'disconnect', 'import-catalogue']);
 
 const labelOf = (options, value) => {
     const label = options.find((option) => option.value === value)?.label;
@@ -52,6 +54,12 @@ function status(service) {
                 </p>
             </div>
             <div class="connected-services__actions">
+                <CatalogueImportButton
+                    v-if="service.importsCatalogue"
+                    :label="t('settings.connected.importCatalogue')"
+                    :loading="importing === service.key"
+                    @chosen="emit('import-catalogue', service, $event)"
+                />
                 <BaseButton
                     v-if="service.authorizes && service.connection.configured && !service.connection.authorized"
                     :href="`/settings/${service.key}/connect`"

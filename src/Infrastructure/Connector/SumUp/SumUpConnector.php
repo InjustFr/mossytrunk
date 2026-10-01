@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Connector\SumUp;
 
 use App\Application\Integration\CatalogueExporting;
+use App\Application\Integration\CatalogueImporting;
 use App\Application\Integration\Credentials;
 use App\Application\Integration\LinePrices;
 use App\Application\Integration\ServiceDescription;
@@ -12,13 +13,14 @@ use App\Application\Integration\ServiceField;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
 
-final readonly class SumUpConnector implements CatalogueExporting
+final readonly class SumUpConnector implements CatalogueExporting, CatalogueImporting
 {
     public const string KEY = 'sumup';
 
     public function __construct(
         private SumUpGateway $gateway,
         private SumUpCatalogueCsv $catalogueCsv,
+        private SumUpCatalogueReader $catalogueReader,
     ) {
     }
 
@@ -46,5 +48,10 @@ final readonly class SumUpConnector implements CatalogueExporting
     public function catalogue(array $items): string
     {
         return $this->catalogueCsv->of($items);
+    }
+
+    public function catalogueLines(string $file): array
+    {
+        return $this->catalogueReader->lines($file);
     }
 }

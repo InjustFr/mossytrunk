@@ -32,5 +32,11 @@ export function useServices() {
     const remove = (service) => api.del(`/api/services/${service}`);
     const disconnect = (service) => api.del(`/api/services/${service}/authorization`);
 
-    return { services, added, ready, load, add, update, remove, disconnect };
+    function importCatalogue(service, file) {
+        const data = new FormData();
+        data.append('file', file);
+        return api.post(`/api/services/${service}/catalogue`, data);
+    }
+
+    return { services, added, ready, load, add, update, remove, disconnect, importCatalogue };
 }

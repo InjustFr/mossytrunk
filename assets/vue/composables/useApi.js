@@ -93,14 +93,15 @@ async function load(url, target) {
 }
 
 async function send(method, url, body, refresh = []) {
+    const json = body !== undefined && !(body instanceof FormData);
     const response = await fetch(url, {
         method,
         headers: {
             Accept: 'application/json',
-            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+            ...(json ? { 'Content-Type': 'application/json' } : {}),
             ...(refresh.length > 0 ? { [REFRESH_HEADER]: JSON.stringify(refresh) } : {}),
         },
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        body: json ? JSON.stringify(body) : body,
     });
 
     if (response.status === 401) {

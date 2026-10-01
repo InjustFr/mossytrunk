@@ -39,3 +39,14 @@ SumUp offers no catalogue API: Produits › « Exporter pour SumUp » downloads 
 | S22 | Each variant is a **Variations** row under its item row, at the product's selling price (variants share one price); a product without variants is a single row | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |
 | S23 | No tax rate (SumUp applies the account's default) and **no inventory tracking**: stock stays managed in MossyTrunk | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |
 | S24 | SumUp's import template format: comma-separated UTF-8, prices with a dot (`12.50`), English headers (`Item name`, `Variations`, `Price`, `Tax rate (%)`, `Track inventory?`, `Quantity`, `SKU`, `Description`, `Category`) | `SumUpCatalogueCsv` | `SumUpCatalogueCsvTest` |
+
+## Catalogue import
+
+SumUp's sales name an item only by its name and variant text (no id, no SKU), so a sale is recognised either by matching names or through a **remembered link** (see [imports.md](imports.md) I11). Paramètres › Services connectés › SumUp › « Importer le catalogue » reads SumUp's catalogue export (Articles › Exporter) and links every item **before** its first sale.
+
+| # | Rule | Where | Tests |
+|---|---|---|---|
+| S25 | Each catalogue item, or each of its variants, is resolved like a sale line: an item already linked keeps its link; otherwise its **SKU** as a product reference (`<reference>-<variant>` written by the export reads back as the reference), then the names (I5); unmatched items are created or remembered « à associer » according to the connection's option (I6) | `ImportCatalogueHandler`, `ExternalItemResolver` | `ImportSumUpCatalogueTest` |
+| S26 | The link is stored under the key a sale of that item produces (lowercased name + variant), so the next sales import follows it whatever the names: a SumUp item named « Affiche forêt » with SKU `PRT-002-A4` sells as « Print Forêt — A4 » | `SumUpCatalogueReader`, `ExternalItem::keyOf()` | `ImportSumUpCatalogueTest` |
+| S27 | The file is read leniently: comma, semicolon or tab separated, UTF-8 (BOM allowed) or Windows-1252, English or French headers (`Item name`/`Nom de l'article`, `Variations`/`Variante`, `SKU`, `Category`/`Catégorie`, `Price`/`Prix`), variants either on rows under their item or with the item name repeated; a file without an item name column is refused | `SumUpCatalogueReader` | `SumUpCatalogueReaderTest` |
+| S28 | Importing a catalogue imports no order and moves no stock; it requires SumUp to be added (5 MB at most) | `ImportCatalogueController`, `ImportCatalogueHandler` | `ImportSumUpCatalogueTest`, `ServicesApiTest` |

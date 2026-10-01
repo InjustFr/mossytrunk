@@ -52,6 +52,8 @@ integration:
     service_not_added: '{service} is not added: add it in Settings › Connected services.'
     service_not_authorizing: '{service} does not connect through authorization.'
     service_not_exporting_catalogue: '{service} cannot export the catalogue.'
+    service_not_importing_catalogue: '{service} cannot import a catalogue.'
+    unreadable_catalogue: 'This file is not a readable {service} catalogue: export it from {service} as CSV.'
     service_not_configured: '{service} is not configured: complete its credentials in Settings › Connected services.'
     service_not_connected: '{service} is not connected: connect it from Settings › Connected services.'
     service_not_registered: 'Unknown service “{service}”.'

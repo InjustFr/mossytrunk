@@ -9,23 +9,16 @@ use App\Application\Integration\Connectors;
 use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
 use App\Application\Order\OrderPricing;
-use App\Application\Product\CreateProductType\MiscellaneousType;
-use App\Application\Product\CreateProductType\ProductTypeCreator;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\Translator;
 use App\Domain\Event\EventRepository;
-use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\ServiceConnectionRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
-use App\Domain\Product\ProductReferenceGenerator;
-use App\Domain\Product\ProductRepository;
-use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Shared\DateRange;
-use Psr\Clock\ClockInterface;
 
 final readonly class ImportSalesHandler
 {
@@ -33,17 +26,11 @@ final readonly class ImportSalesHandler
         private Connectors $connectors,
         private ServiceConnectionRepository $connections,
         private ConnectionSession $session,
-        private ExternalItemRepository $items,
-        private ProductRepository $products,
-        private ProductReferenceGenerator $references,
-        private ProductTypeRepository $types,
-        private ProductTypeCreator $typeCreator,
-        private MiscellaneousType $miscellaneous,
+        private ExternalItemResolution $resolution,
         private EventRepository $events,
         private OrderRepository $orders,
         private OrderPricing $pricing,
         private StockKeeper $stock,
-        private ClockInterface $clock,
         private Transaction $transaction,
         private Translator $translator,
     ) {
@@ -62,8 +49,8 @@ final readonly class ImportSalesHandler
         uasort($sales, static fn (ExternalSale $a, ExternalSale $b): int => $a->placedAt <=> $b->placedAt);
         $alreadyImported = array_flip($this->orders->importedExternalIds($service, array_map(strval(...), array_keys($sales))));
 
-        $catalogue = new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $this->miscellaneous, $connection->workspace());
-        $resolver = new ExternalItemResolver($catalogue, $this->items, $connection, $description->linePrices, $this->clock->now(), $this->translator->trans('import.unknown_product'));
+        $catalogue = $this->resolution->catalogueOf($connection);
+        $resolver = $this->resolution->resolver($catalogue, $connection, $description->linePrices);
         $atEvent = SalesContext::AtEvent === $connection->salesContext();
 
         $imported = $withoutEvent = $waiting = $empty = 0;

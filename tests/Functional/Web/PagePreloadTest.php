@@ -21,7 +21,7 @@ final class PagePreloadTest extends WebTestCase
 
         $preloaded = $this->preloadedOn($client, '/products');
 
-        self::assertSame(['/api/products', '/api/product-types'], array_keys($preloaded));
+        self::assertSame(['/api/products', '/api/product-types', '/api/services'], array_keys($preloaded));
         self::assertSame('Zine </script>', Json::string($preloaded, '/api/products', 0, 'name'));
     }
 

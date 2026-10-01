@@ -72,6 +72,24 @@ async function run(action, message) {
     await services.load();
 }
 
+const importingCatalogue = ref(null);
+
+async function onImportCatalogue(service, file) {
+    importingCatalogue.value = service.key;
+    try {
+        const report = await services.importCatalogue(service.key, file);
+        toast.success([
+            t('settings.connected.catalogueImported', { label: service.label, linked: report.itemsLinked, read: report.itemsRead }, report.itemsLinked),
+            report.productsCreated > 0 ? t('settings.connected.catalogueCreated', report.productsCreated) : '',
+            report.itemsToLink > 0 ? t('settings.connected.catalogueToLink', report.itemsToLink) : '',
+        ].filter(Boolean).join(' '));
+    } catch (error) {
+        toast.error(error.message);
+    } finally {
+        importingCatalogue.value = null;
+    }
+}
+
 const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
@@ -108,6 +126,8 @@ onMounted(async () => {
                     @edit="openEdit"
                     @remove="onRemove"
                     @disconnect="onDisconnect"
+                    :importing="importingCatalogue"
+                    @import-catalogue="onImportCatalogue"
                 />
                 <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>
