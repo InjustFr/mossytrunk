@@ -6,21 +6,26 @@ namespace App\Infrastructure\Connector\Etsy;
 
 use App\Application\Integration\Authorization;
 use App\Application\Integration\AuthorizingConnector;
+use App\Application\Integration\CatalogueReading;
 use App\Application\Integration\Credentials;
 use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Integration\LinePrices;
+use App\Application\Integration\ReferencePublishing;
 use App\Application\Integration\ServiceDescription;
 use App\Application\Integration\ServiceField;
 use App\Application\Integration\Tokens;
 use App\Domain\Integration\SalesContext;
 use App\Domain\Integration\UnknownItems;
 
-final readonly class EtsyConnector implements AuthorizingConnector
+final readonly class EtsyConnector implements AuthorizingConnector, CatalogueReading, ReferencePublishing
 {
     public const string KEY = 'etsy';
 
-    public function __construct(private EtsyGateway $gateway)
-    {
+    public function __construct(
+        private EtsyGateway $gateway,
+        private EtsyCatalogueMapper $catalogue,
+        private EtsyInventorySkus $inventorySkus,
+    ) {
     }
 
     public function describe(): ServiceDescription
@@ -42,9 +47,35 @@ final readonly class EtsyConnector implements AuthorizingConnector
 
     public function sales(Credentials $credentials): iterable
     {
-        $shopId = $credentials->accountId ?? throw new ServiceNotConnected('Etsy');
+        return $this->gateway->paidReceipts(self::app($credentials), $this->accessToken($credentials), $this->shopId($credentials));
+    }
 
-        return $this->gateway->paidReceipts(self::app($credentials), $this->accessToken($credentials), $shopId);
+    public function catalogueLines(Credentials $credentials): iterable
+    {
+        foreach ($this->gateway->activeListings(self::app($credentials), $this->accessToken($credentials), $this->shopId($credentials)) as $listing) {
+            yield from $this->catalogue->lines($listing);
+        }
+    }
+
+    public function publishReferences(Credentials $credentials, array $references): int
+    {
+        $skus = [];
+        foreach ($references as $reference) {
+            $skus[$reference->externalRef][$reference->variation ?? ''] = $reference->sku;
+        }
+
+        $app = self::app($credentials);
+        $accessToken = $this->accessToken($credentials);
+        $updated = 0;
+        foreach ($skus as $listingId => $skuByVariation) {
+            $inventory = $this->inventorySkus->withSkus($this->gateway->inventory($app, $accessToken, (string) $listingId), $skuByVariation);
+            if (null !== $inventory) {
+                $this->gateway->updateInventory($app, $accessToken, (string) $listingId, $inventory);
+                ++$updated;
+            }
+        }
+
+        return $updated;
     }
 
     public function authorizationUrl(Credentials $credentials, string $redirectUri, string $state, string $codeChallenge): string
@@ -64,6 +95,11 @@ final readonly class EtsyConnector implements AuthorizingConnector
     public function refresh(Credentials $credentials): Tokens
     {
         return $this->gateway->refresh(self::app($credentials), $credentials->refreshToken ?? throw new ServiceNotConnected('Etsy'));
+    }
+
+    private function shopId(Credentials $credentials): string
+    {
+        return $credentials->accountId ?? throw new ServiceNotConnected('Etsy');
     }
 
     private function accessToken(Credentials $credentials): string

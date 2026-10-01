@@ -23,8 +23,8 @@ final class SumUpCatalogueReaderTest extends TestCase
 
         self::assertSame([
             ['sticker mousse', 'Sticker Mousse', 400, null, 'Sticker', 'STK-001'],
-            ['print forêt', 'Print Forêt', 1_250, 'A4', 'Print', 'PRT-002'],
-            ['print forêt', 'Print Forêt', 1_250, 'A5', 'Print', 'PRT-002'],
+            ['print forêt', 'Print Forêt', 1_250, 'A4', 'Print', 'PRT-002-A4'],
+            ['print forêt', 'Print Forêt', 1_250, 'A5', 'Print', 'PRT-002-A5'],
         ], self::described((new SumUpCatalogueReader())->lines($file)));
     }
 

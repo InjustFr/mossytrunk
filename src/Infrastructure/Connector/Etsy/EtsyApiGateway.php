@@ -5,18 +5,21 @@ declare(strict_types=1);
 namespace App\Infrastructure\Connector\Etsy;
 
 use App\Application\Integration\Exception\AccountWithoutShop;
+use App\Application\Integration\Exception\MissingPermission;
 use App\Application\Integration\Exception\ServiceUnreachable;
 use App\Application\Integration\Tokens;
 use App\Infrastructure\Http\Json;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final readonly class EtsyApiGateway implements EtsyGateway
 {
     private const int PAGE_SIZE = 100;
-    private const string SCOPES = 'transactions_r shops_r';
+    private const string SCOPES = 'transactions_r shops_r listings_r listings_w';
 
     public function __construct(
         #[Target('etsy.client')]
@@ -73,6 +76,28 @@ final readonly class EtsyApiGateway implements EtsyGateway
         }
     }
 
+    public function activeListings(EtsyApp $app, string $accessToken, string $shopId): iterable
+    {
+        for ($offset = 0;; $offset += self::PAGE_SIZE) {
+            $page = $this->get($app, $accessToken, \sprintf('/v3/application/shops/%s/listings?%s', rawurlencode($shopId), http_build_query(['state' => 'active', 'includes' => 'Inventory', 'limit' => self::PAGE_SIZE, 'offset' => $offset])));
+            $results = Json::objects($page['results'] ?? []);
+            yield from $results;
+            if (\count($results) < self::PAGE_SIZE) {
+                return;
+            }
+        }
+    }
+
+    public function inventory(EtsyApp $app, string $accessToken, string $listingId): array
+    {
+        return $this->get($app, $accessToken, \sprintf('/v3/application/listings/%s/inventory', rawurlencode($listingId)));
+    }
+
+    public function updateInventory(EtsyApp $app, string $accessToken, string $listingId, array $inventory): void
+    {
+        $this->call($app, $accessToken, 'PUT', \sprintf('/v3/application/listings/%s/inventory', rawurlencode($listingId)), ['json' => $inventory]);
+    }
+
     /**
      * @param array<string, string> $form
      */
@@ -96,8 +121,23 @@ final readonly class EtsyApiGateway implements EtsyGateway
      */
     private function get(EtsyApp $app, string $accessToken, string $url): array
     {
+        return $this->call($app, $accessToken, 'GET', $url);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function call(EtsyApp $app, string $accessToken, string $method, string $url, array $options = []): array
+    {
         try {
-            return Json::object($this->client->request('GET', $url, ['auth_bearer' => $accessToken, 'headers' => ['x-api-key' => self::apiKey($app)]])->toArray());
+            return Json::object($this->client->request($method, $url, ['auth_bearer' => $accessToken, 'headers' => ['x-api-key' => self::apiKey($app)]] + $options)->toArray());
+        } catch (ClientExceptionInterface $exception) {
+            if (Response::HTTP_FORBIDDEN === $exception->getResponse()->getStatusCode()) {
+                throw new MissingPermission('Etsy');
+            }
+            throw new ServiceUnreachable('Etsy', $exception->getMessage());
         } catch (ExceptionInterface $exception) {
             throw new ServiceUnreachable('Etsy', $exception->getMessage());
         }

@@ -23,19 +23,28 @@ test('connect the Etsy shop, import its orders and link an unknown listing to a 
     await expect(page.getByTestId('toast').last()).toContainText('Etsy connecté');
     await expect(services).toContainText('Atelier Mousse sur Etsy');
 
+    await services.getByRole('button', { name: 'Importer le catalogue' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Catalogue Etsy importé');
+    await services.getByRole('button', { name: 'Écrire les références sur Etsy' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Écrire les références' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Etsy :');
+
     await page.goto('/orders');
     await page.getByRole('button', { name: 'Importer depuis Etsy' }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 commande importée');
     await page.getByRole('button', { name: 'Associer les articles' }).click();
 
     const linker = page.getByRole('dialog', { name: 'Articles Etsy' });
-    await choose(page, linker.getByRole('combobox', { name: /^Produit pour Illustration forêt/ }), print.name);
-    await expect(linker.getByRole('combobox', { name: /^Variante pour/ })).toHaveText('A4');
-    await linker.getByRole('button', { name: 'Associer', exact: true }).click();
+    const a4 = linker.getByRole('listitem').filter({ has: page.getByRole('combobox', { name: /^Produit pour Illustration forêt.* — A4$/ }) });
+    await choose(page, a4.getByRole('combobox', { name: /^Produit pour/ }), print.name);
+    await expect(a4.getByRole('combobox', { name: /^Variante pour/ })).toHaveText('A4');
+    await a4.getByRole('button', { name: 'Associer', exact: true }).click();
     await expect(page.getByTestId('toast').last()).toContainText('associé');
 
     await linker.getByRole('button', { name: "Relancer l'import Etsy" }).click();
     await expect(page.getByTestId('toast').last()).toContainText('1 commande importée, 1 déjà importée');
+    await expect(linker.getByRole('listitem')).toHaveCount(1);
+    await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     await page.getByRole('row').filter({ hasText: 'ETSY-3100000001' }).getByRole('link', { name: /^CMD-/ }).click();

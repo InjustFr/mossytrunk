@@ -74,10 +74,10 @@ async function run(action, message) {
 
 const importingCatalogue = ref(null);
 
-async function onImportCatalogue(service, file) {
+async function onImportCatalogue(service, importing) {
     importingCatalogue.value = service.key;
     try {
-        const report = await services.importCatalogue(service.key, file);
+        const report = await importing();
         toast.success([
             t('settings.connected.catalogueImported', { label: service.label, linked: report.itemsLinked, read: report.itemsRead }, report.itemsLinked),
             report.productsCreated > 0 ? t('settings.connected.catalogueCreated', report.productsCreated) : '',
@@ -87,6 +87,15 @@ async function onImportCatalogue(service, file) {
         toast.error(error.message);
     } finally {
         importingCatalogue.value = null;
+    }
+}
+
+async function onPublishReferences(service) {
+    try {
+        const published = await services.publishReferences(service.key);
+        toast.success(t('settings.connected.referencesPublished', { label: service.label, linked: published.itemsLinked, updated: published.listingsUpdated }, published.listingsUpdated));
+    } catch (error) {
+        toast.error(error.message);
     }
 }
 
@@ -127,7 +136,9 @@ onMounted(async () => {
                     @remove="onRemove"
                     @disconnect="onDisconnect"
                     :importing="importingCatalogue"
-                    @import-catalogue="onImportCatalogue"
+                    @import-catalogue="(service, file) => onImportCatalogue(service, () => services.importCatalogue(service.key, file))"
+                    @read-catalogue="(service) => onImportCatalogue(service, () => services.readCatalogue(service.key))"
+                    @publish-references="onPublishReferences"
                 />
                 <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>

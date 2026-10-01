@@ -16,7 +16,7 @@
     },
     "notice": {
         "count": "{count} article {service} à associer à vos produits. | {count} articles {service} à associer à vos produits.",
-        "text": "Leurs commandes sont en attente : associez chaque article une fois, puis relancez l'import.",
+        "text": "Les commandes qui en contiennent restent en attente : associez chaque article une fois, puis relancez l'import.",
         "link": "Associer les articles"
     },
     "linker": {

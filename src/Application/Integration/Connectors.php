@@ -7,6 +7,8 @@ namespace App\Application\Integration;
 use App\Application\Integration\Exception\ServiceNotAuthorizing;
 use App\Application\Integration\Exception\ServiceNotExportingCatalogue;
 use App\Application\Integration\Exception\ServiceNotImportingCatalogue;
+use App\Application\Integration\Exception\ServiceNotPublishingReferences;
+use App\Application\Integration\Exception\ServiceNotReadingCatalogue;
 use App\Application\Integration\Exception\ServiceNotRegistered;
 use App\Application\Translator;
 use App\Domain\Order\Order;
@@ -59,6 +61,26 @@ final readonly class Connectors
         $connector = $this->get($service);
         if (!$connector instanceof CatalogueImporting) {
             throw new ServiceNotImportingCatalogue($connector->describe()->label);
+        }
+
+        return $connector;
+    }
+
+    public function reading(string $service): CatalogueReading
+    {
+        $connector = $this->get($service);
+        if (!$connector instanceof CatalogueReading) {
+            throw new ServiceNotReadingCatalogue($connector->describe()->label);
+        }
+
+        return $connector;
+    }
+
+    public function publishing(string $service): ReferencePublishing
+    {
+        $connector = $this->get($service);
+        if (!$connector instanceof ReferencePublishing) {
+            throw new ServiceNotPublishingReferences($connector->describe()->label);
         }
 
         return $connector;

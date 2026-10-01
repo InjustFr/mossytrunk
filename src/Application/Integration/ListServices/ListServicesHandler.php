@@ -7,7 +7,9 @@ namespace App\Application\Integration\ListServices;
 use App\Application\Integration\AuthorizingConnector;
 use App\Application\Integration\CatalogueExporting;
 use App\Application\Integration\CatalogueImporting;
+use App\Application\Integration\CatalogueReading;
 use App\Application\Integration\Connectors;
+use App\Application\Integration\ReferencePublishing;
 use App\Application\Integration\SalesConnector;
 use App\Application\Integration\ServiceField;
 use App\Application\Workspace\WorkspaceSecrets;
@@ -54,6 +56,8 @@ final readonly class ListServicesHandler
             $connector instanceof AuthorizingConnector,
             $connector instanceof CatalogueExporting,
             $connector instanceof CatalogueImporting,
+            $connector instanceof CatalogueReading,
+            $connector instanceof ReferencePublishing,
             array_map(static fn (ServiceField $field): FieldView => new FieldView($field->name, $field->label, $field->secret, $field->required, $field->pattern, $field->patternMessage, $field->hint, $field->maxLength), $description->fields),
             $description->defaultSalesContext->value,
             $description->defaultUnknownItems->value,

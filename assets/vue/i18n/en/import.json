@@ -16,7 +16,7 @@
     },
     "notice": {
         "count": "{count} {service} item to link to your products. | {count} {service} items to link to your products.",
-        "text": "Their orders are on hold: link each item once, then run the import again.",
+        "text": "Orders containing them stay on hold: link each item once, then run the import again.",
         "link": "Link items"
     },
     "linker": {

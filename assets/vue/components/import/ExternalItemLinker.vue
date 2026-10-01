@@ -42,7 +42,7 @@ const linked = computed(() => props.items.filter((item) => item.linkedTo));
         </details>
 
         <div v-if="canImport" class="item-linker__actions">
-            <BaseButton :loading="importing" :disabled="unlinked.length > 0" @click="emit('reimport')">{{ t('import.linker.reimport', { service: label }) }}</BaseButton>
+            <BaseButton :loading="importing" @click="emit('reimport')">{{ t('import.linker.reimport', { service: label }) }}</BaseButton>
         </div>
     </div>
 </template>

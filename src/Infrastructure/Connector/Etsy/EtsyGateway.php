@@ -21,4 +21,19 @@ interface EtsyGateway
      * @return iterable<ExternalSale>
      */
     public function paidReceipts(EtsyApp $app, string $accessToken, string $shopId): iterable;
+
+    /**
+     * @return iterable<array<string, mixed>>
+     */
+    public function activeListings(EtsyApp $app, string $accessToken, string $shopId): iterable;
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function inventory(EtsyApp $app, string $accessToken, string $listingId): array;
+
+    /**
+     * @param array<string, mixed> $inventory
+     */
+    public function updateInventory(EtsyApp $app, string $accessToken, string $listingId, array $inventory): void;
 }

@@ -76,9 +76,9 @@ final class ExternalItemResolver
 
     private function matched(string $name, ?string $variant, ExternalLine $line): ?SellableItem
     {
-        $byReference = null === $line->sku ? null : $this->catalogue->withReference($line->sku);
-        if (null !== $byReference) {
-            return $this->withVariant($byReference, $variant, $line);
+        $bySku = null === $line->sku ? null : $this->bySku($line->sku, $variant, $line);
+        if (null !== $bySku) {
+            return $bySku;
         }
 
         $product = $this->catalogue->named($name, $line->category) ?? $this->catalogue->namedWithoutType($name);
@@ -94,6 +94,24 @@ final class ExternalItemResolver
             $known = null === $named ? null : self::matchingVariant($named, $candidate);
             if (null !== $named && null !== $known) {
                 return $this->sold($named, $known, $line);
+            }
+        }
+
+        return null;
+    }
+
+    private function bySku(string $sku, ?string $variant, ExternalLine $line): ?SellableItem
+    {
+        $byReference = $this->catalogue->withReference($sku);
+        if (null !== $byReference) {
+            return $this->withVariant($byReference, $variant, $line);
+        }
+
+        for ($dash = mb_strrpos($sku, '-'); false !== $dash && $dash > 0; $dash = mb_strrpos(mb_substr($sku, 0, $dash), '-')) {
+            $product = $this->catalogue->withReference(mb_substr($sku, 0, $dash));
+            $known = null === $product ? null : self::matchingVariant($product, mb_substr($sku, $dash + 1));
+            if (null !== $product && null !== $known) {
+                return $this->sold($product, $known, $line);
             }
         }
 

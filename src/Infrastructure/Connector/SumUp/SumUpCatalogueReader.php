@@ -115,19 +115,7 @@ final readonly class SumUpCatalogueReader
 
     private static function line(string $name, ?string $category, string $sku, string $price, ?string $variant): ExternalLine
     {
-        return new ExternalLine(mb_strtolower($name), $name, Money::cents(self::cents($price)), 1, $variant, $category, self::reference($sku, $variant));
-    }
-
-    private static function reference(string $sku, ?string $variant): ?string
-    {
-        if ('' === $sku) {
-            return null;
-        }
-        $suffix = null === $variant ? '' : '-'.$variant;
-
-        return '' !== $suffix && mb_strlen($sku) > mb_strlen($suffix) && 0 === strcasecmp(mb_substr($sku, -mb_strlen($suffix)), $suffix)
-            ? mb_substr($sku, 0, -mb_strlen($suffix))
-            : $sku;
+        return new ExternalLine(mb_strtolower($name), $name, Money::cents(self::cents($price)), 1, $variant, $category, '' === $sku ? null : $sku);
     }
 
     private static function cents(string $price): int

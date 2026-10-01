@@ -15,12 +15,39 @@ final class FakeEtsyGateway implements EtsyGateway
     /** @var list<ExternalSale>|null */
     private ?array $receipts = null;
 
+    /** @var array<string, array<string, mixed>>|null */
+    private ?array $listings = null;
+
+    /** @var array<string, array<string, mixed>> */
+    private array $updates = [];
+
     public function __construct(
         private readonly EtsyPayloadMapper $mapper,
         private readonly ClockInterface $clock,
         #[Autowire('%kernel.project_dir%/tests/Fixtures/etsy/receipts.json')]
         private readonly string $fixture,
+        #[Autowire('%kernel.project_dir%/tests/Fixtures/etsy/listings.json')]
+        private readonly string $listingsFixture,
     ) {
+    }
+
+    /**
+     * @param list<array<string, mixed>> $listings
+     */
+    public function willList(array $listings): void
+    {
+        $this->listings = [];
+        foreach ($listings as $listing) {
+            $this->listings[Json::string($listing['listing_id'] ?? '')] = $listing;
+        }
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    public function updates(): array
+    {
+        return $this->updates;
     }
 
     /**
@@ -60,5 +87,32 @@ final class FakeEtsyGateway implements EtsyGateway
         $payload = json_decode((string) file_get_contents($this->fixture), true, flags: \JSON_THROW_ON_ERROR);
 
         return array_map($this->mapper->sale(...), Json::objects(Json::object($payload)['results'] ?? []));
+    }
+
+    public function activeListings(EtsyApp $app, string $accessToken, string $shopId): iterable
+    {
+        return array_values($this->listed());
+    }
+
+    public function inventory(EtsyApp $app, string $accessToken, string $listingId): array
+    {
+        return Json::object($this->listed()[$listingId]['inventory'] ?? []);
+    }
+
+    public function updateInventory(EtsyApp $app, string $accessToken, string $listingId, array $inventory): void
+    {
+        $this->updates[$listingId] = $inventory;
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>
+     */
+    private function listed(): array
+    {
+        if (null === $this->listings) {
+            $this->willList(Json::objects(Json::object(json_decode((string) file_get_contents($this->listingsFixture), true, flags: \JSON_THROW_ON_ERROR))['results'] ?? []));
+        }
+
+        return $this->listings ?? [];
     }
 }

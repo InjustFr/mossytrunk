@@ -58,7 +58,11 @@
         "importCatalogue": "Importer le catalogue",
         "catalogueImported": "Catalogue {label} importé : {linked} article sur {read} associé à vos produits. | Catalogue {label} importé : {linked} articles sur {read} associés à vos produits.",
         "catalogueCreated": "{count} produit créé. | {count} produits créés.",
-        "catalogueToLink": "{count} article reste à associer depuis Commandes. | {count} articles restent à associer depuis Commandes."
+        "catalogueToLink": "{count} article reste à associer depuis Commandes. | {count} articles restent à associer depuis Commandes.",
+        "publishReferences": "Écrire les références sur {label}",
+        "publishReferencesConfirm": "Écrire les références",
+        "publishReferencesMessage": "Chaque annonce {label} associée à un produit reçoit sa référence comme SKU (« référence-variante » par variation). Prix, titres, quantités et photos ne changent pas.",
+        "referencesPublished": "{label} : {updated} annonce mise à jour ({linked} articles associés). | {label} : {updated} annonces mises à jour ({linked} articles associés)."
     },
     "form": {
         "access": "Accès",

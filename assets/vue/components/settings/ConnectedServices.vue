@@ -1,5 +1,5 @@
 <script setup>
-import { Pencil, Trash2 } from '@lucide/vue';
+import { Download, Pencil, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
@@ -14,7 +14,7 @@ defineProps({
     services: { type: Array, required: true },
     importing: { type: String, default: null },
 });
-const emit = defineEmits(['edit', 'remove', 'disconnect', 'import-catalogue']);
+const emit = defineEmits(['edit', 'remove', 'disconnect', 'import-catalogue', 'read-catalogue', 'publish-references']);
 
 const labelOf = (options, value) => {
     const label = options.find((option) => option.value === value)?.label;
@@ -59,6 +59,21 @@ function status(service) {
                     :label="t('settings.connected.importCatalogue')"
                     :loading="importing === service.key"
                     @chosen="emit('import-catalogue', service, $event)"
+                />
+                <BaseButton
+                    v-if="service.readsCatalogue && service.connection.authorized"
+                    variant="secondary"
+                    :loading="importing === service.key"
+                    @click="emit('read-catalogue', service)"
+                >
+                    <Download size="1rem" aria-hidden="true" /> {{ t('settings.connected.importCatalogue') }}
+                </BaseButton>
+                <ConfirmButton
+                    v-if="service.publishesReferences && service.connection.authorized"
+                    :label="t('settings.connected.publishReferences', { label: service.label })"
+                    :confirm-label="t('settings.connected.publishReferencesConfirm')"
+                    :message="t('settings.connected.publishReferencesMessage', { label: service.label })"
+                    @confirm="emit('publish-references', service)"
                 />
                 <BaseButton
                     v-if="service.authorizes && service.connection.configured && !service.connection.authorized"

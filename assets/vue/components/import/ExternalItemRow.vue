@@ -48,6 +48,7 @@ async function onLink() {
         saving.value = false;
     }
 }
+const itemName = computed(() => (props.item.variation ? `${props.item.label} — ${props.item.variation}` : props.item.label));
 </script>
 
 <template>
@@ -57,8 +58,8 @@ async function onLink() {
             <span v-if="item.variation" class="external-item__variation">{{ item.variation }}</span>
         </div>
         <div class="external-item__target">
-            <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('import.row.productPlaceholder')" :aria-label="t('import.row.productFor', { item: item.label })" />
-            <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" :placeholder="t('import.row.variantPlaceholder')" :aria-label="t('import.row.variantFor', { item: item.label })" />
+            <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('import.row.productPlaceholder')" :aria-label="t('import.row.productFor', { item: itemName })" />
+            <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" :placeholder="t('import.row.variantPlaceholder')" :aria-label="t('import.row.variantFor', { item: itemName })" />
             <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? t('import.row.edit') : t('import.row.link') }}</BaseButton>
         </div>
         <p v-if="error" class="external-item__error" role="alert">{{ error }}</p>
