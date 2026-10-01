@@ -31,4 +31,9 @@ const { t } = useI18n();
 .design-rows__row:last-child { border-bottom: none; }
 .design-rows__name { font-weight: 600; }
 .design-rows__gabarits { overflow: hidden; color: var(--color-muted); font-size: 0.85rem; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 40rem) {
+    .design-rows__row { grid-template-columns: minmax(0, 1fr) auto; }
+    .design-rows__gabarits { grid-column: 1 / -1; grid-row: 2; }
+}
 </style>

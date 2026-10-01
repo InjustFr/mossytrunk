@@ -1,6 +1,7 @@
 <script setup>
 import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import LanguageSelect from '../components/ui/LanguageSelect.vue';
 import ToastHost from '../components/ui/ToastHost.vue';
@@ -39,13 +40,25 @@ const session = useSession();
 
 const currentPath = window.location.pathname;
 const isActive = (href) => currentPath === href || currentPath.startsWith(`${href}/`);
+
+const sidebar = ref(null);
+
+function revealActiveLink() {
+    const active = sidebar.value?.querySelector('.app-layout__link--active');
+    const menu = active?.closest('.app-layout__menu');
+    if (!menu || menu.scrollWidth <= menu.clientWidth) return;
+    const link = active.getBoundingClientRect();
+    menu.scrollLeft += link.left - menu.getBoundingClientRect().left - (menu.clientWidth - link.width) / 2;
+}
+
+onMounted(revealActiveLink);
 </script>
 
 <template>
     <ConfigProvider :locale="intlLocale()">
         <TooltipProvider :delay-duration="400">
             <div class="app-layout">
-                <aside class="app-layout__sidebar">
+                <aside ref="sidebar" class="app-layout__sidebar">
                     <a class="app-layout__brand" href="/">mossytrunk</a>
                     <NavigationMenuRoot class="app-layout__menu" orientation="vertical" :aria-label="t('layout.nav.label')">
                         <NavigationMenuList class="app-layout__nav">
@@ -77,7 +90,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
                             <input type="hidden" name="_csrf_token" :value="session.logoutToken">
                             <button type="submit" class="app-layout__logout">
                                 <LogOut size="1rem" :stroke-width="1.75" aria-hidden="true" />
-                                {{ t('layout.signOut') }}
+                                <span class="app-layout__logout-label">{{ t('layout.signOut') }}</span>
                             </button>
                         </form>
                         <LanguageSelect class="app-layout__language" />
@@ -190,6 +203,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 
 .app-layout__main {
     min-width: 0;
+    overflow-x: clip;
     padding: var(--space-6) var(--space-7);
 }
 
@@ -211,7 +225,7 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
 .app-layout__actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
 @media (max-width: 53.75rem) {
-    .app-layout { grid-template-columns: 1fr; }
+    .app-layout { grid-template-columns: minmax(0, 1fr); }
 
     .app-layout__sidebar {
         position: static;
@@ -237,5 +251,16 @@ const isActive = (href) => currentPath === href || currentPath.startsWith(`${hre
     .app-layout__workspace,
     .app-layout__email { display: none; }
     .app-layout__main { padding: var(--space-4); }
+}
+
+@media (max-width: 30rem) {
+    .app-layout__logout-label {
+        position: absolute;
+        width: 0.0625rem;
+        height: 0.0625rem;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
 }
 </style>

@@ -90,7 +90,7 @@ const current = computed({
     color: var(--color-muted);
 }
 
-.table-pagination__pages { display: flex; align-items: center; gap: var(--space-1); }
+.table-pagination__pages { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 
 .table-pagination__button {
     display: inline-flex;

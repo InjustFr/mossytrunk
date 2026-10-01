@@ -120,7 +120,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 
 <style scoped>
 .dashboard-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.dashboard-page__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr)); gap: var(--space-5); align-items: start; }
+.dashboard-page__pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(22rem, 100%), 1fr)); gap: var(--space-5); align-items: start; }
 .dashboard-page__check {
     display: flex;
     align-items: flex-start;

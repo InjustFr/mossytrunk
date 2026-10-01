@@ -177,7 +177,7 @@ function saving(rule) {
 
 .discount-rule-list__period { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: 0.85rem; }
 
-.discount-rule-list__figures { display: flex; gap: var(--space-5); margin: 0; }
+.discount-rule-list__figures { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; }
 .discount-rule-list__figure { display: flex; flex-direction: column; align-items: flex-end; }
 .discount-rule-list__figure dt { color: var(--color-muted); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .discount-rule-list__figure dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -193,7 +193,7 @@ function saving(rule) {
 .discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 
 @media (max-width: 50rem) {
-    .discount-rule-list__item { grid-template-columns: 1fr auto; }
+    .discount-rule-list__item { grid-template-columns: minmax(0, 1fr) auto; }
     .discount-rule-list__main { grid-column: 1 / -1; }
 }
 </style>
