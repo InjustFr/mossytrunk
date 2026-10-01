@@ -118,6 +118,7 @@ onMounted(revealActiveLink);
 .app-layout {
     display: grid;
     grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    align-content: start;
     min-height: 100vh;
 }
 
