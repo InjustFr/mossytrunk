@@ -60,7 +60,7 @@ export function useOrderDraft() {
         }
         const current = ++requestId;
         try {
-            const result = await api.post('/api/orders/preview', payload());
+            const result = await api.query('/api/orders/preview', payload());
             if (current === requestId) {
                 preview.value = result;
                 previewError.value = null;

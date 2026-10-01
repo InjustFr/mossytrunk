@@ -13,6 +13,7 @@
         "@symfony/webpack-encore": "^7.0.0",
         "babel-plugin-polyfill-corejs3": "^1.0.0",
         "core-js": "^3.49.0",
+        "string-replace-loader": "^3.3.0",
         "vue": "^3.0",
         "vue-loader": "^17.4.2",
         "webpack": "^5.82",

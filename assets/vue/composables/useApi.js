@@ -15,10 +15,19 @@ export class ApiError extends Error {
     }
 }
 
+const REFRESH_HEADER = 'X-Refresh';
+const REFRESHED_HEADER = 'X-Refreshed';
+
 const responses = new Map();
 const fetching = new Map();
+const loadedOnPage = new Set();
 let generation = 0;
 let preloaded = new Map();
+
+document.addEventListener('turbo:visit', () => {
+    loadedOnPage.clear();
+    preloaded = new Map();
+});
 
 function takePreloaded(url) {
     const element = document.getElementById('app-preload');
@@ -32,22 +41,26 @@ function takePreloaded(url) {
     return { found: true, data };
 }
 
-async function request(method, url, body) {
+async function request(method, url, body, refresh = []) {
     begin();
     try {
-        return await send(method, url, body);
+        return await send(method, url, body, refresh);
     } finally {
         end();
     }
 }
 
 async function change(method, url, body) {
+    let refreshed = {};
     try {
-        return await request(method, url, body);
+        const { data, refreshed: received = {} } = await request(method, url, body, [...loadedOnPage]);
+        refreshed = received;
+        return data;
     } finally {
         generation += 1;
         responses.clear();
-        preloaded.clear();
+        preloaded = new Map(Object.entries(refreshed));
+        preloaded.forEach((data, refreshedUrl) => responses.set(refreshedUrl, data));
     }
 }
 
@@ -66,6 +79,7 @@ function fresh(url, quietly) {
 }
 
 async function load(url, target) {
+    loadedOnPage.add(url);
     const preload = takePreloaded(url);
     if (preload.found) {
         responses.set(url, preload.data);
@@ -78,22 +92,22 @@ async function load(url, target) {
     return target.value;
 }
 
-async function send(method, url, body) {
+async function send(method, url, body, refresh = []) {
     const response = await fetch(url, {
         method,
-        headers: { Accept: 'application/json', ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+        headers: {
+            Accept: 'application/json',
+            ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+            ...(refresh.length > 0 ? { [REFRESH_HEADER]: JSON.stringify(refresh) } : {}),
+        },
         body: body !== undefined ? JSON.stringify(body) : undefined,
     });
-
-    if (response.status === 204) {
-        return null;
-    }
 
     if (response.status === 401) {
         visit('/login');
     }
 
-    const payload = await response.json().catch(() => null);
+    const payload = response.status === 204 ? null : await response.json().catch(() => null);
 
     if (!response.ok) {
         throw new ApiError(
@@ -103,7 +117,11 @@ async function send(method, url, body) {
         );
     }
 
-    return payload;
+    if (method === 'GET') {
+        return payload;
+    }
+
+    return response.headers.has(REFRESHED_HEADER) ? payload : { data: payload };
 }
 
 export function useApi() {
@@ -111,6 +129,7 @@ export function useApi() {
         get: (url) => request('GET', url),
         load,
         peek: (url) => send('GET', url),
+        query: async (url, body = {}) => (await request('POST', url, body)).data,
         post: (url, body = {}) => change('POST', url, body),
         put: (url, body = {}) => change('PUT', url, body),
         patch: (url, body = {}) => change('PATCH', url, body),

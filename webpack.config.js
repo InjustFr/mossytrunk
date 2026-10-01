@@ -40,6 +40,11 @@ Encore
         strictMessage: false,
         escapeHtml: false,
     }))
+    .addLoader({
+        test: /@hotwired[\\/]turbo[\\/]dist[\\/]turbo\.es2017-esm\.js$/,
+        loader: 'string-replace-loader',
+        options: { search: 'const PREFETCH_DELAY = 100;', replace: 'const PREFETCH_DELAY = 0;', strict: true },
+    })
     .configureDefinePlugin((options) => {
         options.__INTLIFY_PROD_DEVTOOLS__ = JSON.stringify(false);
         options.__INTLIFY_DROP_MESSAGE_COMPILER__ = JSON.stringify(true);
