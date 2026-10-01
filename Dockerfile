@@ -37,6 +37,7 @@ ENV APP_ENV=prod \
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY docker/php/prod.ini $PHP_INI_DIR/conf.d/zz-prod.ini
+COPY docker/frankenphp/Caddyfile /etc/frankenphp/Caddyfile
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/app-entrypoint
 RUN chmod +x /usr/local/bin/app-entrypoint
 
