@@ -18,6 +18,19 @@ export class ApiError extends Error {
 const responses = new Map();
 const fetching = new Map();
 let generation = 0;
+let preloaded = new Map();
+
+function takePreloaded(url) {
+    const element = document.getElementById('app-preload');
+    if (element) {
+        preloaded = new Map(Object.entries(JSON.parse(element.textContent)));
+        element.remove();
+    }
+    if (!preloaded.has(url)) return { found: false };
+    const data = preloaded.get(url);
+    preloaded.delete(url);
+    return { found: true, data };
+}
 
 async function request(method, url, body) {
     begin();
@@ -34,6 +47,7 @@ async function change(method, url, body) {
     } finally {
         generation += 1;
         responses.clear();
+        preloaded.clear();
     }
 }
 
@@ -52,6 +66,12 @@ function fresh(url, quietly) {
 }
 
 async function load(url, target) {
+    const preload = takePreloaded(url);
+    if (preload.found) {
+        responses.set(url, preload.data);
+        target.value = preload.data;
+        return preload.data;
+    }
     const cached = responses.has(url);
     if (cached) target.value = responses.get(url);
     target.value = await fresh(url, cached);

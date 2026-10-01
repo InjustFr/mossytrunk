@@ -19,6 +19,6 @@ final readonly class SupplierOrdersPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('SupplierOrdersPage', 'supplierOrders');
+        return $this->page->render('SupplierOrdersPage', 'supplierOrders', preload: ['/api/supplier-orders', '/api/suppliers', '/api/products', '/api/product-types']);
     }
 }

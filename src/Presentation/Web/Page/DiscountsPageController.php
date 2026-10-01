@@ -19,6 +19,6 @@ final readonly class DiscountsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('DiscountsPage', 'discounts');
+        return $this->page->render('DiscountsPage', 'discounts', preload: ['/api/discount-rules', '/api/products', '/api/product-types']);
     }
 }

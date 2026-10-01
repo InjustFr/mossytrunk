@@ -19,6 +19,6 @@ final readonly class ProductsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('ProductsPage', 'products');
+        return $this->page->render('ProductsPage', 'products', preload: ['/api/products', '/api/product-types']);
     }
 }

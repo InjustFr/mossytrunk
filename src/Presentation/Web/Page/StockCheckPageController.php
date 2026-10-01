@@ -20,6 +20,6 @@ final readonly class StockCheckPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('StockCheckPage', 'stockCheck', ['eventId' => $id]);
+        return $this->page->render('StockCheckPage', 'stockCheck', ['eventId' => $id], preload: ["/api/events/$id/stock-sheet", "/api/events/$id"]);
     }
 }
