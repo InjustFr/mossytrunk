@@ -13,7 +13,7 @@ DEPLOY_DIR ?= mossytrunk
 REMOTE_DOCKER ?= docker
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e qa ci image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e qa ci image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -30,6 +30,9 @@ install:
 
 assets:
 	$(RUN) --no-deps node npm run build
+
+assets-e2e:
+	$(RUN) --no-deps -e ASSETS_DIR=build-e2e node npm run build
 
 db: ## Create and migrate the dev database
 	$(CONSOLE) doctrine:database:create --if-not-exists
@@ -66,7 +69,7 @@ cs-fix: ## Apply the coding standard
 phpstan: ## Static analysis (level in phpstan.dist.neon)
 	$(PHP) vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
-e2e: assets ## Playwright end-to-end tests against a dedicated app container
+e2e: assets-e2e ## Playwright end-to-end tests against a dedicated app container
 	$(DC) --profile e2e up -d --wait php-e2e mailpit
 	$(EXEC) php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
 	$(EXEC) php-e2e php bin/console doctrine:database:create --env=test

@@ -34,7 +34,7 @@ make test            # PHPUnit (migrates test DB first); make test-unit / test-f
 make deptrac         # onion layer rules
 make cs / make cs-fix # PHP-CS-Fixer (@Symfony + declare(strict_types=1) in every file)
 make phpstan         # PHPStan level 10 (phpstan.dist.neon, Symfony/Doctrine/PHPUnit extensions) — keep it at 0 errors
-make e2e             # builds assets, boots php-e2e (APP_ENV=test, fake SumUp/Etsy gateways), runs Playwright
+make e2e             # builds assets into public/build-e2e (ASSETS_DIR, so the dev watcher's public/build is untouched), boots php-e2e (APP_ENV=test, fake SumUp/Etsy gateways), runs Playwright
 docker compose exec php php bin/console …
 make deploy DEPLOY_HOST=user@server DEPLOY_DIR=…   # run the current commit's image (published by CI) on the server; make push = manual push after `make qa`; `make deploy` refuses a commit whose image CI did not publish
 ```
