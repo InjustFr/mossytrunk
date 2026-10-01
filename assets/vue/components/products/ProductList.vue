@@ -35,6 +35,7 @@ const stockDetail = (product) => stockOf(product).entries.map((item) => t('produ
 const columns = {
     type: (product) => `${product.typeName} ${product.displayName}`,
     name: (product) => product.displayName,
+    collection: (product) => product.collectionName ?? '',
     stock: (product) => stockOf(product).onHand,
     stockUnitCost: (product) => product.stockUnitCost,
     sellingPrice: (product) => product.sellingPrice,
@@ -60,6 +61,7 @@ function setChecked(id, checked) {
                 </th>
                 <SortableHeader :sort="ariaSort('name')" @sort="sortBy('name')">{{ t('products.list.name') }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('type')" @sort="sortBy('type')">{{ t('products.list.type') }}</SortableHeader>
+                <SortableHeader :sort="ariaSort('collection')" @sort="sortBy('collection')">{{ t('products.list.collection') }}</SortableHeader>
                 <th>{{ t('products.list.variants') }}</th>
                 <SortableHeader :sort="ariaSort('stock')" numeric @sort="sortBy('stock')">{{ t('products.list.stock') }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('stockUnitCost')" numeric @sort="sortBy('stockUnitCost')">{{ t('products.list.cost') }}</SortableHeader>
@@ -89,6 +91,10 @@ function setChecked(id, checked) {
                 <td>
                     <span class="product-list__type"><TypeMark :color="typeColors.get(product.typeName)" />{{ product.typeName }}</span>
                     <StatusBadge v-if="product.archived && !product.archivedItself">{{ t('products.list.typeArchived') }}</StatusBadge>
+                </td>
+                <td>
+                    <span v-if="product.collectionName" class="product-list__collection">{{ product.collectionName }}</span>
+                    <span v-else class="product-list__muted">—</span>
                 </td>
                 <td>
                     <span v-if="product.variants.length === 0" class="product-list__muted">{{ t('products.single') }}</span>
@@ -146,6 +152,7 @@ function setChecked(id, checked) {
 .product-list__variants { display: block; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .product-list__reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .product-list__type { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
+.product-list__collection { white-space: nowrap; }
 .product-list__muted { color: var(--color-subtle); }
 .product-list__ratio { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .product-list__stock { white-space: nowrap; }

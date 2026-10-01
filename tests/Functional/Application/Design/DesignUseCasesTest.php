@@ -151,6 +151,24 @@ final class DesignUseCasesTest extends KernelTestCase
         $attach($productId, $designId, $this->sticker);
     }
 
+    public function testTheProductListShowsTheCollectionOfEachProductDesign(): void
+    {
+        $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', null);
+        $heron = self::createProduct('Héron', 400, 60, ['5 cm']);
+        $loutre = self::createProduct('Loutre', 400, 60, ['5 cm']);
+        self::getContainer()->get(DesignProductHandler::class)($heron, $this->sticker, $collectionId);
+        self::getContainer()->get(DesignProductHandler::class)($loutre, $this->sticker);
+        $this->clear();
+
+        $collections = [];
+        foreach (self::getContainer()->get(ListProductsHandler::class)() as $product) {
+            $collections[$product->name] = [$product->collectionId, $product->collectionName];
+        }
+
+        self::assertSame([$collectionId, 'Sous-bois'], $collections['Héron']);
+        self::assertSame([null, null], $collections['Loutre']);
+    }
+
     public function testDesignsBelongToTheWorkspace(): void
     {
         $designId = $this->design('Forêt');

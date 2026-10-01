@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Product\ListProducts;
 
 use App\Application\Stock\ProductStock;
+use App\Domain\Design\DesignCollection;
+use App\Domain\Design\DesignRepository;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
@@ -19,6 +21,7 @@ final readonly class ListProductsHandler
         private ProductRepository $products,
         private OrderRepository $orders,
         private StockRepository $stock,
+        private DesignRepository $designs,
         private ClockInterface $clock,
     ) {
     }
@@ -36,14 +39,39 @@ final readonly class ListProductsHandler
             $stockByProduct[(string) $item->product()->id()][] = $item;
         }
 
+        $collections = $this->collectionsByProduct();
+
         return array_map(
             static fn (Product $product): ProductView => ProductView::fromProduct(
                 $product,
                 $year,
                 $sales->forProduct($product->id()),
                 ProductStock::of($product, $stockByProduct[(string) $product->id()] ?? []),
+                $collections[(string) $product->id()] ?? null,
             ),
             $this->products->all(),
         );
+    }
+
+    /**
+     * @return array<string, DesignCollection>
+     */
+    private function collectionsByProduct(): array
+    {
+        $collections = [];
+        foreach ($this->designs->all() as $design) {
+            $collection = $design->collection();
+            if (null === $collection) {
+                continue;
+            }
+            foreach ($design->declinations() as $declination) {
+                $productId = $declination->productId();
+                if (null !== $productId) {
+                    $collections[(string) $productId] = $collection;
+                }
+            }
+        }
+
+        return $collections;
     }
 }

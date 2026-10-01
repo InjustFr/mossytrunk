@@ -6,6 +6,7 @@ namespace App\Application\Product\ListProducts;
 
 use App\Application\Stock\ProductStock;
 use App\Application\Stock\StockItemView;
+use App\Domain\Design\DesignCollection;
 use App\Domain\Product\Product;
 use App\Domain\Reporting\ProductSales;
 
@@ -38,10 +39,12 @@ final readonly class ProductView
         public array $activeVariants,
         public bool $archived,
         public bool $archivedItself,
+        public ?string $collectionId,
+        public ?string $collectionName,
     ) {
     }
 
-    public static function fromProduct(Product $product, int $salesYear, ?ProductSales $sales, ProductStock $stock): self
+    public static function fromProduct(Product $product, int $salesYear, ?ProductSales $sales, ProductStock $stock, ?DesignCollection $collection): self
     {
         return new self(
             (string) $product->id(),
@@ -70,6 +73,8 @@ final readonly class ProductView
             $product->activeVariants(),
             $product->isArchived(),
             $product->isArchivedItself(),
+            null === $collection ? null : (string) $collection->id(),
+            $collection?->name(),
         );
     }
 }

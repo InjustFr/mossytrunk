@@ -47,7 +47,7 @@ final readonly class GetProductHandler
         $design = $this->designs->findByProduct($product->id());
 
         return new ProductDetailView(
-            ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($sales, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock),
+            ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($sales, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock, $design?->collection()),
             $ever->quantity ?? 0,
             $ever?->sales->amount() ?? 0,
             $stock->items,

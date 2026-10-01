@@ -74,6 +74,7 @@
         "select": "Select {name}",
         "name": "Name",
         "type": "Type",
+        "collection": "Collection",
         "variants": "Variants",
         "stock": "Stock",
         "cost": "Cost",
