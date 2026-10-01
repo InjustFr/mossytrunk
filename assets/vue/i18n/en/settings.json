@@ -77,25 +77,6 @@
             "name": "Start of the name"
         }
     },
-    "danger": {
-        "title": "Danger zone",
-        "warning": "These deletions are permanent: they cannot be undone.",
-        "confirm": "Delete everything",
-        "orders": {
-            "title": "All orders",
-            "detail": "Event turnover and margins start from zero again. Sold items go back into stock. A new import from your connected services can bring their sales back.",
-            "action": "Delete all orders",
-            "message": "All orders of the workspace will be permanently deleted.",
-            "deleted": "Orders deleted: {count}."
-        },
-        "products": {
-            "title": "All products",
-            "detail": "Past orders keep their lines. Product stock is deleted with them. Bundle discounts that only list products are deleted too.",
-            "action": "Delete all products",
-            "message": "The whole catalog and the bundle discounts that only list products will be permanently deleted.",
-            "deleted": "Products deleted: {count}."
-        }
-    },
     "connected": {
         "status": {
             "incomplete": "Incomplete access",

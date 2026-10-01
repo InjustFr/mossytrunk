@@ -166,15 +166,6 @@ final class DiscountRuleTest extends TestCase
         $both->withdrawProduct($this->sticker);
     }
 
-    public function testEveryProductCanBeWithdrawnWhenTypesRemain(): void
-    {
-        $rule = $this->rule([ConditionSpec::on(1, $this->sticker), ConditionSpec::on(2, $this->print)]);
-
-        $rule->withdrawEveryProduct();
-
-        self::assertSame([['Print', 2]], $this->targets($rule));
-    }
-
     public function testConditionsCanTargetAVariantOfATypeOrOfAProduct(): void
     {
         $forest = $this->print('Forêt', ['A4', 'A3']);
@@ -354,15 +345,6 @@ final class DiscountRuleTest extends TestCase
         $rule->withdrawType($this->print);
 
         self::assertSame([['Sticker', 2]], $this->targets($rule));
-    }
-
-    public function testEveryProductWithdrawnKeepsTheTypesOfAGroup(): void
-    {
-        $rule = $this->rule([new ConditionSpec(2, [new TargetSpec($this->print), new TargetSpec($this->sticker)]), ConditionSpec::on(1, $this->holo)]);
-
-        $rule->withdrawEveryProduct();
-
-        self::assertSame([['Print', 2]], $this->targets($rule));
     }
 
     public function testAReplacedProductOfAGroupIsRetargetedOrDroppedWhenItsTargetIsAlreadyThere(): void

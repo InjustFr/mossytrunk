@@ -23,7 +23,6 @@ export function useProducts() {
     const remove = (id) => api.del(`/api/products/${id}`);
     const archive = (id) => api.put(`/api/products/${id}/archive`);
     const restore = (id) => api.del(`/api/products/${id}/archive`);
-    const removeAll = () => api.del('/api/products');
     const loadOne = (id, target) => api.load(`/api/products/${id}`, target);
     const suggestReference = async (name, typeId) => {
         if (name.trim() === '') return '';
@@ -36,5 +35,5 @@ export function useProducts() {
 
     const activeProducts = computed(() => products.value.filter((product) => !product.archived));
 
-    return { products, activeProducts, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, removeAll, loadOne, suggestReference, designProduct, savePrice, forgetPrice };
+    return { products, activeProducts, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, loadOne, suggestReference, designProduct, savePrice, forgetPrice };
 }

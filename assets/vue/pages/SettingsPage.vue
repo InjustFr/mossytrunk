@@ -8,7 +8,6 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import ConnectedServices from '../components/settings/ConnectedServices.vue';
 import ServiceModal from '../components/settings/ServiceModal.vue';
-import DeleteAllData from '../components/settings/DeleteAllData.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
 import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
@@ -16,15 +15,11 @@ import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
 import { useReferenceFormats } from '../composables/useReferenceFormats.js';
-import { useOrders } from '../composables/useOrders.js';
-import { useProducts } from '../composables/useProducts.js';
 
 const { t } = useI18n();
 
 const { settings, load } = useWorkspaceSettings();
 const services = useServices();
-const { removeAll: removeAllOrders } = useOrders();
-const { removeAll: removeAllProducts } = useProducts();
 const toast = useToast();
 const references = useReferenceFormats();
 
@@ -124,18 +119,6 @@ async function onFormatSaved(renamed) {
 const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
-async function deleteAll(removeAll, message) {
-    try {
-        const { deleted } = await removeAll();
-        toast.success(message(deleted));
-    } catch (error) {
-        toast.error(error.message);
-    }
-}
-
-const ordersDeleted = (count) => t('settings.danger.orders.deleted', { count });
-const productsDeleted = (count) => t('settings.danger.products.deleted', { count });
-
 onMounted(async () => {
     await Promise.all([load(), services.load(), references.load()]);
     announceConnectionOutcome();
@@ -167,9 +150,6 @@ onMounted(async () => {
             <BaseCard :title="t('settings.references.title')">
                 <p class="settings-page__intro">{{ t('settings.references.intro') }}</p>
                 <ReferenceFormats :formats="references.formats.value" @edit="openFormat" />
-            </BaseCard>
-            <BaseCard :title="t('settings.danger.title')">
-                <DeleteAllData @delete-orders="deleteAll(removeAllOrders, ordersDeleted)" @delete-products="deleteAll(removeAllProducts, productsDeleted)" />
             </BaseCard>
         </div>
         <ServiceModal

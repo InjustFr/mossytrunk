@@ -77,25 +77,6 @@
             "name": "Début du nom"
         }
     },
-    "danger": {
-        "title": "Zone de danger",
-        "warning": "Ces suppressions sont définitives : aucune annulation possible.",
-        "confirm": "Tout supprimer",
-        "orders": {
-            "title": "Toutes les commandes",
-            "detail": "Le chiffre d'affaires et les marges des événements repartent de zéro. Les articles vendus reviennent en stock. Un nouvel import depuis vos services connectés pourra ramener leurs ventes.",
-            "action": "Supprimer toutes les commandes",
-            "message": "Toutes les commandes de l'espace de travail seront supprimées définitivement.",
-            "deleted": "Commandes supprimées : {count}."
-        },
-        "products": {
-            "title": "Tous les produits",
-            "detail": "Les commandes passées gardent leurs lignes. Le stock des produits est supprimé avec eux. Les remises par lot qui ne listent que des produits sont supprimées aussi.",
-            "action": "Supprimer tous les produits",
-            "message": "Tout le catalogue et les remises par lot qui ne listent que des produits seront supprimés définitivement.",
-            "deleted": "Produits supprimés : {count}."
-        }
-    },
     "connected": {
         "status": {
             "incomplete": "Accès incomplets",

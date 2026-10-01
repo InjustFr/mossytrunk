@@ -5,6 +5,10 @@ import { choose } from './support/select.js';
 
 test('import SumUp orders: one error for uncovered dates, no duplicates on re-import', async ({ page, request }) => {
     await addSumUp(request);
+    const products = await (await request.get('/api/products')).json();
+    if (!products.some((product) => product.displayName === 'Sticker Mousse')) {
+        await createProduct(request, { name: 'Sticker Mousse', sellingPrice: 400 });
+    }
     const response = await request.post('/api/events', {
         data: { name: 'Salon de printemps 2030', location: 'Lyon', startDate: '2030-03-14', endDate: '2030-03-15' },
     });
@@ -14,7 +18,7 @@ test('import SumUp orders: one error for uncovered dates, no duplicates on re-im
     await page.getByRole('button', { name: 'Importer depuis SumUp' }).click();
 
     await expect(page.getByTestId('toast')).toContainText('2 commandes importées');
-    await expect(page.getByTestId('toast')).toContainText('3 produits créés');
+    await expect(page.getByTestId('toast')).toContainText('2 produits créés');
     const problem = page.getByTestId('import-problem');
     await expect(problem).toHaveCount(1);
     await expect(problem).toContainText('2 commandes non importées');

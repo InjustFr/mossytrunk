@@ -105,15 +105,6 @@ class DiscountCondition
         }
     }
 
-    public function withdrawEveryProduct(): void
-    {
-        foreach ($this->targets() as $target) {
-            if ($target instanceof ProductTarget) {
-                $this->targets->removeElement($target);
-            }
-        }
-    }
-
     public function drop(ConditionTarget $target): void
     {
         $this->targets->removeElement($target);
@@ -122,11 +113,6 @@ class DiscountCondition
     public function isEmpty(): bool
     {
         return $this->targets->isEmpty();
-    }
-
-    public function listsTypes(): bool
-    {
-        return $this->targets->exists(static fn (int $key, ConditionTarget $target): bool => $target instanceof TypeTarget);
     }
 
     public function renameVariant(ProductType $type, string $from, string $to): void

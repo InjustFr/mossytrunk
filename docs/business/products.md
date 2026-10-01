@@ -82,12 +82,11 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | P14 | A deleted product leaves the catalogue, and the discount conditions on it are removed. Past orders keep their lines (name and prices are snapshots); reports show them under « Sans type » | `DeleteProductHandler`, `DiscountRule::withdrawProduct()` | `DeleteProductTest`, `DiscountRuleTest` |
 | P15 | A product that is the **only condition** of a discount cannot be deleted: change or delete that discount first | `OnlyEligibleProduct` | `DeleteProductTest`, `DiscountRuleTest` |
 
-| P16 | Every product of the workspace can be deleted at once, like P14. Discounts with product conditions only are deleted with them; those also having type conditions keep those | `DeleteAllProductsHandler`, `DiscountRule::withdrawEveryProduct()` | `DeleteAllProductsTest`, `DiscountRuleTest` |
 | P27 | Products ticked in the list (selection bar, « Supprimer la sélection ») are deleted together after confirmation, each like P14; one refused by P15 or of another workspace aborts the whole deletion | `DeleteProductsHandler`, `ProductDeletion` | `DeleteProductsTest`, `ProductApiTest`, e2e `products.spec.js` |
 | P17 | Every selling price a product has had is kept with its date (creation, then each change; setting the same price records nothing). Products that existed before the history start with their current price at their creation date | `Product::reprice()`, `SellingPriceChange` | `ProductTest`, `GetProductTest` |
 | P18 | The price history can be corrected: add a past price with its day, change an entry's price or day, delete an entry (never the last one). Days are Europe/Paris, never in the future. The **selling price is always the entry with the latest day**, so correcting the current entry fixes the price without adding a line. Past orders keep their own price snapshots | `Product::recordPrice()`, `amendPrice()`, `forgetPrice()` | `ProductTest`, `SellingPriceApiTest` |
 
-UI: trash icon on each row of `/products`, with a confirmation. `/settings` — « Zone de danger »: delete every product, behind a warning and a confirmation.
+UI: trash icon on each row of `/products`, with a confirmation.
 
 ## Use cases & API
 
@@ -104,7 +103,6 @@ UI: trash icon on each row of `/products`, with a confirmation. `/settings` — 
 | `DeleteProduct` | `DELETE /api/products/{id}` → 204 |
 | `ArchiveProduct` / `RestoreProduct` | `PUT` / `DELETE /api/products/{id}/archive` → 204 |
 | `ArchiveProductType` / `RestoreProductType` / `DeleteProductType` | `PUT` / `DELETE /api/product-types/{id}/archive`, `DELETE /api/product-types/{id}` → 204 |
-| `DeleteAllProducts` | `DELETE /api/products` → `{deleted}` |
 | `DeleteProducts` | `POST /api/products/deletion` `{productIds[]}` → `{deleted}` |
 | `ListProducts` | `GET /api/products` (sorted by type then name; includes `displayName`, `typeId`, `typeName`, `activeVariants`, `archived`, `archivedItself`) |
 | `CreateProductType` / `UpdateProductType` / `ListProductTypes` | `POST` `{name, color?, code?, variants?, prefixesNames?}` / `PUT /{id}` `{name, color, code?, variants?, prefixesNames?, archivedVariants?}` / `GET /api/product-types` → `{id, name, code, color, variants, prefixesNames, archivedVariants, archived}` |

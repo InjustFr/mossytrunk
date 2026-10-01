@@ -144,24 +144,6 @@ class DiscountRule
         return $this->conditions->exists(static fn (int $key, DiscountCondition $condition): bool => $condition->usesVariant($type, $variant));
     }
 
-    public function listsTypes(): bool
-    {
-        return $this->conditions->exists(static fn (int $key, DiscountCondition $condition): bool => $condition->listsTypes());
-    }
-
-    public function withdrawEveryProduct(): void
-    {
-        if (!$this->listsTypes()) {
-            throw new NoDiscountCondition();
-        }
-        foreach ($this->conditions() as $condition) {
-            $condition->withdrawEveryProduct();
-            if ($condition->isEmpty()) {
-                $this->conditions->removeElement($condition);
-            }
-        }
-    }
-
     public function startOn(\DateTimeImmutable $today): void
     {
         match ($this->statusOn($today)) {
