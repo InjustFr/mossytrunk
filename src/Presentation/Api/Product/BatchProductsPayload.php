@@ -32,6 +32,8 @@ final readonly class BatchProductsPayload
         public ?int $lowStockThreshold = null,
         #[Assert\Valid]
         public ?BatchChannelPricePayload $channelPrice = null,
+        #[Assert\Date(message: 'date.invalid')]
+        public ?string $priceSince = null,
     ) {
     }
 
@@ -45,6 +47,6 @@ final readonly class BatchProductsPayload
 
     public function toCommand(): BatchUpdateProducts
     {
-        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants, $this->lowStockThreshold, $this->channelPrice?->toChange());
+        return new BatchUpdateProducts($this->productIds, $this->sellingPrice, $this->changeType, $this->typeId, $this->addVariants, $this->removeVariants, $this->lowStockThreshold, $this->channelPrice?->toChange(), null === $this->priceSince || '' === $this->priceSince ? null : $this->priceSince);
     }
 }

@@ -126,7 +126,9 @@
         "unchanged": "Inchangé",
         "noTypeVariants": "Aucune variante dans leurs types.",
         "noProductVariants": "Ces produits n'ont pas de variante.",
-        "lowStockThresholdHint": "Vide : chaque produit garde son seuil."
+        "lowStockThresholdHint": "Vide : chaque produit garde son seuil.",
+        "priceSince": "Prix à partir du",
+        "priceSinceHint": "Vide : dès maintenant. Une date passée ajoute le prix à l'historique du prix de vente (aussi pour le canal principal) ; il ne devient le prix actuel que si aucun prix plus récent n'existe."
     },
     "channelPrice": {
         "title": "Prix d'un canal",

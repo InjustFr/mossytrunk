@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
+import { fillDate } from './support/date.js';
 import { unique } from './support/unique.js';
 import { createProduct, createType, defineVariants } from './support/api.js';
 
@@ -116,6 +117,25 @@ test('filter by type and edit the selection in batch', async ({ page, request })
     const toAdd = batch.getByRole('group', { name: 'Variantes à ajouter' });
     await expect(toAdd.getByRole('button', { name: 'Mat' })).toBeVisible();
     await expect(toAdd.getByRole('button', { name: 'Brillant' })).toHaveCount(0);
+});
+
+test('a batch price can start on a past day, kept in the price history', async ({ page, request }) => {
+    const type = await createType(request, unique('Carte'));
+    const card = await createProduct(request, { name: 'Héron', sellingPrice: 300, type });
+    const since = new Date(Date.now() - 10 * 86_400_000).toISOString().slice(0, 10);
+
+    await page.goto('/products');
+    await page.getByRole('group', { name: 'Filtrer par type' }).getByRole('button', { name: type.name }).click();
+    await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
+    await page.getByRole('button', { name: 'Modifier la sélection' }).click();
+    const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
+    await batch.getByLabel('Prix de vente').fill('3,50');
+    await fillDate(batch.getByRole('group', { name: 'Prix à partir du' }), since);
+    await batch.getByRole('button', { name: 'Appliquer à 1 produit' }).click();
+    await expect(page.getByTestId('toast')).toContainText('1 produit mis à jour.');
+
+    const detail = await (await request.get(`/api/products/${card.id}`)).json();
+    expect(detail.priceHistory.map((change) => [change.price, change.sinceDay])).toContainEqual([350, since]);
 });
 
 test('long lists are paginated', async ({ page, request }) => {

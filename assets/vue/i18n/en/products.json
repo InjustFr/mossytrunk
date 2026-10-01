@@ -126,7 +126,9 @@
         "unchanged": "Unchanged",
         "noTypeVariants": "No variants in their types.",
         "noProductVariants": "These products have no variants.",
-        "lowStockThresholdHint": "Empty: each product keeps its own threshold."
+        "lowStockThresholdHint": "Empty: each product keeps its own threshold.",
+        "priceSince": "Price starting on",
+        "priceSinceHint": "Empty: from now. A past day adds the price to the selling price history (also for the main channel); it becomes the current price only if no later price exists."
     },
     "channelPrice": {
         "title": "Channel price",

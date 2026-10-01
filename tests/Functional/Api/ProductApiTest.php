@@ -167,6 +167,11 @@ final class ProductApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'lowStockThreshold' => -1]);
         self::assertResponseStatusCodeSame(422);
 
+        $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'sellingPrice' => 500, 'priceSince' => 'hier']);
+        self::assertResponseStatusCodeSame(422);
+        $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'sellingPrice' => 500, 'priceSince' => '2999-01-01']);
+        self::assertResponseStatusCodeSame(422);
+
         $client->jsonRequest('POST', '/api/products/batch', ['productIds' => [$id], 'lowStockThreshold' => 4]);
         self::assertResponseIsSuccessful();
         $client->jsonRequest('GET', '/api/products');

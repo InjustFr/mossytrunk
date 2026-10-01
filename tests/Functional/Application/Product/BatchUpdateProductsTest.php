@@ -7,10 +7,12 @@ namespace App\Tests\Functional\Application\Product;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProductsHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
+use App\Domain\Product\Exception\PriceDatedInTheFuture;
 use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Shared\Exception\InvalidMoney;
 use App\Tests\Support\ActsAsUser;
@@ -49,6 +51,23 @@ final class BatchUpdateProductsTest extends KernelTestCase
         $this->batch(new BatchUpdateProducts([$mousse, $fougere], lowStockThreshold: 3));
 
         self::assertSame(['Forêt' => 10, 'Fougère' => 3, 'Mousse' => 3], $this->thresholds());
+    }
+
+    public function testABatchPriceCanStartOnAPastDay(): void
+    {
+        $mousse = $this->product('Mousse', 400);
+        $since = (new \DateTimeImmutable('-3 days', new \DateTimeZone('Europe/Paris')))->format('Y-m-d');
+
+        $this->batch(new BatchUpdateProducts([$mousse], sellingPriceCents: 450, priceSinceDay: $since));
+
+        $history = self::getContainer()->get(GetProductHandler::class)($mousse)->priceHistory;
+        self::assertSame([[400, null], [450, $since]], array_map(static fn (array $change): array => [$change['price'], $change['sinceDay'] === $since ? $since : null], $history));
+
+        $this->batch(new BatchUpdateProducts([$mousse], sellingPriceCents: 500, priceSinceDay: (new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris')))->format('Y-m-d')));
+        self::assertSame(['Mousse' => 500], $this->prices());
+
+        $this->expectException(PriceDatedInTheFuture::class);
+        $this->batch(new BatchUpdateProducts([$mousse], sellingPriceCents: 600, priceSinceDay: (new \DateTimeImmutable('+2 days'))->format('Y-m-d')));
     }
 
     public function testAddAndRemoveVariantsOnAllPrints(): void
