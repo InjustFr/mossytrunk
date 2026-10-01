@@ -46,7 +46,7 @@ final class AccountingUseCasesTest extends KernelTestCase
         self::assertSame([1_200, 1, 154, 'late', '2026-08-31'], [$july->turnover, $july->orderCount, $july->contribution, $july->status, $july->deadline]);
         self::assertSame(1_600, $overview->yearTurnover);
         self::assertSame('inactive', $this->period($overview->periods, '2026-04')->status);
-        self::assertSame(['2026-05', '2026-06', '2026-07', '2026-08'], array_column($overview->pending, 'key'));
+        self::assertSame(self::monthsFrom('2026-05'), array_column($overview->pending, 'key'));
     }
 
     public function testADeclarationKeepsTheDeclaredAmountAndFlagsLaterChanges(): void
@@ -125,5 +125,19 @@ final class AccountingUseCasesTest extends KernelTestCase
     private function place(string $placedAt, int $quantity): void
     {
         self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable($placedAt, new \DateTimeZone('Europe/Paris')), [new RequestedLine($this->sticker, null, $quantity)]));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function monthsFrom(string $first): array
+    {
+        $months = [];
+        $currentMonth = new \DateTimeImmutable('midnight first day of this month', new \DateTimeZone('Europe/Paris'));
+        for ($month = new \DateTimeImmutable($first.'-01', new \DateTimeZone('Europe/Paris')); $month < $currentMonth; $month = $month->modify('+1 month')) {
+            $months[] = $month->format('Y-m');
+        }
+
+        return $months;
     }
 }
