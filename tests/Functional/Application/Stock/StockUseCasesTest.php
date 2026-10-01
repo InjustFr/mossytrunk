@@ -12,8 +12,10 @@ use App\Application\Order\DeleteOrder\DeleteOrderHandler;
 use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
+use App\Application\Order\RefundOrder\RefundOrderHandler;
 use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
+use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Product\MoveVariant\MoveVariant;
@@ -86,7 +88,7 @@ final class StockUseCasesTest extends KernelTestCase
         ], $product->stock);
     }
 
-    public function testDeletingAnOrderPutsItsUnitsBackInStock(): void
+    public function testDeletingAnOrderErasesItsWithdrawalAsIfItNeverHappened(): void
     {
         $this->restock($this->sticker, null, 10, 1_000);
         $order = $this->place('2026-07-10 15:00', [new RequestedLine($this->sticker, null, 4)]);
@@ -96,7 +98,39 @@ final class StockUseCasesTest extends KernelTestCase
 
         self::assertSame(10, $this->product($this->sticker)->onHand);
         $lots = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0]->lots;
-        self::assertSame(['purchase', 'return'], array_column($lots, 'origin'), 'the returned units are dated at the sale, before the purchase');
+        self::assertSame([['purchase', 10, 10]], array_map(static fn (array $lot): array => [$lot['origin'], $lot['quantity'], $lot['remaining']], $lots));
+        self::assertSame(['purchase'], array_column(self::getContainer()->get(GetProductHandler::class)($this->sticker)->movements, 'kind'));
+    }
+
+    public function testRefundingAnOrderKeepsTheSaleAndTakesItsUnitsBackAsAReturn(): void
+    {
+        $this->restock($this->sticker, null, 10, 1_000);
+        $order = $this->place('2026-07-10 15:00', [new RequestedLine($this->sticker, null, 4)]);
+
+        self::getContainer()->get(RefundOrderHandler::class)((string) $order->id());
+        $this->clear();
+
+        $product = $this->product($this->sticker);
+        self::assertSame(10, $product->onHand);
+        self::assertSame(0, $product->unitsSold, 'a refunded order no longer counts as a sale');
+        self::assertSame([0, 0], [$this->event()->orderCount, $this->event()->turnover]);
+        self::assertNotNull(self::getContainer()->get(GetOrderHandler::class)((string) $order->id())->refundedAt);
+        $movements = self::getContainer()->get(GetProductHandler::class)($this->sticker)->movements;
+        self::assertEqualsCanonicalizing([['return', 4, '/orders/'.$order->id()], ['sale', -4, '/orders/'.$order->id()], ['purchase', 10, null]], array_map(static fn (array $movement): array => [$movement['kind'], $movement['quantity'], $movement['link']], $movements));
+    }
+
+    public function testDeletingARefundedOrderErasesBothItsSaleAndItsReturn(): void
+    {
+        $this->restock($this->sticker, null, 10, 1_000);
+        $order = $this->place('2026-07-10 15:00', [new RequestedLine($this->sticker, null, 4)]);
+        self::getContainer()->get(RefundOrderHandler::class)((string) $order->id());
+
+        self::getContainer()->get(DeleteOrderHandler::class)((string) $order->id());
+        $this->clear();
+
+        self::assertSame(10, $this->product($this->sticker)->onHand);
+        $lots = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0]->lots;
+        self::assertSame([['purchase', 10, 10]], array_map(static fn (array $lot): array => [$lot['origin'], $lot['quantity'], $lot['remaining']], $lots));
     }
 
     public function testAStockCheckFlagsMissingUnitsUntilTheMissingOrderIsAdded(): void

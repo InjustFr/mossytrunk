@@ -18,7 +18,7 @@ final readonly class OrderDeletion
 
     public function delete(Order $order): void
     {
-        $this->stock->putBack($order);
+        $this->stock->cancelSale($order);
         $this->orders->remove($order);
     }
 }

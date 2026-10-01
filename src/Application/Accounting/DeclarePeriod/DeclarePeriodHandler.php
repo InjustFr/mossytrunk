@@ -36,7 +36,7 @@ final readonly class DeclarePeriodHandler
         $this->declarations->add(UrssafDeclaration::record(
             $this->workspace->current(),
             $period,
-            PeriodTurnover::of($period, $this->orders->list())->turnover,
+            PeriodTurnover::of($period, $this->orders->sales())->turnover,
             $this->clock->now(),
         ));
         $this->transaction->commit();

@@ -35,6 +35,7 @@ final readonly class OrderView
         public int $costOfGoods,
         public int $margin,
         public array $importedSales,
+        public ?string $refundedAt,
     ) {
     }
 
@@ -66,6 +67,7 @@ final readonly class OrderView
             $order->costOfGoods()->amount(),
             $order->total()->subtract($order->costOfGoods())->amount(),
             array_map(static fn (ImportedSale $sale): array => ['reference' => $sale->reference(), 'paymentMethod' => $sale->paymentMethod()?->value], $order->importedSales()),
+            null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
         );
     }
 }

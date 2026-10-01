@@ -14,8 +14,10 @@ use App\Domain\Product\ProductRepository;
 use App\Domain\Product\SellingPriceChange;
 use App\Domain\Reporting\SalesByProduct;
 use App\Domain\Shared\DateRange;
+use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockCheckRepository;
 use App\Domain\Stock\StockItem;
+use App\Domain\Stock\StockLot;
 use App\Domain\Stock\StockRepository;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Uid\Ulid;
@@ -40,11 +42,12 @@ final readonly class GetProductHandler
         $orders = $this->orders->selling($product->id());
         $stockItems = $this->stock->ofProduct($product->id());
         $stock = ProductStock::of($product, $stockItems);
-        $ever = SalesByProduct::of($orders)->forProduct($product->id());
+        $sales = array_values(array_filter($orders, static fn (Order $order): bool => !$order->isRefunded()));
+        $ever = SalesByProduct::of($sales)->forProduct($product->id());
         $design = $this->designs->findByProduct($product->id());
 
         return new ProductDetailView(
-            ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock),
+            ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($sales, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock),
             $ever->quantity ?? 0,
             $ever?->sales->amount() ?? 0,
             $stock->items,
@@ -76,7 +79,7 @@ final readonly class GetProductHandler
                     'variant' => $item->variant(),
                     'quantity' => $lot->quantity(),
                     'cost' => $lot->totalCost()->amount(),
-                    'link' => null === $lot->sourceId() ? null : '/supplier-orders/'.$lot->sourceId(),
+                    'link' => $this->lotLink($lot),
                     'label' => null,
                 ];
             }
@@ -115,5 +118,14 @@ final readonly class GetProductHandler
         usort($movements, static fn (array $a, array $b): int => $b['date'] <=> $a['date']);
 
         return $movements;
+    }
+
+    private function lotLink(StockLot $lot): ?string
+    {
+        return match (true) {
+            null === $lot->sourceId() => null,
+            LotOrigin::Return === $lot->origin() => '/orders/'.$lot->sourceId(),
+            default => '/supplier-orders/'.$lot->sourceId(),
+        };
     }
 }

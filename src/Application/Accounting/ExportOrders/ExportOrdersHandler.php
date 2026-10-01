@@ -36,7 +36,7 @@ final readonly class ExportOrdersHandler
         }
         $range = DateRange::fromDates($start, $end);
 
-        $orders = array_values(array_filter($this->orders->list(), static fn (Order $order): bool => $range->covers($order->placedAt())));
+        $orders = array_values(array_filter($this->orders->sales(), static fn (Order $order): bool => $range->covers($order->placedAt())));
         usort($orders, static fn (Order $a, Order $b): int => $a->placedAt() <=> $b->placedAt());
 
         $rows = [array_map(fn (string $column): string => $this->translator->trans('export.orders.column.'.$column), self::COLUMNS)];

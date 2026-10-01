@@ -59,8 +59,10 @@ integration:
     service_already_added: '{service} est déjà ajouté.'
     unknown_service: 'Service inconnu « {service} ».'
 order:
-    not_mergeable: 'Ces commandes ne peuvent pas être fusionnées : {reason, select, same_order {c''est la même commande} different_event {elles ne sont pas du même événement} different_source {elles ne viennent pas de la même source} other {{reason}}}.'
+    not_mergeable: 'Ces commandes ne peuvent pas être fusionnées : {reason, select, same_order {c''est la même commande} different_event {elles ne sont pas du même événement} different_source {elles ne viennent pas de la même source} refunded {l''une d''elles est remboursée} other {{reason}}}.'
     line_already_identified: '« {label} » a déjà un produit.'
+    already_refunded: 'La commande {reference} est déjà remboursée.'
+    refunded_locked: 'La commande {reference} est remboursée : elle ne peut plus être modifiée.'
     unknown_product_chosen: 'Choisissez un produit du catalogue.'
     discount_exceeds_subtotal: 'Les remises ne peuvent pas dépasser le montant de la commande.'
     empty: 'Une commande doit contenir au moins un produit.'

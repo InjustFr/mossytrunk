@@ -13,10 +13,11 @@ import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
 import PaymentMethod from '../components/orders/PaymentMethod.vue';
+import StatusBadge from '../components/ui/StatusBadge.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useToast } from '../composables/useToast.js';
-import { formatDateTime } from '../composables/useDate.js';
+import { formatDate, formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
 import { listUrl } from '../composables/useQueryState.js';
 
@@ -25,7 +26,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { order, load, remove, identifyLine, mergeWith, candidates } = useOrder(props.orderId);
+const { order, load, remove, refund, identifyLine, mergeWith, candidates } = useOrder(props.orderId);
 const mergeOpen = ref(false);
 
 async function onMerged(other) {
@@ -44,6 +45,12 @@ async function onIdentified(name) {
     await load();
 }
 
+async function onRefund() {
+    await refund();
+    toast.success(t('orders.detail.refunded'));
+    await load();
+}
+
 async function onDelete() {
     await remove();
     visit(listUrl('/orders'));
@@ -56,12 +63,21 @@ onMounted(() => Promise.all([load(), loadProducts()]));
     <AppLayout :title="order ? t('orders.detail.title', { reference: order.reference }) : t('orders.detail.titleFallback')">
         <template #back><a class="back-link" :href="listUrl('/orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
         <template #actions>
-            <BaseButton v-if="order" variant="secondary" @click="mergeOpen = true">{{ t('orders.merge.open') }}</BaseButton>
-            <ConfirmButton v-if="order" :label="t('orders.detail.delete')" :confirm-label="t('orders.detail.confirmDelete')" @confirm="onDelete" />
+            <BaseButton v-if="order && !order.refundedAt" variant="secondary" @click="mergeOpen = true">{{ t('orders.merge.open') }}</BaseButton>
+            <ConfirmButton
+                v-if="order && !order.refundedAt"
+                :label="t('orders.detail.refund')"
+                :confirm-label="t('orders.detail.confirmRefund')"
+                :message="t('orders.detail.refundMessage')"
+                variant="secondary"
+                @confirm="onRefund"
+            />
+            <ConfirmButton v-if="order" :label="t('orders.detail.delete')" :confirm-label="t('orders.detail.confirmDelete')" :message="t('orders.detail.deleteMessage')" @confirm="onDelete" />
         </template>
 
         <div v-if="order" class="order-detail-page">
             <p class="order-detail-page__meta">
+                <StatusBadge v-if="order.refundedAt" tone="warning">{{ t('orders.detail.refundedOn', { date: formatDate(order.refundedAt) }) }}</StatusBadge>
                 {{ formatDateTime(order.placedAt) }} ·
                 <a v-if="order.event" :href="`/events/${order.event.id}`">{{ order.event.name }}</a>
                 <template v-else>{{ t('orders.shop', { source: order.sourceLabel }) }}</template>
@@ -71,7 +87,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
             </p>
             <div class="order-detail-page__grid">
                 <BaseCard :title="t('orders.detail.items')">
-                    <OrderLines :lines="order.lines" identifiable @identify="identifying = $event" />
+                    <OrderLines :lines="order.lines" :identifiable="!order.refundedAt" @identify="identifying = $event" />
                 </BaseCard>
                 <div class="order-detail-page__side">
                     <BaseCard :title="t('orders.detail.amount')">

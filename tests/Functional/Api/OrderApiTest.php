@@ -66,6 +66,22 @@ final class OrderApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testAnOrderIsRefundedOnce(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $product = $this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)])['id'];
+        $order = Json::string($this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'quantity' => 1]]]), 'id');
+
+        $client->jsonRequest('POST', "/api/orders/$order/refund");
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('POST', "/api/orders/$order/refund");
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('GET', '/api/orders');
+        self::assertIsString(Json::at(Json::decode((string) $client->getResponse()->getContent()), 0, 'refundedAt'));
+    }
+
     public function testDeleteAllOrders(): void
     {
         $client = self::signedInClient();

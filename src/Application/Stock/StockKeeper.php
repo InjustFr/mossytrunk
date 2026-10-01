@@ -7,10 +7,12 @@ namespace App\Application\Stock;
 use App\Domain\Event\Event;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
+use App\Domain\Order\OrderLine;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\StockCheckRepository;
+use App\Domain\Stock\StockItem;
 use App\Domain\Stock\StockRepository;
 
 final readonly class StockKeeper
@@ -55,17 +57,36 @@ final readonly class StockKeeper
         }, $items);
     }
 
-    public function putBack(Order $order): void
+    public function takeBack(Order $order, \DateTimeImmutable $returnedAt): void
     {
+        foreach ($this->soldStock($order) as [$line, $stock]) {
+            $stock->takeBack($line->quantity(), $line->cost(), $returnedAt, $order->id());
+        }
+    }
+
+    public function cancelSale(Order $order): void
+    {
+        foreach ($this->soldStock($order) as [$line, $stock]) {
+            $stock->cancelReturnOf($order->id());
+            $stock->cancelWithdrawal($line->quantity());
+        }
+    }
+
+    /**
+     * @return list<array{OrderLine, StockItem}>
+     */
+    private function soldStock(Order $order): array
+    {
+        $sold = [];
         foreach ($order->lines() as $line) {
             $productId = $line->productId();
             $product = null === $productId ? null : $this->products->findByIds([$productId])[0] ?? null;
-            if (null === $product || !$this->stillSells($product, $line->variant())) {
-                continue;
+            if (null !== $product && $this->stillSells($product, $line->variant())) {
+                $sold[] = [$line, $this->stock->for($product, $line->variant())];
             }
-
-            $this->stock->for($product, $line->variant())->putBack($line->quantity(), $line->cost(), $order->placedAt());
         }
+
+        return $sold;
     }
 
     public function followVariants(Product $product): void

@@ -29,7 +29,7 @@ final readonly class GetUrssafOverviewHandler
         $today = $this->clock->now();
         $periodicity = $this->workspace->current()->declarationPeriodicity();
         $year ??= DateRange::yearOf($today);
-        $orders = $this->orders->list();
+        $orders = $this->orders->sales();
         $declarations = [];
         foreach ($this->declarations->all() as $declaration) {
             $declarations[$declaration->period()] = $declaration;

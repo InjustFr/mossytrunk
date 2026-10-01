@@ -24,7 +24,7 @@ final readonly class IdentifyOrderLineHandler
     public function __invoke(IdentifyOrderLine $command): void
     {
         $order = $this->orders->get(Ulid::fromString($command->orderId));
-        $line = $order->line(Ulid::fromString($command->lineId));
+        $line = $order->lineToIdentify(Ulid::fromString($command->lineId));
         $item = $this->products->get(Ulid::fromString($command->productId))->sellable($command->variant)->at($line->unitPrice());
 
         $withdrawn = $this->stock->withdraw($order->event(), [new OrderedItem($item, $line->quantity())]);

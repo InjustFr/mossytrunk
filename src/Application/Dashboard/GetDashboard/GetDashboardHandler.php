@@ -38,7 +38,7 @@ final readonly class GetDashboardHandler
      */
     public function __invoke(?int $year = null): DashboardView
     {
-        $orders = $this->orders->list();
+        $orders = $this->orders->sales();
         $events = $this->events->all();
         $results = MonthlyResults::of($orders, $events);
         $year ??= DateRange::yearOf(new \DateTimeImmutable('now'));

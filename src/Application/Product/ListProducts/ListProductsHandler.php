@@ -30,7 +30,7 @@ final readonly class ListProductsHandler
     public function __invoke(): array
     {
         $year = DateRange::yearOf($this->clock->now());
-        $sales = SalesByProduct::of(array_values(array_filter($this->orders->list(), static fn (Order $order): bool => $order->isPlacedIn($year))));
+        $sales = SalesByProduct::of(array_values(array_filter($this->orders->sales(), static fn (Order $order): bool => $order->isPlacedIn($year))));
 
         $stockByProduct = [];
         foreach ($this->stock->all() as $item) {

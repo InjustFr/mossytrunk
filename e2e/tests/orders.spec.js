@@ -88,6 +88,27 @@ test('delete an order from its detail page', async ({ page, request }) => {
     await expect(page.getByRole('row').filter({ hasText: order.reference })).toHaveCount(0);
 });
 
+test('refund an order: it stays in the history and its items come back to stock', async ({ page, request }) => {
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker'), buyingPrice: 100 });
+    const response = await request.post('/api/orders', {
+        data: { placedAt: `${event.startDate}T10:00`, lines: [{ productId: sticker.id, variant: null, quantity: 2 }] },
+    });
+    const order = await response.json();
+
+    await page.goto(`/orders/${order.id}`);
+    await page.getByRole('button', { name: 'Rembourser' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Confirmer le remboursement' }).click();
+
+    await expect(page.getByText(/Remboursée le/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rembourser' })).toHaveCount(0);
+
+    await page.goto(`/products/${sticker.id}`);
+    const movements = page.locator('.product-movements');
+    await expect(movements.getByRole('link', { name: 'Retour de commande' })).toHaveAttribute('href', `/orders/${order.id}`);
+    await expect(movements.getByRole('link', { name: 'Vente' })).toBeVisible();
+});
+
 test('delete several orders from the list', async ({ page, request }) => {
     const event = await createEvent(request);
     const sticker = await createProduct(request, { name: unique('Sticker') });

@@ -10,8 +10,10 @@ use App\Domain\Identity\Workspace;
 use App\Domain\Order\Exception\DiscountExceedsSubtotal;
 use App\Domain\Order\Exception\EmptyOrder;
 use App\Domain\Order\Exception\NegativeShippingCost;
+use App\Domain\Order\Exception\OrderAlreadyRefunded;
 use App\Domain\Order\Exception\OrderOutsideEvent;
 use App\Domain\Order\Exception\OrdersNotMergeable;
+use App\Domain\Order\Exception\RefundedOrderLocked;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
@@ -71,6 +73,9 @@ class Order
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'shipping_')]
     private Money $shipping;
+
+    #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $refundedAt = null;
 
     /**
      * @param list<OrderedItem>     $items
@@ -205,10 +210,32 @@ class Order
         return array_values($this->importedSales->toArray());
     }
 
+    public function refund(\DateTimeImmutable $refundedAt): void
+    {
+        if ($this->isRefunded()) {
+            throw new OrderAlreadyRefunded($this->reference);
+        }
+
+        $this->refundedAt = $refundedAt;
+    }
+
+    public function isRefunded(): bool
+    {
+        return null !== $this->refundedAt;
+    }
+
+    public function refundedAt(): ?\DateTimeImmutable
+    {
+        return $this->refundedAt;
+    }
+
     public function absorb(self $other): void
     {
         if ($other === $this) {
             throw new OrdersNotMergeable('same_order');
+        }
+        if ($this->isRefunded() || $other->isRefunded()) {
+            throw new OrdersNotMergeable('refunded');
         }
         if ($other->event !== $this->event) {
             throw new OrdersNotMergeable('different_event');
@@ -282,7 +309,7 @@ class Order
         }
     }
 
-    public function line(Ulid $lineId): OrderLine
+    private function line(Ulid $lineId): OrderLine
     {
         foreach ($this->lines as $line) {
             if ($line->id()->equals($lineId)) {
@@ -291,6 +318,15 @@ class Order
         }
 
         throw new NotFound('order_line', (string) $lineId);
+    }
+
+    public function lineToIdentify(Ulid $lineId): OrderLine
+    {
+        if ($this->isRefunded()) {
+            throw new RefundedOrderLocked($this->reference);
+        }
+
+        return $this->line($lineId);
     }
 
     private function lineSelling(SellableItem $item, OrderLine $except): ?OrderLine

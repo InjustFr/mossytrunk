@@ -28,7 +28,7 @@ final readonly class GetStockSheetHandler
         $event = $this->events->get(Ulid::fromString($eventId));
 
         $sold = [];
-        foreach ($this->orders->list($event->id()) as $order) {
+        foreach ($this->orders->sales($event->id()) as $order) {
             foreach ($order->lines() as $line) {
                 $key = self::key((string) $line->productId(), $line->variant());
                 $sold[$key] = ($sold[$key] ?? 0) + $line->quantity();

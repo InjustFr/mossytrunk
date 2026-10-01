@@ -24,7 +24,7 @@ final readonly class GetEventReportHandler
     {
         $event = $this->events->get(Ulid::fromString($eventId));
 
-        $result = EventResult::of($event, $this->orders->list($event->id()));
+        $result = EventResult::of($event, $this->orders->sales($event->id()));
 
         $products = [];
         foreach ($this->products->findByIds(ProductSales::productIds($result->productSales)) as $product) {

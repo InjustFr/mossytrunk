@@ -32,7 +32,7 @@ final readonly class ListEventsHandler
     {
         /** @var array<string, list<Order>> $ordersByEvent */
         $ordersByEvent = [];
-        foreach ($this->orders->list() as $order) {
+        foreach ($this->orders->sales() as $order) {
             $event = $order->event();
             if (null !== $event) {
                 $ordersByEvent[(string) $event->id()][] = $order;

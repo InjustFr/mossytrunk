@@ -19,7 +19,13 @@
         "items": "Items",
         "amount": "Amount",
         "margin": "Margin",
-        "externalReferences": "{source} ref. {references}"
+        "externalReferences": "{source} ref. {references}",
+        "deleteMessage": "For an order entered by mistake: it disappears along with its stock withdrawal, as if it never existed. This cannot be undone.",
+        "refund": "Refund",
+        "confirmRefund": "Confirm refund",
+        "refundMessage": "The customer gave the items back: they return to stock today and the order no longer counts in turnover. It stays in the history.",
+        "refunded": "Order refunded.",
+        "refundedOn": "Refunded on {date}"
     },
     "eventFilter": {
         "label": "Event",
@@ -67,7 +73,8 @@
         "count": "{count} order | {count} orders",
         "source": "Source",
         "selectAll": "Select all",
-        "select": "Select order {reference}"
+        "select": "Select order {reference}",
+        "refunded": "Refunded"
     },
     "margin": {
         "collected": "Collected",
@@ -111,7 +118,7 @@
         "count": "{count} order selected | {count} orders selected",
         "delete": "Delete selection",
         "confirmDelete": "Delete {count} order? | Delete {count} orders?",
-        "deleteMessage": "Its items go back to stock. This cannot be undone. | Their items go back to stock. This cannot be undone.",
+        "deleteMessage": "For an order entered by mistake: it disappears along with its stock withdrawal. This cannot be undone. | For orders entered by mistake: they disappear along with their stock withdrawals. This cannot be undone.",
         "deleted": "{count} order deleted. | {count} orders deleted."
     }
 }

@@ -14,6 +14,7 @@ use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
@@ -43,6 +44,16 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function list(?Ulid $eventId = null): array
     {
+        return $this->orders($eventId)->getQuery()->getResult();
+    }
+
+    public function sales(?Ulid $eventId = null): array
+    {
+        return $this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery()->getResult();
+    }
+
+    private function orders(?Ulid $eventId): QueryBuilder
+    {
         $query = $this->entityManager->createQueryBuilder()
             ->select('o', 'l', 'e')
             ->from(Order::class, 'o')
@@ -56,7 +67,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             $query->andWhere('e.id = :event')->setParameter('event', $eventId, UlidType::NAME);
         }
 
-        return $query->getQuery()->getResult();
+        return $query;
     }
 
     public function selling(Ulid $productId): array

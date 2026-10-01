@@ -61,6 +61,14 @@ class StockLot
         return new LotConsumption($taken, $this->costOfFirst($consumedBefore + $taken)->subtract($this->costOfFirst($consumedBefore)));
     }
 
+    public function refill(int $wanted): int
+    {
+        $given = min($wanted, $this->quantity - $this->remaining);
+        $this->remaining += $given;
+
+        return $given;
+    }
+
     public function isExhausted(): bool
     {
         return 0 === $this->remaining;
@@ -111,6 +119,11 @@ class StockLot
     public function receivedAt(): \DateTimeImmutable
     {
         return $this->receivedAt;
+    }
+
+    public function isReturnOf(Ulid $orderId): bool
+    {
+        return LotOrigin::Return === $this->origin && null !== $this->sourceId && $this->sourceId->equals($orderId);
     }
 
     public function origin(): LotOrigin

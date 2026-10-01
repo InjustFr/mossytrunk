@@ -10,10 +10,12 @@ use App\Domain\Shared\Money;
 use App\Domain\Stock\Exception\InvalidStock;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockItem;
+use App\Domain\Stock\StockLot;
 use App\Tests\Support\Costs;
 use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Ulid;
 
 final class StockItemTest extends TestCase
 {
@@ -85,14 +87,57 @@ final class StockItemTest extends TestCase
         self::assertSame(300, $stock->withdraw(3, Money::zero())->amount());
     }
 
-    public function testPutBackUnitsAreSoldAgainAtTheirCostInSaleOrder(): void
+    public function testCancellingAWithdrawalPutsTheUnitsBackInTheLotsTheyCameFrom(): void
     {
         $stock = $this->stock();
+        $stock->receive(10, Money::cents(500), LotOrigin::Purchase, self::at('2026-01-01'));
+        $stock->receive(10, Money::cents(1_000), LotOrigin::Purchase, self::at('2026-02-01'));
+        $stock->withdraw(12, Money::zero());
+
+        $stock->cancelWithdrawal(4);
+
+        self::assertSame(12, $stock->onHand());
+        self::assertSame([2, 10], array_map(static fn (StockLot $lot): int => $lot->remaining(), $stock->lots()));
+        self::assertSame(1_000 + 100, $stock->remainingValue()->amount());
+    }
+
+    public function testCancellingAWithdrawalBeyondTheLotsOnlyRaisesTheBalance(): void
+    {
+        $stock = $this->stock();
+        $stock->receive(2, Money::cents(200), LotOrigin::Purchase, self::at('2026-01-01'));
+        $stock->withdraw(5, Money::cents(90));
+
+        $stock->cancelWithdrawal(2);
+
+        self::assertSame(-1, $stock->onHand());
+        self::assertSame(0, $stock->lots()[0]->remaining());
+    }
+
+    public function testTakenBackUnitsAreANewReturnLotAtTheirSaleCost(): void
+    {
+        $orderId = new Ulid();
+        $stock = $this->stock();
         $stock->receive(5, Money::cents(1_000), LotOrigin::Purchase, self::at('2026-03-01'));
-        $stock->putBack(2, Money::cents(300), self::at('2026-02-01'));
+        $stock->takeBack(2, Money::cents(300), self::at('2026-02-01'), $orderId);
 
         self::assertSame(7, $stock->onHand());
+        self::assertTrue($stock->lots()[0]->isReturnOf($orderId));
         self::assertSame(300, $stock->withdraw(2, Money::zero())->amount());
+    }
+
+    public function testCancellingAReturnRemovesItsLotAndTheUnitsItBrought(): void
+    {
+        $orderId = new Ulid();
+        $stock = $this->stock();
+        $stock->receive(5, Money::cents(1_000), LotOrigin::Purchase, self::at('2026-01-01'));
+        $stock->takeBack(2, Money::cents(300), self::at('2026-02-01'), $orderId);
+        $stock->withdraw(6, Money::zero());
+
+        $stock->cancelReturnOf($orderId);
+
+        self::assertSame(-1, $stock->onHand());
+        self::assertCount(1, $stock->lots());
+        self::assertSame(0, $stock->lots()[0]->remaining());
     }
 
     public function testCountingLessWithdrawsTheMissingUnits(): void

@@ -24,6 +24,11 @@ interface OrderRepository
     public function list(?Ulid $eventId = null): array;
 
     /**
+     * @return list<Order> orders still counting as sales (not refunded), most recent first, optionally restricted to one event
+     */
+    public function sales(?Ulid $eventId = null): array;
+
+    /**
      * @return list<Order> orders having at least one line of the product
      */
     public function selling(Ulid $productId): array;

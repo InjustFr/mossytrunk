@@ -92,9 +92,30 @@ class StockItem
         return $consumption->cost->add($this->costWhenEmpty($fallbackUnitCost)->multiply($missing));
     }
 
-    public function putBack(int $quantity, Money $totalCost, \DateTimeImmutable $soldAt): void
+    public function cancelWithdrawal(int $quantity): void
     {
-        $this->receive($quantity, $totalCost, LotOrigin::Return, $soldAt);
+        if ($quantity < 1) {
+            throw new NonPositiveStockQuantity();
+        }
+
+        $this->onHand += $quantity;
+        $this->rebalanceLots();
+    }
+
+    public function takeBack(int $quantity, Money $totalCost, \DateTimeImmutable $returnedAt, Ulid $orderId): void
+    {
+        $this->receive($quantity, $totalCost, LotOrigin::Return, $returnedAt, $orderId);
+    }
+
+    public function cancelReturnOf(Ulid $orderId): void
+    {
+        foreach ($this->lots() as $lot) {
+            if ($lot->isReturnOf($orderId)) {
+                $this->onHand -= $lot->quantity();
+                $this->lots->removeElement($lot);
+            }
+        }
+        $this->rebalanceLots();
     }
 
     public function correctTo(int $counted, Money $fallbackUnitCost, \DateTimeImmutable $countedAt): StockCorrection
@@ -122,7 +143,7 @@ class StockItem
         }
         $this->onHand += $other->onHand;
         $this->lastUnitCostCents ??= $other->lastUnitCostCents;
-        $this->consume($this->remainingUnits() - max($this->onHand, 0));
+        $this->rebalanceLots();
     }
 
     public function nextUnitCost(Money $fallbackUnitCost): Money
@@ -181,6 +202,27 @@ class StockItem
         }
 
         return new LotConsumption($taken, $cost);
+    }
+
+    private function rebalanceLots(): void
+    {
+        $surplus = $this->remainingUnits() - max($this->onHand, 0);
+        if ($surplus > 0) {
+            $this->consume($surplus);
+        }
+        if ($surplus < 0) {
+            $this->refill(-$surplus);
+        }
+    }
+
+    private function refill(int $quantity): void
+    {
+        foreach (array_reverse($this->lots()) as $lot) {
+            if ($quantity <= 0) {
+                return;
+            }
+            $quantity -= $lot->refill($quantity);
+        }
     }
 
     private function remainingUnits(): int

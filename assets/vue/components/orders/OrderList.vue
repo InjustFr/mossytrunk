@@ -5,6 +5,7 @@ import BaseCheckbox from '../ui/BaseCheckbox.vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import StatusBadge from '../ui/StatusBadge.vue';
 import PaymentMethod from './PaymentMethod.vue';
 import { formatDay, formatTime } from '../../composables/useDate.js';
 
@@ -28,7 +29,7 @@ const days = computed(() => {
     for (const order of props.orders) {
         const key = dayKey(order);
         const day = totals.get(key) ?? { count: 0, total: 0 };
-        totals.set(key, { count: day.count + 1, total: day.total + order.total });
+        totals.set(key, { count: day.count + 1, total: day.total + (order.refundedAt ? 0 : order.total) });
     }
     return totals;
 });
@@ -51,7 +52,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <template>
     <EmptyState v-if="orders.length === 0">{{ t('orders.list.empty') }}</EmptyState>
-    <DataTable v-else remember-page :items="grouped" class="order-list">
+    <DataTable remember-page v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
                 <th class="order-list__check">
@@ -92,9 +93,10 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                         <MoneyAmount v-if="order.discountTotal > 0" :cents="-order.discountTotal" />
                         <span v-else class="order-list__none">—</span>
                     </td>
-                    <td class="data-table__cell--number order-list__total"><MoneyAmount :cents="order.total" /></td>
+                    <td :class="['data-table__cell--number', 'order-list__total', { 'order-list__total--refunded': order.refundedAt }]"><MoneyAmount :cents="order.total" /></td>
                     <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__source">
+                        <StatusBadge v-if="order.refundedAt" tone="warning">{{ t('orders.list.refunded') }}</StatusBadge>
                         <span v-if="order.source !== 'manual'" class="order-list__badge">{{ order.sourceLabel }}</span>
                         <span v-if="order.externalReferences.length" class="order-list__external">{{ order.externalReferences.join(', ') }}</span>
                     </td>
@@ -124,6 +126,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 .order-list__time { font-variant-numeric: tabular-nums; }
 .order-list__payment { color: var(--color-muted); font-size: 0.875rem; }
 .order-list__total { font-weight: 600; }
+.order-list__total--refunded { color: var(--color-subtle); text-decoration: line-through; }
 .order-list__none { color: var(--color-subtle); }
 
 .order-list__reference { font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

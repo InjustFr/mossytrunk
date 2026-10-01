@@ -7,7 +7,9 @@ namespace App\Tests\Unit\Domain\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
 use App\Domain\Order\Exception\InvalidOrder;
+use App\Domain\Order\Exception\OrderAlreadyRefunded;
 use App\Domain\Order\Exception\OrdersNotMergeable;
+use App\Domain\Order\Exception\RefundedOrderLocked;
 use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
@@ -209,6 +211,20 @@ final class OrderTest extends TestCase
         DomainExceptions::assertThrown(new OrdersNotMergeable('different_source'), fn () => $this->imported('TX1', 1, 400)->absorb($manual));
         DomainExceptions::assertThrown(new OrdersNotMergeable('different_event'), fn () => Order::place($other, self::at('2026-08-01 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [])->absorb($manual));
         DomainExceptions::assertThrown(new OrdersNotMergeable('same_order'), static fn () => $manual->absorb($manual));
+    }
+
+    public function testARefundedOrderIsRefundedOnceAndCannotBeChangedAnymore(): void
+    {
+        $order = $this->imported('TX1', 1, 400);
+        $line = $order->lines()[0];
+
+        $order->refund(self::at('2026-07-20 10:00'));
+
+        self::assertTrue($order->isRefunded());
+        self::assertEquals(self::at('2026-07-20 10:00'), $order->refundedAt());
+        DomainExceptions::assertThrown(new OrderAlreadyRefunded($order->reference()), static fn () => $order->refund(self::at('2026-07-21 10:00')));
+        DomainExceptions::assertThrown(new OrdersNotMergeable('refunded'), fn () => $this->imported('TX2', 1, 400)->absorb($order));
+        DomainExceptions::assertThrown(new RefundedOrderLocked($order->reference()), static fn () => $order->lineToIdentify($line->id()));
     }
 
     /**

@@ -19,7 +19,13 @@
         "items": "Articles",
         "amount": "Montant",
         "margin": "Marge",
-        "externalReferences": "réf. {source} {references}"
+        "externalReferences": "réf. {source} {references}",
+        "deleteMessage": "Pour une commande saisie par erreur : elle disparaît, et sa sortie de stock aussi, comme si elle n'avait jamais existé. Cette action est définitive.",
+        "refund": "Rembourser",
+        "confirmRefund": "Confirmer le remboursement",
+        "refundMessage": "Le client a rendu ses articles : ils reviennent en stock aujourd'hui et la commande ne compte plus dans le chiffre d'affaires. Elle reste dans l'historique.",
+        "refunded": "Commande remboursée.",
+        "refundedOn": "Remboursée le {date}"
     },
     "eventFilter": {
         "label": "Événement",
@@ -67,7 +73,8 @@
         "count": "{count} commande | {count} commandes",
         "source": "Source",
         "selectAll": "Tout sélectionner",
-        "select": "Sélectionner la commande {reference}"
+        "select": "Sélectionner la commande {reference}",
+        "refunded": "Remboursée"
     },
     "margin": {
         "collected": "Encaissé",
@@ -111,7 +118,7 @@
         "count": "{count} commande sélectionnée | {count} commandes sélectionnées",
         "delete": "Supprimer la sélection",
         "confirmDelete": "Supprimer {count} commande ? | Supprimer {count} commandes ?",
-        "deleteMessage": "Ses articles reviennent en stock. Cette action est définitive. | Leurs articles reviennent en stock. Cette action est définitive.",
+        "deleteMessage": "Pour une commande saisie par erreur : elle disparaît, et sa sortie de stock aussi. Cette action est définitive. | Pour des commandes saisies par erreur : elles disparaissent, et leurs sorties de stock aussi. Cette action est définitive.",
         "deleted": "{count} commande supprimée. | {count} commandes supprimées."
     }
 }

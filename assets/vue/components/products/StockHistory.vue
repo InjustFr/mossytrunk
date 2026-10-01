@@ -47,6 +47,7 @@ onMounted(async () => {
                         <td>{{ formatDate(lot.receivedAt) }}</td>
                         <td>
                             <a v-if="lot.origin === 'supplier_order' && lot.sourceId" :href="`/supplier-orders/${lot.sourceId}`">{{ lotOriginLabel(lot.origin) }}</a>
+                            <a v-else-if="lot.origin === 'return' && lot.sourceId" :href="`/orders/${lot.sourceId}`">{{ lotOriginLabel(lot.origin) }}</a>
                             <template v-else>{{ lotOriginLabel(lot.origin) }}</template>
                         </td>
                         <td class="stock-history__number">{{ lot.quantity }}</td>

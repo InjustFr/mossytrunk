@@ -27,6 +27,7 @@ final readonly class OrderSummaryView
         public string $sourceLabel,
         public ?string $paymentMethod,
         public array $externalReferences,
+        public ?string $refundedAt,
     ) {
     }
 
@@ -46,6 +47,7 @@ final readonly class OrderSummaryView
             $sourceLabel,
             $order->paymentMethod()?->value,
             array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales()),
+            null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
         );
     }
 }
