@@ -213,6 +213,19 @@ final class OrderTest extends TestCase
         DomainExceptions::assertThrown(new OrdersNotMergeable('same_order'), static fn () => $manual->absorb($manual));
     }
 
+    public function testAnOrderCanAbsorbAnotherUnrefundedOrderOfItsEventAndSource(): void
+    {
+        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $sameEvent = Order::place($this->event, self::at('2026-07-10 15:05'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $refunded = Order::place($this->event, self::at('2026-07-10 15:10'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $refunded->refund(self::at('2026-07-20 10:00'));
+
+        self::assertTrue($order->canAbsorb($sameEvent));
+        self::assertFalse($order->canAbsorb($order));
+        self::assertFalse($order->canAbsorb($refunded));
+        self::assertFalse($order->canAbsorb($this->imported('TX1', 1, 400)));
+    }
+
     public function testARefundedOrderIsRefundedOnceAndCannotBeChangedAnymore(): void
     {
         $order = $this->imported('TX1', 1, 400);

@@ -67,6 +67,25 @@ final class OrderApiTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testMergeCandidatesAreTheOtherUnrefundedOrdersOfTheEventAndSource(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $this->post($client, '/api/events', ['name' => 'Made in Asia', 'location' => 'Bruxelles', 'startDate' => '2026-08-01', 'endDate' => '2026-08-02']);
+        $product = $this->post($client, '/api/products', ['name' => 'Zine', 'sellingPrice' => 1_000, 'typeId' => ProductTypesApi::create($client)])['id'];
+        $place = fn (string $at): string => Json::string($this->post($client, '/api/orders', ['placedAt' => $at, 'lines' => [['productId' => $product, 'variant' => null, 'quantity' => 1]]]), 'id');
+        $order = $place('2026-07-10T15:30');
+        $sameEvent = $place('2026-07-10T15:31');
+        $refunded = $place('2026-07-11T10:00');
+        $place('2026-08-01T10:00');
+        $client->jsonRequest('POST', "/api/orders/$refunded/refund");
+
+        $client->jsonRequest('GET', "/api/orders/$order/merge-candidates");
+
+        self::assertResponseIsSuccessful();
+        self::assertSame([$sameEvent], array_map(static fn (mixed $candidate): string => Json::string($candidate, 'id'), array_values(Json::decode((string) $client->getResponse()->getContent()))));
+    }
+
     public function testAnOrderIsRefundedOnce(): void
     {
         $client = self::signedInClient();

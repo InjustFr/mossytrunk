@@ -34,6 +34,11 @@ interface OrderRepository
     public function salesWithin(DateRange $period): array;
 
     /**
+     * @return list<Order> other unrefunded orders of the same event and source, most recent first
+     */
+    public function mergeCandidatesOf(Order $order): array;
+
+    /**
      * @return list<Order> orders having at least one line of the product
      */
     public function selling(Ulid $productId): array;

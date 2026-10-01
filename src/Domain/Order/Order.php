@@ -229,19 +229,16 @@ class Order
         return $this->refundedAt;
     }
 
+    public function canAbsorb(self $other): bool
+    {
+        return null === $this->mergeObstacleWith($other);
+    }
+
     public function absorb(self $other): void
     {
-        if ($other === $this) {
-            throw new OrdersNotMergeable('same_order');
-        }
-        if ($this->isRefunded() || $other->isRefunded()) {
-            throw new OrdersNotMergeable('refunded');
-        }
-        if ($other->event !== $this->event) {
-            throw new OrdersNotMergeable('different_event');
-        }
-        if ($other->source !== $this->source) {
-            throw new OrdersNotMergeable('different_source');
+        $obstacle = $this->mergeObstacleWith($other);
+        if (null !== $obstacle) {
+            throw new OrdersNotMergeable($obstacle);
         }
 
         foreach ($other->lines() as $line) {
@@ -402,5 +399,16 @@ class Order
     public function workspace(): Workspace
     {
         return $this->workspace;
+    }
+
+    private function mergeObstacleWith(self $other): ?string
+    {
+        return match (true) {
+            $other === $this => 'same_order',
+            $this->isRefunded() || $other->isRefunded() => 'refunded',
+            $other->event !== $this->event => 'different_event',
+            $other->source !== $this->source => 'different_source',
+            default => null,
+        };
     }
 }

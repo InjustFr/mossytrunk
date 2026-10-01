@@ -65,6 +65,22 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->getResult();
     }
 
+    public function mergeCandidatesOf(Order $order): array
+    {
+        $query = $this->orders($order->event()?->id())
+            ->andWhere('o.refundedAt IS NULL')
+            ->andWhere('o.source = :source')
+            ->andWhere('o.id != :order')
+            ->setParameter('source', $order->source())
+            ->setParameter('order', $order->id(), UlidType::NAME);
+
+        if (null === $order->event()) {
+            $query->andWhere('o.event IS NULL');
+        }
+
+        return $query->getQuery()->getResult();
+    }
+
     private function orders(?Ulid $eventId): QueryBuilder
     {
         $query = $this->entityManager->createQueryBuilder()
