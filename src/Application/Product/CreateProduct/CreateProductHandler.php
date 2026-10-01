@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Product\CreateProduct;
 
+use App\Application\Product\ProductReferenceGenerator;
 use App\Application\Product\ProductTypeChoice;
 use App\Application\Product\ReferenceAvailability;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
-use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;

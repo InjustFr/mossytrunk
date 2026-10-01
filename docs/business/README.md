@@ -16,6 +16,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [event-report.md](event-report.md) | Profitability of an event: Dépenses, Commandes, URSSAF 12.8 %, Total |
 | [dashboard.md](dashboard.md) | Results per month and per year |
 | [stock.md](stock.md) | Stock per sellable item in FIFO lots, low stock, inventory after an event and missing orders |
+| [references.md](references.md) | Reference formats per kind (orders, supplier orders, products): tags, numbering, renumbering existing items |
 | [supplier-orders.md](supplier-orders.md) | Suppliers, supplier orders, reception into stock at the real unit cost |
 | [designs.md](designs.md) | Designs and collections declined onto gabarits, validated into products |
 | [accounting.md](accounting.md) | URSSAF declarations per month or quarter, CSV export of orders |
@@ -44,6 +45,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Coût d'achat | `Order::costOfGoods()` | Σ line costs (units taken from stock, oldest lot first) |
 | Réserve (stock) | `Domain\Stock\StockItem` | Units of one sellable item, in lots |
 | Lot | `Domain\Stock\StockLot` | Units received together at one cost |
+| Format de référence | `Domain\Reference\ReferenceFormat` | How a workspace writes the references of one kind of item (text + tags, next number) |
 | Fournisseur | `Domain\Purchasing\Supplier` | Who products are bought from |
 | Commande fournisseur | `Domain\Purchasing\SupplierOrder` | Purchase from a supplier: ordered, then received into stock |
 | Gabarit | `Domain\Design\Gabarit` | Generic support (tirage 15×15, sticker brillant…) with default prices and adaptations |

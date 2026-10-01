@@ -40,7 +40,7 @@ final class OrderTest extends TestCase
 
     public function testTotalsAndCostOfGoods(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [
             new OrderedItem($this->sticker->sellable(null), 3),
             new OrderedItem($this->tshirt->sellable('M'), 1),
         ], [new AppliedDiscount('3 stickers pour 10 €', Money::cents(200))]);
@@ -52,12 +52,12 @@ final class OrderTest extends TestCase
         self::assertSame(4, $order->itemCount());
         self::assertSame(Order::MANUAL, $order->source());
         self::assertFalse($order->isImported());
-        self::assertMatchesRegularExpression('/^CMD-20260710-[0-9A-Z]{6}$/', $order->reference());
+        self::assertSame('CMD-1', $order->reference());
     }
 
     public function testCostsFromStockAreKeptAndMergedPerLine(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [
             (new OrderedItem($this->sticker->sellable(null), 2))->costing(Money::cents(150)),
             (new OrderedItem($this->sticker->sellable(null), 1))->costing(Money::cents(100)),
         ], []);
@@ -68,20 +68,20 @@ final class OrderTest extends TestCase
 
     public function testAnEtsyOrderHasNoEventAndItsShippingCountsInTheTotal(): void
     {
-        $order = Order::imported(TestWorkspace::get(), 'etsy', '310', 'ETSY-310', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null)->at(Money::cents(450)), 2)], Money::cents(800), Money::cents(290), PaymentMethod::Card, [], 'Remise Etsy');
+        $order = Order::imported('CMD-1', TestWorkspace::get(), 'etsy', '310', 'ETSY-310', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null)->at(Money::cents(450)), 2)], Money::cents(800), Money::cents(290), PaymentMethod::Card, [], 'Remise Etsy');
 
         self::assertNull($order->event());
         self::assertSame('etsy', $order->source());
         self::assertSame([['310', 'ETSY-310']], array_map(static fn (ImportedSale $sale): array => [$sale->externalId(), $sale->reference()], $order->importedSales()));
         self::assertTrue($order->isImported());
-        self::assertStringStartsWith('CMD-20261002-', $order->reference());
+        self::assertSame('CMD-1', $order->reference());
         self::assertEquals([new AppliedDiscount('Remise Etsy', Money::cents(100))], $order->appliedDiscounts());
         self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
     }
 
     public function testSameProductVariantTupleIsMerged(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [
             new OrderedItem($this->tshirt->sellable('M'), 1),
             new OrderedItem($this->tshirt->sellable('S'), 1),
             new OrderedItem($this->tshirt->sellable('M'), 2),
@@ -94,7 +94,7 @@ final class OrderTest extends TestCase
 
     public function testPricesAreSnapshots(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         $this->sticker->reprice(Money::cents(500));
         $this->sticker->bought(Money::cents(100));
@@ -107,12 +107,12 @@ final class OrderTest extends TestCase
     {
         $this->expectException(InvalidOrder::class);
 
-        Order::place($this->event, self::at('2026-07-13 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        Order::place('CMD-1', $this->event, self::at('2026-07-13 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
     }
 
     public function testLastDayOfEventIsIncluded(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-12 23:59'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-12 23:59'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         self::assertSame(400, $order->total()->amount());
     }
@@ -121,21 +121,21 @@ final class OrderTest extends TestCase
     {
         $this->expectException(InvalidOrder::class);
 
-        Order::place($this->event, self::at('2026-07-10 15:00'), [], []);
+        Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [], []);
     }
 
     public function testQuantityMustBePositive(): void
     {
         $this->expectException(InvalidOrder::class);
 
-        Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 0)], []);
+        Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 0)], []);
     }
 
     public function testDiscountsCannotExceedSubtotal(): void
     {
         $this->expectException(InvalidOrder::class);
 
-        Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [new AppliedDiscount('Trop', Money::cents(500))]);
+        Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [new AppliedDiscount('Trop', Money::cents(500))]);
     }
 
     public function testAnImportedOrderKeepsItsExternalIdAndTheGapAsTheServiceDiscount(): void
@@ -170,7 +170,7 @@ final class OrderTest extends TestCase
 
     public function testAnImportedOrderWithoutDiscount(): void
     {
-        $order = Order::imported(TestWorkspace::get(), 'sumup', 'TX124', 'TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::zero(), PaymentMethod::Cash, [], 'Remise SumUp');
+        $order = Order::imported('CMD-1', TestWorkspace::get(), 'sumup', 'TX124', 'TX124', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::zero(), PaymentMethod::Cash, [], 'Remise SumUp');
 
         self::assertSame([], $order->appliedDiscounts());
         self::assertSame(PaymentMethod::Cash, $order->paymentMethod());
@@ -180,16 +180,16 @@ final class OrderTest extends TestCase
     {
         $this->expectException(InvalidOrder::class);
 
-        Order::imported(TestWorkspace::get(), 'etsy', '311', 'ETSY-311', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::cents(-1), PaymentMethod::Card, [], 'Remise Etsy');
+        Order::imported('CMD-1', TestWorkspace::get(), 'etsy', '311', 'ETSY-311', null, self::at('2026-10-02 09:00'), [new OrderedItem($this->sticker->sellable(null), 1)], Money::cents(400), Money::cents(-1), PaymentMethod::Card, [], 'Remise Etsy');
     }
 
     public function testTwoSalesOfOneCustomerAreMergedIntoOneOrder(): void
     {
-        $card = Order::imported(TestWorkspace::get(), 'sumup', 'TX-CARD', 'TX-CARD', $this->event, self::at('2026-07-10 15:02'), [
+        $card = Order::imported('CMD-1', TestWorkspace::get(), 'sumup', 'TX-CARD', 'TX-CARD', $this->event, self::at('2026-07-10 15:02'), [
             (new OrderedItem($this->sticker->sellable(null), 2))->costing(Money::cents(160)),
             (new OrderedItem($this->tshirt->sellable('M'), 1))->costing(Money::cents(900)),
         ], Money::cents(2_700), Money::zero(), PaymentMethod::Card, [], 'Remise SumUp');
-        $cash = Order::imported(TestWorkspace::get(), 'sumup', 'TX-CASH', 'TX-CASH', $this->event, self::at('2026-07-10 15:00'), [
+        $cash = Order::imported('CMD-1', TestWorkspace::get(), 'sumup', 'TX-CASH', 'TX-CASH', $this->event, self::at('2026-07-10 15:00'), [
             (new OrderedItem($this->sticker->sellable(null), 1))->costing(Money::cents(80)),
         ], Money::cents(400), Money::zero(), PaymentMethod::Cash, [], 'Remise SumUp');
 
@@ -206,18 +206,18 @@ final class OrderTest extends TestCase
     public function testOrdersOfDifferentEventsOrSourcesAreNotMerged(): void
     {
         $other = Event::schedule(TestWorkspace::get(), 'Salon', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-08-01'), new \DateTimeImmutable('2026-08-01')));
-        $manual = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $manual = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         DomainExceptions::assertThrown(new OrdersNotMergeable('different_source'), fn () => $this->imported('TX1', 1, 400)->absorb($manual));
-        DomainExceptions::assertThrown(new OrdersNotMergeable('different_event'), fn () => Order::place($other, self::at('2026-08-01 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [])->absorb($manual));
+        DomainExceptions::assertThrown(new OrdersNotMergeable('different_event'), fn () => Order::place('CMD-1', $other, self::at('2026-08-01 10:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [])->absorb($manual));
         DomainExceptions::assertThrown(new OrdersNotMergeable('same_order'), static fn () => $manual->absorb($manual));
     }
 
     public function testAnOrderCanAbsorbAnotherUnrefundedOrderOfItsEventAndSource(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
-        $sameEvent = Order::place($this->event, self::at('2026-07-10 15:05'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
-        $refunded = Order::place($this->event, self::at('2026-07-10 15:10'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $sameEvent = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:05'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $refunded = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:10'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
         $refunded->refund(self::at('2026-07-20 10:00'));
 
         self::assertTrue($order->canAbsorb($sameEvent));
@@ -245,7 +245,7 @@ final class OrderTest extends TestCase
      */
     private function imported(string $code, int $stickers, int $charged, array $rules = []): Order
     {
-        return Order::imported(TestWorkspace::get(), 'sumup', $code, $code, $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), $stickers)], Money::cents($charged), Money::zero(), null, $rules, 'Remise SumUp');
+        return Order::imported('CMD-1', TestWorkspace::get(), 'sumup', $code, $code, $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), $stickers)], Money::cents($charged), Money::zero(), null, $rules, 'Remise SumUp');
     }
 
     private static function at(string $localTime): \DateTimeImmutable
@@ -256,7 +256,7 @@ final class OrderTest extends TestCase
     public function testMovedSalesKeepTheirPricesAndMergeWithTheSameItemAtTheSamePrices(): void
     {
         $tee = Costs::bought(Product::create(TestWorkspace::get(), 'TEE', 'Tee', Money::cents(2_000), TestProductType::get(), ['M']), 900);
-        $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [
+        $order = Order::place('CMD-1', $this->event, new \DateTimeImmutable('2026-07-10 12:00'), [
             new OrderedItem($this->tshirt->sellable('M'), 1),
             new OrderedItem($tee->sellable('M'), 2),
             new OrderedItem($this->tshirt->sellable('S'), 1),
@@ -273,9 +273,9 @@ final class OrderTest extends TestCase
 
     public function testMovedSalesAtAnotherPriceStayOnTheirOwnLine(): void
     {
-        $order = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($this->sticker->sellable(null), 2)], []);
+        $order = Order::place('CMD-1', $this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($this->sticker->sellable(null), 2)], []);
         $cheaper = Costs::bought(Product::create(TestWorkspace::get(), 'MUG', 'Mug', Money::cents(300), TestProductType::get()), 80);
-        $order2 = Order::place($this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($cheaper->sellable(null), 1), new OrderedItem($this->sticker->sellable(null), 1)], []);
+        $order2 = Order::place('CMD-1', $this->event, new \DateTimeImmutable('2026-07-10 12:00'), [new OrderedItem($cheaper->sellable(null), 1), new OrderedItem($this->sticker->sellable(null), 1)], []);
 
         $order->moveSales($this->sticker->id(), null, $cheaper->sellable(null));
         $order2->moveSales($this->sticker->id(), null, $cheaper->sellable(null));
@@ -287,7 +287,7 @@ final class OrderTest extends TestCase
 
     public function testAmountsWithoutProductStayOnTheirOwnLines(): void
     {
-        $order = Order::place($this->event, self::at('2026-07-10 15:00'), [
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [
             new OrderedItem(SellableItem::unknown('Produit inconnu', Money::cents(1_000)), 1),
             new OrderedItem(SellableItem::unknown('Produit inconnu', Money::cents(200)), 1),
         ], []);

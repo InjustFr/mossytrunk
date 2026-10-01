@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Design;
 
+use App\Application\Product\ProductReferenceGenerator;
 use App\Application\WorkspaceContext;
 use App\Domain\Design\Design;
 use App\Domain\Product\Product;
-use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use Psr\Clock\ClockInterface;
 

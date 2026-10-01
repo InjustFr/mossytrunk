@@ -113,6 +113,13 @@ purchasing:
     received_quantity_missing: 'Indiquez la quantité reçue pour « {item} ».'
     supplier_already_exists: 'Le fournisseur « {name} » existe déjà.'
     supplier_order_already_received: 'La commande {reference} est déjà réceptionnée : elle ne peut plus changer.'
+reference:
+    empty_template: 'Le format de référence est obligatoire.'
+    forbidden_character: '« {character} » n''est pas permis dans une référence : utilisez des lettres, des chiffres et - _ . / #.'
+    invalid_token_size: 'La taille de « {token} » va de {min} à {max}.'
+    template_too_long: 'Ce format donnerait des références de plus de {max} caractères.'
+    token_without_size: '« {token} » ne prend pas de taille.'
+    unknown_token: '« {token} » n''est pas une balise disponible ici.'
 shared:
     date_range_ends_before_start: 'La date de fin doit être postérieure ou égale à la date de début.'
     negative_amount: '{subject, select, price {Le prix ne peut pas être négatif.} paid_price {Le prix payé ne peut pas être négatif.} selling_price {Le prix de vente ne peut pas être négatif.} buying_price {Le prix d''achat ne peut pas être négatif.} overall_discount {La remise globale ne peut pas être négative.} delivery_cost {Les frais de livraison ne peuvent pas être négatifs.} other {Le montant ne peut pas être négatif.}}'

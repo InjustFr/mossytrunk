@@ -4,7 +4,7 @@ A **product** is a real item sold at events: sticker, print, T-shirt, original a
 
 | Field | Meaning |
 |---|---|
-| `reference` | Unique business code, **suggested** from type code + first three letters of the name (`PRI-FOR`, `-2` suffix if taken); the user may type another one at creation and **change it later** |
+| `reference` | Unique business code, **suggested** with the workspace's product format ([references.md](references.md), type code + first three letters of the name by default: `PRI-FOR`, `-2` suffix if taken); the user may type another one at creation and **change it later** |
 | `type` | **Required** product type (Print, Sticker, T-shirt…) |
 | `name` | Specific name; the product is **displayed as « {type} {name} »** (type Print + name « Forêt » = « Print Forêt »), or « {name} » when its type does not prefix names |
 | `sellingPrice` | Default price charged to customers (cents) |
@@ -27,7 +27,7 @@ The colour marks the type everywhere it is shown (product list and filters, dash
 | # | Rule | Where | Tests |
 |---|---|---|---|
 | P1 | Reference and name are required (trimmed) | `Product::__construct()`, `Product::rename()` | `ProductTest` |
-| P2 | The suggested reference is `{TYPE CODE or PRD}-{first 3 letters/digits of the name}` (accents removed, `X` when none), suffixed `-2`, `-3`… when taken. The product form fills it in while the name/type are typed, until the user types their own; a blank reference at creation takes the suggestion (imports and designs always do). A chosen reference (creation or edit, max 64 chars) must be unique in the workspace; renaming or re-typing a product never changes it | `ProductReferenceGenerator`, `Product::changeReference()`, `ReferenceAvailability`, `CreateProductHandler`, `UpdateProductHandler` (+ DB unique index on workspace + reference) | `ProductReferenceGeneratorTest`, `ProductTest`, `ProductUseCasesTest`, `ProductApiTest` |
+| P2 | The suggested reference follows the workspace's product format (R2 in [references.md](references.md)), by default `{TYPE CODE or PRD}-{first 3 letters/digits of the name}` (accents removed, `X` when none), suffixed `-2`, `-3`… when taken. The product form fills it in while the name/type are typed, until the user types their own; a blank reference at creation takes the suggestion (imports and designs always do). A chosen reference (creation or edit, max 64 chars) must be unique in the workspace; renaming or re-typing a product never changes it | `ProductReferenceGenerator`, `ReferenceFormat::issue()`, `Product::changeReference()`, `ReferenceAvailability`, `CreateProductHandler`, `UpdateProductHandler` (+ DB unique index on workspace + reference) | `ReferenceFormatTest`, `ProductTest`, `ProductUseCasesTest`, `ProductApiTest` |
 | P3 | Prices are never negative. Only the selling price is entered by the user; the buying price starts at 0 and changes only through purchases (`Product::bought()`: restock, supplier order reception, or copied when a variant moves to a new product). Editing a product never changes it | `Product::reprice()`, `Product::bought()` | `ProductTest`, `ProductUseCasesTest` |
 | P4 | Variants are non-empty and unique per product; replacing the list is all-or-nothing | `Product::addVariant()`, `replaceVariants()` | `ProductTest` |
 | P6 | A product is displayed (lists, pickers, order lines, reports) as `displayName()` = « {type} {name} », or its name when its type does not prefix names. Order lines snapshot that display name | `Product::displayName()`, `Product::sellable()` | `ProductTypeTest` |

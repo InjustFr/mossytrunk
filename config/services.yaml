@@ -26,9 +26,17 @@ services:
     _instanceof:
         App\Application\Integration\SalesConnector:
             tags: ['app.sales_connector']
+        App\Domain\Reference\ReferencedItems:
+            tags: ['app.referenced_items']
 
     App\Application\Integration\Connectors:
         arguments: [!tagged_iterator app.sales_connector]
+
+    App\Application\Reference\ReferenceBook:
+        arguments: [!tagged_iterator app.referenced_items]
+
+    App\Application\Reference\ReferenceGenerator:
+        tags: [{ name: kernel.reset, method: reset }]
 
     App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
     App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'

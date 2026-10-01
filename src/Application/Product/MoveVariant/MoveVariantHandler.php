@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\MoveVariant;
 
+use App\Application\Product\ProductReferenceGenerator;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
@@ -13,7 +14,6 @@ use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Exception\SoldWithoutVariant;
 use App\Domain\Product\Exception\VariantMovedOntoItself;
 use App\Domain\Product\Product;
-use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use Symfony\Component\Uid\Ulid;
 

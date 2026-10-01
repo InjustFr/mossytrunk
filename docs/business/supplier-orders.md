@@ -6,7 +6,7 @@ then — once the parcel arrives — what was really received. Reception feeds t
 | Field | Meaning |
 |---|---|
 | `Supplier` | Name (unique per workspace, case-insensitive), optional contact and notes |
-| `reference` | `CMF-YYYYMMDD-XXXXXX`, generated from the order date |
+| `reference` | Written with the workspace's supplier order format ([references.md](references.md), `CMF-YYYYMMDD-XXXXXX` from the order date by default) |
 | `supplierReference` | « Référence fournisseur », optional: the order number at the supplier (trimmed, ≤ 100 characters), changeable while « Commandée » |
 | `orderedOn` | Day the order was placed |
 | `status` | `ordered` (« Commandée ») then `received` (« Reçue »), with `receivedAt` |

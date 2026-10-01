@@ -19,6 +19,64 @@
             "unavailable": "Complete the access details for {label} first."
         }
     },
+    "references": {
+        "title": "References",
+        "intro": "Choose how MossyTrunk numbers your orders, supplier orders and products. A format mixes your own text with tags replaced at each creation.",
+        "example": "Example",
+        "edit": "Edit the format of {kind}",
+        "saved": "Format of {kind} saved.",
+        "renamed": "Format of {kind} saved: {count} reference renumbered. | Format of {kind} saved: {count} references renumbered.",
+        "kinds": {
+            "order": "orders",
+            "supplier_order": "supplier orders",
+            "product": "products"
+        },
+        "titles": {
+            "order": "Orders",
+            "supplier_order": "Supplier orders",
+            "product": "Products"
+        },
+        "form": {
+            "template": "Format",
+            "templateHint": "Letters, digits and - _ . / # around the tags.",
+            "tokens": "Tags",
+            "tokensHint": "Click a tag to insert it. The number, the random code and the year take a size: add \":4\" before the closing brace.",
+            "insert": "Insert {label}",
+            "restore": "Back to the original format",
+            "scope": "Apply",
+            "save": "Save",
+            "renumber": "Renumber",
+            "renumberMessage": "Existing references will be replaced by the new format. This cannot be undone.",
+            "skuWarning": "Product references are also the SKUs on SumUp and Etsy: export the SumUp catalogue again and write the references on Etsy again after renumbering."
+        },
+        "scope": {
+            "future": {
+                "label": "Future creations only",
+                "description": "References already given do not change."
+            },
+            "existing": {
+                "label": "Renumber existing ones too",
+                "description": {
+                    "order": "{count} existing order takes the new format. | The {count} existing orders take the new format, numbered from oldest to newest.",
+                    "supplier_order": "{count} existing supplier order takes the new format. | The {count} existing supplier orders take the new format, numbered from oldest to newest.",
+                    "product": "{count} existing product takes the new format. | The {count} existing products take the new format, numbered from oldest to newest."
+                }
+            }
+        },
+        "tokens": {
+            "date": "Date",
+            "year": "Year",
+            "month": "Month",
+            "day": "Day",
+            "time": "Hour and minute",
+            "hour": "Hour",
+            "minute": "Minute",
+            "number": "Increasing number",
+            "random": "Random code",
+            "type": "Type code",
+            "name": "Start of the name"
+        }
+    },
     "danger": {
         "title": "Danger zone",
         "warning": "These deletions are permanent: they cannot be undone.",

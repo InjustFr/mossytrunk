@@ -11,6 +11,8 @@ use App\Domain\Purchasing\Exception\OrderedTwice;
 use App\Domain\Purchasing\Exception\ReceivedQuantityMissing;
 use App\Domain\Purchasing\Exception\SupplierOrderAlreadyReceived;
 use App\Domain\Purchasing\Exception\SupplierReferenceTooLong;
+use App\Domain\Reference\Referenced;
+use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,7 +25,7 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Entity]
 #[ORM\Table(name: 'supplier_order')]
 #[ORM\UniqueConstraint(name: 'supplier_order_workspace_reference', columns: ['workspace_id', 'reference'])]
-class SupplierOrder
+class SupplierOrder implements Referenced
 {
     public const int SUPPLIER_REFERENCE_MAX_LENGTH = 100;
 
@@ -68,11 +70,11 @@ class SupplierOrder
     /**
      * @param list<PurchasedItem> $items
      */
-    private function __construct(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, Money $discount, Money $deliveryFees)
+    private function __construct(string $reference, Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, Money $discount, Money $deliveryFees)
     {
         $this->id = new Ulid();
         $this->workspace = $supplier->workspace();
-        $this->reference = \sprintf('CMF-%s-%s', $orderedOn->format('Ymd'), substr((string) new Ulid(), -6));
+        $this->reference = $reference;
         $this->lines = new ArrayCollection();
         $this->revise($supplier, $orderedOn, $items, $discount, $deliveryFees);
     }
@@ -80,9 +82,9 @@ class SupplierOrder
     /**
      * @param list<PurchasedItem> $items
      */
-    public static function place(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, ?Money $discount = null, ?Money $deliveryFees = null): self
+    public static function place(string $reference, Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, ?Money $discount = null, ?Money $deliveryFees = null): self
     {
-        return new self($supplier, $orderedOn, $items, $discount ?? Money::zero(), $deliveryFees ?? Money::zero());
+        return new self($reference, $supplier, $orderedOn, $items, $discount ?? Money::zero(), $deliveryFees ?? Money::zero());
     }
 
     /**
@@ -210,6 +212,16 @@ class SupplierOrder
     public function reference(): string
     {
         return $this->reference;
+    }
+
+    public function referenceSubject(): ReferenceSubject
+    {
+        return ReferenceSubject::at($this->orderedOn);
+    }
+
+    public function changeReference(string $reference): void
+    {
+        $this->reference = $reference;
     }
 
     public function supplierReference(): ?string

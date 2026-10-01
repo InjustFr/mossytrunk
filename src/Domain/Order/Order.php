@@ -15,6 +15,8 @@ use App\Domain\Order\Exception\OrderOutsideEvent;
 use App\Domain\Order\Exception\OrdersNotMergeable;
 use App\Domain\Order\Exception\RefundedOrderLocked;
 use App\Domain\Product\SellableItem;
+use App\Domain\Reference\Referenced;
+use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -29,7 +31,7 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Table(name: '`order`')]
 #[ORM\Index(name: 'order_workspace_placed_at_idx', columns: ['workspace_id', 'placed_at'])]
 #[ORM\UniqueConstraint(name: 'order_workspace_reference', columns: ['workspace_id', 'reference'])]
-class Order
+class Order implements Referenced
 {
     public const string MANUAL = 'manual';
 
@@ -113,23 +115,23 @@ class Order
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts computed by the DiscountCalculator
      */
-    public static function place(Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts): self
+    public static function place(string $reference, Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts): self
     {
-        return new self(self::generateReference($placedAt), $event->workspace(), $event, $placedAt, $items, $discounts, self::MANUAL);
+        return new self($reference, $event->workspace(), $event, $placedAt, $items, $discounts, self::MANUAL);
     }
 
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $ruleDiscounts
      */
-    public static function imported(Workspace $workspace, string $source, string $externalId, string $reference, ?Event $event, \DateTimeImmutable $placedAt, array $items, Money $charged, Money $shipping, ?PaymentMethod $paymentMethod, array $ruleDiscounts, string $discountLabel): self
+    public static function imported(string $reference, Workspace $workspace, string $source, string $externalId, string $saleReference, ?Event $event, \DateTimeImmutable $placedAt, array $items, Money $charged, Money $shipping, ?PaymentMethod $paymentMethod, array $ruleDiscounts, string $discountLabel): self
     {
         if ($shipping->isNegative()) {
             throw new NegativeShippingCost();
         }
 
-        $order = new self(self::generateReference($placedAt), $workspace, $event, $placedAt, $items, [], $source);
-        $order->importedSales->add(new ImportedSale($order, $source, $externalId, $reference, $paymentMethod));
+        $order = new self($reference, $workspace, $event, $placedAt, $items, [], $source);
+        $order->importedSales->add(new ImportedSale($order, $source, $externalId, $saleReference, $paymentMethod));
         $order->paymentMethod = $paymentMethod;
         $order->shipping = $shipping;
 
@@ -177,6 +179,16 @@ class Order
     public function reference(): string
     {
         return $this->reference;
+    }
+
+    public function referenceSubject(): ReferenceSubject
+    {
+        return ReferenceSubject::at($this->placedAt);
+    }
+
+    public function changeReference(string $reference): void
+    {
+        $this->reference = $reference;
     }
 
     public function event(): ?Event
@@ -391,11 +403,6 @@ class Order
         return [] !== $ruleDiscounts && $rounding <= self::IMPORT_ROUNDING_TOLERANCE_CENTS
             ? $ruleDiscounts
             : [new AppliedDiscount($label, $gap)];
-    }
-
-    private static function generateReference(\DateTimeImmutable $placedAt): string
-    {
-        return \sprintf('CMD-%s-%s', $placedAt->format('Ymd'), substr((string) new Ulid(), -6));
     }
 
     public function workspace(): Workspace

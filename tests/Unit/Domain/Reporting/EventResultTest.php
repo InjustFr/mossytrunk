@@ -38,11 +38,11 @@ final class EventResultTest extends TestCase
 
         $orders = [
             // 3 stickers (12 €) − 2 € bundle + T-shirt M (20 €) = 30 €
-            Order::place($event, $at, [new OrderedItem($sticker->sellable(null), 3), new OrderedItem($tshirt->sellable('M'), 1)], [new AppliedDiscount('3 pour 10', Money::cents(200))]),
+            Order::place('CMD-1', $event, $at, [new OrderedItem($sticker->sellable(null), 3), new OrderedItem($tshirt->sellable('M'), 1)], [new AppliedDiscount('3 pour 10', Money::cents(200))]),
             // T-shirt M ×2 (40 €) + print (15 €) = 55 €
-            Order::place($event, $at, [new OrderedItem($tshirt->sellable('M'), 2), new OrderedItem($print->sellable(null), 1)], []),
+            Order::place('CMD-1', $event, $at, [new OrderedItem($tshirt->sellable('M'), 2), new OrderedItem($print->sellable(null), 1)], []),
             // T-shirt S (20 €)
-            Order::place($event, $at, [new OrderedItem($tshirt->sellable('S'), 1)], []),
+            Order::place('CMD-1', $event, $at, [new OrderedItem($tshirt->sellable('S'), 1)], []),
         ];
 
         $result = EventResult::of($event, $orders);

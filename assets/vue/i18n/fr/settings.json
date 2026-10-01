@@ -19,6 +19,64 @@
             "unavailable": "Complétez d'abord les accès de {label}."
         }
     },
+    "references": {
+        "title": "Références",
+        "intro": "Choisissez comment MossyTrunk numérote vos commandes, commandes fournisseur et produits. Un format mêle votre texte et des balises remplacées à chaque création.",
+        "example": "Exemple",
+        "edit": "Modifier le format des {kind}",
+        "saved": "Format des {kind} enregistré.",
+        "renamed": "Format des {kind} enregistré : {count} référence renumérotée. | Format des {kind} enregistré : {count} références renumérotées.",
+        "kinds": {
+            "order": "commandes",
+            "supplier_order": "commandes fournisseur",
+            "product": "produits"
+        },
+        "titles": {
+            "order": "Commandes",
+            "supplier_order": "Commandes fournisseur",
+            "product": "Produits"
+        },
+        "form": {
+            "template": "Format",
+            "templateHint": "Lettres, chiffres et - _ . / # autour des balises.",
+            "tokens": "Balises",
+            "tokensHint": "Cliquez sur une balise pour l'insérer. Le numéro, le code aléatoire et l'année acceptent une taille : ajoutez « :4 » avant l'accolade fermante.",
+            "insert": "Insérer {label}",
+            "restore": "Revenir au format d'origine",
+            "scope": "Appliquer",
+            "save": "Enregistrer",
+            "renumber": "Renuméroter",
+            "renumberMessage": "Les références existantes seront remplacées par le nouveau format. Ce changement est définitif.",
+            "skuWarning": "Les références des produits servent aussi de SKU sur SumUp et Etsy : réexportez le catalogue SumUp et réécrivez les références sur Etsy après la renumérotation."
+        },
+        "scope": {
+            "future": {
+                "label": "Prochaines créations seulement",
+                "description": "Les références déjà attribuées ne changent pas."
+            },
+            "existing": {
+                "label": "Renuméroter aussi l'existant",
+                "description": {
+                    "order": "{count} commande existante prend le nouveau format. | Les {count} commandes existantes prennent le nouveau format, numérotées de la plus ancienne à la plus récente.",
+                    "supplier_order": "{count} commande fournisseur existante prend le nouveau format. | Les {count} commandes fournisseur existantes prennent le nouveau format, numérotées de la plus ancienne à la plus récente.",
+                    "product": "{count} produit existant prend le nouveau format. | Les {count} produits existants prennent le nouveau format, numérotés du plus ancien au plus récent."
+                }
+            }
+        },
+        "tokens": {
+            "date": "Date",
+            "year": "Année",
+            "month": "Mois",
+            "day": "Jour",
+            "time": "Heure et minute",
+            "hour": "Heure",
+            "minute": "Minute",
+            "number": "Numéro croissant",
+            "random": "Code aléatoire",
+            "type": "Code du type",
+            "name": "Début du nom"
+        }
+    },
     "danger": {
         "title": "Zone de danger",
         "warning": "Ces suppressions sont définitives : aucune annulation possible.",

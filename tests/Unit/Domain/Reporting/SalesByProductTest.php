@@ -27,8 +27,8 @@ final class SalesByProductTest extends TestCase
         $at = new \DateTimeImmutable('2026-05-09 12:00', new \DateTimeZone('Europe/Paris'));
 
         $sales = SalesByProduct::of([
-            Order::place($event, $at, [new OrderedItem($print->sellable('A4'), 1), new OrderedItem($sticker->sellable(null), 2)], []),
-            Order::place($event, $at, [new OrderedItem($print->sellable('A3'), 2)], []),
+            Order::place('CMD-1', $event, $at, [new OrderedItem($print->sellable('A4'), 1), new OrderedItem($sticker->sellable(null), 2)], []),
+            Order::place('CMD-1', $event, $at, [new OrderedItem($print->sellable('A3'), 2)], []),
         ]);
 
         $ranked = $sales->ranked();

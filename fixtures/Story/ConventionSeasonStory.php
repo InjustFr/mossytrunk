@@ -40,6 +40,7 @@ use App\Fixtures\Factory\ProductTypeFactory;
 use App\Fixtures\Factory\UserFactory;
 use App\Fixtures\Factory\WorkspaceFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Uid\Ulid;
 use Zenstruck\Foundry\Story;
 
 use function Zenstruck\Foundry\faker;
@@ -191,6 +192,7 @@ final class ConventionSeasonStory extends Story
             $placedAt = new \DateTimeImmutable(\sprintf('%d days 14:00', $daysAgo));
             $receiptId = (string) (3_100_000_000 + abs($daysAgo));
             $this->entityManager->persist(Order::imported(
+                self::reference('CMD', $placedAt),
                 $this->workspace,
                 'etsy',
                 $receiptId,
@@ -262,7 +264,7 @@ final class ConventionSeasonStory extends Story
         $this->entityManager->persist($printer);
         $this->entityManager->persist($textile);
 
-        $received = SupplierOrder::place($printer, new \DateTimeImmutable('-20 days'), [
+        $received = SupplierOrder::place(self::reference('CMF', new \DateTimeImmutable('-20 days')), $printer, new \DateTimeImmutable('-20 days'), [
             new PurchasedItem($prints[0]->sellable('A3'), 10, Money::cents(4_500)),
             new PurchasedItem($prints[1]->sellable('A4'), 20, Money::cents(6_000)),
         ], Money::cents(1_000), Money::cents(1_200));
@@ -275,7 +277,7 @@ final class ConventionSeasonStory extends Story
         }
         $this->entityManager->persist($received);
 
-        $this->entityManager->persist(SupplierOrder::place($textile, new \DateTimeImmutable('-3 days'), array_map(
+        $this->entityManager->persist(SupplierOrder::place(self::reference('CMF', new \DateTimeImmutable('-3 days')), $textile, new \DateTimeImmutable('-3 days'), array_map(
             static fn (string $size): PurchasedItem => new PurchasedItem($tshirt->sellable($size), 6, Money::cents(6 * 1_050)),
             $tshirt->variants(),
         )));
@@ -324,7 +326,12 @@ final class ConventionSeasonStory extends Story
             }
 
             $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
-            $this->entityManager->persist(Order::place($event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt)));
+            $this->entityManager->persist(Order::place(self::reference('CMD', $placedAt), $event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt)));
         }
+    }
+
+    private static function reference(string $prefix, \DateTimeImmutable $at): string
+    {
+        return \sprintf('%s-%s-%s', $prefix, $at->format('Ymd'), substr((string) new Ulid(), -6));
     }
 }

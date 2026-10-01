@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Product\SuggestProductReference;
 
-use App\Domain\Product\ProductReferenceGenerator;
+use App\Application\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductTypeRepository;
 use Symfony\Component\Uid\Ulid;
 

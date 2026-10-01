@@ -9,6 +9,7 @@ use App\Application\Integration\Connectors;
 use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
 use App\Application\Order\OrderPricing;
+use App\Application\Reference\ReferenceGenerator;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
 use App\Application\Translator;
@@ -18,6 +19,8 @@ use App\Domain\Integration\ServiceConnectionRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
+use App\Domain\Reference\ReferenceKind;
+use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Shared\DateRange;
 
 final readonly class ImportSalesHandler
@@ -31,6 +34,7 @@ final readonly class ImportSalesHandler
         private OrderRepository $orders,
         private OrderPricing $pricing,
         private StockKeeper $stock,
+        private ReferenceGenerator $references,
         private Transaction $transaction,
         private Translator $translator,
     ) {
@@ -88,6 +92,7 @@ final readonly class ImportSalesHandler
 
             $items = $this->stock->withdraw($event, $items);
             $this->orders->add(Order::imported(
+                $this->references->next(ReferenceKind::Order, ReferenceSubject::at($sale->placedAt)),
                 $connection->workspace(),
                 $service,
                 $sale->id,

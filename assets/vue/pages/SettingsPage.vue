@@ -9,9 +9,13 @@ import EmptyState from '../components/ui/EmptyState.vue';
 import ConnectedServices from '../components/settings/ConnectedServices.vue';
 import ServiceModal from '../components/settings/ServiceModal.vue';
 import DeleteAllData from '../components/settings/DeleteAllData.vue';
+import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
+import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
+import BaseModal from '../components/ui/BaseModal.vue';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
+import { useReferenceFormats } from '../composables/useReferenceFormats.js';
 import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 
@@ -22,6 +26,7 @@ const services = useServices();
 const { removeAll: removeAllOrders } = useOrders();
 const { removeAll: removeAllProducts } = useProducts();
 const toast = useToast();
+const references = useReferenceFormats();
 
 const modalOpen = ref(false);
 const editing = ref(null);
@@ -99,6 +104,23 @@ async function onPublishReferences(service) {
     }
 }
 
+const editingFormat = ref(null);
+const formatModalOpen = ref(false);
+const formatKind = computed(() => (editingFormat.value ? t(`settings.references.kinds.${editingFormat.value.kind}`) : ''));
+
+function openFormat(format) {
+    editingFormat.value = format;
+    formatModalOpen.value = true;
+}
+
+async function onFormatSaved(renamed) {
+    formatModalOpen.value = false;
+    toast.success(renamed > 0
+        ? t('settings.references.renamed', { kind: formatKind.value, count: renamed }, renamed)
+        : t('settings.references.saved', { kind: formatKind.value }));
+    await references.load();
+}
+
 const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
@@ -115,7 +137,7 @@ const ordersDeleted = (count) => t('settings.danger.orders.deleted', { count });
 const productsDeleted = (count) => t('settings.danger.products.deleted', { count });
 
 onMounted(async () => {
-    await Promise.all([load(), services.load()]);
+    await Promise.all([load(), services.load(), references.load()]);
     announceConnectionOutcome();
 });
 </script>
@@ -142,6 +164,10 @@ onMounted(async () => {
                 />
                 <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>
+            <BaseCard :title="t('settings.references.title')">
+                <p class="settings-page__intro">{{ t('settings.references.intro') }}</p>
+                <ReferenceFormats :formats="references.formats.value" @edit="openFormat" />
+            </BaseCard>
             <BaseCard :title="t('settings.danger.title')">
                 <DeleteAllData @delete-orders="deleteAll(removeAllOrders, ordersDeleted)" @delete-products="deleteAll(removeAllProducts, productsDeleted)" />
             </BaseCard>
@@ -154,6 +180,17 @@ onMounted(async () => {
             :update="services.update"
             @saved="onSaved"
         />
+        <BaseModal v-model:open="formatModalOpen" :title="t('settings.references.edit', { kind: formatKind })">
+            <ReferenceFormatForm
+                v-if="editingFormat"
+                :key="editingFormat.kind"
+                :format="editingFormat"
+                :preview="references.preview"
+                :change="references.change"
+                @saved="onFormatSaved"
+                @cancel="formatModalOpen = false"
+            />
+        </BaseModal>
     </AppLayout>
 </template>
 

@@ -9,6 +9,8 @@ defineProps({
     options: { type: Array, required: true },
 });
 const model = defineModel({ type: String, required: true });
+
+const describe = (option) => (option.count === undefined ? t(option.description) : t(option.description, { count: option.count }, option.count));
 </script>
 
 <template>
@@ -17,7 +19,7 @@ const model = defineModel({ type: String, required: true });
             <span class="service-options__radio"><RadioGroupIndicator class="service-options__dot" /></span>
             <span class="service-options__text">
                 <span class="service-options__name">{{ t(option.label) }}</span>
-                <span class="service-options__description">{{ t(option.description) }}</span>
+                <span class="service-options__description">{{ describe(option) }}</span>
             </span>
         </RadioGroupItem>
     </RadioGroupRoot>

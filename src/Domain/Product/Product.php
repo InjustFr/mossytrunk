@@ -17,6 +17,8 @@ use App\Domain\Product\Exception\ProductReferenceTooLong;
 use App\Domain\Product\Exception\UnknownVariant;
 use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Product\Exception\VariantRequired;
+use App\Domain\Reference\Referenced;
+use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -31,7 +33,7 @@ use Symfony\Component\Uid\Ulid;
  *
  * Rules (see docs/business/products.md):
  * - reference and name are required; the reference is unique, suggested at creation
- *   ({@see ProductReferenceGenerator}) and can be changed later.
+ *   from the workspace's reference format and can be changed later.
  * - prices are never negative; the buying price is the last purchase price, set by restocking only (0 = unknown).
  * - variants are free-text labels (colour, size, design…), unique per product.
  * - a product without variants is a unique product.
@@ -41,7 +43,7 @@ use Symfony\Component\Uid\Ulid;
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
 #[ORM\UniqueConstraint(name: 'product_workspace_reference', columns: ['workspace_id', 'reference'])]
-class Product
+class Product implements Referenced
 {
     public const int DEFAULT_LOW_STOCK_THRESHOLD = 10;
     public const int REFERENCE_MAX_LENGTH = 64;
@@ -366,6 +368,11 @@ class Product
     public function reference(): string
     {
         return $this->reference;
+    }
+
+    public function referenceSubject(): ReferenceSubject
+    {
+        return ProductReferenceSubject::of($this->type, $this->name, $this->createdAt);
     }
 
     public function name(): string

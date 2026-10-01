@@ -6,9 +6,9 @@ namespace App\Application\Integration\ImportSales;
 
 use App\Application\Product\CreateProductType\MiscellaneousType;
 use App\Application\Product\CreateProductType\ProductTypeCreator;
+use App\Application\Product\ProductReferenceGenerator;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
-use App\Domain\Product\ProductReferenceGenerator;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;

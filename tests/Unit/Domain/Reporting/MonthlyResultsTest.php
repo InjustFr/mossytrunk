@@ -27,10 +27,10 @@ final class MonthlyResultsTest extends TestCase
         $december = Event::schedule(TestWorkspace::get(), 'Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2025-12-31'), new \DateTimeImmutable('2025-12-31')));
 
         $orders = [
-            Order::place($event, new \DateTimeImmutable('2026-04-30 18:00', new \DateTimeZone('Europe/Paris')), [new OrderedItem($print->sellable(null), 2)], []),
+            Order::place('CMD-1', $event, new \DateTimeImmutable('2026-04-30 18:00', new \DateTimeZone('Europe/Paris')), [new OrderedItem($print->sellable(null), 2)], []),
             // 30 April 22:30 UTC is already 1 May in Paris.
-            Order::place($event, new \DateTimeImmutable('2026-04-30T22:30:00+00:00'), [new OrderedItem($print->sellable(null), 1)], []),
-            Order::place($december, new \DateTimeImmutable('2025-12-31 15:00', new \DateTimeZone('Europe/Paris')), [new OrderedItem($print->sellable(null), 1)], []),
+            Order::place('CMD-1', $event, new \DateTimeImmutable('2026-04-30T22:30:00+00:00'), [new OrderedItem($print->sellable(null), 1)], []),
+            Order::place('CMD-1', $december, new \DateTimeImmutable('2025-12-31 15:00', new \DateTimeZone('Europe/Paris')), [new OrderedItem($print->sellable(null), 1)], []),
         ];
 
         $results = MonthlyResults::of($orders, [$event, $december]);

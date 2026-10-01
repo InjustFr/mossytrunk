@@ -37,7 +37,7 @@ final class SupplierOrderTest extends TestCase
         self::assertSame(120, $order->orderedUnits());
         self::assertNull($order->receivedUnits());
         self::assertSame(20, $order->lines()[0]->plannedUnitCost()->amount());
-        self::assertMatchesRegularExpression('/^CMF-20260901-[0-9A-Z]{6}$/', $order->reference());
+        self::assertSame('CMF-1', $order->reference());
     }
 
     public function testReceivingRecomputesTheUnitCostFromWhatActuallyArrived(): void
@@ -67,7 +67,7 @@ final class SupplierOrderTest extends TestCase
 
     public function testGlobalDiscountFollowsLinePricesAndDeliveryFeesAreSharedEqually(): void
     {
-        $order = SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+        $order = SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), [
             new PurchasedItem($this->sticker->sellable(null), 100, Money::cents(3_000)),
             new PurchasedItem($this->print->sellable('A4'), 10, Money::cents(1_000)),
         ], Money::cents(400), Money::cents(500));
@@ -87,7 +87,7 @@ final class SupplierOrderTest extends TestCase
     public function testFiveEurosOfDeliveryOverFiveLinesAddOneEuroToEach(): void
     {
         $products = array_map(static fn (int $index): Product => Product::create(TestWorkspace::get(), "P$index", "Produit $index", Money::cents(100), TestProductType::get()), range(1, 5));
-        $order = SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), array_map(
+        $order = SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), array_map(
             static fn (Product $product): PurchasedItem => new PurchasedItem($product->sellable(null), 10, Money::cents(1_000)),
             $products,
         ), deliveryFees: Money::cents(500));
@@ -99,7 +99,7 @@ final class SupplierOrderTest extends TestCase
     {
         $this->expectException(InvalidPurchase::class);
 
-        SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+        SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), [
             new PurchasedItem($this->sticker->sellable(null), 1, Money::cents(100)),
         ], Money::cents(101));
     }
@@ -127,7 +127,7 @@ final class SupplierOrderTest extends TestCase
     {
         $this->expectException(InvalidPurchase::class);
 
-        SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+        SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), [
             new PurchasedItem($this->sticker->sellable(null), 10, Money::cents(200)),
             new PurchasedItem($this->sticker->sellable(null), 5, Money::cents(100)),
         ]);
@@ -137,7 +137,7 @@ final class SupplierOrderTest extends TestCase
     {
         $this->expectException(InvalidPurchase::class);
 
-        SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), []);
+        SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), []);
     }
 
     public function testSupplierNameIsRequired(): void
@@ -149,7 +149,7 @@ final class SupplierOrderTest extends TestCase
 
     private function order(): SupplierOrder
     {
-        return SupplierOrder::place($this->printer, new \DateTimeImmutable('2026-09-01'), [
+        return SupplierOrder::place('CMF-1', $this->printer, new \DateTimeImmutable('2026-09-01'), [
             new PurchasedItem($this->sticker->sellable(null), 100, Money::cents(2_000)),
             new PurchasedItem($this->print->sellable('A4'), 20, Money::cents(1_000)),
         ]);
