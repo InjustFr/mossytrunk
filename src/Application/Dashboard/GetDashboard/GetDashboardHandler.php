@@ -55,8 +55,8 @@ final readonly class GetDashboardHandler
         }
 
         $sales = SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->ranked();
-        $typeNames = $this->typeNamesOf($sales);
         $products = $this->products->all();
+        $typeNames = $this->typeNamesOf($products);
         $stocks = $this->stocksOf($products);
 
         return new DashboardView(
@@ -131,14 +131,14 @@ final readonly class GetDashboardHandler
     }
 
     /**
-     * @param list<ProductSales> $sales
+     * @param list<Product> $products
      *
      * @return array<string, string|null> type name by product id
      */
-    private function typeNamesOf(array $sales): array
+    private function typeNamesOf(array $products): array
     {
         $typeNames = [];
-        foreach ($this->products->findByIds(ProductSales::productIds($sales)) as $product) {
+        foreach ($products as $product) {
             $typeNames[(string) $product->id()] = $product->type()->name();
         }
 

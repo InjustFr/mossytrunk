@@ -14,6 +14,7 @@ use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'external_item')]
+#[ORM\Index(name: 'external_item_workspace_product_idx', columns: ['workspace_id', 'product_id'])]
 #[ORM\UniqueConstraint(name: 'external_item_workspace_service_key', columns: ['workspace_id', 'service', 'item_key'])]
 class ExternalItem
 {

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Product\ListProducts;
 
 use App\Application\Stock\ProductStock;
-use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
@@ -30,7 +29,7 @@ final readonly class ListProductsHandler
     public function __invoke(): array
     {
         $year = DateRange::yearOf($this->clock->now());
-        $sales = SalesByProduct::of(array_values(array_filter($this->orders->sales(), static fn (Order $order): bool => $order->isPlacedIn($year))));
+        $sales = SalesByProduct::of($this->orders->salesWithin(DateRange::year($year)));
 
         $stockByProduct = [];
         foreach ($this->stock->all() as $item) {

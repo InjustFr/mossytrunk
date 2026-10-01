@@ -29,6 +29,11 @@ interface OrderRepository
     public function sales(?Ulid $eventId = null): array;
 
     /**
+     * @return list<Order> orders still counting as sales (not refunded) placed within the period, most recent first
+     */
+    public function salesWithin(DateRange $period): array;
+
+    /**
      * @return list<Order> orders having at least one line of the product
      */
     public function selling(Ulid $productId): array;

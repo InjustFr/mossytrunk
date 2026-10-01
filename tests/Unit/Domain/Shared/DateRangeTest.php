@@ -24,6 +24,18 @@ final class DateRangeTest extends TestCase
         self::assertTrue($range->covers(new \DateTimeImmutable('2026-05-10 23:59:59', new \DateTimeZone('Europe/Paris'))));
     }
 
+    public function testYearCoversItsParisCalendarDays(): void
+    {
+        $range = DateRange::year(2026);
+        $paris = new \DateTimeZone('Europe/Paris');
+
+        self::assertSame(365, $range->days());
+        self::assertTrue($range->covers(new \DateTimeImmutable('2026-01-01 00:00:00', $paris)));
+        self::assertTrue($range->covers(new \DateTimeImmutable('2026-12-31 23:59:59', $paris)));
+        self::assertFalse($range->covers(new \DateTimeImmutable('2025-12-31 23:59:59', $paris)));
+        self::assertFalse($range->covers(new \DateTimeImmutable('2027-01-01 00:00:00', $paris)));
+    }
+
     public function testCoversWholeDaysInclusively(): void
     {
         $range = DateRange::fromDates(new \DateTimeImmutable('2026-05-09'), new \DateTimeImmutable('2026-05-10'));

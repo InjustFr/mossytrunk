@@ -12,6 +12,7 @@ use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'stock_check_line')]
+#[ORM\Index(name: 'stock_check_line_product_idx', columns: ['product_id'])]
 class StockCheckLine
 {
     #[ORM\Id]

@@ -52,13 +52,27 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return $this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery()->getResult();
     }
 
+    public function salesWithin(DateRange $period): array
+    {
+        [$from, $until] = $this->bounds($period);
+
+        return $this->orders(null)
+            ->andWhere('o.refundedAt IS NULL')
+            ->andWhere('o.placedAt >= :from AND o.placedAt < :until')
+            ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)
+            ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
+            ->getQuery()
+            ->getResult();
+    }
+
     private function orders(?Ulid $eventId): QueryBuilder
     {
         $query = $this->entityManager->createQueryBuilder()
-            ->select('o', 'l', 'e')
+            ->select('o', 'l', 'e', 'i')
             ->from(Order::class, 'o')
             ->leftJoin('o.event', 'e')
             ->leftJoin('o.lines', 'l')
+            ->leftJoin('o.importedSales', 'i')
             ->where('o.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('o.placedAt', 'DESC');
@@ -73,9 +87,11 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     public function selling(Ulid $productId): array
     {
         return $this->entityManager->createQueryBuilder()
-            ->select('o', 'l')
+            ->select('o', 'l', 'e', 'i')
             ->from(Order::class, 'o')
             ->join('o.lines', 'l')
+            ->leftJoin('o.event', 'e')
+            ->leftJoin('o.importedSales', 'i')
             ->where('o.workspace = :workspace')
             ->andWhere('o.id IN (SELECT IDENTITY(s.order) FROM '.OrderLine::class.' s WHERE s.productId = :product)')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
@@ -107,9 +123,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function countOutside(Ulid $eventId, DateRange $period): int
     {
-        $timezone = new \DateTimeZone(DateRange::TIMEZONE);
-        $from = new \DateTimeImmutable($period->start()->format('Y-m-d'), $timezone);
-        $until = new \DateTimeImmutable($period->end()->format('Y-m-d').' +1 day', $timezone);
+        [$from, $until] = $this->bounds($period);
 
         return (int) $this->entityManager->createQueryBuilder()
             ->select('COUNT(o.id)')
@@ -123,5 +137,18 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * @return array{\DateTimeImmutable, \DateTimeImmutable}
+     */
+    private function bounds(DateRange $period): array
+    {
+        $timezone = new \DateTimeZone(DateRange::TIMEZONE);
+
+        return [
+            new \DateTimeImmutable($period->start()->format('Y-m-d'), $timezone),
+            new \DateTimeImmutable($period->end()->format('Y-m-d').' +1 day', $timezone),
+        ];
     }
 }

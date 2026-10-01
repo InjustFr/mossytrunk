@@ -8,7 +8,6 @@ use App\Application\Integration\Connectors;
 use App\Application\Translator;
 use App\Domain\Accounting\Exception\DeclarationPeriodEndsBeforeStart;
 use App\Domain\Order\ImportedSale;
-use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Order\PaymentMethod;
@@ -34,10 +33,8 @@ final readonly class ExportOrdersHandler
         if ($end < $start) {
             throw new DeclarationPeriodEndsBeforeStart();
         }
-        $range = DateRange::fromDates($start, $end);
 
-        $orders = array_values(array_filter($this->orders->sales(), static fn (Order $order): bool => $range->covers($order->placedAt())));
-        usort($orders, static fn (Order $a, Order $b): int => $a->placedAt() <=> $b->placedAt());
+        $orders = array_reverse($this->orders->salesWithin(DateRange::fromDates($start, $end)));
 
         $rows = [array_map(fn (string $column): string => $this->translator->trans('export.orders.column.'.$column), self::COLUMNS)];
         foreach ($orders as $order) {

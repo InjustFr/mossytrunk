@@ -36,6 +36,13 @@ final readonly class DateRange
         return new self($start, $end);
     }
 
+    public static function year(int $year): self
+    {
+        $timezone = new \DateTimeZone(self::TIMEZONE);
+
+        return new self(new \DateTimeImmutable(\sprintf('%04d-01-01', $year), $timezone), new \DateTimeImmutable(\sprintf('%04d-12-31', $year), $timezone));
+    }
+
     public function start(): \DateTimeImmutable
     {
         return $this->start;

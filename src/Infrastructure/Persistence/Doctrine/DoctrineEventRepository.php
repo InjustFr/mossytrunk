@@ -76,6 +76,15 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(Event::class)->findBy(['workspace' => $this->workspace->current()], ['period.start' => 'DESC']);
+        return $this->entityManager->createQueryBuilder()
+            ->select('e', 'x')
+            ->from(Event::class, 'e')
+            ->leftJoin('e.expenses', 'x')
+            ->where('e.workspace = :workspace')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->orderBy('e.period.start', 'DESC')
+            ->addOrderBy('x.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

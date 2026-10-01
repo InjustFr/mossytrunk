@@ -18,6 +18,7 @@ use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'design_declination')]
+#[ORM\Index(name: 'design_declination_product_idx', columns: ['product_id'])]
 class Declination
 {
     #[ORM\Id]

@@ -19,6 +19,7 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\Entity]
 #[ORM\Table(name: 'order_line')]
+#[ORM\Index(name: 'order_line_product_idx', columns: ['product_id'])]
 class OrderLine
 {
     #[ORM\Id]
