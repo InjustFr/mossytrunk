@@ -81,6 +81,23 @@ final readonly class DoctrineProductRepository implements ProductRepository
         return $this->allQuery()->getQuery()->getResult();
     }
 
+    public function catalogue(): array
+    {
+        $products = $this->all();
+        if ([] !== $products) {
+            $this->entityManager->createQueryBuilder()
+                ->select('p', 'h')
+                ->from(Product::class, 'p')
+                ->leftJoin('p.priceHistory', 'h')
+                ->where('p.id IN (:ids)')
+                ->setParameter('ids', array_map(static fn (Product $product): string => $product->id()->toRfc4122(), $products))
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $products;
+    }
+
     public function articles(): array
     {
         return $this->allQuery()

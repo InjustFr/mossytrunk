@@ -49,7 +49,7 @@ final readonly class ListProductsHandler
                 ProductStock::of($product, $stockByProduct[(string) $product->id()] ?? []),
                 $collections[(string) $product->id()] ?? null,
             ),
-            $this->products->all(),
+            $this->products->catalogue(),
         );
     }
 

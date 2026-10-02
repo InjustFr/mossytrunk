@@ -49,20 +49,41 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function sales(?Ulid $eventId = null): array
     {
-        return $this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery()->getResult();
+        return $this->withSupplies($this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery()->getResult());
     }
 
     public function salesWithin(DateRange $period): array
     {
         [$from, $until] = $this->bounds($period);
 
-        return $this->orders(null)
+        return $this->withSupplies($this->orders(null)
             ->andWhere('o.refundedAt IS NULL')
             ->andWhere('o.placedAt >= :from AND o.placedAt < :until')
             ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
             ->getQuery()
-            ->getResult();
+            ->getResult());
+    }
+
+    /**
+     * @param list<Order> $orders
+     *
+     * @return list<Order>
+     */
+    private function withSupplies(array $orders): array
+    {
+        if ([] !== $orders) {
+            $this->entityManager->createQueryBuilder()
+                ->select('o', 's')
+                ->from(Order::class, 'o')
+                ->leftJoin('o.supplies', 's')
+                ->where('o.id IN (:ids)')
+                ->setParameter('ids', array_map(static fn (Order $order): string => $order->id()->toRfc4122(), $orders))
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $orders;
     }
 
     public function mergeCandidatesOf(Order $order): array

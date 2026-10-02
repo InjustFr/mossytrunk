@@ -39,6 +39,11 @@ interface ProductRepository
     public function all(): array;
 
     /**
+     * @return list<Product> sorted like all(), with their selling price history loaded
+     */
+    public function catalogue(): array;
+
+    /**
      * @return list<Product> the products that are sold (no supplies), sorted like all()
      */
     public function articles(): array;
