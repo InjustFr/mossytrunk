@@ -19,6 +19,9 @@ const search = defineModel('search', { type: String, required: true });
 const missingCost = defineModel('missingCost', { type: Boolean, default: false });
 const lowStock = defineModel('lowStock', { type: Boolean, default: false });
 const archived = defineModel('archived', { type: Boolean, default: false });
+const kind = defineModel('kind', { type: String, required: true });
+const KIND_OPTIONS = ['article', 'supply'];
+const selectedKind = computed({ get: () => kind.value, set: (value) => { if (value) kind.value = value; } });
 const { t } = useI18n();
 
 const ALL = '__all__';
@@ -36,6 +39,9 @@ const selectedChip = computed({
 
 <template>
     <div class="product-filters">
+        <ToggleGroupRoot v-model="selectedKind" type="single" class="product-filters__kinds" :aria-label="t('products.filters.byKind')">
+            <ToggleGroupItem v-for="option in KIND_OPTIONS" :key="option" :value="option" class="product-filters__kind">{{ t(`products.filters.kinds.${option}`) }}</ToggleGroupItem>
+        </ToggleGroupRoot>
         <input v-model="search" class="product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
         <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" :aria-label="t('products.filters.byType')">
             <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="product-filters__chip">
@@ -68,6 +74,24 @@ const selectedChip = computed({
 
 <style scoped>
 .product-filters { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.product-filters__kinds { display: flex; flex-basis: 100%; gap: var(--space-4); border-bottom: 0.0625rem solid var(--color-border); }
+
+.product-filters__kind {
+    margin-bottom: -0.0625rem;
+    padding: var(--space-2) 0;
+    border: none;
+    border-bottom: 0.125rem solid transparent;
+    background: none;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+}
+
+.product-filters__kind:hover { color: var(--color-ink); }
+.product-filters__kind:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
+.product-filters__kind[data-state="on"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 .product-filters__chips { display: flex; flex: 1 1 auto; gap: var(--space-2); flex-wrap: wrap; }
 
 .product-filters__chip {

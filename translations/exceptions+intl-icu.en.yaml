@@ -91,6 +91,7 @@ product:
     invalid_type_color: '“{color}” is not a valid color (#rrggbb format).'
     last_price_kept: 'The product must keep at least one price.'
     negative_low_stock_threshold: 'The low stock threshold cannot be negative.'
+    supply_not_sold: '“{product}” is a supply: it is not sold and has no price.'
     price_dated_in_the_future: 'A price cannot be dated in the future.'
     has_no_variants: '“{name}” is a single product: it has no variants.'
     reference_too_long: 'The reference cannot exceed {max} characters.'

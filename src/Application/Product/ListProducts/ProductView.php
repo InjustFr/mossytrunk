@@ -47,6 +47,7 @@ final readonly class ProductView
         public ?string $collectionName,
         public array $channelPrices,
         public array $priceHistory,
+        public string $kind,
     ) {
     }
 
@@ -86,6 +87,7 @@ final readonly class ProductView
                 'price' => $change->price()->amount(),
                 'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
             ], $product->priceHistory()),
+            $product->kind()->value,
         );
     }
 

@@ -12,6 +12,7 @@ import FormSection from '../ui/FormSection.vue';
 import ProductTag from './ProductTag.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantPicker from './VariantPicker.vue';
+import ServiceOptions from '../settings/ServiceOptions.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useProducts } from '../../composables/useProducts.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
@@ -22,16 +23,19 @@ const props = defineProps({
     product: { type: Object, default: null },
     submit: { type: Function, required: true },
     channels: { type: Array, default: () => [] },
+    kind: { type: String, default: 'article' },
 });
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
-const emptyForm = () => ({ typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10, channelPrices: {} });
+const KIND_OPTIONS = ['article', 'supply'].map((kind) => ({ value: kind, label: `products.form.kinds.${kind}`, description: `products.form.kindHints.${kind}` }));
+const emptyForm = () => ({ kind: props.kind, typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10, channelPrices: {} });
 const form = reactive(emptyForm());
 const errors = ref({});
 const saving = ref(false);
 
 const isEditing = computed(() => props.product !== null);
+const supply = computed(() => form.kind === 'supply');
 const { types, variantsOf, allVariantsOf, load: loadTypes } = useProductTypes();
 const { suggestReference } = useProducts();
 const referenceSuggestion = useSuggestion(
@@ -51,6 +55,7 @@ const moreSummary = computed(() => [form.reference, t('products.form.lowStockSum
 watch(() => props.product, (product) => {
     Object.assign(form, product
         ? {
+            kind: product.kind,
             typeId: product.typeId ?? '',
             name: product.name,
             reference: product.reference,
@@ -63,6 +68,10 @@ watch(() => props.product, (product) => {
     errors.value = {};
     referenceSuggestion.reset(!product);
 }, { immediate: true });
+
+watch(() => props.kind, (kind) => {
+    if (!isEditing.value) form.kind = kind;
+});
 
 const offeredBy = (typeId, variant) => allVariantsOf(typeId).some((offered) => offered.toLowerCase() === variant.toLowerCase());
 
@@ -80,10 +89,11 @@ async function onSubmit() {
             typeId: form.typeId || null,
             name: form.name,
             reference: form.reference.trim() === '' && !isEditing.value ? null : form.reference,
-            sellingPrice: form.sellingPrice ?? -1,
+            kind: form.kind,
+            sellingPrice: supply.value ? 0 : form.sellingPrice ?? -1,
             variants: form.variants,
             lowStockThreshold: form.lowStockThreshold ?? 0,
-            channelPrices: otherChannels.value.map((channel) => ({ channelId: channel.id, price: form.channelPrices[channel.id] ?? null })),
+            channelPrices: supply.value ? [] : otherChannels.value.map((channel) => ({ channelId: channel.id, price: form.channelPrices[channel.id] ?? null })),
         });
         emit('saved', displayName.value);
         await loadTypes();
@@ -107,20 +117,23 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
 
-            <ProductTag :name="displayName" :reference="form.reference" :price="form.sellingPrice" :variants="form.variants" :color="type?.color" />
+            <ProductTag :name="displayName" :reference="form.reference" :price="supply ? null : form.sellingPrice" :variants="form.variants" :color="type?.color" />
 
             <FormSection>
+                <FormField v-if="!isEditing" as="group" :label="t('products.form.kind')" :error="errors.kind">
+                    <ServiceOptions v-model="form.kind" :options="KIND_OPTIONS" :label="t('products.form.kind')" />
+                </FormField>
                 <FormField as="group" :label="t('products.form.type')" :error="errors.typeId">
                     <TypeSelect v-model="form.typeId" />
                 </FormField>
                 <FormField :label="t('products.form.name')" :error="errors.name">
                     <input v-model="form.name" type="text" required :placeholder="t('products.form.namePlaceholder')">
                 </FormField>
-                <FormField :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
+                <FormField v-if="!supply" :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
                 </FormField>
                 <FormField
-                    v-for="(channel, index) in otherChannels"
+                    v-for="(channel, index) in supply ? [] : otherChannels"
                     :key="channel.id"
                     :label="t('products.form.channelPrice', { channel: channel.name })"
                     :error="errors[`channelPrices[${index}].price`]"

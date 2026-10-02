@@ -16,7 +16,7 @@ import RestockForm from '../components/products/RestockForm.vue';
 import StockHistory from '../components/products/StockHistory.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import SelectionBar from '../components/ui/SelectionBar.vue';
-import { useProductFilters } from '../composables/useProductFilters.js';
+import { KINDS, useProductFilters } from '../composables/useProductFilters.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
@@ -45,7 +45,8 @@ const restockOpen = computed({ get: () => restocking.value !== null, set: (open)
 const viewingStock = ref(null);
 const historyOpen = computed({ get: () => viewingStock.value !== null, set: (open) => { if (!open) viewingStock.value = null; } });
 
-const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : 'products.page.new'));
+const creatingSupply = computed(() => filters.kind.value === KINDS.supply);
+const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : creatingSupply.value ? 'products.page.newSupply' : 'products.page.new'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
 const selectedProducts = computed(() => products.value.filter((product) => filters.selectedIds.value.includes(product.id)));
 const submitBatch = (changes) => batchUpdate({ productIds: filters.selectedIds.value, ...changes });
@@ -146,11 +147,12 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
                 <Download size="1rem" aria-hidden="true" /> {{ t('products.page.exportFor', { service: service.label }) }}
             </BaseButton>
             <BaseButton variant="secondary" @click="typesOpen = true"><Tags size="1rem" aria-hidden="true" /> {{ t('products.page.types') }}</BaseButton>
-            <BaseButton @click="openCreate">{{ t('products.page.new') }}</BaseButton>
+            <BaseButton @click="openCreate">{{ t(creatingSupply ? 'products.page.newSupply' : 'products.page.new') }}</BaseButton>
         </template>
 
         <BaseCard>
             <ProductFilters
+                v-model:kind="filters.kind.value"
                 v-model:type-id="filters.typeId.value"
                 v-model:variants="filters.variants.value"
                 v-model:archived="filters.archived.value"
@@ -169,6 +171,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
                 :products="filters.filtered.value"
                 :stock-variants="filters.variants.value"
                 :channels="channels"
+                :priced="filters.kind.value === KINDS.article"
                 :all-selected="filters.allVisibleSelected.value"
                 :type-colors="colors"
                 :selected-id="modalOpen ? editing?.id ?? null : null"
@@ -195,7 +198,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
         </SelectionBar>
 
         <BaseModal v-model:open="modalOpen" :title="modalTitle">
-            <ProductForm :product="editing" :submit="submit" :channels="channels" @saved="onSaved" @cancel="modalOpen = false" />
+            <ProductForm :product="editing" :kind="filters.kind.value" :submit="submit" :channels="channels" @saved="onSaved" @cancel="modalOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="moveOpen" :title="t(moving?.variants.length ? 'products.page.moveVariantTitle' : 'products.page.makeVariantTitle')">
             <MoveVariantForm v-if="moving" :product="moving" :products="activeProducts" :submit="(payload) => moveVariant(moving.id, payload)" @moved="onMoved" @cancel="moving = null" />

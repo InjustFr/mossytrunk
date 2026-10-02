@@ -28,7 +28,7 @@ const { t } = useI18n();
 const toast = useToast();
 const salesChannels = useSalesChannels();
 const services = useServices();
-const { activeProducts, load: loadProducts, batchUpdate } = useProducts();
+const { activeArticles, load: loadProducts, batchUpdate } = useProducts();
 
 const channel = ref(null);
 const search = queryText('q', '');
@@ -41,7 +41,7 @@ const main = computed(() => mainChannelOf(salesChannels.channels.value));
 const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const shownProducts = computed(() => {
     const needle = normalize(search.value.trim());
-    return activeProducts.value.filter((product) => needle === '' || normalize(`${product.displayName} ${product.reference}`).includes(needle));
+    return activeArticles.value.filter((product) => needle === '' || normalize(`${product.displayName} ${product.reference}`).includes(needle));
 });
 
 const loadChannel = () => salesChannels.loadOne(props.channelId, channel);

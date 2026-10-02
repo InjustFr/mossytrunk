@@ -35,6 +35,22 @@ final class ProductApiTest extends WebTestCase
         self::assertSame(['M', 'L', 'S'], Json::at(Json::decode((string) $client->getResponse()->getContent()), 0, 'variants'));
     }
 
+    public function testASupplyIsCreatedWithoutPrice(): void
+    {
+        $client = self::signedInClient();
+        $type = ProductTypesApi::create($client);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Pochette', 'sellingPrice' => 500, 'typeId' => $type, 'kind' => 'supply']);
+        self::assertResponseStatusCodeSame(201);
+        $id = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+
+        $client->jsonRequest('GET', "/api/products/$id");
+        $product = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame(['supply', 0], [Json::at($product, 'product', 'kind'), Json::at($product, 'product', 'sellingPrice')]);
+
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Pochette', 'typeId' => $type, 'kind' => 'gift']);
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testReferenceIsSuggestedThenChosen(): void
     {
         $client = self::signedInClient();

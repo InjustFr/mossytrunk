@@ -34,7 +34,7 @@ async function onMerged(other) {
     toast.success(t('orders.merge.done', { reference: other.reference }));
     await load();
 }
-const { products, load: loadProducts } = useProducts();
+const { articles: products, load: loadProducts } = useProducts();
 const toast = useToast();
 const identifying = ref(null);
 const identifyOpen = computed({ get: () => identifying.value !== null, set: (open) => { if (!open) identifying.value = null; } });

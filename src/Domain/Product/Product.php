@@ -14,6 +14,7 @@ use App\Domain\Product\Exception\NegativeLowStockThreshold;
 use App\Domain\Product\Exception\PriceDatedInTheFuture;
 use App\Domain\Product\Exception\ProductHasNoVariants;
 use App\Domain\Product\Exception\ProductReferenceTooLong;
+use App\Domain\Product\Exception\SupplyIsNotSold;
 use App\Domain\Product\Exception\UnknownVariant;
 use App\Domain\Product\Exception\VariantChoiceMissing;
 use App\Domain\Product\Exception\VariantRequired;
@@ -95,12 +96,16 @@ class Product implements Referenced
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $archivedAt = null;
 
+    #[ORM\Column(length: 16, enumType: ProductKind::class, options: ['default' => 'article'])]
+    private ProductKind $kind = ProductKind::Article;
+
     /**
      * @param list<string> $variants
      */
-    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, ProductType $type, array $variants)
+    private function __construct(Ulid $id, Workspace $workspace, string $reference, string $name, Money $sellingPrice, ProductType $type, array $variants, ProductKind $kind = ProductKind::Article)
     {
         $this->id = $id;
+        $this->kind = $kind;
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
         $this->priceHistory = new ArrayCollection();
@@ -121,6 +126,31 @@ class Product implements Referenced
     public static function create(Workspace $workspace, string $reference, string $name, Money $sellingPrice, ProductType $type, array $variants = []): self
     {
         return new self(new Ulid(), $workspace, $reference, $name, $sellingPrice, $type, $variants);
+    }
+
+    /**
+     * @param list<string> $variants
+     */
+    public static function supply(Workspace $workspace, string $reference, string $name, ProductType $type, array $variants = []): self
+    {
+        return new self(new Ulid(), $workspace, $reference, $name, Money::zero(), $type, $variants, ProductKind::Supply);
+    }
+
+    public function kind(): ProductKind
+    {
+        return $this->kind;
+    }
+
+    public function isSupply(): bool
+    {
+        return ProductKind::Supply === $this->kind;
+    }
+
+    private function assertSold(Money $price): void
+    {
+        if ($this->isSupply() && !$price->isZero()) {
+            throw new SupplyIsNotSold($this->displayName());
+        }
     }
 
     public function changeReference(string $reference): void
@@ -159,6 +189,7 @@ class Product implements Referenced
         if ($sellingPrice->isNegative()) {
             throw new NegativeAmount('selling_price');
         }
+        $this->assertSold($sellingPrice);
 
         if (isset($this->sellingPrice) && $this->sellingPrice->equals($sellingPrice)) {
             return;
@@ -170,6 +201,9 @@ class Product implements Referenced
 
     public function setPriceOn(SalesChannel $channel, Money $price): void
     {
+        if ($this->isSupply()) {
+            throw new SupplyIsNotSold($this->displayName());
+        }
         if ($channel->isMain()) {
             $this->reprice($price);
 
@@ -202,6 +236,9 @@ class Product implements Referenced
 
     public function sellableOn(?SalesChannel $channel, ?string $variant, ?\DateTimeImmutable $soldAt = null): SellableItem
     {
+        if ($this->isSupply()) {
+            throw new SupplyIsNotSold($this->displayName());
+        }
         $own = null === $channel || $channel->isMain() ? null : $this->channelPriceOn($channel)?->price();
         $price = $own ?? (null === $soldAt ? $this->sellingPrice : $this->priceAt($soldAt));
 
@@ -292,6 +329,7 @@ class Product implements Referenced
         if ($price->isNegative()) {
             throw new NegativeAmount('selling_price');
         }
+        $this->assertSold($price);
         if ($since > $now) {
             throw new PriceDatedInTheFuture();
         }

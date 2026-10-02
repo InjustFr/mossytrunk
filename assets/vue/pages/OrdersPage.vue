@@ -24,7 +24,7 @@ import { useToast } from '../composables/useToast.js';
 
 const { orders, eventFilter, load, place, removeSelected } = useOrders();
 const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
-const { products, load: loadProducts } = useProducts();
+const { articles: products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
 const services = useServices();
 const toast = useToast();

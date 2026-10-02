@@ -24,6 +24,7 @@ const props = defineProps({
     typeColors: { type: Map, required: true },
     stockVariants: { type: Array, default: () => [] },
     channels: { type: Array, default: () => [] },
+    priced: { type: Boolean, default: true },
 });
 const emit = defineEmits(['edit', 'move', 'remove', 'archive', 'restore', 'toggle-all', 'restock', 'history']);
 const checkedIds = defineModel('checkedIds', { type: Array, required: true });
@@ -35,7 +36,7 @@ const stockOf = (product) => variantStock(product, props.stockVariants);
 const stockDetail = (product) => stockOf(product).entries.map((item) => t('products.list.stockDetail', { variant: item.variant ?? t('products.list.stock'), count: item.onHand })).join(', ');
 
 const channelColumn = (channel) => `channel:${channel.id}`;
-const otherChannels = computed(() => otherChannelsOf(props.channels));
+const otherChannels = computed(() => (props.priced ? otherChannelsOf(props.channels) : []));
 const mainChannel = computed(() => mainChannelOf(props.channels));
 const sellingPriceHeader = computed(() => mainChannel.value?.name ?? t('products.list.sellingPrice'));
 
@@ -73,10 +74,10 @@ function setChecked(id, checked) {
                 <th>{{ t('products.list.variants') }}</th>
                 <SortableHeader :sort="ariaSort('stock')" numeric @sort="sortBy('stock')">{{ t('products.list.stock') }}</SortableHeader>
                 <SortableHeader :sort="ariaSort('stockUnitCost')" numeric @sort="sortBy('stockUnitCost')">{{ t('products.list.cost') }}</SortableHeader>
-                <SortableHeader :sort="ariaSort('sellingPrice')" numeric @sort="sortBy('sellingPrice')">{{ sellingPriceHeader }}</SortableHeader>
+                <SortableHeader v-if="priced" :sort="ariaSort('sellingPrice')" numeric @sort="sortBy('sellingPrice')">{{ sellingPriceHeader }}</SortableHeader>
                 <SortableHeader v-for="channel in otherChannels" :key="channel.id" :sort="ariaSort(channelColumn(channel))" numeric @sort="sortBy(channelColumn(channel))">{{ channel.name }}</SortableHeader>
-                <SortableHeader :sort="ariaSort('margin')" numeric @sort="sortBy('margin')">{{ t('products.list.margin') }}</SortableHeader>
-                <SortableHeader :sort="ariaSort('sales')" numeric @sort="sortBy('sales')">{{ t('products.list.sales', { year: salesYear }) }}</SortableHeader>
+                <SortableHeader v-if="priced" :sort="ariaSort('margin')" numeric @sort="sortBy('margin')">{{ t('products.list.margin') }}</SortableHeader>
+                <SortableHeader v-if="priced" :sort="ariaSort('sales')" numeric @sort="sortBy('sales')">{{ t('products.list.sales', { year: salesYear }) }}</SortableHeader>
                 <th class="data-table__cell--actions"><VisuallyHidden>{{ t('products.list.actions') }}</VisuallyHidden></th>
             </tr>
         </template>
@@ -118,7 +119,7 @@ function setChecked(id, checked) {
                     <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" :aria-label="t('products.list.unknownCost')" role="img" />
                     <MoneyAmount :cents="product.stockUnitCost" />
                 </td>
-                <td class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
+                <td v-if="priced" class="data-table__cell--number"><MoneyAmount :cents="product.sellingPrice" /></td>
                 <td
                     v-for="channel in otherChannels"
                     :key="channel.id"
@@ -127,14 +128,14 @@ function setChecked(id, checked) {
                 >
                     <MoneyAmount :cents="priceOn(product, channel)" />
                 </td>
-                <td class="data-table__cell--number">
+                <td v-if="priced" class="data-table__cell--number">
                     <template v-if="knownCost(product)">
                         <MoneyAmount :cents="margin(product)" />
                         <span class="product-list__ratio">{{ formatRatio(margin(product), product.sellingPrice) }}</span>
                     </template>
                     <span v-else class="product-list__muted">—</span>
                 </td>
-                <td class="data-table__cell--number">
+                <td v-if="priced" class="data-table__cell--number">
                     <template v-if="product.sales">
                         <MoneyAmount :cents="product.sales" />
                         <span class="product-list__ratio">{{ t('products.list.sold', product.unitsSold) }}</span>

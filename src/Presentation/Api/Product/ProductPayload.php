@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Api\Product;
 
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductKind;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -35,7 +36,22 @@ final readonly class ProductPayload
         public ?string $reference = null,
         #[Assert\Valid]
         public array $channelPrices = [],
+        #[Assert\Choice(callback: [self::class, 'kinds'], message: 'product.kind.invalid')]
+        public string $kind = 'article',
     ) {
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function kinds(): array
+    {
+        return array_map(static fn (ProductKind $kind): string => $kind->value, ProductKind::cases());
+    }
+
+    public function kind(): ProductKind
+    {
+        return ProductKind::from($this->kind);
     }
 
     /**

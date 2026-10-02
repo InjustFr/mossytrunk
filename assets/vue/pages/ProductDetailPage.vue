@@ -50,7 +50,8 @@ const mainChannel = computed(() => mainChannelOf(channels.value));
 const mainPriceLabel = computed(() => (mainChannel.value ? t('products.detail.mainPrice', { channel: mainChannel.value.name }) : t('products.detail.sellingPrice')));
 
 const product = computed(() => detail.value?.product ?? null);
-const margin = computed(() => (product.value && product.value.stockUnitCost > 0 ? product.value.sellingPrice - product.value.stockUnitCost : null));
+const supply = computed(() => product.value?.kind === 'supply');
+const margin = computed(() => (product.value && !supply.value && product.value.stockUnitCost > 0 ? product.value.sellingPrice - product.value.stockUnitCost : null));
 const designs = computed(() => [...(board.value?.collections.flatMap((c) => c.designs) ?? []), ...(board.value?.standalone ?? [])]);
 
 async function load() {
@@ -115,8 +116,9 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                 <div><dt>{{ t('products.detail.reference') }}</dt><dd>{{ product.reference }}</dd></div>
                 <div><dt>{{ t('products.detail.type') }}</dt><dd>{{ product.typeName }}</dd></div>
                 <div><dt>{{ t('products.detail.variants') }}</dt><dd>{{ product.variants.join(', ') || t('products.single') }}</dd></div>
-                <div><dt>{{ mainPriceLabel }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
-                <div v-for="channel in otherChannelsOf(channels)" :key="channel.id">
+                <div v-if="supply"><dt>{{ t('products.form.kind') }}</dt><dd><StatusBadge :title="t('products.detail.supplyHint')">{{ t('products.detail.supply') }}</StatusBadge></dd></div>
+                <div v-if="!supply"><dt>{{ mainPriceLabel }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
+                <div v-for="channel in supply ? [] : otherChannelsOf(channels)" :key="channel.id">
                     <dt>{{ t('products.form.channelPrice', { channel: channel.name }) }}</dt>
                     <dd>
                         <MoneyAmount :cents="priceOn(product, channel)" />
@@ -131,7 +133,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                         <span v-else class="product-page__muted">{{ t('products.detail.neverBought') }}</span>
                     </dd>
                 </div>
-                <div>
+                <div v-if="!supply">
                     <dt>{{ t('products.detail.margin') }}</dt>
                     <dd v-if="margin !== null"><MoneyAmount :cents="margin" /> <span class="product-page__muted">{{ formatRatio(margin, product.sellingPrice) }}</span></dd>
                     <dd v-else class="product-page__muted">—</dd>
@@ -144,7 +146,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                         <StatusBadge v-else-if="product.lowStock" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
                     </dd>
                 </div>
-                <div><dt>{{ t('products.detail.sold') }}</dt><dd>{{ t('products.detail.soldIn', { count: product.unitsSold, year: product.salesYear }) }} <span class="product-page__muted">{{ t('products.detail.soldEver', { count: detail.unitsSoldEver }) }}</span></dd></div>
+                <div v-if="!supply"><dt>{{ t('products.detail.sold') }}</dt><dd>{{ t('products.detail.soldIn', { count: product.unitsSold, year: product.salesYear }) }} <span class="product-page__muted">{{ t('products.detail.soldEver', { count: detail.unitsSoldEver }) }}</span></dd></div>
             </dl>
 
             <div class="product-page__grid">
@@ -157,10 +159,10 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                     </BaseCard>
                 </div>
                 <aside class="product-page__side">
-                    <BaseCard :title="mainPriceLabel">
+                    <BaseCard v-if="!supply" :title="mainPriceLabel">
                         <PriceHistory :history="detail.priceHistory" :save="onPriceSaved" :forget="onPriceForgotten" />
                     </BaseCard>
-                    <BaseCard :title="t('products.detail.design')">
+                    <BaseCard v-if="!supply" :title="t('products.detail.design')">
                         <ProductDesign
                             :product="product"
                             :design="detail.design"

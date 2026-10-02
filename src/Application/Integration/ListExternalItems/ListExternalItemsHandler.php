@@ -23,7 +23,7 @@ final readonly class ListExternalItemsHandler
     public function __invoke(string $service): array
     {
         $products = [];
-        foreach ($this->products->all() as $product) {
+        foreach ($this->products->articles() as $product) {
             $products[(string) $product->id()] = $product;
         }
 

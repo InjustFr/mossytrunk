@@ -14,7 +14,8 @@
         "makeVariantTitle": "Faire une variante de ce produit",
         "restockTitle": "Réapprovisionner {name}",
         "stockTitle": "Réserve de {name}",
-        "batchTitle": "Modifier la sélection"
+        "batchTitle": "Modifier la sélection",
+        "newSupply": "Nouvelle fourniture"
     },
     "toast": {
         "added": "Produit « {name} » ajouté.",
@@ -59,7 +60,9 @@
         "design": "Design",
         "channelPrices": "Prix par canal",
         "mainPrice": "Prix {channel} (canal principal)",
-        "editChannelPrice": "Modifier le prix {channel}"
+        "editChannelPrice": "Modifier le prix {channel}",
+        "supply": "Fourniture",
+        "supplyHint": "Une fourniture est suivie en stock mais n'est jamais vendue."
     },
     "filters": {
         "all": "Tous",
@@ -69,7 +72,12 @@
         "lowStock": "{count} produit en stock bas | {count} produits en stock bas",
         "missingCost": "{count} produit sans coût d'achat | {count} produits sans coût d'achat",
         "byVariant": "Filtrer par variante",
-        "archived": "{count} archivé | {count} archivés"
+        "archived": "{count} archivé | {count} archivés",
+        "byKind": "Articles ou fournitures",
+        "kinds": {
+            "article": "Articles",
+            "supply": "Fournitures"
+        }
     },
     "list": {
         "empty": "Aucun produit.",
@@ -118,7 +126,16 @@
         "lowStockSummary": "alerte à {threshold}",
         "channelPrice": "Prix {channel}",
         "channelPriceHint": "Vide : suit le prix {channel}.",
-        "mainPrice": "Prix {channel} (canal principal)"
+        "mainPrice": "Prix {channel} (canal principal)",
+        "kind": "Nature",
+        "kinds": {
+            "article": "Article",
+            "supply": "Fourniture"
+        },
+        "kindHints": {
+            "article": "Vendu sur les canaux, avec un prix.",
+            "supply": "Emballage, flyer… Suivi en stock, jamais vendu."
+        }
     },
     "batch": {
         "intro": "S'applique au {count} produit sélectionné ; ce qui reste vide ne change pas. | S'applique aux {count} produits sélectionnés ; ce qui reste vide ne change pas.",

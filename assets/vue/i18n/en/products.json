@@ -14,7 +14,8 @@
         "makeVariantTitle": "Make this product a variant",
         "restockTitle": "Restock {name}",
         "stockTitle": "Stock of {name}",
-        "batchTitle": "Edit selection"
+        "batchTitle": "Edit selection",
+        "newSupply": "New supply"
     },
     "toast": {
         "added": "Product “{name}” added.",
@@ -59,7 +60,9 @@
         "design": "Design",
         "channelPrices": "Price per channel",
         "mainPrice": "{channel} price (main channel)",
-        "editChannelPrice": "Edit the {channel} price"
+        "editChannelPrice": "Edit the {channel} price",
+        "supply": "Supply",
+        "supplyHint": "A supply is tracked in stock but never sold."
     },
     "filters": {
         "all": "All",
@@ -69,7 +72,12 @@
         "lowStock": "{count} low-stock product | {count} low-stock products",
         "missingCost": "{count} product without buying cost | {count} products without buying cost",
         "byVariant": "Filter by variant",
-        "archived": "{count} archived | {count} archived"
+        "archived": "{count} archived | {count} archived",
+        "byKind": "Articles or supplies",
+        "kinds": {
+            "article": "Articles",
+            "supply": "Supplies"
+        }
     },
     "list": {
         "empty": "No products.",
@@ -118,7 +126,16 @@
         "lowStockSummary": "alert at {threshold}",
         "channelPrice": "{channel} price",
         "channelPriceHint": "Empty: follows the {channel} price.",
-        "mainPrice": "{channel} price (main channel)"
+        "mainPrice": "{channel} price (main channel)",
+        "kind": "Kind",
+        "kinds": {
+            "article": "Article",
+            "supply": "Supply"
+        },
+        "kindHints": {
+            "article": "Sold on the channels, with a price.",
+            "supply": "Packaging, flyer… Tracked in stock, never sold."
+        }
     },
     "batch": {
         "intro": "Applies to the {count} selected product; anything left empty stays as is. | Applies to the {count} selected products; anything left empty stays as is.",

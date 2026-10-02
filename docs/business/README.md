@@ -11,6 +11,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [accounts.md](accounts.md) | Users, workspaces, sign-in, invitation and password reset links |
 | [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price = last purchase price (0 = never bought) |
 | [channels.md](channels.md) | Sales channels (markets, online shops) with their own prices and orders, main channel = selling price, batch pricing between channels |
+| [supplies.md](supplies.md) | Supplies (packaging, flyers): stocked like products, never sold |
 | [events.md](events.md) | Events, periods in Europe/Paris, no overlap, expenses |
 | [orders.md](orders.md) | Orders, auto-link to the event, lines & snapshots, totals, margin |
 | [discounts.md](discounts.md) | Discount rules (conditions, action, validity) and the automatic calculation |
@@ -47,6 +48,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Réserve (stock) | `Domain\Stock\StockItem` | Units of one sellable item, in lots |
 | Lot | `Domain\Stock\StockLot` | Units received together at one cost |
 | Canal de vente | `Domain\Sales\SalesChannel` | Where products are sold (Marché or En ligne), with its prices and orders; the main one carries the selling price |
+| Fourniture | `Domain\Product\Product` (`ProductKind::Supply`) | A stocked product that is used up, never sold (packaging, flyers) |
 | Format de référence | `Domain\Reference\ReferenceFormat` | How a workspace writes the references of one kind of item (text + tags, next number) |
 | Fournisseur | `Domain\Purchasing\Supplier` | Who products are bought from |
 | Commande fournisseur | `Domain\Purchasing\SupplierOrder` | Purchase from a supplier: ordered, then received into stock |

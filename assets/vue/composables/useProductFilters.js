@@ -4,10 +4,14 @@ import { queryFlag, queryList, queryText } from './useQueryState.js';
 export const MISSING_COST_PARAM = 'purchase-price';
 export const STOCK_PARAM = 'stock';
 
+export const KINDS = { article: 'article', supply: 'supply' };
+
 export function useProductFilters(allProducts) {
+    const kind = queryText('kind', KINDS.article);
+    const ofKind = computed(() => allProducts.value.filter((product) => product.kind === kind.value));
     const archived = queryFlag('archived', 'yes');
-    const archivedCount = computed(() => allProducts.value.filter((product) => product.archived).length);
-    const products = computed(() => allProducts.value.filter((product) => product.archived === archived.value));
+    const archivedCount = computed(() => ofKind.value.filter((product) => product.archived).length);
+    const products = computed(() => ofKind.value.filter((product) => product.archived === archived.value));
     const typeId = queryText('type');
     const variants = queryList('variant');
     const search = queryText('search');
@@ -18,7 +22,7 @@ export function useProductFilters(allProducts) {
     const selectedIds = ref([]);
 
     watch(typeId, () => { variants.value = []; });
-    watch(archived, () => {
+    watch([archived, kind], () => {
         typeId.value = '';
         selectedIds.value = [];
     });
@@ -47,5 +51,5 @@ export function useProductFilters(allProducts) {
 
     const clearSelection = () => { selectedIds.value = []; };
 
-    return { archived, archivedCount, typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
+    return { kind, archived, archivedCount, typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
 }

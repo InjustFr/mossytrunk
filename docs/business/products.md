@@ -85,6 +85,7 @@ UI: row action « Faire de … une variante » / « Déplacer une variante de �
 | P27 | Products ticked in the list (selection bar, « Supprimer la sélection ») are deleted together after confirmation, each like P14; one refused by P15 or of another workspace aborts the whole deletion | `DeleteProductsHandler`, `ProductDeletion` | `DeleteProductsTest`, `ProductApiTest`, e2e `products.spec.js` |
 | P17 | Every selling price a product has had is kept with its date (creation, then each change; setting the same price records nothing). Products that existed before the history start with their current price at their creation date | `Product::reprice()`, `SellingPriceChange` | `ProductTest`, `GetProductTest` |
 | P18 | The price history can be corrected: add a past price with its day, change an entry's price or day, delete an entry (never the last one). Days are Europe/Paris, never in the future. The **selling price is always the entry with the latest day**, so correcting the current entry fixes the price without adding a line. Past orders keep their own price snapshots | `Product::recordPrice()`, `amendPrice()`, `forgetPrice()` | `ProductTest`, `SellingPriceApiTest` |
+| P28 | A product is an **article** (sold, priced) or a **supply** (« Fourniture »: packaging, flyers…), chosen at creation. A supply is stocked, bought, restocked and counted like an article but has no price (0, no channel price, no price history change) and is never sold: it is left out of order entry, discount rules, channel prices, catalogue export and the matching of imported sales — see [supplies.md](supplies.md) | `Product::supply()`, `isSupply()`, `SupplyIsNotSold`, `ProductRepository::articles()` | `SupplyTest`, `ProductApiTest` |
 
 UI: trash icon on each row of `/products`, with a confirmation.
 
@@ -92,7 +93,7 @@ UI: trash icon on each row of `/products`, with a confirmation.
 
 | Use case | Endpoint |
 |---|---|
-| `CreateProduct` | `POST /api/products` `{typeId, name, reference?, sellingPrice, variants[], lowStockThreshold?}` (blank reference = suggestion) |
+| `CreateProduct` | `POST /api/products` `{kind?: article\|supply, typeId, name, reference?, sellingPrice, variants[], lowStockThreshold?}` (blank reference = suggestion) |
 | `UpdateProduct` | `PUT /api/products/{id}` (same body; no reference = unchanged) |
 | `SuggestProductReference` | `GET /api/products/reference-suggestion?name=&typeId=` → `{reference}` |
 | `BatchUpdateProducts` | `POST /api/products/batch` `{productIds[], sellingPrice?, priceSince? (YYYY-MM-DD), lowStockThreshold?, channelPrice?, changeType, typeId?, addVariants[], removeVariants[]}` → `{updated}` |

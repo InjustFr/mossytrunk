@@ -6,10 +6,12 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductKind;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
@@ -76,6 +78,20 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function all(): array
     {
+        return $this->allQuery()->getQuery()->getResult();
+    }
+
+    public function articles(): array
+    {
+        return $this->allQuery()
+            ->andWhere('p.kind = :article')
+            ->setParameter('article', ProductKind::Article->value)
+            ->getQuery()
+            ->getResult();
+    }
+
+    private function allQuery(): QueryBuilder
+    {
         return $this->entityManager->createQueryBuilder()
             ->select('p', 't', 'cp', 'c')
             ->from(Product::class, 'p')
@@ -85,8 +101,6 @@ final readonly class DoctrineProductRepository implements ProductRepository
             ->where('p.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('t.name', 'ASC')
-            ->addOrderBy('p.name', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->addOrderBy('p.name', 'ASC');
     }
 }

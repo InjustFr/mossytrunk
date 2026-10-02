@@ -30,7 +30,7 @@ final readonly class ExportCatalogueHandler
         $channel = $this->channels->linkedTo($service);
         $items = array_map(
             static fn (Product $product): CatalogueItem => new CatalogueItem($product->displayName(), $product->type()->name(), $product->reference(), $product->priceOn($channel), $product->activeVariants()),
-            array_values(array_filter($this->products->all(), static fn (Product $product): bool => !$product->isArchived())),
+            array_values(array_filter($this->products->articles(), static fn (Product $product): bool => !$product->isArchived())),
         );
 
         return new CatalogueFile(

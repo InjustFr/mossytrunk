@@ -11,6 +11,7 @@ use App\Application\Product\ReferenceAvailability;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
+use App\Domain\Product\ProductKind;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
@@ -33,14 +34,10 @@ final readonly class CreateProductHandler
     {
         $type = $this->types->of($command->typeId);
 
-        $product = Product::create(
-            $this->workspace->current(),
-            $this->referenceOf($command, $type),
-            $command->name,
-            Money::cents($command->sellingPriceCents),
-            $type,
-            $command->variants,
-        );
+        $product = match ($command->kind) {
+            ProductKind::Article => Product::create($this->workspace->current(), $this->referenceOf($command, $type), $command->name, Money::cents($command->sellingPriceCents), $type, $command->variants),
+            ProductKind::Supply => Product::supply($this->workspace->current(), $this->referenceOf($command, $type), $command->name, $type, $command->variants),
+        };
 
         $product->assertVariantChosen();
         $product->alertBelow($command->lowStockThreshold);

@@ -13,7 +13,7 @@ import { useProductTypes } from '../composables/useProductTypes.js';
 import { useToast } from '../composables/useToast.js';
 
 const { rules, load, create, update, setActive, remove } = useDiscountRules();
-const { products, load: loadProducts } = useProducts();
+const { articles: products, load: loadProducts } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const toast = useToast();
 const { t } = useI18n();

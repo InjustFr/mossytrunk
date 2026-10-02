@@ -65,7 +65,9 @@ final class ImportedCatalogue
     {
         $reference = trim($reference);
 
-        return '' === $reference ? null : $this->products->findByReference($reference);
+        $product = '' === $reference ? null : $this->products->findByReference($reference);
+
+        return true === $product?->isSupply() ? null : $product;
     }
 
     public function withId(Ulid $id): ?Product
@@ -121,7 +123,7 @@ final class ImportedCatalogue
     {
         if (null === $this->byDisplayName) {
             $this->byDisplayName = [];
-            foreach ($this->products->all() as $product) {
+            foreach ($this->products->articles() as $product) {
                 $this->byDisplayName[mb_strtolower($product->displayName())] ??= $product;
             }
         }
@@ -136,7 +138,7 @@ final class ImportedCatalogue
     {
         if (null === $this->byTypeAndName) {
             $this->byTypeAndName = [];
-            foreach ($this->products->all() as $product) {
+            foreach ($this->products->articles() as $product) {
                 $this->byTypeAndName[self::typedKey($product->type()->name(), $product->name())] ??= $product;
             }
         }
@@ -151,7 +153,7 @@ final class ImportedCatalogue
     {
         if (null === $this->byOwnName) {
             $index = [];
-            foreach ($this->products->all() as $product) {
+            foreach ($this->products->articles() as $product) {
                 $index = self::withOwnName($index, $product);
             }
             $this->byOwnName = $index;

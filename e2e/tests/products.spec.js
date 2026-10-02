@@ -260,3 +260,27 @@ test('delete the selected products', async ({ page, request }) => {
     await expect(page.getByRole('row').filter({ hasText: second.displayName })).toHaveCount(0);
     await expect(page.getByRole('row').filter({ hasText: kept.displayName })).toBeVisible();
 });
+
+test('a supply is stocked like a product but never priced nor sold', async ({ page, request }) => {
+    const type = await createType(request, unique('Emballage'));
+    const name = unique('Pochette');
+
+    await page.goto('/products');
+    await page.getByRole('group', { name: 'Articles ou fournitures' }).getByRole('button', { name: 'Fournitures' }).click();
+    await page.getByRole('button', { name: 'Nouvelle fourniture' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle fourniture' }).locator('form');
+    await expect(form.getByRole('radio', { name: /^Fourniture/ })).toBeChecked();
+    await expect(form.getByLabel(/^Prix /)).toHaveCount(0);
+    await choose(page, form.getByRole('combobox', { name: 'Type' }), type.name);
+    await form.getByLabel('Nom').fill(name);
+    await form.getByRole('button', { name: 'Ajouter le produit' }).click();
+    await expect(page.getByTestId('toast')).toContainText(name);
+
+    await page.getByLabel('Rechercher un produit').fill(name);
+    await expect(page.getByRole('row').filter({ hasText: name })).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Marge' })).toHaveCount(0);
+
+    await page.getByRole('group', { name: 'Articles ou fournitures' }).getByRole('button', { name: 'Articles' }).click();
+    await page.getByLabel('Rechercher un produit').fill(name);
+    await expect(page.getByRole('row').filter({ hasText: name })).toHaveCount(0);
+});

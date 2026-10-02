@@ -35,6 +35,7 @@ const errors = ref({});
 const saving = ref(false);
 
 const mainChannel = computed(() => mainChannelOf(props.channels));
+const priced = computed(() => props.products.some((product) => product.kind !== 'supply'));
 const changeType = computed(() => form.typeId !== UNCHANGED);
 const union = (lists) => [...new Set(lists.flat())];
 const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -73,10 +74,10 @@ async function onSubmit() {
             <p v-if="errors.form" class="product-batch-form__error" role="alert">{{ errors.form }}</p>
 
             <FormSection :description="t('products.batch.intro', count)">
-                <FormField :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
+                <FormField v-if="priced" :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-batch-form__price" />
                 </FormField>
-                <FormField as="group" :label="t('products.batch.priceSince')" :error="errors.priceSince" :hint="t('products.batch.priceSinceHint')">
+                <FormField v-if="priced" as="group" :label="t('products.batch.priceSince')" :error="errors.priceSince" :hint="t('products.batch.priceSinceHint')">
                     <BaseDatePicker v-model="form.priceSince" :aria-label="t('products.batch.priceSince')" class="product-batch-form__since" />
                 </FormField>
                 <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.batch.lowStockThresholdHint')">
@@ -93,7 +94,7 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
 
-            <BatchChannelPrice v-if="channels.length" v-model="form.channelPrice" :channels="channels" :products="products" :errors="errors" />
+            <BatchChannelPrice v-if="priced && channels.length" v-model="form.channelPrice" :channels="channels" :products="products" :errors="errors" />
 
             <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
