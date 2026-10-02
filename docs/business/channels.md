@@ -26,6 +26,7 @@ own price on a channel); `Order::$channel`.
 | C7 | Batch edit sets the price of the selection on **one channel**: a fixed amount; **from another channel's price** plus an amount in € or a percentage (rounded to the cent, half away from zero; negative to lower; 0 copies); or « Suivre les prix » of the main channel again. Any negative result aborts the batch. A price set on the **main** channel follows the batch's « Prix à partir du » day like the selling price | `ChannelRepricing`, `PriceAdjustment` | `PriceAdjustmentTest`, `SalesChannelUseCasesTest` |
 | C8 | Deleting a channel forgets its prices (products keep their selling price); its orders keep their lines and lose their channel | FK `ON DELETE CASCADE` / `SET NULL` | `SalesChannelUseCasesTest` |
 | C9 | A product's price can be set **on one channel at a time** (an amount, or « Suivre le prix » of the main channel again); on the main channel it reprices the product today (P17) | `SetChannelPriceHandler` → `ChannelPricing::assign()` | `SalesChannelApiTest` |
+| C10 | A channel **offers supplies** (only supplies): those are the supplies its orders can use (O17). Deleting the supply or the channel forgets the offer | `SalesChannel::offerSupplies()` (`NotASupply`), `offers()` | `OrderSuppliesTest`, `OrderApiTest` |
 
 ## Use cases & API
 
@@ -36,13 +37,14 @@ own price on a channel); `Order::$channel`.
 | `SaveChannel` | `POST /api/sales-channels`, `PUT /api/sales-channels/{id}` `{name, kind, service?}` |
 | `DeleteChannel` | `DELETE /api/sales-channels/{id}` |
 | product prices | `POST /api/products`, `PUT /api/products/{id}` take `channelPrices: [{channelId, price}]` (`null` = follow the selling price); `GET /api/products` returns `channelPrices: {channelId: cents}` (own prices only) |
+| `OfferSupplies` | `PUT /api/sales-channels/{id}/supplies` `{supplyIds[]}`; channel views carry `supplies: [{id, name, variants}]` |
 | `SetChannelPrice` | `PUT /api/products/{id}/channel-prices/{channelId}` `{price}` (`null` = follow the selling price) |
 | batch | `POST /api/products/batch` takes `channelPrice: {channelId, mode: fixed\|derived\|selling_price, price?, sourceChannelId?, adjustment, adjustmentUnit: cents\|percent}` |
 
 ## UI
 
 - **Canaux de vente** (`/channels`): one row per channel with its kind and linked service; the main one is badged « Canal principal » and cannot be deleted. Add/edit form: name, kind (Marché / En ligne), linked service.
-- **Channel page** (`/channels/{id}`): kind and linked service, edit/delete; **Prix**: every active product (searchable) with the main channel's price and its price on this channel (greyed when it follows), a pencil to set one price (amount, or « Suivre le prix {principal} »), and « Modifier les prix affichés » to apply a batch channel price (C7) to the products shown.
+- **Channel page** (`/channels/{id}`): kind and linked service, edit/delete; **Fournitures**: chips of every supply, toggled to offer it (saved at once); **Prix**: every active product (searchable) with the main channel's price and its price on this channel (greyed when it follows), a pencil to set one price (amount, or « Suivre le prix {principal} »), and « Modifier les prix affichés » to apply a batch channel price (C7) to the products shown.
 - **Produits**: the selling price is labelled « Prix {principal} (canal principal) » in forms; its column is headed with the main channel's name, one more column per other channel (greyed when following). The product form has one « Prix {canal} » field per other channel (empty = follows). The batch form has « Prix d'un canal » with a preview of the first products.
 - **Product page**: the main channel's price and one fact per other channel, each with a pencil to set it.
-- **Order page**: the order's channel next to its event.
+- **Order page**: the order's channel next to its event; a « Fournitures » card lists its supplies (add one among the channel's, remove one). **Commandes**: « Ajouter une fourniture » in the selection bar when the selected orders share a channel that offers supplies.

@@ -11,6 +11,7 @@ import StatusBadge from '../components/ui/StatusBadge.vue';
 import ChannelBatchPriceForm from '../components/channels/ChannelBatchPriceForm.vue';
 import ChannelPriceForm from '../components/channels/ChannelPriceForm.vue';
 import ChannelPrices from '../components/channels/ChannelPrices.vue';
+import ChannelSupplies from '../components/channels/ChannelSupplies.vue';
 import SalesChannelForm from '../components/channels/SalesChannelForm.vue';
 import { mainChannelOf } from '../composables/useChannelPrices.js';
 import { visit } from '../composables/useNavigation.js';
@@ -28,14 +29,19 @@ const { t } = useI18n();
 const toast = useToast();
 const salesChannels = useSalesChannels();
 const services = useServices();
-const { activeArticles, load: loadProducts, batchUpdate } = useProducts();
+const { activeArticles, activeSupplies, load: loadProducts, batchUpdate } = useProducts();
 
 const channel = ref(null);
 const search = queryText('q', '');
 const editOpen = ref(false);
 const batchOpen = ref(false);
 const pricing = ref(null);
-const priceOpen = computed({ get: () => pricing.value !== null, set: (open) => { if (!open) pricing.value = null; } });
+const priceOpen = ref(false);
+
+function openPrice(product) {
+    pricing.value = product;
+    priceOpen.value = true;
+}
 
 const main = computed(() => mainChannelOf(salesChannels.channels.value));
 const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
@@ -62,8 +68,18 @@ async function onRemoved() {
     }
 }
 
+async function onSuppliesChanged(supplyIds) {
+    try {
+        await salesChannels.offerSupplies(props.channelId, supplyIds);
+        toast.success(t('channels.supplies.saved'));
+    } catch (error) {
+        toast.error(error.message);
+    }
+    await loadChannel();
+}
+
 async function onPriceSaved(name) {
-    pricing.value = null;
+    priceOpen.value = false;
     toast.success(t('channels.prices.saved', { name }));
     await loadProducts();
 }
@@ -104,13 +120,18 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                 <div><dt>{{ t('channels.detail.service') }}</dt><dd>{{ channel.serviceLabel ?? t('channels.noService') }}</dd></div>
             </dl>
 
+            <BaseCard :title="t('channels.supplies.title')">
+                <p class="channel-page__intro">{{ t('channels.supplies.intro') }}</p>
+                <ChannelSupplies :supplies="activeSupplies" :offered="channel.supplies" @change="onSuppliesChanged" />
+            </BaseCard>
+
             <BaseCard :title="t('channels.prices.title')">
                 <template #actions>
                     <BaseButton variant="secondary" :disabled="shownProducts.length === 0" @click="batchOpen = true">{{ t('channels.prices.batch') }}</BaseButton>
                 </template>
                 <p class="channel-page__intro">{{ channel.main ? t('channels.prices.mainIntro') : t('channels.prices.intro', { main: main.name }) }}</p>
                 <input v-model="search" class="channel-page__search" type="search" :placeholder="t('channels.prices.search')" :aria-label="t('channels.prices.search')">
-                <ChannelPrices :channel="channel" :main="main" :products="shownProducts" @edit="(product) => (pricing = product)" />
+                <ChannelPrices :channel="channel" :main="main" :products="shownProducts" @edit="openPrice" />
             </BaseCard>
         </div>
 
@@ -126,14 +147,14 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
         </BaseModal>
         <BaseModal v-model:open="priceOpen" :title="t('channels.prices.editTitle', { name: pricing?.displayName ?? '', channel: channel?.name ?? '' })">
             <ChannelPriceForm
-                v-if="pricing && channel && main"
+                v-if="priceOpen && pricing && channel && main"
                 :key="pricing.id"
                 :product="pricing"
                 :channel="channel"
                 :main="main"
                 :submit="(price) => salesChannels.setPrice(pricing.id, channelId, price)"
                 @saved="onPriceSaved"
-                @cancel="pricing = null"
+                @cancel="priceOpen = false"
             />
         </BaseModal>
         <BaseModal v-model:open="batchOpen" :title="t('channels.prices.batchTitle', { channel: channel?.name ?? '' })">

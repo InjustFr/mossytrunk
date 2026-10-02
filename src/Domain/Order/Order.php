@@ -14,6 +14,7 @@ use App\Domain\Order\Exception\OrderAlreadyRefunded;
 use App\Domain\Order\Exception\OrderOutsideEvent;
 use App\Domain\Order\Exception\OrdersNotMergeable;
 use App\Domain\Order\Exception\RefundedOrderLocked;
+use App\Domain\Order\Exception\SupplyNotOnChannel;
 use App\Domain\Product\SellableItem;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
@@ -66,6 +67,11 @@ class Order implements Referenced
     #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $lines;
 
+    /** @var Collection<int, OrderSupply> */
+    #[ORM\OneToMany(targetEntity: OrderSupply::class, mappedBy: 'order', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $supplies;
+
     /** @var list<array{label: string, amount: int}> */
     #[ORM\Column(type: Types::JSON)]
     private array $appliedDiscounts = [];
@@ -112,6 +118,7 @@ class Order implements Referenced
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
+        $this->supplies = new ArrayCollection();
         $this->importedSales = new ArrayCollection();
 
         foreach ($items as $item) {
@@ -278,6 +285,14 @@ class Order implements Referenced
             }
             $twin->add($line->quantity(), $line->cost());
         }
+        foreach ($other->supplies() as $supply) {
+            $twin = $this->supplyUsing($supply->productId(), $supply->variant());
+            if (null === $twin) {
+                $this->supplies->add($supply->copyInto($this));
+                continue;
+            }
+            $twin->add($supply->quantity(), $supply->cost());
+        }
         foreach ($other->importedSales() as $sale) {
             $sale->joinOrder($this);
             $this->importedSales->add($sale);
@@ -295,6 +310,65 @@ class Order implements Referenced
         foreach ($this->lines as $candidate) {
             if ($candidate->sellsSameAs($line) && $candidate->sameUnitAmountsAs($line)) {
                 return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    public function useSupply(SellableItem $supply, int $quantity, Money $cost): void
+    {
+        if ($this->isRefunded()) {
+            throw new RefundedOrderLocked($this->reference);
+        }
+        $productId = $supply->productId;
+        if (null === $productId || null === $this->channel || !$this->channel->offers($productId)) {
+            throw new SupplyNotOnChannel($supply->label(), $this->reference);
+        }
+
+        $twin = $this->supplyUsing($productId, $supply->variant);
+        if (null === $twin) {
+            $this->supplies->add(new OrderSupply($this, $productId, $supply, $quantity, $cost));
+
+            return;
+        }
+        $twin->add($quantity, $cost);
+    }
+
+    public function returnSupply(Ulid $supplyLineId): OrderSupply
+    {
+        if ($this->isRefunded()) {
+            throw new RefundedOrderLocked($this->reference);
+        }
+        foreach ($this->supplies as $supply) {
+            if ($supply->id()->equals($supplyLineId)) {
+                $this->supplies->removeElement($supply);
+
+                return $supply;
+            }
+        }
+
+        throw new NotFound('order_supply', (string) $supplyLineId);
+    }
+
+    /**
+     * @return list<OrderSupply>
+     */
+    public function supplies(): array
+    {
+        return array_values($this->supplies->toArray());
+    }
+
+    public function suppliesCost(): Money
+    {
+        return Money::sum(array_map(static fn (OrderSupply $supply): Money => $supply->cost(), $this->supplies()));
+    }
+
+    private function supplyUsing(Ulid $productId, ?string $variant): ?OrderSupply
+    {
+        foreach ($this->supplies as $supply) {
+            if ($supply->uses($productId, $variant)) {
+                return $supply;
             }
         }
 

@@ -8,7 +8,8 @@
     "movement": {
         "surplus": "Stock check (surplus)",
         "sale": "Sale",
-        "loss": "Stock check (missing)"
+        "loss": "Stock check (missing)",
+        "supply": "Order supply"
     },
     "lots": {
         "describe": "{remaining} × {cost} — {origin} of {date}",

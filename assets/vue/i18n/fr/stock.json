@@ -8,7 +8,8 @@
     "movement": {
         "surplus": "Inventaire (surplus)",
         "sale": "Vente",
-        "loss": "Inventaire (manquant)"
+        "loss": "Inventaire (manquant)",
+        "supply": "Fourniture de commande"
     },
     "lots": {
         "describe": "{remaining} × {cost} — {origin} du {date}",

@@ -8,6 +8,7 @@ use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
+use App\Domain\Order\OrderSupply;
 use App\Domain\Shared\DateRange;
 
 final readonly class OrderView
@@ -17,6 +18,7 @@ final readonly class OrderView
      * @param array{id: string, name: string}|null                                                                                            $event
      * @param list<array{reference: string, paymentMethod: ?string}>                                                                          $importedSales
      * @param list<array{label: string, amount: int, ruleId: ?string}>                                                                        $discounts
+     * @param list<array{id: string, productId: string, label: string, quantity: int, cost: int}>                                             $supplies
      */
     public function __construct(
         public string $id,
@@ -37,6 +39,9 @@ final readonly class OrderView
         public array $importedSales,
         public ?string $refundedAt,
         public ?string $channelName,
+        public ?string $channelId,
+        public array $supplies,
+        public int $suppliesCost,
     ) {
     }
 
@@ -66,10 +71,19 @@ final readonly class OrderView
             $order->shipping()->amount(),
             $order->total()->amount(),
             $order->costOfGoods()->amount(),
-            $order->total()->subtract($order->costOfGoods())->amount(),
+            $order->total()->subtract($order->costOfGoods())->subtract($order->suppliesCost())->amount(),
             array_map(static fn (ImportedSale $sale): array => ['reference' => $sale->reference(), 'paymentMethod' => $sale->paymentMethod()?->value], $order->importedSales()),
             null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
             $order->channel()?->name(),
+            null === $order->channel() ? null : (string) $order->channel()->id(),
+            array_map(static fn (OrderSupply $supply): array => [
+                'id' => (string) $supply->id(),
+                'productId' => (string) $supply->productId(),
+                'label' => $supply->label(),
+                'quantity' => $supply->quantity(),
+                'cost' => $supply->cost()->amount(),
+            ], $order->supplies()),
+            $order->suppliesCost()->amount(),
         );
     }
 }

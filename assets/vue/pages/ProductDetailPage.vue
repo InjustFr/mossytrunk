@@ -45,7 +45,12 @@ const version = ref(0);
 const editOpen = ref(false);
 const restockOpen = ref(false);
 const pricingChannel = ref(null);
-const channelPriceOpen = computed({ get: () => pricingChannel.value !== null, set: (open) => { if (!open) pricingChannel.value = null; } });
+const channelPriceOpen = ref(false);
+
+function openChannelPrice(channel) {
+    pricingChannel.value = channel;
+    channelPriceOpen.value = true;
+}
 const mainChannel = computed(() => mainChannelOf(channels.value));
 const mainPriceLabel = computed(() => (mainChannel.value ? t('products.detail.mainPrice', { channel: mainChannel.value.name }) : t('products.detail.sellingPrice')));
 
@@ -67,7 +72,7 @@ async function onSaved(name) {
 
 async function onChannelPriceSaved(name) {
     toast.success(t('channels.prices.saved', { name }));
-    pricingChannel.value = null;
+    channelPriceOpen.value = false;
     await load();
 }
 
@@ -123,7 +128,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                     <dd>
                         <MoneyAmount :cents="priceOn(product, channel)" />
                         <span v-if="ownPriceOn(product, channel) === null" class="product-page__muted"> · {{ t('products.list.followsSellingPrice', { channel: mainChannel?.name ?? '' }) }}</span>
-                        <IconButton :icon="Pencil" :label="t('products.detail.editChannelPrice', { channel: channel.name })" @click="pricingChannel = channel" />
+                        <IconButton :icon="Pencil" :label="t('products.detail.editChannelPrice', { channel: channel.name })" @click="openChannelPrice(channel)" />
                     </dd>
                 </div>
                 <div>
@@ -181,14 +186,14 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
         </BaseModal>
         <BaseModal v-model:open="channelPriceOpen" :title="t('channels.prices.editTitle', { name: product?.displayName ?? '', channel: pricingChannel?.name ?? '' })">
             <ChannelPriceForm
-                v-if="product && pricingChannel && mainChannel"
+                v-if="channelPriceOpen && product && pricingChannel && mainChannel"
                 :key="pricingChannel.id"
                 :product="product"
                 :channel="pricingChannel"
                 :main="mainChannel"
                 :submit="(price) => setPrice(productId, pricingChannel.id, price)"
                 @saved="onChannelPriceSaved"
-                @cancel="pricingChannel = null"
+                @cancel="channelPriceOpen = false"
             />
         </BaseModal>
         <BaseModal v-model:open="restockOpen" :title="t('products.page.restockTitle', { name: product?.displayName ?? '' })">

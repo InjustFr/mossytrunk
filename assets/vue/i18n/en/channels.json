@@ -68,5 +68,11 @@
         "batchSaved": "{count} product updated. | {count} products updated.",
         "empty": "No product.",
         "actions": "Actions"
+    },
+    "supplies": {
+        "title": "Supplies",
+        "intro": "The supplies that can be added to this channel's orders (sleeves, envelopes…). They are taken from stock.",
+        "none": "No supply: create some in Products › Supplies.",
+        "saved": "Channel supplies saved."
     }
 }

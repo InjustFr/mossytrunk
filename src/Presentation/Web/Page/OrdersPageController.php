@@ -22,6 +22,6 @@ final readonly class OrdersPageController
     {
         $orders = null === $event ? '/api/orders' : "/api/orders?eventId=$event";
 
-        return $this->page->render('OrdersPage', 'orders', preload: [$orders, '/api/products', '/api/events', '/api/services']);
+        return $this->page->render('OrdersPage', 'orders', preload: [$orders, '/api/products', '/api/events', '/api/services', '/api/sales-channels']);
     }
 }

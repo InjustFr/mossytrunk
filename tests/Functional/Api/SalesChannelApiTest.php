@@ -21,7 +21,7 @@ final class SalesChannelApiTest extends WebTestCase
         $etsy = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
         $client->jsonRequest('GET', '/api/sales-channels');
         $channels = Json::decode((string) $client->getResponse()->getContent());
-        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => 'etsy', 'serviceLabel' => 'Etsy', 'kind' => 'online', 'main' => false], Json::at($channels, 1));
+        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => 'etsy', 'serviceLabel' => 'Etsy', 'kind' => 'online', 'main' => false, 'supplies' => []], Json::at($channels, 1));
         self::assertSame(['Marchés', 'market', true], [Json::at($channels, 0, 'name'), Json::at($channels, 0, 'kind'), Json::at($channels, 0, 'main')]);
 
         $type = ProductTypesApi::create($client);
@@ -55,7 +55,7 @@ final class SalesChannelApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/sales-channels', ['name' => 'Etsy']);
         $etsy = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
         $client->jsonRequest('GET', "/api/sales-channels/$etsy");
-        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => null, 'serviceLabel' => null, 'kind' => 'online', 'main' => false], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => null, 'serviceLabel' => null, 'kind' => 'online', 'main' => false, 'supplies' => []], Json::decode((string) $client->getResponse()->getContent()));
         $client->jsonRequest('GET', '/api/sales-channels');
         $main = Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'id');
 

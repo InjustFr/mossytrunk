@@ -5,6 +5,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 defineProps({
     total: { type: Number, required: true },
     costOfGoods: { type: Number, required: true },
+    suppliesCost: { type: Number, default: 0 },
     margin: { type: Number, required: true },
 });
 
@@ -15,6 +16,7 @@ const { t } = useI18n();
     <dl class="order-margin">
         <div class="order-margin__row"><dt>{{ t('orders.margin.collected') }}</dt><dd><MoneyAmount :cents="total" /></dd></div>
         <div class="order-margin__row"><dt>{{ t('orders.margin.buyingCost') }}</dt><dd>− <MoneyAmount :cents="costOfGoods" /></dd></div>
+        <div v-if="suppliesCost > 0" class="order-margin__row"><dt>{{ t('orders.margin.supplies') }}</dt><dd>− <MoneyAmount :cents="suppliesCost" /></dd></div>
         <div class="order-margin__row order-margin__row--result"><dt>{{ t('orders.margin.gross') }}</dt><dd><MoneyAmount :cents="margin" signed /></dd></div>
     </dl>
     <p class="order-margin__note">{{ t('orders.margin.note') }}</p>

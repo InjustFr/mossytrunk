@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
+import { ArrowLeft, Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -12,10 +12,13 @@ import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
+import OrderSupplies from '../components/orders/OrderSupplies.vue';
+import SupplyForm from '../components/orders/SupplyForm.vue';
 import PaymentMethod from '../components/orders/PaymentMethod.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
+import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useToast } from '../composables/useToast.js';
 import { formatDate, formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
@@ -26,7 +29,26 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { order, load, remove, refund, identifyLine, mergeWith, candidates } = useOrder(props.orderId);
+const { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply } = useOrder(props.orderId);
+const { channels, load: loadChannels } = useSalesChannels();
+const supplyOpen = ref(false);
+const channelSupplies = computed(() => channels.value.find((channel) => channel.id === order.value?.channelId)?.supplies ?? []);
+
+async function onSupplyAdded() {
+    supplyOpen.value = false;
+    toast.success(t('orders.supplies.added'));
+    await load();
+}
+
+async function onSupplyRemoved(supply) {
+    try {
+        await removeSupply(supply.id);
+        toast.success(t('orders.supplies.removed', { label: supply.label }));
+    } catch (error) {
+        toast.error(error.message);
+    }
+    await load();
+}
 const mergeOpen = ref(false);
 
 async function onMerged(other) {
@@ -56,7 +78,7 @@ async function onDelete() {
     visit(listUrl('/orders'));
 }
 
-onMounted(() => Promise.all([load(), loadProducts()]));
+onMounted(() => Promise.all([load(), loadProducts(), loadChannels()]));
 </script>
 
 <template>
@@ -94,13 +116,26 @@ onMounted(() => Promise.all([load(), loadProducts()]));
                     <BaseCard :title="t('orders.detail.amount')">
                         <OrderTotals :subtotal="order.subtotal" :discounts="order.discounts" :shipping="order.shipping" :total="order.total" link-rules />
                     </BaseCard>
+                    <BaseCard :title="t('orders.supplies.title')">
+                        <template v-if="!order.refundedAt && channelSupplies.length" #actions>
+                            <BaseButton variant="secondary" @click="supplyOpen = true"><Plus size="1rem" aria-hidden="true" /> {{ t('orders.supplies.add') }}</BaseButton>
+                        </template>
+                        <OrderSupplies :supplies="order.supplies" :removable="!order.refundedAt" @remove="onSupplyRemoved" />
+                        <p v-if="!order.channelId" class="order-detail-page__hint">{{ t('orders.supplies.noChannel') }}</p>
+                        <p v-else-if="!channelSupplies.length" class="order-detail-page__hint">
+                            <a :href="`/channels/${order.channelId}`">{{ t('orders.supplies.noneOnChannel', { channel: order.channelName }) }}</a>
+                        </p>
+                    </BaseCard>
                     <BaseCard :title="t('orders.detail.margin')">
-                        <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :margin="order.margin" />
+                        <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :supplies-cost="order.suppliesCost" :margin="order.margin" />
                     </BaseCard>
                 </div>
             </div>
         </div>
 
+        <BaseModal v-model:open="supplyOpen" :title="t('orders.supplies.add')">
+            <SupplyForm v-if="supplyOpen" :supplies="channelSupplies" :submit="addSupply" @saved="onSupplyAdded" @cancel="supplyOpen = false" />
+        </BaseModal>
         <BaseModal v-model:open="mergeOpen" :title="t('orders.merge.title')">
             <MergeOrderForm v-if="mergeOpen && order" :order="order" :candidates="candidates" :submit="mergeWith" @merged="onMerged" @cancel="mergeOpen = false" />
         </BaseModal>
@@ -114,6 +149,7 @@ onMounted(() => Promise.all([load(), loadProducts()]));
 .order-detail-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .order-detail-page__meta { margin: 0; color: var(--color-muted); }
 .order-detail-page__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(17.5rem, 1fr); gap: var(--space-4); align-items: start; }
+.order-detail-page__hint { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 0.85rem; }
 .order-detail-page__side { display: flex; flex-direction: column; gap: var(--space-4); }
 
 @media (max-width: 56.25rem) {

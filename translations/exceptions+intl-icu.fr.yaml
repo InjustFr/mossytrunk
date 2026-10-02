@@ -65,6 +65,8 @@ integration:
     service_already_added: '{service} est déjà ajouté.'
     unknown_service: 'Service inconnu « {service} ».'
 order:
+    several_channels: 'Les commandes choisies sont sur plusieurs canaux : choisissez des commandes d''un seul canal.'
+    supply_not_on_channel: '« {supply} » n''est pas une fourniture du canal de la commande {reference}.'
     not_mergeable: 'Ces commandes ne peuvent pas être fusionnées : {reason, select, same_order {c''est la même commande} different_event {elles ne sont pas du même événement} different_source {elles ne viennent pas de la même source} refunded {l''une d''elles est remboursée} other {{reason}}}.'
     line_already_identified: '« {label} » a déjà un produit.'
     already_refunded: 'La commande {reference} est déjà remboursée.'
@@ -122,6 +124,7 @@ reference:
     token_without_size: '« {token} » ne prend pas de taille.'
     unknown_token: '« {token} » n''est pas une balise disponible ici.'
 sales:
+    not_a_supply: '« {product} » n''est pas une fourniture.'
     channel_has_orders_without_event: '« {channel} » a {count, plural, one {# commande} other {# commandes}} sans événement : un canal de marché n''en accepte pas.'
     channel_name_taken: 'Le canal « {name} » existe déjà.'
     empty_channel_name: 'Le nom du canal est obligatoire.'

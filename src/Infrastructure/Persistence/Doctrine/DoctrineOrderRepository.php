@@ -116,6 +116,21 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->getResult();
     }
 
+    public function using(Ulid $supplyId): array
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('o', 's', 'e')
+            ->from(Order::class, 'o')
+            ->join('o.supplies', 's')
+            ->leftJoin('o.event', 'e')
+            ->where('o.workspace = :workspace')
+            ->andWhere('s.productId = :supply')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('supply', $supplyId, UlidType::NAME)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function importedExternalIds(string $source, array $externalIds): array
     {
         if ([] === $externalIds) {

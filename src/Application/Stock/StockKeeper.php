@@ -8,6 +8,7 @@ use App\Domain\Event\Event;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderLine;
+use App\Domain\Order\OrderSupply;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\Money;
@@ -69,6 +70,17 @@ final readonly class StockKeeper
         foreach ($this->soldStock($order) as [$line, $stock]) {
             $stock->cancelReturnOf($order->id());
             $stock->cancelWithdrawal($line->quantity());
+        }
+        foreach ($order->supplies() as $supply) {
+            $this->giveBack($supply);
+        }
+    }
+
+    public function giveBack(OrderSupply $supply): void
+    {
+        $product = $this->products->findByIds([$supply->productId()])[0] ?? null;
+        if (null !== $product && $this->stillSells($product, $supply->variant())) {
+            $this->stock->for($product, $supply->variant())->cancelWithdrawal($supply->quantity());
         }
     }
 

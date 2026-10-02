@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Sales;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Product\Product;
 use App\Domain\Sales\Exception\EmptyChannelName;
+use App\Domain\Sales\Exception\NotASupply;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -39,11 +43,19 @@ class SalesChannel
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    /** @var Collection<int, Product> */
+    #[ORM\ManyToMany(targetEntity: Product::class)]
+    #[ORM\JoinTable(name: 'sales_channel_supply')]
+    #[ORM\JoinColumn(name: 'channel_id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'product_id', onDelete: 'CASCADE')]
+    private Collection $supplies;
+
     private function __construct(Workspace $workspace, string $name, ChannelKind $kind, ?string $service)
     {
         $this->id = new Ulid();
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
+        $this->supplies = new ArrayCollection();
         $this->rename($name);
         $this->kind = $kind;
         $this->linkTo($service);
@@ -65,6 +77,38 @@ class SalesChannel
     public function changeKind(ChannelKind $kind): void
     {
         $this->kind = $kind;
+    }
+
+    /**
+     * @param list<Product> $supplies
+     */
+    public function offerSupplies(array $supplies): void
+    {
+        foreach ($supplies as $supply) {
+            if (!$supply->isSupply()) {
+                throw new NotASupply($supply->displayName());
+            }
+        }
+
+        $this->supplies->clear();
+        foreach ($supplies as $supply) {
+            if (!$this->supplies->contains($supply)) {
+                $this->supplies->add($supply);
+            }
+        }
+    }
+
+    public function offers(Ulid $supplyId): bool
+    {
+        return $this->supplies->exists(static fn (int $key, Product $supply): bool => $supply->id()->equals($supplyId));
+    }
+
+    /**
+     * @return list<Product>
+     */
+    public function supplies(): array
+    {
+        return array_values($this->supplies->toArray());
     }
 
     public function acceptsOrderWithoutEvent(): bool

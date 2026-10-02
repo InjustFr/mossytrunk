@@ -11,6 +11,7 @@ import EventFilter from '../components/orders/EventFilter.vue';
 import OrderForm from '../components/orders/OrderForm.vue';
 import OrderFilters from '../components/orders/OrderFilters.vue';
 import OrderList from '../components/orders/OrderList.vue';
+import SupplyForm from '../components/orders/SupplyForm.vue';
 import ImportProblem from '../components/import/ImportProblem.vue';
 import ExternalItemLinker from '../components/import/ExternalItemLinker.vue';
 import ExternalItemsNotice from '../components/import/ExternalItemsNotice.vue';
@@ -20,9 +21,11 @@ import { useEvents } from '../composables/useEvents.js';
 import { useOrderSearch } from '../composables/useOrderSearch.js';
 import { useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
+import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useToast } from '../composables/useToast.js';
 
-const { orders, eventFilter, load, place, removeSelected } = useOrders();
+const { orders, eventFilter, load, place, removeSelected, addSupplies } = useOrders();
+const { channels, load: loadChannels } = useSalesChannels();
 const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
 const { articles: products, load: loadProducts } = useProducts();
 const { events, load: loadEvents } = useEvents();
@@ -43,6 +46,23 @@ const checkedIds = ref([]);
 async function deleteChecked() {
     const { deleted } = await removeSelected(checkedIds.value);
     toast.success(t('orders.selection.deleted', deleted));
+    checkedIds.value = [];
+    await load();
+}
+
+const supplyOpen = ref(false);
+const checkedChannelIds = computed(() => [...new Set(orders.value.filter((order) => checkedIds.value.includes(order.id)).map((order) => order.channelId ?? null))]);
+const checkedChannel = computed(() => (checkedChannelIds.value.length === 1 ? channels.value.find((channel) => channel.id === checkedChannelIds.value[0]) ?? null : null));
+const supplyBlocker = computed(() => {
+    if (checkedChannelIds.value.length > 1) return t('orders.supplies.severalChannels');
+    if (!checkedChannel.value) return t('orders.supplies.noChannel');
+    if (checkedChannel.value.supplies.length === 0) return t('orders.supplies.noneOnChannel', { channel: checkedChannel.value.name });
+    return null;
+});
+
+async function onSuppliesAdded(count) {
+    supplyOpen.value = false;
+    toast.success(t('orders.supplies.addedTo', count));
     checkedIds.value = [];
     await load();
 }
@@ -79,7 +99,7 @@ watch([search, unassigned], () => {
     checkedIds.value = [];
 });
 onMounted(async () => {
-    await Promise.all([load(), loadProducts(), loadEvents(), services.load()]);
+    await Promise.all([load(), loadProducts(), loadEvents(), services.load(), loadChannels()]);
     importers.value = services.added.value.map(useImport);
     await Promise.all(importers.value.map((importer) => importer.loadItems()));
 });
@@ -121,6 +141,7 @@ onMounted(async () => {
             <OrderList v-model:checked-ids="checkedIds" :orders="visible" :filtered="filtering" :highlight-id="lastPlacedId" />
         </BaseCard>
         <SelectionBar :count="checkedIds.length" :summary="t('orders.selection.count', checkedIds.length)" @clear="checkedIds = []">
+            <BaseButton variant="secondary" :disabled="supplyBlocker !== null" :title="supplyBlocker" @click="supplyOpen = true">{{ t('orders.selection.addSupply') }}</BaseButton>
             <ConfirmButton
                 variant="danger"
                 :label="t('orders.selection.delete')"
@@ -130,6 +151,16 @@ onMounted(async () => {
             />
         </SelectionBar>
 
+        <BaseModal v-model:open="supplyOpen" :title="t('orders.supplies.add')">
+            <SupplyForm
+                v-if="supplyOpen && checkedChannel"
+                :supplies="checkedChannel.supplies"
+                :intro="t('orders.supplies.intro', { channel: checkedChannel.name, count: checkedIds.length }, checkedIds.length)"
+                :submit="(payload) => addSupplies(checkedIds, payload)"
+                @saved="onSuppliesAdded"
+                @cancel="supplyOpen = false"
+            />
+        </BaseModal>
         <BaseModal v-model:open="linkerOpen" :title="linking ? t('orders.page.serviceItems', { service: linking.service.label }) : t('orders.page.items')">
             <ExternalItemLinker
                 v-if="linking"

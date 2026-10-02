@@ -37,6 +37,7 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 | K13 | Missing units are **unexplained**: the event shows « Commande manquante probable » with the units and the sales they represent (units × selling price) | `StockCheckLine::unexplained()`, `StockCheckView`, `ListEventsHandler` | `StockCheckTest`, `StockUseCasesTest` |
 | K14 | An order later added to that event first **explains** those units instead of taking them from stock again; their cost is the loss recorded by the inventory | `StockCheck::explain()`, `StockKeeper::withdraw()` | `StockCheckTest`, `StockUseCasesTest` |
 | K15 | « Classer l'écart » (breakage, loss, gift) clears what remains unexplained on a line; surplus lines are informational | `StockCheck::dismiss()` | `StockCheckTest`, `StockUseCasesTest` |
+| K16 | A supply added to an order is withdrawn like a sale (event's inventory gaps first, then FIFO) and shows as « Fourniture de commande » in the product's movements; removing it or deleting the order puts the units back | `StockKeeper::withdraw()`, `giveBack()`, `GetProductHandler` | `OrderSuppliesTest` |
 
 ## Use cases & API
 

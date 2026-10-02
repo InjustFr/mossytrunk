@@ -83,7 +83,8 @@
         "collected": "Encaissé",
         "buyingCost": "Coût d'achat",
         "gross": "Marge brute",
-        "note": "Avant cotisations URSSAF et dépenses de l'événement."
+        "note": "Avant cotisations URSSAF et dépenses de l'événement.",
+        "supplies": "Fournitures"
     },
     "totals": {
         "subtotal": "Sous-total",
@@ -122,11 +123,31 @@
         "delete": "Supprimer la sélection",
         "confirmDelete": "Supprimer {count} commande ? | Supprimer {count} commandes ?",
         "deleteMessage": "Pour une commande saisie par erreur : elle disparaît, et sa sortie de stock aussi. Cette action est définitive. | Pour des commandes saisies par erreur : elles disparaissent, et leurs sorties de stock aussi. Cette action est définitive.",
-        "deleted": "{count} commande supprimée. | {count} commandes supprimées."
+        "deleted": "{count} commande supprimée. | {count} commandes supprimées.",
+        "addSupply": "Ajouter une fourniture"
     },
     "filters": {
         "searchLabel": "Rechercher une commande",
         "searchPlaceholder": "N° de commande, date, heure…",
         "unassigned": "{count} commande avec un article sans produit | {count} commandes avec des articles sans produit"
+    },
+    "supplies": {
+        "title": "Fournitures",
+        "empty": "Aucune fourniture.",
+        "add": "Ajouter une fourniture",
+        "supply": "Fourniture",
+        "variant": "Variante",
+        "quantity": "Quantité",
+        "cancel": "Annuler",
+        "submit": "Ajouter",
+        "remove": "Retirer {label}",
+        "removeMessage": "Les fournitures retirées reviennent en stock.",
+        "added": "Fourniture ajoutée.",
+        "addedTo": "Fourniture ajoutée à {count} commande. | Fourniture ajoutée à {count} commandes.",
+        "removed": "« {label} » retirée.",
+        "noneOnChannel": "Le canal {channel} ne propose aucune fourniture : choisissez-les sur sa page.",
+        "noChannel": "Cette commande n'a pas de canal : elle ne peut pas avoir de fourniture.",
+        "severalChannels": "Choisissez des commandes d'un seul canal pour leur ajouter une fourniture.",
+        "intro": "Ajoute la fourniture à {count} commande du canal {channel}, prise dans le stock. | Ajoute la fourniture à chacune des {count} commandes du canal {channel}, prise dans le stock."
     }
 }

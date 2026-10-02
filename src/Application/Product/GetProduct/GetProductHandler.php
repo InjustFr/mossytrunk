@@ -51,7 +51,7 @@ final readonly class GetProductHandler
             $ever->quantity ?? 0,
             $ever?->sales->amount() ?? 0,
             $stock->items,
-            $this->movements($product->id(), $orders, $stockItems),
+            $this->movements($product->id(), $orders, $stockItems, $product->isSupply() ? $this->orders->using($product->id()) : []),
             array_reverse(array_map(static fn (SellingPriceChange $change): array => [
                 'id' => (string) $change->id(),
                 'price' => $change->price()->amount(),
@@ -65,10 +65,11 @@ final readonly class GetProductHandler
     /**
      * @param list<Order>     $orders
      * @param list<StockItem> $stockItems
+     * @param list<Order>     $supplied
      *
      * @return list<array{date: string, kind: string, variant: ?string, quantity: int, cost: int, link: ?string, label: ?string}>
      */
-    private function movements(Ulid $productId, array $orders, array $stockItems): array
+    private function movements(Ulid $productId, array $orders, array $stockItems, array $supplied): array
     {
         $movements = [];
         foreach ($stockItems as $item) {
@@ -95,6 +96,21 @@ final readonly class GetProductHandler
                         'cost' => $line->cost()->amount(),
                         'link' => '/orders/'.$order->id(),
                         'label' => $order->event()?->name() ?? $this->connectors->labelOf($order->source()),
+                    ];
+                }
+            }
+        }
+        foreach ($supplied as $order) {
+            foreach ($order->supplies() as $supply) {
+                if ($supply->productId()->equals($productId)) {
+                    $movements[] = [
+                        'date' => $order->placedAt()->format(\DateTimeInterface::ATOM),
+                        'kind' => 'supply',
+                        'variant' => $supply->variant(),
+                        'quantity' => -$supply->quantity(),
+                        'cost' => $supply->cost()->amount(),
+                        'link' => '/orders/'.$order->id(),
+                        'label' => $order->reference(),
                     ];
                 }
             }

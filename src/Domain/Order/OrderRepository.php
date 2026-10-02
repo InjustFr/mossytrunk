@@ -44,6 +44,11 @@ interface OrderRepository
     public function selling(Ulid $productId): array;
 
     /**
+     * @return list<Order> the orders that used the supply
+     */
+    public function using(Ulid $supplyId): array;
+
+    /**
      * @param list<string> $externalIds
      *
      * @return list<string>

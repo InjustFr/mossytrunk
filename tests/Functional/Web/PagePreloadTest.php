@@ -38,7 +38,7 @@ final class PagePreloadTest extends WebTestCase
     {
         $client = self::signedInClient();
 
-        self::assertSame(['/api/products'], array_keys($this->preloadedOn($client, '/orders/01M3SZ3G7ZEJ76R9Z0S55P53TQ')));
+        self::assertSame(['/api/products', '/api/sales-channels'], array_keys($this->preloadedOn($client, '/orders/01M3SZ3G7ZEJ76R9Z0S55P53TQ')));
     }
 
     /**

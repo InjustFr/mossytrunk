@@ -55,7 +55,7 @@ final class SalesChannelUseCasesTest extends KernelTestCase
         self::getContainer()->get(SaveChannelHandler::class)($etsy, 'Boutique Etsy', ChannelKind::Online, 'etsy');
 
         self::assertEquals([
-            new SalesChannelView($etsy, 'Boutique Etsy', 'etsy', 'Etsy', 'online', false),
+            new SalesChannelView($etsy, 'Boutique Etsy', 'etsy', 'Etsy', 'online', false, []),
         ], array_values(array_filter($this->channels(), static fn (SalesChannelView $view): bool => null !== $view->service)));
         self::assertSame(['Marchés', 'Boutique Etsy', 'Marchés en ligne'], array_column($this->channels(), 'name'));
 

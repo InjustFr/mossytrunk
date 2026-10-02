@@ -34,6 +34,37 @@ final class OrderApiTest extends WebTestCase
         self::assertSame('T-shirt — M', Json::at(Json::decode((string) $client->getResponse()->getContent()), 'lines', 0, 'label'));
     }
 
+    public function testSuppliesOfferedByTheChannelAreAddedToOrdersAndRemoved(): void
+    {
+        $client = self::signedInClient();
+        $this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $type = ProductTypesApi::create($client);
+        $product = $this->post($client, '/api/products', ['name' => 'Zine', 'sellingPrice' => 1_000, 'typeId' => $type])['id'];
+        $sleeve = Json::string($this->post($client, '/api/products', ['name' => 'Pochette', 'typeId' => $type, 'kind' => 'supply']), 'id');
+        $order = Json::string($this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'variant' => null, 'quantity' => 1]]]), 'id');
+        $client->jsonRequest('GET', '/api/sales-channels');
+        $main = Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'id');
+
+        $client->jsonRequest('POST', '/api/orders/supplies', ['orderIds' => [$order], 'supplyId' => $sleeve, 'quantity' => 1]);
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('PUT', "/api/sales-channels/$main/supplies", ['supplyIds' => [$sleeve]]);
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', "/api/sales-channels/$main");
+        self::assertSame([['id' => $sleeve, 'name' => 'Pochette', 'variants' => []]], Json::at(Json::decode((string) $client->getResponse()->getContent()), 'supplies'));
+
+        $client->jsonRequest('POST', '/api/orders/supplies', ['orderIds' => [$order], 'supplyId' => $sleeve, 'quantity' => 0]);
+        self::assertResponseStatusCodeSame(422);
+        $client->jsonRequest('POST', '/api/orders/supplies', ['orderIds' => [$order], 'supplyId' => $sleeve, 'quantity' => 2]);
+        self::assertSame(['updated' => 1], Json::decode((string) $client->getResponse()->getContent()));
+
+        $client->jsonRequest('GET', "/api/orders/$order");
+        $view = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([$main, 2], [Json::at($view, 'channelId'), Json::at($view, 'supplies', 0, 'quantity')]);
+        $client->jsonRequest('DELETE', "/api/orders/$order/supplies/".Json::string($view, 'supplies', 0, 'id'));
+        self::assertResponseStatusCodeSame(204);
+    }
+
     public function testALineThatAlreadyHasAProductCannotBeLinkedAgain(): void
     {
         $client = self::signedInClient();

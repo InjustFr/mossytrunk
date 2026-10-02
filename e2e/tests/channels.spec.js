@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { unique } from './support/unique.js';
-import { createProduct, createType } from './support/api.js';
+import { createEvent, createProduct, createType, restock } from './support/api.js';
 
 test('a sales channel gets its own prices, one by one or in batch', async ({ page, request }) => {
     const main = (await (await request.get('/api/sales-channels')).json()).find((channel) => channel.main);
@@ -56,12 +56,59 @@ test('a sales channel gets its own prices, one by one or in batch', async ({ pag
     await price.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByTestId('toast').last()).toContainText(`Prix de ${fern.displayName} enregistré.`);
     await expect(page.getByRole('row').filter({ hasText: fern.displayName }).getByRole('cell').nth(2)).toContainText('6,00');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button', { name: `Modifier le prix de ${moss.displayName}` }).click();
-    await page.getByRole('dialog').getByLabel('Prix', { exact: true }).fill('4,80');
-    await page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
+    const mossPrice = page.getByRole('dialog', { name: `Prix de ${moss.displayName} sur ${name}` });
+    await mossPrice.getByLabel('Prix', { exact: true }).fill('4,80');
+    await mossPrice.getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByRole('row').filter({ hasText: moss.displayName })).toContainText('4,80');
 
     await page.getByRole('button', { name: `Supprimer ${name}` }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: /Supprimer|Confirmer/ }).click();
     await expect(page.getByTestId('toast').last()).toContainText(`Canal « ${name} » supprimé.`);
+});
+
+test('a channel offers supplies that are added to its orders, one by one or in batch', async ({ page, request }) => {
+    const main = (await (await request.get('/api/sales-channels')).json()).find((channel) => channel.main);
+    const type = await createType(request, unique('Emballage'), { prefixesNames: false });
+    const sleeveName = unique('Pochette');
+    const sleeve = await (await request.post('/api/products', { data: { name: sleeveName, typeId: type.id, kind: 'supply' } })).json();
+    await restock(request, sleeve, { quantity: 50, totalPaid: 500 });
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+    const orders = [];
+    for (const time of ['10:00', '11:00']) {
+        const response = await request.post('/api/orders', { data: { placedAt: `${event.startDate}T${time}`, lines: [{ productId: sticker.id, variant: null, quantity: 1 }] } });
+        orders.push(await response.json());
+    }
+
+    await page.goto(`/channels/${main.id}`);
+    await page.getByRole('group', { name: 'Fournitures' }).getByRole('button', { name: sleeveName }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Fournitures du canal enregistrées.');
+
+    await page.goto(`/orders/${orders[0].id}`);
+    const supplies = page.getByRole('region', { name: 'Fournitures' });
+    await supplies.getByRole('button', { name: 'Ajouter une fourniture' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Ajouter une fourniture' });
+    await dialog.getByRole('spinbutton', { name: 'Quantité' }).fill('2');
+    await dialog.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await expect(supplies).toContainText(`2 × ${sleeveName}`);
+    await expect(supplies).toContainText('0,20');
+
+    await page.goto(`/orders?event=${event.id}`);
+    for (const order of orders) {
+        await page.getByRole('checkbox', { name: `Sélectionner la commande ${order.reference}` }).check();
+    }
+    await page.getByRole('region', { name: 'Sélection' }).getByRole('button', { name: 'Ajouter une fourniture' }).click();
+    await page.getByRole('dialog', { name: 'Ajouter une fourniture' }).getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Fourniture ajoutée à 2 commandes.');
+
+    await page.goto(`/orders/${orders[0].id}`);
+    await expect(page.getByRole('region', { name: 'Fournitures' })).toContainText(`3 × ${sleeveName}`);
+    await page.goto(`/products/${sleeve.id}`);
+    await expect(page.locator('.product-movements').getByRole('link', { name: 'Fourniture de commande' })).toHaveCount(2);
+
+    await page.goto(`/channels/${main.id}`);
+    await page.getByRole('group', { name: 'Fournitures' }).getByRole('button', { name: sleeveName }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Fournitures du canal enregistrées.');
 });

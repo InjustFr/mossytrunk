@@ -36,6 +36,7 @@ export function useProducts() {
     const activeProducts = computed(() => products.value.filter((product) => !product.archived));
     const articles = computed(() => products.value.filter((product) => product.kind !== 'supply'));
     const activeArticles = computed(() => articles.value.filter((product) => !product.archived));
+    const activeSupplies = computed(() => products.value.filter((product) => product.kind === 'supply' && !product.archived));
 
-    return { products, activeProducts, articles, activeArticles, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, loadOne, suggestReference, designProduct, savePrice, forgetPrice };
+    return { products, activeProducts, articles, activeArticles, activeSupplies, loading, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore, loadOne, suggestReference, designProduct, savePrice, forgetPrice };
 }

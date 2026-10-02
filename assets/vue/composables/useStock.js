@@ -15,6 +15,7 @@ const MOVEMENTS = {
     correction: 'stock.movement.surplus',
     sale: 'stock.movement.sale',
     loss: 'stock.movement.loss',
+    supply: 'stock.movement.supply',
 };
 
 export const lotOriginLabel = (origin) => t(LOT_ORIGINS[origin]);

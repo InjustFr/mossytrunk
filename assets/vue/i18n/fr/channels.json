@@ -68,5 +68,11 @@
         "batchSaved": "{count} produit mis à jour. | {count} produits mis à jour.",
         "empty": "Aucun produit.",
         "actions": "Actions"
+    },
+    "supplies": {
+        "title": "Fournitures",
+        "intro": "Les fournitures que l'on peut ajouter aux commandes de ce canal (pochettes, enveloppes…). Elles sont prises dans le stock.",
+        "none": "Aucune fourniture : créez-en dans Produits › Fournitures.",
+        "saved": "Fournitures du canal enregistrées."
     }
 }

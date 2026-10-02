@@ -6,6 +6,9 @@ namespace App\Application\Sales;
 
 final readonly class SalesChannelView
 {
+    /**
+     * @param list<array{id: string, name: string, variants: list<string>}> $supplies
+     */
     public function __construct(
         public string $id,
         public string $name,
@@ -13,6 +16,7 @@ final readonly class SalesChannelView
         public ?string $serviceLabel,
         public string $kind,
         public bool $main,
+        public array $supplies,
     ) {
     }
 }

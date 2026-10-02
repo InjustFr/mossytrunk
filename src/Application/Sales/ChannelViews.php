@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Sales;
 
 use App\Application\Integration\Connectors;
+use App\Domain\Product\Product;
 use App\Domain\Sales\SalesChannel;
 
 final readonly class ChannelViews
@@ -22,6 +23,7 @@ final readonly class ChannelViews
             null === $channel->service() ? null : $this->connectors->labelOf($channel->service()),
             $channel->kind()->value,
             $channel->isMain(),
+            array_map(static fn (Product $supply): array => ['id' => (string) $supply->id(), 'name' => $supply->displayName(), 'variants' => $supply->variants()], $channel->supplies()),
         );
     }
 }

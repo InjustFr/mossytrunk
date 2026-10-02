@@ -83,7 +83,8 @@
         "collected": "Collected",
         "buyingCost": "Buying cost",
         "gross": "Gross margin",
-        "note": "Before URSSAF contributions and event expenses."
+        "note": "Before URSSAF contributions and event expenses.",
+        "supplies": "Supplies"
     },
     "totals": {
         "subtotal": "Subtotal",
@@ -122,11 +123,31 @@
         "delete": "Delete selection",
         "confirmDelete": "Delete {count} order? | Delete {count} orders?",
         "deleteMessage": "For an order entered by mistake: it disappears along with its stock withdrawal. This cannot be undone. | For orders entered by mistake: they disappear along with their stock withdrawals. This cannot be undone.",
-        "deleted": "{count} order deleted. | {count} orders deleted."
+        "deleted": "{count} order deleted. | {count} orders deleted.",
+        "addSupply": "Add a supply"
     },
     "filters": {
         "searchLabel": "Search orders",
         "searchPlaceholder": "Order number, date, time…",
         "unassigned": "{count} order with an item without product | {count} orders with items without product"
+    },
+    "supplies": {
+        "title": "Supplies",
+        "empty": "No supply.",
+        "add": "Add a supply",
+        "supply": "Supply",
+        "variant": "Variant",
+        "quantity": "Quantity",
+        "cancel": "Cancel",
+        "submit": "Add",
+        "remove": "Remove {label}",
+        "removeMessage": "Removed supplies go back to stock.",
+        "added": "Supply added.",
+        "addedTo": "Supply added to {count} order. | Supply added to {count} orders.",
+        "removed": "“{label}” removed.",
+        "noneOnChannel": "The {channel} channel offers no supply: choose them on its page.",
+        "noChannel": "This order has no channel: it cannot have supplies.",
+        "severalChannels": "Choose orders of a single channel to add them a supply.",
+        "intro": "Adds the supply to {count} order of the {channel} channel, taken from stock. | Adds the supply to each of the {count} orders of the {channel} channel, taken from stock."
     }
 }
