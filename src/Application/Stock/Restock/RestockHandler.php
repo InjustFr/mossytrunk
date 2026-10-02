@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Stock\Restock;
 
+use App\Application\Order\MissingCosts;
 use App\Application\Transaction;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\Money;
@@ -18,6 +19,7 @@ final readonly class RestockHandler
         private ProductRepository $products,
         private StockRepository $stock,
         private ClockInterface $clock,
+        private MissingCosts $missingCosts,
         private Transaction $transaction,
     ) {
     }
@@ -25,8 +27,10 @@ final readonly class RestockHandler
     public function __invoke(Restock $command): void
     {
         $product = $this->products->get(Ulid::fromString($command->productId));
-        $lot = $this->stock->for($product, $command->variant)->receive($command->quantity, Money::cents($command->totalPaidCents), LotOrigin::Purchase, $this->clock->now());
+        $item = $this->stock->for($product, $command->variant);
+        $lot = $item->receive($command->quantity, Money::cents($command->totalPaidCents), LotOrigin::Purchase, $this->clock->now());
         $product->bought($lot->unitCost());
+        $this->missingCosts->fill($item);
 
         $this->transaction->commit();
     }

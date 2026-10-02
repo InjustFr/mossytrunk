@@ -7,7 +7,10 @@
         "items": "Items",
         "serviceItems": "{service} items",
         "placed": "Order {reference} saved.",
-        "itemLinked": "Item “{label}” linked."
+        "itemLinked": "Item “{label}” linked.",
+        "fillCosts": "Fill in buying costs",
+        "costsFilled": "{count} line got its buying cost. | {count} lines got their buying cost.",
+        "noCostToFill": "No buying cost known for these products: receive a supplier order or restock them first."
     },
     "detail": {
         "title": "Order {reference}",
@@ -77,7 +80,10 @@
         "select": "Select order {reference}",
         "refunded": "Refunded",
         "noMatch": "No order matches.",
-        "unassigned": "{count} item to link to a product | {count} items to link to a product"
+        "unassigned": "{count} item to link to a product | {count} items to link to a product",
+        "profit": "Real profit",
+        "profitHint": "Total cashed − buying cost − supplies − channel costs.",
+        "unknownCost": "Unknown buying cost for {count} line | Unknown buying cost for {count} lines"
     },
     "margin": {
         "collected": "Collected",

@@ -24,7 +24,21 @@ import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useToast } from '../composables/useToast.js';
 
-const { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges } = useOrders();
+const { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts } = useOrders();
+const missingCosts = computed(() => orders.value.some((order) => order.unknownCosts > 0));
+const filling = ref(false);
+
+async function onFillCosts() {
+    filling.value = true;
+    try {
+        const { filled } = await fillMissingCosts();
+        if (filled > 0) toast.success(t('orders.page.costsFilled', filled));
+        else toast.error(t('orders.page.noCostToFill'));
+        await load();
+    } finally {
+        filling.value = false;
+    }
+}
 const { channels, load: loadChannels } = useSalesChannels();
 const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
 const { articles: products, load: loadProducts } = useProducts();
@@ -124,6 +138,7 @@ onMounted(async () => {
             >
                 {{ t('orders.page.importFrom', { service: importer.service.label }) }}
             </BaseButton>
+            <BaseButton v-if="missingCosts" variant="secondary" :loading="filling" @click="onFillCosts">{{ t('orders.page.fillCosts') }}</BaseButton>
             <BaseButton @click="formOpen = true">{{ t('orders.page.new') }}</BaseButton>
         </template>
 

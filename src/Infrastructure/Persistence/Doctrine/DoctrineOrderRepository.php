@@ -44,7 +44,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function list(?Ulid $eventId = null): array
     {
-        return $this->orders($eventId)->getQuery()->getResult();
+        return $this->withSupplies($this->orders($eventId)->getQuery()->getResult());
     }
 
     public function sales(?Ulid $eventId = null): array

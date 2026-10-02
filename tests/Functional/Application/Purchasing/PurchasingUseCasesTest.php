@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Purchasing;
 
+use App\Application\Event\ScheduleEvent\ScheduleEvent;
+use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\FillMissingCosts\FillMissingCostsHandler;
+use App\Application\Order\GetOrder\GetOrderHandler;
+use App\Application\Order\ListOrders\ListOrdersHandler;
+use App\Application\Order\PlaceOrder\PlaceOrder;
+use App\Application\Order\PlaceOrder\PlaceOrderHandler;
+use App\Application\Order\RequestedLine;
+use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Purchasing\DeleteSupplierOrder\DeleteSupplierOrderHandler;
@@ -104,6 +113,24 @@ final class PurchasingUseCasesTest extends KernelTestCase
         [$small, $medium] = self::getContainer()->get(GetProductStockHandler::class)($this->tshirt);
         self::assertSame([5, 0], [$small->onHand, $medium->onHand]);
         self::assertSame(30, $this->productView($this->sticker)->buyingPrice);
+    }
+
+    public function testSalesMadeBeforeAnyCostWasKnownTakeTheCostOfTheFirstPurchase(): void
+    {
+        $container = self::getContainer();
+        $badge = self::createProduct('Badge', 500, typeId: (string) $container->get(CreateProductTypeHandler::class)('Badge')->id());
+        $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-14')));
+        $sold = (string) $container->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 12:00'), [new RequestedLine($badge, null, 3)]))->id();
+        self::assertSame([0, 1], [$container->get(GetOrderHandler::class)($sold)->costOfGoods, $container->get(ListOrdersHandler::class)()[0]->unknownCosts]);
+
+        $orderId = $this->place([new PurchaseLine($badge, null, 10, 1_200)]);
+        $container->get(ReceiveSupplierOrderHandler::class)($orderId, [$this->view($orderId)->lines[0]['id'] => 10]);
+        $this->clear();
+
+        $order = $container->get(GetOrderHandler::class)($sold);
+        self::assertSame([360, 1_500 - 360], [$order->costOfGoods, $order->margin]);
+        self::assertSame([1_500 - 360, 0], [$container->get(ListOrdersHandler::class)()[0]->profit, $container->get(ListOrdersHandler::class)()[0]->unknownCosts]);
+        self::assertSame(0, $container->get(FillMissingCostsHandler::class)());
     }
 
     public function testAnOrderInDollarsStocksItsCostInEuros(): void

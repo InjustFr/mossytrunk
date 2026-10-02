@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Purchasing;
 
+use App\Application\Order\MissingCosts;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Shared\Money;
@@ -15,6 +16,7 @@ final readonly class SupplierOrderStock
     public function __construct(
         private ProductRepository $products,
         private StockRepository $stock,
+        private MissingCosts $missingCosts,
     ) {
     }
 
@@ -36,6 +38,7 @@ final readonly class SupplierOrderStock
             if (null !== $lot && $item->isLatestPurchase($lot)) {
                 $product->bought($lot->unitCost());
             }
+            $this->missingCosts->fill($item);
             $restated[] = $item;
         }
 

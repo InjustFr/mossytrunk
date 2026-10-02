@@ -30,8 +30,8 @@ const days = computed(() => {
     const totals = new Map();
     for (const order of props.orders) {
         const key = dayKey(order);
-        const day = totals.get(key) ?? { count: 0, total: 0 };
-        totals.set(key, { count: day.count + 1, total: day.total + (order.refundedAt ? 0 : order.total) });
+        const day = totals.get(key) ?? { count: 0, total: 0, profit: 0 };
+        totals.set(key, { count: day.count + 1, total: day.total + (order.refundedAt ? 0 : order.total), profit: day.profit + (order.refundedAt ? 0 : order.profit) });
     }
     return totals;
 });
@@ -65,6 +65,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                 <th class="data-table__cell--number">{{ t('orders.list.items') }}</th>
                 <th class="data-table__cell--number">{{ t('orders.list.discounts') }}</th>
                 <th class="data-table__cell--number">{{ t('orders.list.total') }}</th>
+                <th class="data-table__cell--number" :title="t('orders.list.profitHint')">{{ t('orders.list.profit') }}</th>
                 <th>{{ t('orders.list.payment') }}</th>
                 <th>{{ t('orders.list.source') }}</th>
             </tr>
@@ -78,6 +79,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                         <span v-else class="order-list__event order-list__event--online">{{ t('orders.shop', { source: order.sourceLabel }) }}</span>
                     </th>
                     <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.total" /></td>
+                    <td class="data-table__cell--number order-list__day-total"><MoneyAmount :cents="day.profit" signed /></td>
                     <td class="order-list__day-count" colspan="2">{{ t('orders.list.count', day.count) }}</td>
                 </tr>
                 <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId, 'order-list__row--unassigned': order.unidentifiedLines > 0 }]">
@@ -105,6 +107,19 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                         <span v-else class="order-list__none">—</span>
                     </td>
                     <td :class="['data-table__cell--number', 'order-list__total', { 'order-list__total--refunded': order.refundedAt }]"><MoneyAmount :cents="order.total" /></td>
+                    <td class="data-table__cell--number order-list__profit">
+                        <span v-if="order.refundedAt" class="order-list__none">—</span>
+                        <template v-else>
+                            <TriangleAlert
+                                v-if="order.unknownCosts > 0"
+                                class="order-list__unassigned"
+                                size="0.875rem"
+                                role="img"
+                                :aria-label="t('orders.list.unknownCost', order.unknownCosts)"
+                            />
+                            <MoneyAmount :cents="order.profit" signed />
+                        </template>
+                    </td>
                     <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__source">
                         <StatusBadge v-if="order.refundedAt" tone="warning">{{ t('orders.list.refunded') }}</StatusBadge>
@@ -122,10 +137,11 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 .order-list :deep(th.order-list__check) { width: 2.5rem; }
 .order-list :deep(th:nth-child(2)) { width: 17%; }
 .order-list :deep(th:nth-child(3)) { width: 9%; }
-.order-list :deep(th:nth-child(7)) { width: 12%; }
+.order-list :deep(th:nth-child(8)) { width: 12%; }
 .order-list :deep(th:nth-child(4)),
 .order-list :deep(th:nth-child(5)),
-.order-list :deep(th:nth-child(6)) { width: 11%; }
+.order-list :deep(th:nth-child(6)),
+.order-list :deep(th:nth-child(7)) { width: 10%; }
 
 .order-list__day > * { padding-top: var(--space-4); background: var(--color-bg); border-bottom-color: var(--color-border-strong); }
 .order-list__day th { text-align: left; font-size: inherit; color: inherit; white-space: normal; }

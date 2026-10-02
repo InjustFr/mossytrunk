@@ -16,8 +16,9 @@ export function useOrders() {
     const removeSelected = (orderIds) => api.post('/api/orders/deletion', { orderIds });
     const addSupplies = (orderIds, payload) => api.post('/api/orders/supplies', { orderIds, ...payload });
     const recomputeCharges = (orderIds) => api.post('/api/orders/charges', { orderIds });
+    const fillMissingCosts = () => api.post('/api/orders/missing-costs');
 
-    return { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges };
+    return { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts };
 }
 
 export function useOrder(orderId) {

@@ -195,6 +195,17 @@ class StockItem
         ));
     }
 
+    public function firstPurchaseUnitCost(): ?Money
+    {
+        foreach ($this->lots() as $lot) {
+            if ($lot->isPurchase()) {
+                return $lot->unitCost();
+            }
+        }
+
+        return null;
+    }
+
     public function isLatestPurchase(StockLot $lot): bool
     {
         return $this->latestPurchase() === $lot;

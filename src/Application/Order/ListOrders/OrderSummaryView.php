@@ -32,6 +32,8 @@ final readonly class OrderSummaryView
         public int $unidentifiedLines,
         public ?string $channelId,
         public ?string $channelName,
+        public int $profit,
+        public int $unknownCosts,
     ) {
     }
 
@@ -55,6 +57,8 @@ final readonly class OrderSummaryView
             \count(array_filter($order->lines(), static fn (OrderLine $line): bool => null === $line->productId())),
             null === $order->channel() ? null : (string) $order->channel()->id(),
             $order->channel()?->name(),
+            $order->total()->subtract($order->costOfGoods())->subtract($order->suppliesCost())->subtract($order->channelCosts())->amount(),
+            $order->unknownCostLines(),
         );
     }
 }

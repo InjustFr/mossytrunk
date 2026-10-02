@@ -114,6 +114,19 @@ class OrderLine
         $this->cost = $cost;
     }
 
+    public function hasUnknownCost(): bool
+    {
+        return null !== $this->productId && $this->cost->isZero();
+    }
+
+    /**
+     * @internal the order fills the costs it did not know
+     */
+    public function costAt(Money $unitCost): void
+    {
+        $this->cost = $unitCost->multiply($this->quantity);
+    }
+
     public function sameUnitAmountsAs(self $other): bool
     {
         return $this->unitPrice->equals($other->unitPrice);

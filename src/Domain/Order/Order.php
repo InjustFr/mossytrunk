@@ -362,6 +362,27 @@ class Order implements Referenced
         return null;
     }
 
+    public function fillMissingCosts(Ulid $productId, ?string $variant, Money $unitCost): int
+    {
+        if ($unitCost->isZero()) {
+            return 0;
+        }
+        $filled = 0;
+        foreach ($this->lines as $line) {
+            if ($line->hasUnknownCost() && ($line->productId()?->equals($productId) ?? false) && $line->variant() === $variant) {
+                $line->costAt($unitCost);
+                ++$filled;
+            }
+        }
+
+        return $filled;
+    }
+
+    public function unknownCostLines(): int
+    {
+        return \count(array_filter($this->lines(), static fn (OrderLine $line): bool => $line->hasUnknownCost()));
+    }
+
     public function useSupply(SellableItem $supply, int $quantity, Money $cost): void
     {
         if ($this->isRefunded()) {
