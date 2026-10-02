@@ -1,0 +1,67 @@
+{
+    "title": "Bilan produits",
+    "period": {
+        "label": "Période",
+        "last12": "12 derniers mois",
+        "all": "Depuis le début",
+        "year": "Année {year}"
+    },
+    "summary": "{revenue} encaissés pour {units} articles vendus, dont {discount} laissés en remises.",
+    "summaryEmpty": "Aucune vente sur cette période.",
+    "palmares": {
+        "title": "Palmarès",
+        "sortBy": "Classer par",
+        "sorts": {
+            "revenue": "Encaissé",
+            "units": "Articles vendus",
+            "discount": "Remises",
+            "margin": "Marge"
+        },
+        "legendRevenue": "Encaissé",
+        "legendDiscount": "Laissé en remises",
+        "showAll": "Afficher les {count} produits",
+        "showLess": "Afficher les 15 premiers",
+        "select": "Voir le détail de {name}",
+        "units": "{count} vendu | {count} vendus",
+        "discountShare": "{share} remisé",
+        "tooltip": {
+            "gross": "Plein tarif",
+            "discount": "Remises",
+            "revenue": "Encaissé",
+            "margin": "Marge",
+            "unknownCost": "coût d'achat inconnu",
+            "onHand": "En stock"
+        },
+        "search": "Rechercher un produit",
+        "noMatch": "Aucun produit vendu ne correspond."
+    },
+    "story": {
+        "choose": "Choisissez un produit dans le palmarès pour voir comment il s'est vendu, comment son stock a bougé et quand il était remisé.",
+        "onHand": "{count} en stock aujourd'hui",
+        "openProduct": "Fiche produit",
+        "close": "Fermer le détail"
+    },
+    "sales": {
+        "title": "Ventes par mois",
+        "tooltip": "{units} vendus, {revenue} encaissés",
+        "none": "Aucune vente sur la période."
+    },
+    "flow": {
+        "title": "Mouvements de stock",
+        "in": "Entrées",
+        "out": "Sorties",
+        "stock": "Stock en fin de mois",
+        "tooltipIn": "Entrées : {count}",
+        "tooltipOut": "Sorties : {sold} vendus, {lost} perdus, {used} en fourniture",
+        "tooltipStock": "Stock fin {month} : {count}"
+    },
+    "discounts": {
+        "title": "Remises",
+        "covered": "Remisé {days} jours sur {total}, {amount} laissés en remises.",
+        "none": "Aucune remise ne le concernait sur la période.",
+        "rule": "{name}, du {from} au {to}",
+        "share": "Part remisée",
+        "shareTooltip": "{month} : {share} du plein tarif laissé en remises"
+    },
+    "months": "Mois"
+}

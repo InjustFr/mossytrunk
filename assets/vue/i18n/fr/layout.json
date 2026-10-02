@@ -13,7 +13,8 @@
         "suppliers": "Fournisseurs",
         "office": "Bureau",
         "accounting": "Comptabilité",
-        "settings": "Paramètres"
+        "settings": "Paramètres",
+        "productReports": "Bilan produits"
     },
     "signOut": "Se déconnecter"
 }

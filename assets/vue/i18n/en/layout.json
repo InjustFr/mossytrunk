@@ -13,7 +13,8 @@
         "suppliers": "Suppliers",
         "office": "Office",
         "accounting": "Accounting",
-        "settings": "Settings"
+        "settings": "Settings",
+        "productReports": "Product report"
     },
     "signOut": "Sign out"
 }

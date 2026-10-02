@@ -59,6 +59,11 @@ abstract class ConditionTarget
         return $this->matchesSubject($productId, $typeId) && (null === $this->variant || VariantLabel::same($this->variant, $variant));
     }
 
+    public function concernsProduct(Product $product): bool
+    {
+        return $this->matchesSubject($product->id(), $product->type()->id());
+    }
+
     public function is(Product|ProductType $subject, ?string $variant): bool
     {
         return $subject === $this->subject() && VariantLabel::same($this->variant, $variant);

@@ -65,6 +65,30 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->getResult());
     }
 
+    public function firstSaleAt(): ?\DateTimeImmutable
+    {
+        return $this->saleAt('MIN');
+    }
+
+    public function lastSaleAt(): ?\DateTimeImmutable
+    {
+        return $this->saleAt('MAX');
+    }
+
+    private function saleAt(string $aggregate): ?\DateTimeImmutable
+    {
+        $moment = $this->entityManager->createQueryBuilder()
+            ->select(\sprintf('%s(o.placedAt)', $aggregate))
+            ->from(Order::class, 'o')
+            ->where('o.workspace = :workspace')
+            ->andWhere('o.refundedAt IS NULL')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return \is_string($moment) ? new \DateTimeImmutable($moment) : null;
+    }
+
     /**
      * @param list<Order> $orders
      *

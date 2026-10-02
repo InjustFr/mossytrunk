@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Reporting\ProductsReport;
+
+use App\Application\Reporting\ReportPeriod;
+use App\Domain\Order\OrderRepository;
+use App\Domain\Product\Product;
+use App\Domain\Product\ProductRepository;
+use App\Domain\Stock\StockRepository;
+
+final readonly class GetProductsReportHandler
+{
+    public function __construct(
+        private OrderRepository $orders,
+        private ProductRepository $products,
+        private StockRepository $stock,
+        private ReportPeriod $periods,
+    ) {
+    }
+
+    public function __invoke(string $period): ProductsReportView
+    {
+        $range = $this->periods->resolve($period);
+
+        $sold = [];
+        foreach ($this->orders->salesWithin($range) as $order) {
+            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
+                $productId = $line->productId();
+                if (null === $productId) {
+                    continue;
+                }
+                $key = (string) $productId;
+                $sold[$key] ??= ['units' => 0, 'gross' => 0, 'revenue' => 0, 'cost' => 0, 'unknownCost' => false];
+                $sold[$key]['units'] += $line->quantity();
+                $sold[$key]['gross'] += $line->total()->amount();
+                $sold[$key]['revenue'] += $revenue->amount();
+                $sold[$key]['cost'] += $line->cost()->amount();
+                $sold[$key]['unknownCost'] = $sold[$key]['unknownCost'] || $line->cost()->isZero();
+            }
+        }
+
+        $onHand = [];
+        foreach ($this->stock->all() as $item) {
+            $key = (string) $item->product()->id();
+            $onHand[$key] = ($onHand[$key] ?? 0) + $item->onHand();
+        }
+
+        $rows = [];
+        foreach ($this->products->articles() as $product) {
+            $key = (string) $product->id();
+            if (!isset($sold[$key])) {
+                continue;
+            }
+            $rows[] = self::row($product, $sold[$key], $onHand[$key] ?? 0);
+        }
+        usort($rows, static fn (array $a, array $b): int => [$b['revenue'], $a['name']] <=> [$a['revenue'], $b['name']]);
+
+        return new ProductsReportView(
+            ['choice' => $period, 'from' => $range->start()->format('Y-m-d'), 'to' => $range->end()->format('Y-m-d')],
+            $this->periods->years(),
+            $rows,
+            [
+                'units' => array_sum(array_column($rows, 'units')),
+                'gross' => array_sum(array_column($rows, 'gross')),
+                'revenue' => array_sum(array_column($rows, 'revenue')),
+                'discount' => array_sum(array_column($rows, 'discount')),
+                'margin' => array_sum(array_column($rows, 'margin')),
+            ],
+        );
+    }
+
+    /**
+     * @param array{units: int, gross: int, revenue: int, cost: int, unknownCost: bool} $sold
+     *
+     * @return array{id: string, name: string, typeId: string, typeName: string, units: int, gross: int, revenue: int, discount: int, cost: int, margin: int, unknownCost: bool, onHand: int}
+     */
+    private static function row(Product $product, array $sold, int $onHand): array
+    {
+        return [
+            'id' => (string) $product->id(),
+            'name' => $product->displayName(),
+            'typeId' => (string) $product->type()->id(),
+            'typeName' => $product->type()->name(),
+            'units' => $sold['units'],
+            'gross' => $sold['gross'],
+            'revenue' => $sold['revenue'],
+            'discount' => $sold['gross'] - $sold['revenue'],
+            'cost' => $sold['cost'],
+            'margin' => $sold['revenue'] - $sold['cost'],
+            'unknownCost' => $sold['unknownCost'],
+            'onHand' => $onHand,
+        ];
+    }
+}

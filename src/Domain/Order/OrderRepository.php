@@ -33,6 +33,10 @@ interface OrderRepository
      */
     public function salesWithin(DateRange $period): array;
 
+    public function firstSaleAt(): ?\DateTimeImmutable;
+
+    public function lastSaleAt(): ?\DateTimeImmutable;
+
     /**
      * @return list<Order> other unrefunded orders of the same event and source, most recent first
      */

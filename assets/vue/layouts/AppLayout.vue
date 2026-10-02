@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Store, Tag, Truck } from '@lucide/vue';
+import { CalendarDays, ChartNoAxesColumn, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Store, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -33,7 +33,13 @@ const groups = [
             { href: '/supplier-orders', label: 'layout.nav.suppliers', icon: Truck },
         ],
     },
-    { label: 'layout.nav.office', links: [{ href: '/accounting', label: 'layout.nav.accounting', icon: Landmark }] },
+    {
+        label: 'layout.nav.office',
+        links: [
+            { href: '/reports/products', label: 'layout.nav.productReports', icon: ChartNoAxesColumn },
+            { href: '/accounting', label: 'layout.nav.accounting', icon: Landmark },
+        ],
+    },
     { label: null, bottom: true, links: [{ href: '/settings', label: 'layout.nav.settings', icon: Settings }] },
 ];
 
@@ -144,7 +150,7 @@ onMounted(revealActiveLink);
     text-decoration: none;
 }
 
-.app-layout__menu { display: flex; flex: 1; flex-direction: column; min-height: 0; }
+.app-layout__menu { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow-y: auto; }
 .app-layout__menu :deep(> div) { display: flex; flex: 1; flex-direction: column; }
 .app-layout__sidebar :deep(.app-layout__nav) { display: flex; flex: 1; flex-direction: column; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .app-layout__group { display: flex; flex-direction: column; gap: var(--space-1); }

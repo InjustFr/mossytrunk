@@ -1,0 +1,67 @@
+{
+    "title": "Product report",
+    "period": {
+        "label": "Period",
+        "last12": "Last 12 months",
+        "all": "Since the start",
+        "year": "Year {year}"
+    },
+    "summary": "{revenue} cashed for {units} items sold, of which {discount} given away in discounts.",
+    "summaryEmpty": "No sale in this period.",
+    "palmares": {
+        "title": "Best sellers",
+        "sortBy": "Rank by",
+        "sorts": {
+            "revenue": "Cashed",
+            "units": "Items sold",
+            "discount": "Discounts",
+            "margin": "Margin"
+        },
+        "legendRevenue": "Cashed",
+        "legendDiscount": "Given in discounts",
+        "showAll": "Show the {count} products",
+        "showLess": "Show the first 15",
+        "select": "See the details of {name}",
+        "units": "{count} sold | {count} sold",
+        "discountShare": "{share} discounted",
+        "tooltip": {
+            "gross": "Full price",
+            "discount": "Discounts",
+            "revenue": "Cashed",
+            "margin": "Margin",
+            "unknownCost": "unknown buying cost",
+            "onHand": "In stock"
+        },
+        "search": "Search a product",
+        "noMatch": "No sold product matches."
+    },
+    "story": {
+        "choose": "Pick a product in the best sellers to see how it sold, how its stock moved and when it was discounted.",
+        "onHand": "{count} in stock today",
+        "openProduct": "Product page",
+        "close": "Close the details"
+    },
+    "sales": {
+        "title": "Sales per month",
+        "tooltip": "{units} sold, {revenue} cashed",
+        "none": "No sale in the period."
+    },
+    "flow": {
+        "title": "Stock movements",
+        "in": "In",
+        "out": "Out",
+        "stock": "Stock at month end",
+        "tooltipIn": "In: {count}",
+        "tooltipOut": "Out: {sold} sold, {lost} lost, {used} used as supply",
+        "tooltipStock": "Stock end of {month}: {count}"
+    },
+    "discounts": {
+        "title": "Discounts",
+        "covered": "Discounted {days} days out of {total}, {amount} given away in discounts.",
+        "none": "No discount concerned it in the period.",
+        "rule": "{name}, from {from} to {to}",
+        "share": "Discounted share",
+        "shareTooltip": "{month}: {share} of the full price given in discounts"
+    },
+    "months": "Months"
+}

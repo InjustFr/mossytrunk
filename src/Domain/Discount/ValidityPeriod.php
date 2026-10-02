@@ -71,6 +71,14 @@ final readonly class ValidityPeriod
         return self::between($this->start, $yesterday);
     }
 
+    public function within(DateRange $period): ?DateRange
+    {
+        $start = null === $this->start || $this->start < $period->start() ? $period->start() : $this->start;
+        $end = null === $this->end || $this->end > $period->end() ? $period->end() : $this->end;
+
+        return $end < $start ? null : DateRange::fromDates($start, $end);
+    }
+
     public function start(): ?\DateTimeImmutable
     {
         return $this->start;

@@ -167,6 +167,17 @@ class DiscountRule
         return $this->validity->statusOn($moment);
     }
 
+    public function concerns(Product $product): bool
+    {
+        foreach ($this->conditions() as $condition) {
+            if ($condition->concernsProduct($product)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function appliesOn(\DateTimeImmutable $moment): bool
     {
         return $this->validity->covers($moment);
