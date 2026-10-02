@@ -45,3 +45,23 @@ test('a gabarit needs a type', async ({ page }) => {
     await expect(dialog.getByRole('group', { name: 'Type', exact: true }).getByRole('alert')).toBeVisible();
     await expect(page.getByTestId('toast')).toHaveCount(0);
 });
+
+test('find a design by searching, then open its collection alone', async ({ page, request }) => {
+    const collection = unique('Sous-bois');
+    const design = unique('Mycelium');
+    const { id } = await (await request.post('/api/design-collections', { data: { name: collection, description: '' } })).json();
+    await request.post('/api/designs', { data: { name: design, collectionId: id, notes: '' } });
+
+    await page.goto('/designs');
+    const index = page.getByRole('navigation', { name: 'Collections' });
+    await index.getByRole('searchbox').fill(design);
+    const shelf = page.getByRole('region', { name: 'Toutes les créations' });
+    await expect(shelf.getByRole('link', { name: design })).toBeVisible();
+
+    await shelf.getByRole('button', { name: collection }).click();
+    await expect(page.getByRole('heading', { level: 2, name: collection })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`collection=${id}`));
+
+    await page.getByRole('group', { name: 'Statut des designs' }).getByRole('button', { name: /Sortis de l'atelier/ }).click();
+    await expect(page.getByText('Aucun design ne correspond à la recherche.')).toBeVisible();
+});

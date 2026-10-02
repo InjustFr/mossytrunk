@@ -116,5 +116,28 @@
         "chooseGabarits": "Choisissez des gabarits",
         "remaining": "{count} adaptation à faire | {count} adaptations à faire",
         "ready": "Prêt à valider"
+    },
+    "filters": {
+        "status": "Statut des designs",
+        "statuses": {
+            "open": "En cours",
+            "validated": "Sortis de l'atelier",
+            "all": "Tous"
+        }
+    },
+    "index": {
+        "label": "Collections",
+        "search": "Rechercher un design, une collection, un gabarit",
+        "all": "Toutes les créations",
+        "tally": "{open} / {total}",
+        "placeholder": "Design, collection, gabarit…"
+    },
+    "shelf": {
+        "nothingFound": "Aucun design ne correspond à la recherche.",
+        "none": {
+            "open": "Aucun design en cours ici.",
+            "validated": "Aucun design sorti de l'atelier ici.",
+            "all": "Aucun design ici."
+        }
     }
 }

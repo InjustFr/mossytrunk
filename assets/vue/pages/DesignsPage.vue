@@ -1,19 +1,21 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { Trash2 } from '@lucide/vue';
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
-import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
-import BaseSwitch from '../components/ui/BaseSwitch.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import CollectionForm from '../components/designs/CollectionForm.vue';
 import DesignForm from '../components/designs/DesignForm.vue';
+import DesignIndex from '../components/designs/DesignIndex.vue';
 import DesignRows from '../components/designs/DesignRows.vue';
+import BaseSwitch from '../components/ui/BaseSwitch.vue';
 import GabaritManager from '../components/designs/GabaritManager.vue';
 import WorkbenchCard from '../components/designs/WorkbenchCard.vue';
+import { DESIGN_STATUSES, useDesignFilters } from '../composables/useDesignFilters.js';
 import { useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
@@ -31,9 +33,18 @@ const collectionOpen = ref(false);
 const editingCollection = ref(null);
 const gabaritsOpen = ref(false);
 
+const filters = useDesignFilters(board);
 const allDesigns = computed(() => [...(board.value?.collections.flatMap((c) => c.designs) ?? []), ...(board.value?.standalone ?? [])]);
 const onBench = computed(() => allDesigns.value.filter((design) => design.current && design.status !== 'validated'));
 const collections = computed(() => board.value?.collections ?? []);
+const selectedStatus = computed({ get: () => filters.status.value, set: (value) => { if (value) filters.status.value = value; } });
+const selected = computed(() => filters.selected.value);
+const shelfName = (shelf) => shelf.collection?.name ?? t('designs.noCollection');
+const emptyShelf = computed(() => {
+    if (filters.searching.value) return t('designs.shelf.nothingFound');
+    if (selected.value && selected.value.designs.length === 0) return t(selected.value.collection ? 'designs.page.collectionEmpty' : 'designs.page.standaloneEmpty');
+    return t(`designs.shelf.none.${filters.status.value}`);
+});
 const openDesigns = (collection) => collection.designs.filter((design) => design.status !== 'validated');
 const readyToValidate = (collection) => openDesigns(collection).length > 0 && openDesigns(collection).every((design) => design.declinations.length > 0 && design.adaptationsDone === design.adaptationsTotal);
 
@@ -103,48 +114,82 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 
         <div v-if="board" class="designs-page">
             <section class="designs-page__bench" aria-labelledby="bench-title">
-                <h2 id="bench-title" class="designs-page__heading">{{ t('designs.onBench') }}</h2>
-                <div v-if="onBench.length" class="designs-page__cards">
-                    <WorkbenchCard v-for="design in onBench" :key="design.id" :design="design" />
+                <h2 id="bench-title" class="designs-page__bench-title">
+                    {{ t('designs.onBench') }}
+                    <span v-if="onBench.length" class="designs-page__bench-count">{{ onBench.length }}</span>
+                </h2>
+                <div v-if="onBench.length" class="designs-page__strip">
+                    <WorkbenchCard v-for="design in onBench" :key="design.id" :design="design" class="designs-page__card" />
                 </div>
                 <EmptyState v-else>{{ t('designs.page.benchEmpty') }}</EmptyState>
             </section>
 
-            <BaseCard v-for="collection in collections" :key="collection.id" class="designs-page__collection">
-                <header class="designs-page__collection-header">
-                    <div>
-                        <h2 class="designs-page__collection-name">{{ collection.name }}</h2>
-                        <p v-if="collection.description" class="designs-page__description">{{ collection.description }}</p>
-                    </div>
-                    <label class="designs-page__bench-switch">
-                        <BaseSwitch :model-value="collection.current" @update:model-value="onBenchToggled(collection, $event)" />
-                        {{ t('designs.onBench') }}
-                    </label>
-                </header>
-                <DesignRows :designs="collection.designs" :empty="t('designs.page.collectionEmpty')" />
-                <footer class="designs-page__collection-actions">
-                    <ConfirmButton
-                        :icon="Trash2"
-                        :label="t('designs.page.removeCollection', { name: collection.name })"
-                        :message="t('designs.page.removeCollectionMessage', { count: collection.designs.length }, collection.designs.length)"
-                        @confirm="onRemoveCollection(collection)"
+            <div class="designs-page__atelier">
+                <aside class="designs-page__index">
+                    <DesignIndex
+                        :scope="filters.activeScope.value"
+                        @update:scope="filters.scope.value = $event"
+                        v-model:search="filters.search.value"
+                        :shelves="filters.index.value"
+                        :total="allDesigns.length"
+                        :searching="filters.searching.value"
                     />
-                    <BaseButton variant="ghost" @click="openCollection(collection)">{{ t('designs.page.edit') }}</BaseButton>
-                    <BaseButton variant="secondary" @click="newDesign(collection.id)">{{ t('designs.page.addDesign') }}</BaseButton>
-                    <ConfirmButton
-                        v-if="readyToValidate(collection)"
-                        variant="primary"
-                        :label="t('designs.page.validateCollection')"
-                        :confirm-label="t('designs.page.validate')"
-                        :message="t('designs.page.validateCollectionMessage', { name: collection.name, count: openDesigns(collection).length }, openDesigns(collection).length)"
-                        @confirm="onValidateCollection(collection)"
-                    />
-                </footer>
-            </BaseCard>
+                </aside>
 
-            <BaseCard :title="t('designs.noCollection')">
-                <DesignRows :designs="board.standalone" :empty="t('designs.page.standaloneEmpty')" />
-            </BaseCard>
+                <section class="designs-page__shelf" aria-labelledby="shelf-title">
+                    <header class="designs-page__shelf-header">
+                        <div class="designs-page__shelf-heading">
+                            <h2 id="shelf-title" class="designs-page__shelf-title">{{ selected ? shelfName(selected) : t('designs.index.all') }}</h2>
+                            <p v-if="selected?.collection?.description" class="designs-page__description">{{ selected.collection.description }}</p>
+                        </div>
+                        <label v-if="selected?.collection" class="designs-page__bench-switch">
+                            <BaseSwitch :model-value="selected.collection.current" @update:model-value="onBenchToggled(selected.collection, $event)" />
+                            {{ t('designs.onBench') }}
+                        </label>
+                    </header>
+
+                    <ToggleGroupRoot v-model="selectedStatus" type="single" class="designs-page__statuses" :aria-label="t('designs.filters.status')">
+                        <ToggleGroupItem v-for="value in Object.values(DESIGN_STATUSES)" :key="value" :value="value" class="designs-page__status">
+                            {{ t(`designs.filters.statuses.${value}`) }}
+                            <span class="designs-page__status-count">{{ filters.counts.value[value] }}</span>
+                        </ToggleGroupItem>
+                    </ToggleGroupRoot>
+
+                    <template v-if="selected">
+                        <DesignRows :designs="selected.shown" :empty="emptyShelf" />
+                    </template>
+                    <template v-else>
+                        <div v-for="group in filters.groups.value" :key="group.key" class="designs-page__group">
+                            <h3 class="designs-page__group-title">
+                                <button type="button" class="designs-page__group-link" @click="filters.scope.value = group.key">{{ shelfName(group) }}</button>
+                            </h3>
+                            <DesignRows :designs="group.shown" />
+                        </div>
+                        <EmptyState v-if="filters.groups.value.length === 0">{{ emptyShelf }}</EmptyState>
+                    </template>
+
+                    <footer v-if="selected" class="designs-page__actions">
+                        <template v-if="selected.collection">
+                            <ConfirmButton
+                                :icon="Trash2"
+                                :label="t('designs.page.removeCollection', { name: selected.collection.name })"
+                                :message="t('designs.page.removeCollectionMessage', { count: selected.designs.length }, selected.designs.length)"
+                                @confirm="onRemoveCollection(selected.collection)"
+                            />
+                            <BaseButton variant="ghost" @click="openCollection(selected.collection)">{{ t('designs.page.edit') }}</BaseButton>
+                        </template>
+                        <BaseButton variant="secondary" @click="newDesign(selected.collection?.id ?? '')">{{ t('designs.page.addDesign') }}</BaseButton>
+                        <ConfirmButton
+                            v-if="selected.collection && readyToValidate(selected.collection)"
+                            variant="primary"
+                            :label="t('designs.page.validateCollection')"
+                            :confirm-label="t('designs.page.validate')"
+                            :message="t('designs.page.validateCollectionMessage', { name: selected.collection.name, count: openDesigns(selected.collection).length }, openDesigns(selected.collection).length)"
+                            @confirm="onValidateCollection(selected.collection)"
+                        />
+                    </footer>
+                </section>
+            </div>
         </div>
 
         <BaseModal v-model:open="designOpen" :title="t('designs.page.newDesign')">
@@ -160,12 +205,87 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 </template>
 
 <style scoped>
-.designs-page { display: flex; flex-direction: column; gap: var(--space-5); }
-.designs-page__heading { margin: 0 0 var(--space-3); font-size: 1.35rem; }
-.designs-page__cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: var(--space-3); }
-.designs-page__collection-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-2); }
-.designs-page__collection-name { margin: 0; font-size: 1.2rem; }
-.designs-page__description { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.9rem; }
+.designs-page { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.designs-page__bench-title { display: flex; align-items: baseline; gap: var(--space-2); margin: 0 0 var(--space-3); font-size: 1.35rem; }
+.designs-page__bench-count { color: var(--color-muted); font-family: var(--font-body); font-size: 0.9375rem; font-weight: 400; }
+
+.designs-page__strip {
+    display: grid;
+    grid-auto-columns: minmax(15rem, 17rem);
+    grid-auto-flow: column;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+}
+
+.designs-page__card { scroll-snap-align: start; }
+
+.designs-page__atelier { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+.designs-page__index { position: sticky; top: var(--space-4); max-height: calc(100vh - var(--space-6)); overflow-y: auto; }
+
+.designs-page__shelf {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+    padding: var(--space-5);
+    border: 0.0625rem solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+}
+
+.designs-page__shelf-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
+.designs-page__shelf-heading { min-width: 0; }
+.designs-page__shelf-title { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+.designs-page__description { max-width: 40rem; margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.9rem; }
 .designs-page__bench-switch { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.85rem; white-space: nowrap; }
-.designs-page__collection-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-3); }
+
+.designs-page__statuses { display: flex; gap: var(--space-4); border-bottom: 0.0625rem solid var(--color-border); }
+
+.designs-page__status {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+    margin-bottom: -0.0625rem;
+    padding: var(--space-2) 0;
+    border: none;
+    border-bottom: 0.125rem solid transparent;
+    background: none;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+}
+
+.designs-page__status:hover { color: var(--color-ink); }
+.designs-page__status:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
+.designs-page__status[data-state="on"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
+.designs-page__status-count { font-size: 0.8125rem; font-variant-numeric: tabular-nums; font-weight: 400; }
+
+.designs-page__group + .designs-page__group { margin-top: var(--space-3); }
+.designs-page__group-title { margin: 0 0 var(--space-1); font-size: 1rem; }
+
+.designs-page__group-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-ink);
+    font: inherit;
+    cursor: pointer;
+}
+
+.designs-page__group-link:hover { text-decoration: underline; text-underline-offset: 0.1875rem; }
+.designs-page__group-link:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; border-radius: var(--radius); }
+.designs-page__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+
+@media (max-width: 56rem) {
+    .designs-page__atelier { grid-template-columns: 1fr; }
+    .designs-page__index { position: static; max-height: none; overflow: visible; }
+    .designs-page__shelf { padding: var(--space-4); }
+    .designs-page__shelf-header { flex-wrap: wrap; }
+}
 </style>

@@ -116,5 +116,28 @@
         "chooseGabarits": "Choose templates",
         "remaining": "{count} adjustment to do | {count} adjustments to do",
         "ready": "Ready to confirm"
+    },
+    "filters": {
+        "status": "Design status",
+        "statuses": {
+            "open": "In progress",
+            "validated": "Out of the workshop",
+            "all": "All"
+        }
+    },
+    "index": {
+        "label": "Collections",
+        "search": "Search a design, a collection, a gabarit",
+        "all": "All designs",
+        "tally": "{open} / {total}",
+        "placeholder": "Design, collection, gabarit…"
+    },
+    "shelf": {
+        "nothingFound": "No design matches the search.",
+        "none": {
+            "open": "No design in progress here.",
+            "validated": "No design out of the workshop here.",
+            "all": "No design here."
+        }
     }
 }
