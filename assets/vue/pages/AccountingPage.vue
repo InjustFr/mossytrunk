@@ -9,11 +9,12 @@ import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import DeclarationSlip from '../components/accounting/DeclarationSlip.vue';
 import OrdersExport from '../components/accounting/OrdersExport.vue';
 import PeriodLedger from '../components/accounting/PeriodLedger.vue';
+import StockPotential from '../components/stock/StockPotential.vue';
 import { periodLabel, useAccounting } from '../composables/useAccounting.js';
 import { useToast } from '../composables/useToast.js';
 
 const { t } = useI18n();
-const { overview, load, setPeriodicity, declare, withdraw, exportUrl } = useAccounting();
+const { overview, potential, load, loadPotential, setPeriodicity, declare, withdraw, exportUrl } = useAccounting();
 const toast = useToast();
 
 const selectedKey = ref(null);
@@ -62,7 +63,7 @@ async function onWithdraw(period) {
     await reload();
 }
 
-onMounted(() => load());
+onMounted(() => Promise.all([load(), loadPotential()]));
 </script>
 
 <template>
@@ -96,6 +97,9 @@ onMounted(() => load());
                 </div>
             </section>
 
+            <BaseCard v-if="potential" :title="t('stock.potential.title')">
+                <StockPotential :potential="potential" detailed />
+            </BaseCard>
             <BaseCard :title="t('accounting.export.title')">
                 <OrdersExport :url-for="exportUrl" />
             </BaseCard>

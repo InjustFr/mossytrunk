@@ -35,14 +35,19 @@ export function periodShortLabel(period) {
 export function useAccounting() {
     const api = useApi();
     const overview = ref(null);
+    const potential = ref(null);
 
     async function load(year = null) {
         await api.load(`/api/accounting/urssaf${year ? `?year=${year}` : ''}`, overview);
     }
 
+    const loadPotential = () => api.load('/api/accounting/stock-potential', potential);
+
     return {
         overview,
+        potential,
         load,
+        loadPotential,
         setPeriodicity: (periodicity) => api.put('/api/accounting/urssaf/periodicity', { periodicity }),
         declare: (key) => api.put(`/api/accounting/urssaf/${key}/declaration`),
         withdraw: (key) => api.del(`/api/accounting/urssaf/${key}/declaration`),

@@ -79,7 +79,7 @@ final readonly class StockKeeper
     public function giveBack(OrderSupply $supply): void
     {
         $product = $this->products->findByIds([$supply->productId()])[0] ?? null;
-        if (null !== $product && $this->stillSells($product, $supply->variant())) {
+        if (null !== $product && $product->sells($supply->variant())) {
             $this->stock->for($product, $supply->variant())->cancelWithdrawal($supply->quantity());
         }
     }
@@ -93,7 +93,7 @@ final readonly class StockKeeper
         foreach ($order->lines() as $line) {
             $productId = $line->productId();
             $product = null === $productId ? null : $this->products->findByIds([$productId])[0] ?? null;
-            if (null !== $product && $this->stillSells($product, $line->variant())) {
+            if (null !== $product && $product->sells($line->variant())) {
                 $sold[] = [$line, $this->stock->for($product, $line->variant())];
             }
         }
@@ -104,7 +104,7 @@ final readonly class StockKeeper
     public function followVariants(Product $product): void
     {
         foreach ($this->stock->ofProduct($product->id()) as $item) {
-            if ($this->stillSells($product, $item->variant())) {
+            if ($product->sells($item->variant())) {
                 continue;
             }
             if ($this->switchedBetweenUniqueAndVariants($product, $item->variant())) {
@@ -128,10 +128,5 @@ final readonly class StockKeeper
     private function switchedBetweenUniqueAndVariants(Product $product, ?string $variant): bool
     {
         return (null === $variant) === $product->hasVariants();
-    }
-
-    private function stillSells(Product $product, ?string $variant): bool
-    {
-        return null === $variant ? !$product->hasVariants() : $product->hasVariant($variant);
     }
 }

@@ -11,6 +11,8 @@ import ProductFilters from '../components/products/ProductFilters.vue';
 import MoveVariantForm from '../components/products/MoveVariantForm.vue';
 import ProductForm from '../components/products/ProductForm.vue';
 import ProductList from '../components/products/ProductList.vue';
+import StockPotential from '../components/stock/StockPotential.vue';
+import { sumPotential } from '../composables/useStockPotential.js';
 import ProductTypesModal from '../components/products/ProductTypesModal.vue';
 import RestockForm from '../components/products/RestockForm.vue';
 import StockHistory from '../components/products/StockHistory.vue';
@@ -45,6 +47,12 @@ const restockOpen = computed({ get: () => restocking.value !== null, set: (open)
 const viewingStock = ref(null);
 const historyOpen = computed({ get: () => viewingStock.value !== null, set: (open) => { if (!open) viewingStock.value = null; } });
 
+const typesOfKind = computed(() => {
+    const used = new Set(products.value.filter((product) => product.kind === filters.kind.value).map((product) => product.typeId));
+    const unused = new Set(products.value.map((product) => product.typeId));
+    return (filters.archived.value ? types.value : activeTypes.value).filter((type) => used.has(type.id) || !unused.has(type.id));
+});
+const shownPotential = computed(() => sumPotential(filters.filtered.value));
 const creatingSupply = computed(() => filters.kind.value === KINDS.supply);
 const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : creatingSupply.value ? 'products.page.newSupply' : 'products.page.new'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
@@ -162,10 +170,13 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
                 v-model:missing-cost="filters.missingCost.value"
                 v-model:low-stock="filters.lowStock.value"
                 :low-stock-count="filters.lowStockCount.value"
-                :types="filters.archived.value ? types : activeTypes"
+                :types="typesOfKind"
                 :missing-cost-count="filters.missingCostCount.value"
                 :type-colors="colors"
             />
+            <section v-if="filters.kind.value === KINDS.article && shownPotential.units > 0" class="products-page__potential" :aria-label="t('stock.potential.filtered')">
+                <StockPotential :potential="shownPotential" :with-note="false" />
+            </section>
             <ProductList
                 v-model:checked-ids="filters.selectedIds.value"
                 :products="filters.filtered.value"
@@ -215,3 +226,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
         </BaseModal>
     </AppLayout>
 </template>
+
+<style scoped>
+.products-page__potential { margin-bottom: var(--space-4); padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--color-bg); }
+</style>

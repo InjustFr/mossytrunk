@@ -467,6 +467,11 @@ class Product implements Referenced
         return [] !== $this->variants;
     }
 
+    public function sells(?string $variant): bool
+    {
+        return null === $variant ? !$this->hasVariants() : $this->hasVariant($variant);
+    }
+
     public function hasVariant(string $variant): bool
     {
         return null !== $this->variantNamed($variant);

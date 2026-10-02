@@ -19,6 +19,6 @@ final readonly class AccountingPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('AccountingPage', 'accounting', preload: ['/api/accounting/urssaf']);
+        return $this->page->render('AccountingPage', 'accounting', preload: ['/api/accounting/urssaf', '/api/accounting/stock-potential']);
     }
 }

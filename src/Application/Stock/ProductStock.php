@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Stock;
 
 use App\Domain\Product\Product;
+use App\Domain\Reporting\StockPotential;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\StockItem;
 
@@ -19,6 +20,7 @@ final readonly class ProductStock
         public bool $low,
         public bool $negative,
         public Money $unitCost,
+        public StockPotential $potential,
     ) {
     }
 
@@ -45,6 +47,7 @@ final readonly class ProductStock
             [] !== array_filter($items, static fn (StockItemView $item): bool => $item->low),
             [] !== array_filter($items, static fn (StockItemView $item): bool => $item->negative),
             0 === $units || $value->isZero() ? $product->buyingPrice() : Money::cents((int) round($value->amount() / $units, 0, \PHP_ROUND_HALF_UP)),
+            StockPotential::of($product, $stockItems),
         );
     }
 

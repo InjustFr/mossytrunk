@@ -77,3 +77,20 @@ test('flyers missing at the inventory are consumed by the event, not flagged', a
     await expect(page.getByText('Fournitures consommées (inventaire)')).toBeVisible();
     await expect(page.locator('main')).toContainText('4,00');
 });
+
+test('the stock left shows its potential turnover and revenue on products and in accounting', async ({ page, request }) => {
+    const product = await createProduct(request, { name: unique('Badge'), sellingPrice: 500 });
+    await restock(request, product, { quantity: 4, totalPaid: 400 });
+
+    await page.goto('/products');
+    await page.getByLabel('Rechercher un produit').fill(product.name);
+    const shown = page.getByRole('region', { name: 'Stock des produits affichés' });
+    await expect(shown).toContainText('20,00');
+    await expect(shown).toContainText('13,44');
+
+    await page.goto(`/products/${product.id}`);
+    await expect(page.getByText("Chiffre d'affaires potentiel")).toBeVisible();
+
+    await page.goto('/accounting');
+    await expect(page.getByRole('region', { name: 'Stock à vendre' })).toContainText('Revenu potentiel');
+});

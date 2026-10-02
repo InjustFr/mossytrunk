@@ -15,11 +15,12 @@ use App\Domain\Shared\DateRange;
 final readonly class ProductView
 {
     /**
-     * @param list<string>                                                          $variants
-     * @param list<string>                                                          $activeVariants
-     * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}> $stock
-     * @param array<string, int>                                                    $channelPrices
-     * @param list<array{price: int, sinceDay: string}>                             $priceHistory
+     * @param list<string>                                                                $variants
+     * @param list<string>                                                                $activeVariants
+     * @param list<array{variant: ?string, onHand: int, low: bool, negative: bool}>       $stock
+     * @param array<string, int>                                                          $channelPrices
+     * @param list<array{price: int, sinceDay: string}>                                   $priceHistory
+     * @param array{units: int, turnover: int, stockCost: int, urssaf: int, revenue: int} $potential
      */
     public function __construct(
         public string $id,
@@ -48,6 +49,7 @@ final readonly class ProductView
         public array $channelPrices,
         public array $priceHistory,
         public string $kind,
+        public array $potential,
     ) {
     }
 
@@ -88,6 +90,7 @@ final readonly class ProductView
                 'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
             ], $product->priceHistory()),
             $product->kind()->value,
+            $stock->potential->toArray(),
         );
     }
 

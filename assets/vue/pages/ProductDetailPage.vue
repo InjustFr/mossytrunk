@@ -151,6 +151,14 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                         <StatusBadge v-else-if="product.lowStock" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
                     </dd>
                 </div>
+                <div v-if="!supply && product.potential.units > 0" :title="t('stock.potential.note')">
+                    <dt>{{ t('stock.potential.turnover') }}</dt>
+                    <dd><MoneyAmount :cents="product.potential.turnover" /></dd>
+                </div>
+                <div v-if="!supply && product.potential.units > 0" :title="t('stock.potential.note')">
+                    <dt>{{ t('stock.potential.revenue') }}</dt>
+                    <dd><MoneyAmount :cents="product.potential.revenue" signed /></dd>
+                </div>
                 <div v-if="!supply"><dt>{{ t('products.detail.sold') }}</dt><dd>{{ t('products.detail.soldIn', { count: product.unitsSold, year: product.salesYear }) }} <span class="product-page__muted">{{ t('products.detail.soldEver', { count: detail.unitsSoldEver }) }}</span></dd></div>
             </dl>
 

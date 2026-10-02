@@ -46,5 +46,15 @@
         "dismiss": "Classer l'écart",
         "dismissMessage": "L'écart de « {label} » ne sera plus signalé comme une commande manquante.",
         "dismissConfirm": "Classer"
+    },
+    "potential": {
+        "title": "Stock à vendre",
+        "units": "Articles en stock",
+        "turnover": "Chiffre d'affaires potentiel",
+        "urssaf": "URSSAF estimée",
+        "stockCost": "Coût du stock",
+        "revenue": "Revenu potentiel",
+        "note": "Si tout le stock restant était vendu au prix du canal principal. Revenu = chiffre d'affaires − URSSAF − ce que le stock a coûté. Hors fournitures et stock négatif.",
+        "filtered": "Stock des produits affichés"
     }
 }

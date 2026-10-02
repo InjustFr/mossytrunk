@@ -14,6 +14,22 @@ final class StockApiTest extends WebTestCase
 {
     use SignsInClient;
 
+    public function testTheStockLeftHasAPotentialTurnoverAndRevenue(): void
+    {
+        $client = self::signedInClient();
+        $type = ProductTypesApi::create($client);
+        $sticker = self::created($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => $type]);
+        $sleeve = self::created($client, '/api/products', ['name' => 'Pochette', 'typeId' => $type, 'kind' => 'supply']);
+        $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $sticker, 'quantity' => 10, 'totalPaid' => 1_000]);
+        $client->jsonRequest('POST', '/api/stock/restock', ['productId' => $sleeve, 'quantity' => 100, 'totalPaid' => 500]);
+
+        $expected = ['units' => 10, 'turnover' => 4_000, 'stockCost' => 1_000, 'urssaf' => 512, 'revenue' => 2_488];
+        $client->jsonRequest('GET', '/api/accounting/stock-potential');
+        self::assertSame($expected, self::body($client));
+        $client->jsonRequest('GET', "/api/products/$sticker");
+        self::assertSame($expected, Json::at(self::body($client), 'product', 'potential'));
+    }
+
     public function testRestockAndCheckStockAfterAnEvent(): void
     {
         $client = self::signedInClient();
