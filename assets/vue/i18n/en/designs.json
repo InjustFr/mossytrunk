@@ -129,8 +129,11 @@
         "label": "Collections",
         "search": "Search a design, a collection, a gabarit",
         "all": "All designs",
-        "tally": "{open} / {total}",
-        "placeholder": "Design, collection, gabarit…"
+        "placeholder": "Design, collection, gabarit…",
+        "inProgress": "{count} in progress",
+        "done": "done",
+        "empty": "empty",
+        "tallyHint": "{open} design in progress out of {total} | {open} designs in progress out of {total}"
     },
     "shelf": {
         "nothingFound": "No design matches the search.",

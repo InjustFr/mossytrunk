@@ -52,9 +52,9 @@
         "units": "Items in stock",
         "turnover": "Potential turnover",
         "urssaf": "Estimated URSSAF",
-        "stockCost": "Stock cost",
+        "stockCost": "Cost of the stock left",
         "revenue": "Potential revenue",
-        "note": "If all the stock left were sold at the main channel's price. Revenue = turnover − URSSAF − what the stock cost. Supplies and negative stock left out.",
+        "note": "If all the stock left were sold at the main channel's price. Revenue = turnover − URSSAF − what the stock left cost. Supplies and negative stock left out.",
         "filtered": "Stock of the products shown"
     }
 }

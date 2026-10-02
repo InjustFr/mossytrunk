@@ -15,7 +15,12 @@ const { t } = useI18n();
 
 const ALL_OPTION = '__all__';
 const nameOf = (shelf) => shelf.collection?.name ?? t('designs.noCollection');
-const tally = (shelf) => (props.searching ? String(shelf.matching.length) : t('designs.index.tally', { open: shelf.open, total: shelf.designs.length }));
+const tally = (shelf) => {
+    if (props.searching) return String(shelf.matching.length);
+    if (shelf.open > 0) return t('designs.index.inProgress', { count: shelf.open });
+    return t(shelf.designs.length > 0 ? 'designs.index.done' : 'designs.index.empty');
+};
+const tallyHint = (shelf) => t('designs.index.tallyHint', { open: shelf.open, total: shelf.designs.length }, shelf.open);
 const options = computed(() => [
     { value: ALL_OPTION, label: t('designs.index.all') },
     ...props.shelves.map((shelf) => ({ value: shelf.key, label: nameOf(shelf) })),
@@ -51,7 +56,7 @@ const selectedOption = computed({
                 >
                     <span v-if="shelf.collection?.current" class="design-index__bench" role="img" :aria-label="t('designs.onBench')" />
                     <span :class="['design-index__name', { 'design-index__name--loose': !shelf.collection }]">{{ nameOf(shelf) }}</span>
-                    <span class="design-index__tally">{{ tally(shelf) }}</span>
+                    <span class="design-index__tally" :title="tallyHint(shelf)">{{ tally(shelf) }}</span>
                 </button>
             </li>
         </ul>
