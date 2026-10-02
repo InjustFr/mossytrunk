@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Order;
 
 use App\Domain\Identity\Workspace;
+use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -38,6 +39,9 @@ class ImportedSale
     #[ORM\Column(length: 16, nullable: true, enumType: PaymentMethod::class)]
     private ?PaymentMethod $paymentMethod;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $fee = null;
+
     /**
      * @internal built by Order
      */
@@ -60,6 +64,19 @@ class ImportedSale
         $this->order = $order;
     }
 
+    /**
+     * @internal settled through Order
+     */
+    public function settleFee(Money $fee): void
+    {
+        $this->fee = $fee->amount();
+    }
+
+    public function isFrom(string $source, string $externalId): bool
+    {
+        return $this->source === $source && $this->externalId === $externalId;
+    }
+
     public function source(): string
     {
         return $this->source;
@@ -78,5 +95,10 @@ class ImportedSale
     public function paymentMethod(): ?PaymentMethod
     {
         return $this->paymentMethod;
+    }
+
+    public function fee(): ?Money
+    {
+        return null === $this->fee ? null : Money::cents($this->fee);
     }
 }

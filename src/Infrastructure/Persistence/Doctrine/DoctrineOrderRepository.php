@@ -197,6 +197,20 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return array_values(array_map(static fn (mixed $id): string => \is_scalar($id) ? (string) $id : '', $ids));
     }
 
+    public function awaitingSaleFees(string $source): array
+    {
+        return $this->entityManager->createQueryBuilder()
+            ->select('o', 'i')
+            ->from(Order::class, 'o')
+            ->join('o.importedSales', 'i')
+            ->where('o.workspace = :workspace')
+            ->andWhere('o.id IN (SELECT IDENTITY(s.order) FROM '.ImportedSale::class.' s WHERE s.source = :source AND s.fee IS NULL)')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->setParameter('source', $source)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function countWithoutEventOn(Ulid $channelId): int
     {
         return (int) $this->entityManager->createQueryBuilder()

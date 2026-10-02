@@ -24,6 +24,7 @@ use App\Domain\Sales\OrderCharge;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\DateRange;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -257,6 +258,37 @@ class Order implements Referenced
     public function importedSales(): array
     {
         return array_values($this->importedSales->toArray());
+    }
+
+    public function settleSaleFee(string $source, string $externalId, Money $fee): void
+    {
+        if ($fee->isNegative()) {
+            throw new NegativeAmount('payment_fee');
+        }
+
+        foreach ($this->importedSales as $sale) {
+            if ($sale->isFrom($source, $externalId)) {
+                $sale->settleFee($fee);
+            }
+        }
+    }
+
+    public function saleFees(): ?Money
+    {
+        if ($this->importedSales->isEmpty()) {
+            return null;
+        }
+
+        $total = Money::zero();
+        foreach ($this->importedSales as $sale) {
+            $fee = $sale->fee();
+            if (null === $fee) {
+                return null;
+            }
+            $total = $total->add($fee);
+        }
+
+        return $total;
     }
 
     public function refund(\DateTimeImmutable $refundedAt): void

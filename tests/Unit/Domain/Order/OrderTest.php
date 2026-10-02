@@ -20,6 +20,7 @@ use App\Domain\Sales\ChannelKind;
 use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\DateRange;
+use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use App\Tests\Support\Costs;
 use App\Tests\Support\DomainExceptions;
@@ -217,6 +218,28 @@ final class OrderTest extends TestCase
         self::assertSame(PaymentMethod::Mixed, $card->paymentMethod());
         self::assertEquals(self::at('2026-07-10 15:00'), $card->placedAt());
         self::assertSame([], $cash->importedSales());
+    }
+
+    public function testTheFeesOfAnOrderAreKnownOnceTheServiceReportedThemForEachOfItsSales(): void
+    {
+        $order = $this->imported('TX1', 1, 400);
+        $order->absorb($this->imported('TX2', 1, 400));
+
+        self::assertNull($order->saleFees());
+
+        $order->settleSaleFee('sumup', 'TX1', Money::cents(7));
+        $order->settleSaleFee('etsy', 'TX2', Money::cents(5));
+        self::assertNull($order->saleFees(), 'a fee is settled on the sale of its own service');
+
+        $order->settleSaleFee('sumup', 'TX2', Money::cents(5));
+        self::assertSame(12, $order->saleFees()?->amount());
+        self::assertSame([7, 5], array_map(static fn (ImportedSale $sale): ?int => $sale->fee()?->amount(), $order->importedSales()));
+    }
+
+    public function testAManualOrderHasNoReportedFeesAndAFeeIsNeverNegative(): void
+    {
+        self::assertNull(Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], [])->saleFees());
+        DomainExceptions::assertThrown(new NegativeAmount('payment_fee'), fn () => $this->imported('TX1', 1, 400)->settleSaleFee('sumup', 'TX1', Money::cents(-1)));
     }
 
     public function testOrdersOfDifferentEventsOrSourcesAreNotMerged(): void

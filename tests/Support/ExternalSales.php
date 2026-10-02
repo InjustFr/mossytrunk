@@ -18,9 +18,9 @@ final class ExternalSales
     /**
      * @param list<ExternalLine> $lines
      */
-    public static function sumUp(string $code, \DateTimeImmutable $placedAt, Money $charged, array $lines, ?PaymentMethod $paymentMethod = null): ExternalSale
+    public static function sumUp(string $code, \DateTimeImmutable $placedAt, Money $charged, array $lines, ?PaymentMethod $paymentMethod = null, ?Money $fee = null): ExternalSale
     {
-        return new ExternalSale($code, $code, $placedAt, $lines, $charged, Money::zero(), $paymentMethod);
+        return new ExternalSale($code, $code, $placedAt, $lines, $charged, Money::zero(), $paymentMethod, $fee);
     }
 
     /**

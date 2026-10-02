@@ -56,4 +56,20 @@ final class SumUpPayloadMapperTest extends TestCase
         self::assertSame(PaymentMethod::Card, $payment('ECOM'));
         self::assertNull($payment(null));
     }
+
+    public function testKeepsTheFeeSumUpTookAndKnowsCashCostsNothing(): void
+    {
+        self::assertSame(18, self::fee(['payment_type' => 'POS', 'fee_amount' => 0.175]));
+        self::assertNull(self::fee(['payment_type' => 'POS']), 'not reported yet');
+        self::assertNull(self::fee(['payment_type' => 'POS', 'fee_amount' => 0]), 'not reported yet');
+        self::assertSame(0, self::fee(['payment_type' => 'CASH']));
+    }
+
+    /**
+     * @param array<string, mixed> $transaction
+     */
+    private static function fee(array $transaction): ?int
+    {
+        return (new SumUpPayloadMapper())->sale(['transaction_code' => 'T', 'timestamp' => '2030-03-14T10:00:00Z', 'amount' => 10.0] + $transaction)->fee?->amount();
+    }
 }

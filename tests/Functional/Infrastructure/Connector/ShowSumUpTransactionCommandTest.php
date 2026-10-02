@@ -36,6 +36,7 @@ final class ShowSumUpTransactionCommandTest extends KernelTestCase
             return new JsonMockResponse([
                 'transaction_code' => 'TAAA6MPKY9S',
                 'amount' => 3.0,
+                'fee_amount' => 0.05,
                 'card' => ['last_4_digits' => '4242'],
                 'products' => [['name' => 'Eevee Aquali', 'price_label' => 'Sticker', 'price_with_vat' => 3.0, 'quantity' => 1]],
             ]);
@@ -48,7 +49,9 @@ final class ShowSumUpTransactionCommandTest extends KernelTestCase
         self::assertSame(Command::SUCCESS, $status);
         self::assertSame('https://api.sumup.com/v2.1/merchants/MCODE/transactions?transaction_code=TAAA6MPKY9S', $requested[0]);
         self::assertSame('Authorization: Bearer sup_sk_test', $requested[1]);
-        self::assertStringContainsString('"price_label": "Sticker"', $output->fetch());
+        $printed = $output->fetch();
+        self::assertStringContainsString('"price_label": "Sticker"', $printed);
+        self::assertStringContainsString('"fee_amount": 0.05', $printed);
     }
 
     public function testRefusesAnUnknownWorkspace(): void

@@ -24,6 +24,7 @@ order:
 import:
     unknown_product: 'Produit inconnu'
     discount: 'Remise {service}'
+    fee: 'Frais {service}'
 export:
     catalogue:
         filename: 'catalogue-{service}-{date}.csv'

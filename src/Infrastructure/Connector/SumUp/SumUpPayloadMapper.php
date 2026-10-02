@@ -21,6 +21,7 @@ final class SumUpPayloadMapper
     {
         $code = Json::string($transaction['transaction_code'] ?? '');
         $paid = self::cents(Json::number($transaction['amount'] ?? 0)) - self::cents(Json::number($transaction['tip_amount'] ?? 0));
+        $paymentMethod = self::paymentMethod($transaction['payment_type'] ?? null);
 
         return new ExternalSale(
             $code,
@@ -29,8 +30,22 @@ final class SumUpPayloadMapper
             array_map(self::line(...), Json::objects($transaction['products'] ?? [])),
             Money::cents($paid),
             Money::zero(),
-            self::paymentMethod($transaction['payment_type'] ?? null),
+            $paymentMethod,
+            self::fee($transaction, $paymentMethod),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $transaction
+     */
+    private static function fee(array $transaction, ?PaymentMethod $paymentMethod): ?Money
+    {
+        $fee = self::cents(Json::number($transaction['fee_amount'] ?? 0));
+        if ($fee > 0) {
+            return Money::cents($fee);
+        }
+
+        return PaymentMethod::Cash === $paymentMethod ? Money::zero() : null;
     }
 
     private static function paymentMethod(mixed $paymentType): ?PaymentMethod

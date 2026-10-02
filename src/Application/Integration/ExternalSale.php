@@ -20,6 +20,7 @@ final readonly class ExternalSale
         public Money $charged,
         public Money $shipping,
         public ?PaymentMethod $paymentMethod = null,
+        public ?Money $fee = null,
     ) {
     }
 }

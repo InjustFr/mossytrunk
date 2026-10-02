@@ -30,6 +30,7 @@ Model: `src/Domain/Integration/`, `src/Application/Integration/` (ports `SalesCo
 | I9 | Line prices: a connector whose line prices may already include a spread basket discount sells each line at the **higher** of the catalogue and line prices (SumUp, S11); a connector giving list prices sells at the line price (Etsy, Y6). A product created by the import takes the highest price seen during that import | `LinePrices`, `ExternalItemResolver::sold()` | `ImportSumUpSalesTest`, `ImportPoliciesTest` |
 | I10 | Imported orders take their units from stock like any sale (oldest lot first) | `StockKeeper::withdraw()` | `ImportSumUpSalesTest` |
 | I11 | Every line resolved to a product (matched, created or linked by hand) **remembers its link** (service item → product and variant): later imports follow it first, so renaming the product, changing its type or moving it keeps its sales coming. A link whose product or variant is gone is dropped and the line is matched again. The links show, and can be changed, in the service's items (« Articles {service} », collapsed « associés » part) | `ExternalItemResolver`, `ExternalItem::link()`, `MoveVariantHandler` | `ImportSumUpSalesTest` |
+| I12 | A connector may report the **fee the service took** on each sale (SumUp, S14), kept with the imported sale. Once every sale of an order has its fee, the order is charged that real fee (« Frais {service} », none when it is zero) instead of the payment fees configured for the service (C12). Each import also fills the fees still unknown on sales imported earlier and recharges those orders (`feesUpdated` in the report), so running the import once brings past orders up to date | `SaleFees`, `Order::settleSaleFee()`, `saleFees()`, `OrderCharges`, `OrderRepository::awaitingSaleFees()` | `OrderTest`, `ImportSumUpSalesTest` |
 
 ## Use cases & API
 
@@ -39,7 +40,7 @@ Model: `src/Domain/Integration/`, `src/Application/Integration/` (ports `SalesCo
 | `AddConnection` | `POST /api/services` `{service, fields, salesContext?, unknownItems?}` → 201; violations on `[field]` |
 | `UpdateConnection` / `RemoveConnection` | `PUT` / `DELETE /api/services/{service}` |
 | `Authorize` | `GET /settings/{service}/connect` → service → `GET /settings/{service}/callback` → `/settings?service=…&connection=connected\|refused\|error\|unavailable`; `DELETE /api/services/{service}/authorization` disconnects |
-| `ImportSales` | `POST /api/services/{service}/import` → `{service, label, ordersImported, ordersAlreadyImported, productsCreated, typesCreated, ordersWithoutEvent, datesWithoutEvent, ordersWaitingForItems, itemsToLink, salesWithoutItems}` |
+| `ImportSales` | `POST /api/services/{service}/import` → `{service, label, ordersImported, ordersAlreadyImported, productsCreated, typesCreated, ordersWithoutEvent, datesWithoutEvent, ordersWaitingForItems, itemsToLink, salesWithoutItems, feesUpdated}` |
 | `ListExternalItems` / `LinkExternalItem` | `GET /api/services/{service}/items`, `PUT /api/services/{service}/items/{id}` `{productId, variant}` |
 
 ## Adding a service

@@ -50,6 +50,9 @@ function summary(report) {
     if (report.typesCreated > 0) {
         parts.push(t('import.summary.typesCreated', report.typesCreated));
     }
+    if (report.feesUpdated > 0) {
+        parts.push(t('import.summary.feesUpdated', report.feesUpdated));
+    }
     if (report.ordersWaitingForItems > 0) {
         parts.push(t('import.summary.ordersWaitingForItems', report.ordersWaitingForItems));
     }

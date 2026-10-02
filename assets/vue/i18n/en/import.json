@@ -4,6 +4,7 @@
         "ordersAlreadyImported": "{count} already imported | {count} already imported",
         "productsCreated": "{count} product created | {count} products created",
         "typesCreated": "{count} type created | {count} types created",
+        "feesUpdated": "actual fees of {count} order updated | actual fees of {count} orders updated",
         "ordersWaitingForItems": "{count} order waiting to be linked | {count} orders waiting to be linked",
         "done": "{service} import finished: {parts}."
     },

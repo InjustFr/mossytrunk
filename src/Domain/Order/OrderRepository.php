@@ -60,6 +60,11 @@ interface OrderRepository
     public function importedExternalIds(string $source, array $externalIds): array;
 
     /**
+     * @return list<Order> orders having a sale imported from the source whose fee the service has not reported yet
+     */
+    public function awaitingSaleFees(string $source): array;
+
+    /**
      * Number of orders of the event whose date falls outside the given period.
      */
     public function countOutside(Ulid $eventId, DateRange $period): int;

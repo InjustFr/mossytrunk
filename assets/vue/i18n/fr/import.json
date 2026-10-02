@@ -4,6 +4,7 @@
         "ordersAlreadyImported": "{count} déjà importée | {count} déjà importées",
         "productsCreated": "{count} produit créé | {count} produits créés",
         "typesCreated": "{count} type créé | {count} types créés",
+        "feesUpdated": "frais réels de {count} commande mis à jour | frais réels de {count} commandes mis à jour",
         "ordersWaitingForItems": "{count} commande en attente d'association | {count} commandes en attente d'association",
         "done": "Import {service} terminé : {parts}."
     },
