@@ -48,7 +48,8 @@
         "supplierReference": "Réf. fournisseur",
         "merge": "Fusionner",
         "mergeTitle": "Fusionner avec une autre commande",
-        "merged": "Commande {reference} fusionnée dans {target}."
+        "merged": "Commande {reference} fusionnée dans {target}.",
+        "exchangeRate": "Taux de change"
     },
     "list": {
         "empty": "Aucune commande fournisseur. Passez-en une pour suivre ce que vous attendez.",
@@ -99,7 +100,15 @@
         "discountFromPaid": "Remise déduite",
         "draftRestored": "Commande reprise là où vous l'aviez laissée.",
         "draftDiscard": "Repartir de zéro",
-        "receivedOn": "Reçue le"
+        "receivedOn": "Reçue le",
+        "currency": "Devise",
+        "currencies": {
+            "EUR": "Euro (€)",
+            "USD": "Dollar ($)"
+        },
+        "exchangeRate": "Taux de change",
+        "exchangeRateHint": "Combien d'euros vaut 1 $ pour cette commande. Les coûts unitaires et le stock sont en euros.",
+        "inEuros": "soit {amount}"
     },
     "picker": {
         "product": "Produit",

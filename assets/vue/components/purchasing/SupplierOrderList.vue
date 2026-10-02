@@ -39,7 +39,7 @@ defineProps({
                     {{ order.receivedUnits ?? order.orderedUnits }}
                     <span v-if="order.receivedUnits !== null && order.receivedUnits !== order.orderedUnits" class="supplier-order-list__planned">{{ t('purchasing.list.ofOrdered', { count: order.orderedUnits }) }}</span>
                 </td>
-                <td class="data-table__cell--number"><MoneyAmount :cents="order.total" /></td>
+                <td class="data-table__cell--number"><MoneyAmount :cents="order.total" :currency="order.currency" /></td>
                 <td>
                     <StatusBadge :tone="SUPPLIER_ORDER_STATUSES[order.status].tone">{{ t(SUPPLIER_ORDER_STATUSES[order.status].label) }}</StatusBadge>
                     <span class="supplier-order-list__lines">{{ t('purchasing.list.lines', order.lines.length) }}</span>

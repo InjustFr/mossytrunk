@@ -7,6 +7,7 @@ namespace App\Domain\Purchasing;
 use App\Domain\Identity\Workspace;
 use App\Domain\Purchasing\Exception\DiscountExceedsLines;
 use App\Domain\Purchasing\Exception\EmptySupplierOrder;
+use App\Domain\Purchasing\Exception\NonPositiveExchangeRate;
 use App\Domain\Purchasing\Exception\OrderedTwice;
 use App\Domain\Purchasing\Exception\ReceivedQuantityMissing;
 use App\Domain\Purchasing\Exception\SupplierOrderAlreadyReceived;
@@ -29,6 +30,7 @@ use Symfony\Component\Uid\Ulid;
 class SupplierOrder implements Referenced
 {
     public const int SUPPLIER_REFERENCE_MAX_LENGTH = 100;
+    public const int EURO_RATE = 1_000_000;
 
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
@@ -56,6 +58,12 @@ class SupplierOrder implements Referenced
 
     #[ORM\Embedded(class: Money::class, columnPrefix: 'delivery_fees_')]
     private Money $deliveryFees;
+
+    #[ORM\Column(length: 3, enumType: Currency::class, options: ['default' => 'EUR'])]
+    private Currency $currency = Currency::Euro;
+
+    #[ORM\Column(options: ['default' => self::EURO_RATE])]
+    private int $exchangeRateMicros = self::EURO_RATE;
 
     #[ORM\Column(length: 16, enumType: SupplierOrderStatus::class)]
     private SupplierOrderStatus $status = SupplierOrderStatus::Ordered;
@@ -130,6 +138,7 @@ class SupplierOrder implements Referenced
             $other === $this || $other->id->equals($this->id) => 'same_order',
             !$other->supplier->id()->equals($this->supplier->id()) => 'different_supplier',
             $other->status !== $this->status => 'different_status',
+            $other->currency !== $this->currency || $other->exchangeRateMicros !== $this->exchangeRateMicros => 'different_currency',
             default => null,
         };
         if (null !== $obstacle) {
@@ -182,6 +191,34 @@ class SupplierOrder implements Referenced
     public function isReceived(): bool
     {
         return SupplierOrderStatus::Received === $this->status;
+    }
+
+    public function priceIn(Currency $currency, int $exchangeRateMicros = self::EURO_RATE): void
+    {
+        if (Currency::Euro === $currency) {
+            $exchangeRateMicros = self::EURO_RATE;
+        }
+        if ($exchangeRateMicros < 1) {
+            throw new NonPositiveExchangeRate();
+        }
+
+        $this->currency = $currency;
+        $this->exchangeRateMicros = $exchangeRateMicros;
+    }
+
+    public function inEuros(Money $amount): Money
+    {
+        return Money::cents((int) round($amount->amount() * $this->exchangeRateMicros / self::EURO_RATE, 0, \PHP_ROUND_HALF_UP));
+    }
+
+    public function currency(): Currency
+    {
+        return $this->currency;
+    }
+
+    public function exchangeRateMicros(): int
+    {
+        return $this->exchangeRateMicros;
     }
 
     public function referToSupplierOrder(?string $supplierReference): void

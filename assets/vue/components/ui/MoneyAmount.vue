@@ -5,9 +5,10 @@ import { formatCents } from '../../composables/useMoney.js';
 const props = defineProps({
     cents: { type: Number, required: true },
     signed: { type: Boolean, default: false },
+    currency: { type: String, default: 'EUR' },
 });
 
-const formatted = computed(() => formatCents(props.cents));
+const formatted = computed(() => formatCents(props.cents, props.currency));
 </script>
 
 <template>

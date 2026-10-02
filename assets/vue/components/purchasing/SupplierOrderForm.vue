@@ -11,6 +11,8 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import BaseSelect from '../ui/BaseSelect.vue';
+import { formatCents } from '../../composables/useMoney.js';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
@@ -33,7 +35,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 
 const today = () => new Date().toLocaleDateString('sv-SE');
-const blank = () => ({ supplierId: '', orderedOn: today(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0 });
+const blank = () => ({ supplierId: '', orderedOn: today(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0, currency: 'EUR', exchangeRate: 1 });
 const form = reactive(blank());
 const errors = ref({});
 const saving = ref(false);
@@ -65,6 +67,8 @@ watch(() => props.order, (order) => {
             lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice, receivedQuantity }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice, received: receivedQuantity })),
             discount: order.discount,
             deliveryFees: order.deliveryFees,
+            currency: order.currency,
+            exchangeRate: order.exchangeRate,
         }
         : blank());
     errors.value = {};
@@ -123,7 +127,12 @@ onMounted(() => {
 watch([form, adjustBy, paid], () => {
     if (!props.order) writeDraft({ form: JSON.parse(JSON.stringify(form)), adjustBy: adjustBy.value, paid: paid.value });
 }, { deep: true });
-const unitCost = (line, index) => (line.quantity > 0 ? Math.round(landed.value[index] / line.quantity) : 0);
+const dollars = computed(() => form.currency === 'USD');
+const rate = computed(() => (dollars.value ? form.exchangeRate ?? 0 : 1));
+const inEuros = (cents) => Math.round(cents * rate.value);
+const unitCost = (line, index) => (line.quantity > 0 ? inEuros(Math.round(landed.value[index] / line.quantity)) : 0);
+const currencyOptions = computed(() => ['EUR', 'USD'].map((code) => ({ value: code, label: t(`purchasing.form.currencies.${code}`) })));
+const rateFormat = { maximumFractionDigits: 6 };
 
 function addLine(line) {
     const existing = form.lines.find((l) => l.productId === line.productId && l.variant === line.variant);
@@ -152,6 +161,8 @@ async function onSubmit() {
             lines: form.lines.map(({ productId, variant, quantity, totalPrice, received: got }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0, received: received.value ? got ?? -1 : null })),
             discount: discount.value,
             deliveryFees: form.deliveryFees ?? 0,
+            currency: form.currency,
+            exchangeRate: dollars.value ? form.exchangeRate ?? 0 : 1,
         });
         if (!props.order) writeDraft(null);
         emit('saved');
@@ -181,6 +192,12 @@ async function onSubmit() {
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
                     <div class="supplier-order-form__date"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
+                </FormField>
+                <FormField as="group" :label="t('purchasing.form.currency')" :error="errors.currency">
+                    <BaseSelect v-model="form.currency" :options="currencyOptions" :aria-label="t('purchasing.form.currency')" class="supplier-order-form__currency" />
+                </FormField>
+                <FormField v-if="dollars" as="group" :label="t('purchasing.form.exchangeRate')" :error="errors.exchangeRate" :hint="t('purchasing.form.exchangeRateHint')">
+                    <BaseNumberField v-model="form.exchangeRate" :min="0" :step="0.01" :format-options="rateFormat" :label="t('purchasing.form.exchangeRate')" class="supplier-order-form__money" />
                 </FormField>
                 <FormField v-if="received" as="group" :label="t('purchasing.form.receivedOn')" :error="errors.receivedOn">
                     <div class="supplier-order-form__date"><BaseDatePicker v-model="form.receivedOn" :aria-label="t('purchasing.form.receivedOn')" /></div>
@@ -212,7 +229,7 @@ async function onSubmit() {
                             </td>
                             <td><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
                             <td v-if="received"><BaseNumberField v-model="line.received" :min="0" :label="t('purchasing.form.receivedOf', { label: line.label })" /></td>
-                            <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
+                            <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :currency="form.currency" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__unit-cost"><span aria-hidden="true">{{ t('purchasing.form.unitCost') }}</span> <MoneyAmount :cents="unitCost(line, index)" /></td>
                             <td><IconButton :icon="X" :label="t('purchasing.form.remove', { label: line.label })" @click="form.lines.splice(index, 1)" /></td>
                         </tr>
@@ -220,17 +237,17 @@ async function onSubmit() {
                     <tfoot>
                         <tr class="supplier-order-form__subtotal">
                             <td>{{ t('purchasing.form.products') }}</td>
-                            <td><MoneyAmount :cents="subtotal" /></td>
+                            <td><MoneyAmount :cents="subtotal" :currency="form.currency" /></td>
                         </tr>
                     </tfoot>
                 </table>
                 <p v-if="errors.lines" class="supplier-order-form__line-error" role="alert">{{ errors.lines }}</p>
-                <PurchaseLinePicker ref="picker" :products="products" @add="addLine" @create="productOpen = true" />
+                <PurchaseLinePicker ref="picker" :products="products" :currency="form.currency" @add="addLine" @create="productOpen = true" />
             </FormSection>
 
             <FormSection :title="t('purchasing.form.extras')" :description="t('purchasing.form.extrasHint')">
                 <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees">
-                    <BaseMoneyField v-model="form.deliveryFees" class="supplier-order-form__money" />
+                    <BaseMoneyField v-model="form.deliveryFees" :currency="form.currency" class="supplier-order-form__money" />
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.adjustBy')">
                     <ToggleGroupRoot
@@ -245,15 +262,16 @@ async function onSubmit() {
                     </ToggleGroupRoot>
                 </FormField>
                 <FormField v-if="adjustBy === BY_DISCOUNT" :label="t('purchasing.form.discount')" :error="errors.discount">
-                    <BaseMoneyField v-model="form.discount" class="supplier-order-form__money" />
+                    <BaseMoneyField v-model="form.discount" :currency="form.currency" class="supplier-order-form__money" />
                 </FormField>
                 <template v-else>
                     <FormField :label="t('purchasing.form.paid')" :error="errors.paid ?? (paidTooHigh ? t('purchasing.form.paidTooHigh') : null)" :hint="t('purchasing.form.paidHint')">
-                        <BaseMoneyField v-model="paid" class="supplier-order-form__money" />
+                        <BaseMoneyField v-model="paid" :currency="form.currency" class="supplier-order-form__money" />
                     </FormField>
-                    <p class="supplier-order-form__deduced">{{ t('purchasing.form.discountFromPaid') }} <MoneyAmount :cents="discount" /></p>
+                    <p class="supplier-order-form__deduced">{{ t('purchasing.form.discountFromPaid') }} <MoneyAmount :cents="discount" :currency="form.currency" /></p>
                 </template>
-                <p class="supplier-order-form__total">{{ t('purchasing.form.totalPaid') }} <strong><MoneyAmount :cents="total" /></strong></p>
+                <p class="supplier-order-form__total">{{ t('purchasing.form.totalPaid') }} <strong><MoneyAmount :cents="total" :currency="form.currency" /></strong>
+                    <span v-if="dollars" class="supplier-order-form__in-euros">{{ t('purchasing.form.inEuros', { amount: formatCents(inEuros(total)) }) }}</span></p>
             </FormSection>
 
             <FormActions sticky>
@@ -337,6 +355,8 @@ async function onSubmit() {
 
 .supplier-order-form__total strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 .supplier-order-form__draft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-accent-soft); font-size: 0.875rem; }
+.supplier-order-form :deep(.supplier-order-form__currency) { max-width: 11rem; }
+.supplier-order-form__in-euros { color: var(--color-muted); font-size: 0.8125rem; }
 .supplier-order-form__deduced { margin: 0; color: var(--color-muted); font-size: 0.875rem; }
 .supplier-order-form__adjust { display: inline-flex; align-self: flex-start; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 

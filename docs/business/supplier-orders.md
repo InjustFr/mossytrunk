@@ -10,6 +10,7 @@ then — once the parcel arrives — what was really received. Reception feeds t
 | `supplierReference` | « Référence fournisseur », optional: the order number at the supplier (trimmed, ≤ 100 characters), changeable at any time |
 | `orderedOn` | Day the order was placed |
 | `status` | `ordered` (« Commandée ») then `received` (« Reçue »), with `receivedAt` |
+| `currency`, `exchangeRate` | « Devise »: euro or dollar. Every amount of the order (prices, discount, fees, total) is in its currency; a dollar order has an exchange rate (euros for 1 $, > 0, stored in millionths) |
 | `discount` | « Remise globale » on the whole order, shared between the lines **in proportion to their price** |
 | `deliveryFees` | « Frais de livraison », shared **equally between the lines** (5 € over five lines = 1 € each) |
 | lines | Sellable item (product, variant), ordered quantity, **total price** of the line, its shares of discount and fees, received quantity once received |
@@ -29,6 +30,7 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 | F7 | A line received at 0 adds no stock and has no unit cost | `SupplierOrder::receive()` | `SupplierOrderTest` |
 | F8 | A **received** order stays editable (its reception day and supplier reference too): every line then needs its received quantity. Its stock follows: each line's « Commande fournisseur » lot is restated to the new received quantity and landed cost (units already sold stay sold, their cost is not recomputed; a line removed or received at 0 takes its units back out of stock), and the product's buying price follows when that lot is its latest purchase | `SupplierOrder::revise()`, `SupplierOrderStock::follow()`, `StockItem::restate()` | `PurchasingUseCasesTest`, `StockItemTest` |
 | F9 | Two orders of the **same supplier** and the **same status** can be **merged**: lines of the same item add up (ordered and received quantities, prices), other lines are appended, discounts and delivery fees add up and are shared again (F3), the earliest order and reception dates are kept, supplier references are joined. The merged order disappears; when received, its stock lots join the kept order's | `SupplierOrder::absorb()`, `MergeSupplierOrdersHandler`, `StockItem::moveLotsOf()` | `PurchasingUseCasesTest`, `supplier-orders.spec.js` |
+| F10 | An order in dollars stocks its lines at their landed cost **converted to euros** at its exchange rate (rounded to the cent); unit costs are shown in euros, the other amounts in dollars with the total in euros. Orders merge only when they share currency and rate | `SupplierOrder::priceIn()`, `inEuros()`, `SupplierOrderStock` | `PurchasingUseCasesTest` |
 
 ## Use cases & API
 
@@ -36,7 +38,7 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 |---|---|
 | `ListSuppliers` / `SaveSupplier` | `GET /api/suppliers`, `POST /api/suppliers`, `PUT /api/suppliers/{id}` `{name, contact, notes}` |
 | `ListSupplierOrders` / `GetSupplierOrder` | `GET /api/supplier-orders`, `GET /api/supplier-orders/{id}` |
-| `PlaceSupplierOrder` / `ReviseSupplierOrder` | `POST /api/supplier-orders`, `PUT /api/supplier-orders/{id}` `{supplierId, orderedOn, receivedOn?, supplierReference?, discount, deliveryFees, lines: [{productId, variant, quantity, totalPrice, received?}]}` (`received` required and `receivedOn` taken into account on a received order) |
+| `PlaceSupplierOrder` / `ReviseSupplierOrder` | `POST /api/supplier-orders`, `PUT /api/supplier-orders/{id}` `{supplierId, orderedOn, receivedOn?, supplierReference?, currency: EUR|USD, exchangeRate, discount, deliveryFees, lines: [{productId, variant, quantity, totalPrice, received?}]}` (`received` required and `receivedOn` taken into account on a received order) |
 | `DeleteSupplierOrder` | `DELETE /api/supplier-orders/{id}` (422 once received) |
 | `ReceiveSupplierOrder` | `POST /api/supplier-orders/{id}/reception` `{lines: [{lineId, received}]}` |
 | `MergeSupplierOrders` | `POST /api/supplier-orders/{id}/merge` `{orderId}` (the given order joins `{id}`) |

@@ -48,7 +48,8 @@
         "supplierReference": "Supplier ref.",
         "merge": "Merge",
         "mergeTitle": "Merge with another order",
-        "merged": "Order {reference} merged into {target}."
+        "merged": "Order {reference} merged into {target}.",
+        "exchangeRate": "Exchange rate"
     },
     "list": {
         "empty": "No supplier orders. Place one to track what you are waiting for.",
@@ -99,7 +100,15 @@
         "discountFromPaid": "Deduced discount",
         "draftRestored": "Order picked up where you left it.",
         "draftDiscard": "Start over",
-        "receivedOn": "Received on"
+        "receivedOn": "Received on",
+        "currency": "Currency",
+        "currencies": {
+            "EUR": "Euro (€)",
+            "USD": "Dollar ($)"
+        },
+        "exchangeRate": "Exchange rate",
+        "exchangeRateHint": "How many euros 1 $ is worth for this order. Unit costs and stock are in euros.",
+        "inEuros": "that is {amount}"
     },
     "picker": {
         "product": "Product",

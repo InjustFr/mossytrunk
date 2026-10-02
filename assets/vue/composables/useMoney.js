@@ -1,14 +1,15 @@
 import { perLocale } from '../i18n/locale.js';
 
 const formatter = perLocale((locale) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR' }));
+const dollarFormatter = perLocale((locale) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }));
 const signedFormatter = perLocale((locale) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', signDisplay: 'exceptZero' }));
 const wholeFormatter = perLocale((locale) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }));
 const percentFormatter = perLocale((locale) => new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 0 }));
 
 const withTrueMinus = (text) => text.replace('-', '−');
 
-export function formatCents(cents) {
-    return withTrueMinus(formatter().format((cents ?? 0) / 100));
+export function formatCents(cents, currency = 'EUR') {
+    return withTrueMinus((currency === 'USD' ? dollarFormatter() : formatter()).format((cents ?? 0) / 100));
 }
 
 export function formatWholeCents(cents) {

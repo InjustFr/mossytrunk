@@ -26,7 +26,7 @@ const current = computed(() => lines.value[step.value] ?? null);
 const counted = (line) => counts[line.id] !== null && counts[line.id] !== undefined;
 const allCounted = computed(() => lines.value.every(counted));
 const delta = (line) => (counted(line) ? counts[line.id] - line.orderedQuantity : null);
-const realUnitCost = (line) => (counted(line) && counts[line.id] > 0 ? Math.round(line.landedCost / counts[line.id]) : null);
+const realUnitCost = (line) => (counted(line) && counts[line.id] > 0 ? Math.round(Math.round(line.landedCost / counts[line.id]) * props.order.exchangeRate) : null);
 
 function conform() {
     counts[current.value.id] = current.value.orderedQuantity;
@@ -99,7 +99,7 @@ async function validate() {
                 <div>
                     <dt>{{ t('purchasing.reception.totalCost') }}</dt>
                     <dd>
-                        <MoneyAmount :cents="current.landedCost" />
+                        <MoneyAmount :cents="current.landedCost" :currency="order.currency" />
                         <span v-if="current.landedCost !== current.totalPrice" class="reception__planned">{{ t('purchasing.reception.includingShares') }}</span>
                     </dd>
                 </div>

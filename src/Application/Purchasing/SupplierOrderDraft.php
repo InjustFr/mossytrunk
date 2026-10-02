@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Purchasing;
 
+use App\Domain\Purchasing\Currency;
+use App\Domain\Purchasing\SupplierOrder;
+
 final readonly class SupplierOrderDraft
 {
     /**
@@ -17,6 +20,8 @@ final readonly class SupplierOrderDraft
         public int $deliveryFeesCents = 0,
         public ?string $supplierReference = null,
         public ?\DateTimeImmutable $receivedOn = null,
+        public Currency $currency = Currency::Euro,
+        public int $exchangeRateMicros = SupplierOrder::EURO_RATE,
     ) {
     }
 }

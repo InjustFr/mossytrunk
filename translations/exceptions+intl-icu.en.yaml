@@ -106,7 +106,8 @@ product:
     variant_moved_onto_itself: 'Choose a product other than the original one.'
     variant_required: 'Choose a variant for “{name}”.'
 purchasing:
-    supplier_orders_not_mergeable: 'These supplier orders cannot be merged: {reason, select, same_order {it is the same order} different_supplier {they are not from the same supplier} different_status {one is received, the other is not} other {{reason}}}.'
+    non_positive_exchange_rate: 'The exchange rate must be above zero.'
+    supplier_orders_not_mergeable: 'These supplier orders cannot be merged: {reason, select, same_order {it is the same order} different_supplier {they are not from the same supplier} different_status {one is received, the other is not} different_currency {they are not in the same currency at the same rate} other {{reason}}}.'
     unknown_product_purchased: '“{label}” is not a catalogue product: it cannot be ordered from a supplier.'
     supplier_reference_too_long: 'The supplier reference cannot exceed {max} characters.'
     discount_exceeds_lines: 'The overall discount cannot exceed the price of the products.'

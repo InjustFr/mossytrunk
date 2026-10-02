@@ -32,7 +32,7 @@ final readonly class SupplierOrderStock
                 continue;
             }
             $item = $this->stock->for($product, $line->variant());
-            $lot = $item->restate($order->id(), (int) $line->receivedQuantity(), $line->landedCost(), $receivedAt);
+            $lot = $item->restate($order->id(), (int) $line->receivedQuantity(), $order->inEuros($line->landedCost()), $receivedAt);
             if (null !== $lot && $item->isLatestPurchase($lot)) {
                 $product->bought($lot->unitCost());
             }

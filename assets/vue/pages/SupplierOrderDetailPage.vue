@@ -13,6 +13,7 @@ import MergeSupplierOrderForm from '../components/purchasing/MergeSupplierOrderF
 import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderReception from '../components/purchasing/SupplierOrderReception.vue';
 import { formatDate, formatDateTime } from '../composables/useDate.js';
+import { formatCents } from '../composables/useMoney.js';
 import { visit } from '../composables/useNavigation.js';
 import { listUrl } from '../composables/useQueryState.js';
 import { useProducts } from '../composables/useProducts.js';
@@ -96,10 +97,11 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                 <div v-if="order.supplierReference"><dt>{{ t('purchasing.detail.supplierReference') }}</dt><dd>{{ order.supplierReference }}</dd></div>
                 <div><dt>{{ t('purchasing.detail.orderedOn') }}</dt><dd>{{ formatDate(order.orderedOn) }}</dd></div>
                 <div v-if="order.receivedAt"><dt>{{ t('purchasing.detail.receivedAt') }}</dt><dd>{{ formatDateTime(order.receivedAt) }}</dd></div>
-                <div><dt>{{ t('purchasing.detail.products') }}</dt><dd><MoneyAmount :cents="order.subtotal" /></dd></div>
-                <div v-if="order.discount"><dt>{{ t('purchasing.detail.discount') }}</dt><dd>−<MoneyAmount :cents="order.discount" /></dd></div>
-                <div v-if="order.deliveryFees"><dt>{{ t('purchasing.detail.delivery') }}</dt><dd><MoneyAmount :cents="order.deliveryFees" /></dd></div>
-                <div><dt>{{ t('purchasing.detail.totalPaid') }}</dt><dd><MoneyAmount :cents="order.total" /></dd></div>
+                <div><dt>{{ t('purchasing.detail.products') }}</dt><dd><MoneyAmount :cents="order.subtotal" :currency="order.currency" /></dd></div>
+                <div v-if="order.discount"><dt>{{ t('purchasing.detail.discount') }}</dt><dd>−<MoneyAmount :cents="order.discount" :currency="order.currency" /></dd></div>
+                <div v-if="order.deliveryFees"><dt>{{ t('purchasing.detail.delivery') }}</dt><dd><MoneyAmount :cents="order.deliveryFees" :currency="order.currency" /></dd></div>
+                <div><dt>{{ t('purchasing.detail.totalPaid') }}</dt><dd><MoneyAmount :cents="order.total" :currency="order.currency" /><span v-if="order.currency !== 'EUR'" class="supplier-order-page__muted">&nbsp;{{ t('purchasing.form.inEuros', { amount: formatCents(order.totalInEuros) }) }}</span></dd></div>
+                <div v-if="order.currency !== 'EUR'"><dt>{{ t('purchasing.detail.exchangeRate') }}</dt><dd>1 $ = {{ order.exchangeRate }} €</dd></div>
                 <div><dt>{{ t('purchasing.detail.status') }}</dt><dd><StatusBadge :tone="status.tone">{{ t(status.label) }}</StatusBadge></dd></div>
             </dl>
 
@@ -130,12 +132,12 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                                     <StatusBadge v-else-if="line.receivedQuantity < line.orderedQuantity" tone="danger">{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
                                 </template>
                             </td>
-                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.totalPrice" /></td>
+                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.totalPrice" :currency="order.currency" /></td>
                             <td v-if="order.discount || order.deliveryFees" class="supplier-order-page__number supplier-order-page__shares">
-                                <span v-if="line.discountShare">−<MoneyAmount :cents="line.discountShare" /></span>
-                                <span v-if="line.feesShare">+<MoneyAmount :cents="line.feesShare" /></span>
+                                <span v-if="line.discountShare">−<MoneyAmount :cents="line.discountShare" :currency="order.currency" /></span>
+                                <span v-if="line.feesShare">+<MoneyAmount :cents="line.feesShare" :currency="order.currency" /></span>
                             </td>
-                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.landedCost" /></td>
+                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.landedCost" :currency="order.currency" /></td>
                             <td class="supplier-order-page__number">
                                 <template v-if="line.unitCost !== null">
                                     <MoneyAmount :cents="line.unitCost" />

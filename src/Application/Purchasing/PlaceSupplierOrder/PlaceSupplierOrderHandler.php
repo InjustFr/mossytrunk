@@ -31,6 +31,7 @@ final readonly class PlaceSupplierOrderHandler
     {
         $order = SupplierOrder::place($this->references->next(ReferenceKind::SupplierOrder, ReferenceSubject::at($draft->orderedOn)), $this->suppliers->get(Ulid::fromString($draft->supplierId)), $draft->orderedOn, $this->items->of($draft->lines), Money::cents($draft->discountCents), Money::cents($draft->deliveryFeesCents));
         $order->referToSupplierOrder($draft->supplierReference);
+        $order->priceIn($draft->currency, $draft->exchangeRateMicros);
         $this->orders->add($order);
         $this->transaction->commit();
 

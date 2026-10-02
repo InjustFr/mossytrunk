@@ -20,6 +20,7 @@ use App\Application\Purchasing\SaveSupplier\SaveSupplierHandler;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Purchasing\SupplierOrderView;
 use App\Application\Stock\GetProductStock\GetProductStockHandler;
+use App\Domain\Purchasing\Currency;
 use App\Domain\Purchasing\Exception\InvalidPurchase;
 use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
@@ -103,6 +104,24 @@ final class PurchasingUseCasesTest extends KernelTestCase
         [$small, $medium] = self::getContainer()->get(GetProductStockHandler::class)($this->tshirt);
         self::assertSame([5, 0], [$small->onHand, $medium->onHand]);
         self::assertSame(30, $this->productView($this->sticker)->buyingPrice);
+    }
+
+    public function testAnOrderInDollarsStocksItsCostInEuros(): void
+    {
+        $orderId = (string) self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft(
+            $this->supplierId,
+            new \DateTimeImmutable('2026-09-01'),
+            [new PurchaseLine($this->sticker, null, 100, 2_000)],
+            deliveryFeesCents: 1_000,
+            currency: Currency::Dollar,
+            exchangeRateMicros: 900_000,
+        ));
+        self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$this->view($orderId)->lines[0]['id'] => 100]);
+        $this->clear();
+
+        $view = $this->view($orderId);
+        self::assertSame(['USD', 0.9, 3_000, 2_700, 27], [$view->currency, $view->exchangeRate, $view->total, $view->totalInEuros, $view->lines[0]['unitCost']]);
+        self::assertSame(2_700, self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0]->remainingValue);
     }
 
     public function testAReceivedOrderNeedsEveryReceivedQuantity(): void

@@ -35,6 +35,7 @@ final readonly class ReviseSupplierOrderHandler
             Money::cents($draft->deliveryFeesCents),
         );
         $order->referToSupplierOrder($draft->supplierReference);
+        $order->priceIn($draft->currency, $draft->exchangeRateMicros);
         if (null !== $draft->receivedOn) {
             $order->redateReception($draft->receivedOn);
         }

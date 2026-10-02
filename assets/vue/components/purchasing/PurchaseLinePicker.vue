@@ -15,6 +15,7 @@ const { t } = useI18n();
 
 const props = defineProps({
     products: { type: Array, required: true },
+    currency: { type: String, default: 'EUR' },
 });
 const emit = defineEmits(['add', 'create']);
 const { activeTypes, variantsOf } = useProductTypes();
@@ -169,7 +170,7 @@ function addType() {
             </div>
             <label class="purchase-line-picker__field purchase-line-picker__price">
                 <span class="purchase-line-picker__label">{{ t('purchasing.picker.totalPrice') }}</span>
-                <BaseMoneyField v-model="totalPrice" />
+                <BaseMoneyField v-model="totalPrice" :currency="currency" />
             </label>
             <BaseButton variant="secondary" class="purchase-line-picker__add" @click="addProduct">{{ t('purchasing.picker.add') }}</BaseButton>
         </template>
@@ -206,7 +207,7 @@ function addType() {
             </div>
             <label class="purchase-line-picker__field purchase-line-picker__price">
                 <span class="purchase-line-picker__label">{{ t(pricing === FOR_ALL ? 'purchasing.picker.forAll' : 'purchasing.picker.unitPrice') }}</span>
-                <BaseMoneyField v-model="unitPrice" />
+                <BaseMoneyField v-model="unitPrice" :currency="currency" />
             </label>
             <BaseButton variant="secondary" class="purchase-line-picker__add" :disabled="!typeId" @click="addType">
                 {{ t('purchasing.picker.addLines', { count: typeItems.length }, typeItems.length) }}

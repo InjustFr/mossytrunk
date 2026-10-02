@@ -106,7 +106,8 @@ product:
     variant_moved_onto_itself: 'Choisissez un autre produit que celui d''origine.'
     variant_required: 'Choisissez une variante pour « {name} ».'
 purchasing:
-    supplier_orders_not_mergeable: 'Ces commandes fournisseur ne peuvent pas être fusionnées : {reason, select, same_order {c''est la même commande} different_supplier {elles ne viennent pas du même fournisseur} different_status {l''une est reçue, l''autre non} other {{reason}}}.'
+    non_positive_exchange_rate: 'Le taux de change doit être supérieur à zéro.'
+    supplier_orders_not_mergeable: 'Ces commandes fournisseur ne peuvent pas être fusionnées : {reason, select, same_order {c''est la même commande} different_supplier {elles ne viennent pas du même fournisseur} different_status {l''une est reçue, l''autre non} different_currency {elles ne sont pas dans la même devise au même taux} other {{reason}}}.'
     unknown_product_purchased: '« {label} » n''est pas un produit du catalogue : il ne peut pas être commandé à un fournisseur.'
     supplier_reference_too_long: 'La référence fournisseur ne peut pas dépasser {max} caractères.'
     discount_exceeds_lines: 'La remise globale ne peut pas dépasser le prix des produits.'

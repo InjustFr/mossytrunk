@@ -27,6 +27,9 @@ final readonly class SupplierOrderView
         public int $discount,
         public int $deliveryFees,
         public int $total,
+        public string $currency,
+        public float $exchangeRate,
+        public int $totalInEuros,
         public int $orderedUnits,
         public ?int $receivedUnits,
         public array $lines,
@@ -48,6 +51,9 @@ final readonly class SupplierOrderView
             $order->discount()->amount(),
             $order->deliveryFees()->amount(),
             $order->total()->amount(),
+            $order->currency()->value,
+            $order->exchangeRateMicros() / SupplierOrder::EURO_RATE,
+            $order->inEuros($order->total())->amount(),
             $order->orderedUnits(),
             $order->receivedUnits(),
             array_map(static fn (SupplierOrderLine $line): array => [
@@ -61,8 +67,8 @@ final readonly class SupplierOrderView
                 'discountShare' => $line->discountShare()->amount(),
                 'feesShare' => $line->feesShare()->amount(),
                 'landedCost' => $line->landedCost()->amount(),
-                'plannedUnitCost' => $line->plannedUnitCost()->amount(),
-                'unitCost' => $line->unitCost()?->amount(),
+                'plannedUnitCost' => $order->inEuros($line->plannedUnitCost())->amount(),
+                'unitCost' => null === $line->unitCost() ? null : $order->inEuros($line->unitCost())->amount(),
             ], $order->lines()),
         );
     }
