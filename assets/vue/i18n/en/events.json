@@ -66,7 +66,8 @@
         "discountsGiven": "Discounts given",
         "seeOrders": "See orders",
         "supplies": "Supplies",
-        "channelCosts": "Channel costs"
+        "channelCosts": "Channel costs",
+        "consumedSupplies": "Supplies used up (inventory)"
     },
     "expenseForm": {
         "label": "Label",

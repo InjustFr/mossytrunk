@@ -24,7 +24,7 @@
         "intro": "Count what is left after the event. Stock is corrected; if items are missing, a forgotten order is flagged on the event. Lines left empty are not counted.",
         "searchPlaceholder": "Search…",
         "searchLabel": "Search an item",
-        "soldOnly": "Only items sold at the event",
+        "soldOnly": "Only items sold at the event (and supplies)",
         "counted": "{count} item counted | {count} items counted",
         "saved": "Stock check saved: {count} item counted. | Stock check saved: {count} items counted."
     },

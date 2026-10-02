@@ -29,6 +29,7 @@ const receiptLines = computed(() => {
         { key: 'turnover', label: t('dashboard.receipt.turnover'), amount: total.turnover },
         { key: 'costOfGoods', label: t('dashboard.receipt.costOfGoods'), amount: total.costOfGoods, sign: '−' },
         ...(total.supplies > 0 ? [{ key: 'supplies', label: t('dashboard.receipt.supplies'), amount: total.supplies, sign: '−' }] : []),
+        ...(total.consumedSupplies > 0 ? [{ key: 'consumedSupplies', label: t('dashboard.receipt.consumedSupplies'), amount: total.consumedSupplies, sign: '−' }] : []),
         ...(total.channelCosts > 0 ? [{ key: 'channelCosts', label: t('dashboard.receipt.channelCosts'), amount: total.channelCosts, sign: '−' }] : []),
         { key: 'expenses', label: t('dashboard.receipt.expenses'), amount: total.expenses, sign: '−' },
         { key: 'urssaf', label: 'URSSAF', hint: t('dashboard.receipt.urssafRate'), amount: total.urssaf, sign: '−' },

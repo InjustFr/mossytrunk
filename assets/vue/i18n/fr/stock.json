@@ -24,7 +24,7 @@
         "intro": "Comptez ce qui reste après l'événement. Le stock est corrigé ; s'il manque des articles, une commande oubliée est signalée sur l'événement. Les lignes laissées vides ne sont pas comptées.",
         "searchPlaceholder": "Rechercher…",
         "searchLabel": "Rechercher un article",
-        "soldOnly": "Seulement les articles vendus à l'événement",
+        "soldOnly": "Seulement les articles vendus à l'événement (et les fournitures)",
         "counted": "{count} article compté | {count} articles comptés",
         "saved": "Inventaire enregistré : {count} article compté. | Inventaire enregistré : {count} articles comptés."
     },

@@ -23,6 +23,11 @@ interface StockCheckRepository
     public function withUnexplainedUnits(): array;
 
     /**
+     * @return list<StockCheck> the checks where supplies went missing (consumed at the event)
+     */
+    public function consumingSupplies(): array;
+
+    /**
      * @return list<StockCheck>
      */
     public function counting(Ulid $productId): array;

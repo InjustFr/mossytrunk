@@ -11,7 +11,7 @@ use App\Domain\Stock\StockCheckLine;
 final readonly class StockCheckView
 {
     /**
-     * @param list<array{id: string, label: string, expected: int, counted: int, missing: int, surplus: int, lossCost: int, unexplained: int, dismissed: bool, missedSales: int}> $lines
+     * @param list<array{id: string, label: string, expected: int, counted: int, missing: int, surplus: int, lossCost: int, unexplained: int, supply: bool, consumed: int, consumedCost: int, dismissed: bool, missedSales: int}> $lines
      */
     public function __construct(
         public string $id,
@@ -35,9 +35,12 @@ final readonly class StockCheckView
             'missing' => $line->missing(),
             'surplus' => $line->surplus(),
             'lossCost' => $line->lossCost()->amount(),
-            'unexplained' => $line->unexplained(),
+            'unexplained' => $line->flagged(),
+            'supply' => $line->isSupply(),
+            'consumed' => $line->consumed(),
+            'consumedCost' => $line->consumedCost()->amount(),
             'dismissed' => $line->isDismissed(),
-            'missedSales' => ($products[(string) $line->productId()] ?? null)?->sellingPrice()->multiply($line->unexplained())->amount() ?? 0,
+            'missedSales' => ($products[(string) $line->productId()] ?? null)?->sellingPrice()->multiply($line->flagged())->amount() ?? 0,
         ], $check->lines());
 
         return new self(

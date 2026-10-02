@@ -38,6 +38,7 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 | K14 | An order later added to that event first **explains** those units instead of taking them from stock again; their cost is the loss recorded by the inventory | `StockCheck::explain()`, `StockKeeper::withdraw()` | `StockCheckTest`, `StockUseCasesTest` |
 | K15 | « Classer l'écart » (breakage, loss, gift) clears what remains unexplained on a line; surplus lines are informational | `StockCheck::dismiss()` | `StockCheckTest`, `StockUseCasesTest` |
 | K16 | A supply added to an order is withdrawn like a sale (event's inventory gaps first, then FIFO) and shows as « Fourniture de commande » in the product's movements; removing it or deleting the order puts the units back | `StockKeeper::withdraw()`, `giveBack()`, `GetProductHandler` | `OrderSuppliesTest` |
+| K17 | An inventory line counting a **supply** never flags a missing order: its missing units not explained by later orders' supplies are **consumed** at the event (flyers taken at the stall…), cost of the first missing units (FIFO), and lower that event's result (R6). « Classer l'écart » does not apply to it | `StockCheckLine::isSupply()`, `flagged()`, `consumed()`, `consumedCost()`, `StockCheck::consumedSupplies()` | `StockCheckTest`, `StockUseCasesTest`, `stock.spec.js` |
 
 ## Use cases & API
 
@@ -45,7 +46,7 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 |---|---|
 | `Restock` | `POST /api/stock/restock` `{productId, variant, quantity, totalPaid}` |
 | `GetProductStock` | `GET /api/products/{id}/stock` (per item: onHand, low, negative, lots newest first) |
-| `GetStockSheet` | `GET /api/events/{id}/stock-sheet` (every sellable item with its stock and what the event sold) |
+| `GetStockSheet` | `GET /api/events/{id}/stock-sheet` (every item with its stock, what the event sold and whether it is a supply; supplies stay listed when the sheet shows only what the event sold) |
 | `TakeStockCheck` | `POST /api/events/{id}/stock-checks` `{items: [{productId, variant, counted}]}` |
 | `ListStockChecks` | `GET /api/events/{id}/stock-checks` |
 | `DismissDiscrepancy` | `POST /api/stock-checks/{id}/lines/{lineId}/dismissal` |

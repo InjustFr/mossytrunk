@@ -81,6 +81,24 @@ final class StockCheckTest extends TestCase
         $check->dismiss($check->lines()[0]->id());
     }
 
+    public function testMissingSuppliesAreConsumedNotFlagged(): void
+    {
+        $flyer = Product::supply(TestWorkspace::get(), 'FLY', 'Flyer', TestProductType::get());
+        $flyers = StockItem::open($flyer, null);
+        $flyers->receive(100, Money::cents(1_000), LotOrigin::Purchase, new \DateTimeImmutable('2026-07-01'));
+
+        $check = StockCheck::take($this->event, new \DateTimeImmutable('2026-07-13'), [new StockCount($flyers, 60, Money::zero()), new StockCount($this->stock, 9, $this->sticker->buyingPrice())]);
+
+        self::assertSame(1, $check->unexplainedUnits());
+        self::assertSame([40, 400], [$check->lines()[0]->consumed(), $check->consumedSupplies()->amount()]);
+
+        $check->explain($flyer->id(), null, 10);
+        self::assertSame([30, 300], [$check->lines()[0]->consumed(), $check->consumedSupplies()->amount()]);
+
+        $this->expectException(InvalidStock::class);
+        $check->dismiss($check->lines()[0]->id());
+    }
+
     public function testAnItemCannotBeCountedTwice(): void
     {
         $this->expectException(InvalidStock::class);

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { unique } from './support/unique.js';
-import { createEvent, createProduct, restock } from './support/api.js';
+import { createEvent, createProduct, createType, restock } from './support/api.js';
 
 test('restock a product twice and read its lots, oldest first', async ({ page, request }) => {
     const product = await createProduct(request, { name: unique('Sticker'), sellingPrice: 400 });
@@ -53,4 +53,27 @@ test('an inventory with missing units flags a missing order until it is dismisse
     await banner.getByRole('button', { name: "Classer l'écart" }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: 'Classer' }).click();
     await expect(banner).toHaveCount(0);
+});
+
+test('flyers missing at the inventory are consumed by the event, not flagged', async ({ page, request }) => {
+    const type = await createType(request, unique('Papeterie'), { prefixesNames: false });
+    const name = unique('Flyer');
+    const flyer = await (await request.post('/api/products', { data: { name, typeId: type.id, kind: 'supply' } })).json();
+    await restock(request, flyer, { quantity: 100, totalPaid: 1_000 });
+    const event = await createEvent(request);
+    const sticker = await createProduct(request, { name: unique('Sticker') });
+    await request.post('/api/orders', { data: { placedAt: `${event.startDate}T10:00`, lines: [{ productId: sticker.id, variant: null, quantity: 1 }] } });
+
+    await page.goto(`/events/${event.id}`);
+    await page.getByRole('link', { name: "Faire l'inventaire" }).click();
+    await page.getByLabel('Rechercher un article').fill(name);
+    const count = page.getByLabel(`Quantité comptée de ${name}`);
+    await count.fill('60');
+    await count.press('Enter');
+    await page.getByRole('button', { name: "Enregistrer l'inventaire" }).click();
+
+    await expect(page.getByTestId('toast').last()).toContainText('Inventaire enregistré');
+    await expect(page.getByRole('alert').filter({ hasText: 'Commande manquante probable' })).toHaveCount(0);
+    await expect(page.getByText('Fournitures consommées (inventaire)')).toBeVisible();
+    await expect(page.locator('main')).toContainText('4,00');
 });

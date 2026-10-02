@@ -25,6 +25,7 @@ final readonly class EventResult
         public Money $turnover,
         public Money $costOfGoods,
         public Money $supplies,
+        public Money $consumedSupplies,
         public Money $channelCosts,
         public Money $expenses,
         public Money $urssaf,
@@ -34,11 +35,12 @@ final readonly class EventResult
     }
 
     /**
-     * @param list<Order> $orders the event's orders
+     * @param list<Order> $orders           the event's orders
+     * @param Money|null  $consumedSupplies the cost of the supplies found missing at its inventories
      */
-    public static function of(Event $event, array $orders): self
+    public static function of(Event $event, array $orders, ?Money $consumedSupplies = null): self
     {
-        $figures = SalesFigures::of($orders, $event->totalExpenses());
+        $figures = SalesFigures::of($orders, $event->totalExpenses(), $consumedSupplies);
 
         return new self(
             $figures->orderCount,
@@ -47,6 +49,7 @@ final readonly class EventResult
             $figures->turnover,
             $figures->costOfGoods,
             $figures->supplies,
+            $figures->consumedSupplies,
             $figures->channelCosts,
             $figures->expenses,
             $figures->urssaf,

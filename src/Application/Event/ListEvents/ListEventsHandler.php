@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Event\ListEvents;
 
+use App\Application\Stock\ConsumedSupplies;
 use App\Domain\Event\EventRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
@@ -22,6 +23,7 @@ final readonly class ListEventsHandler
         private OrderRepository $orders,
         private StockCheckRepository $checks,
         private ClockInterface $clock,
+        private ConsumedSupplies $consumedSupplies,
     ) {
     }
 
@@ -45,10 +47,11 @@ final readonly class ListEventsHandler
             $unexplained[$key] = ($unexplained[$key] ?? 0) + $check->unexplainedUnits();
         }
 
+        $consumed = $this->consumedSupplies->byEvent();
         $today = $this->clock->now();
         $views = [];
         foreach ($this->events->all() as $event) {
-            $views[] = EventSummaryView::of($event, EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? []), $event->timingOn($today), $unexplained[(string) $event->id()] ?? 0);
+            $views[] = EventSummaryView::of($event, EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? [], $consumed[(string) $event->id()] ?? null), $event->timingOn($today), $unexplained[(string) $event->id()] ?? 0);
         }
 
         return $views;

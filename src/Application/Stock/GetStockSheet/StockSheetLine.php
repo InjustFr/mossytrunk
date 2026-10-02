@@ -13,6 +13,7 @@ final readonly class StockSheetLine
         public ?string $typeName,
         public int $onHand,
         public int $soldAtEvent,
+        public bool $supply,
     ) {
     }
 }

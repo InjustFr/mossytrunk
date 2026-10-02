@@ -51,6 +51,7 @@ final readonly class GetStockSheetHandler
                     $product->type()->name(),
                     $onHand[$key] ?? 0,
                     $sold[$key] ?? 0,
+                    $product->isSupply(),
                 );
             }
         }

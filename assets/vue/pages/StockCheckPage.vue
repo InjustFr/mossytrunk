@@ -32,7 +32,7 @@ const keyOf = (line) => `${line.productId}|${line.variant ?? ''}`;
 const counted = computed(() => sheet.value.filter((line) => counts[keyOf(line)] !== null && counts[keyOf(line)] !== undefined));
 const visible = computed(() => {
     const needle = search.value.trim().toLowerCase();
-    return sheet.value.filter((line) => (!soldOnly.value || line.soldAtEvent > 0 || counts[keyOf(line)] != null)
+    return sheet.value.filter((line) => (!soldOnly.value || line.supply || line.soldAtEvent > 0 || counts[keyOf(line)] != null)
         && (needle === '' || line.label.toLowerCase().includes(needle)));
 });
 

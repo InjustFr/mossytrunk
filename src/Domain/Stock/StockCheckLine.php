@@ -47,6 +47,9 @@ class StockCheckLine
     #[ORM\Column]
     private bool $dismissed = false;
 
+    #[ORM\Column(options: ['default' => false])]
+    private bool $supply;
+
     public function __construct(StockCheck $check, StockItem $item, string $label, StockCorrection $correction)
     {
         $this->id = new Ulid();
@@ -58,6 +61,7 @@ class StockCheckLine
         $this->counted = $correction->counted;
         $this->lossCost = $correction->lossCost;
         $this->unexplained = $correction->missing();
+        $this->supply = $item->product()->isSupply();
     }
 
     public function explain(int $wanted): LotConsumption
@@ -71,7 +75,7 @@ class StockCheckLine
 
     public function dismiss(): void
     {
-        if (0 === $this->unexplained) {
+        if (0 === $this->flagged()) {
             throw new NothingToResolve();
         }
 
@@ -137,6 +141,26 @@ class StockCheckLine
     public function unexplained(): int
     {
         return $this->unexplained;
+    }
+
+    public function isSupply(): bool
+    {
+        return $this->supply;
+    }
+
+    public function flagged(): int
+    {
+        return $this->supply ? 0 : $this->unexplained;
+    }
+
+    public function consumed(): int
+    {
+        return $this->supply ? $this->unexplained : 0;
+    }
+
+    public function consumedCost(): Money
+    {
+        return $this->lossOfFirst($this->missing())->subtract($this->lossOfFirst($this->missing() - $this->consumed()));
     }
 
     public function isDismissed(): bool

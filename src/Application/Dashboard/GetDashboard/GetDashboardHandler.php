@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Dashboard\GetDashboard;
 
+use App\Application\Stock\ConsumedSupplies;
 use App\Application\Stock\ProductStock;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
@@ -16,6 +17,7 @@ use App\Domain\Reporting\MonthlyResults;
 use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\SalesByProduct;
 use App\Domain\Shared\DateRange;
+use App\Domain\Shared\Money;
 use App\Domain\Stock\StockRepository;
 
 /**
@@ -30,6 +32,7 @@ final readonly class GetDashboardHandler
         private EventRepository $events,
         private ProductRepository $products,
         private StockRepository $stock,
+        private ConsumedSupplies $consumedSupplies,
     ) {
     }
 
@@ -40,7 +43,8 @@ final readonly class GetDashboardHandler
     {
         $orders = $this->orders->sales();
         $events = $this->events->all();
-        $results = MonthlyResults::of($orders, $events);
+        $consumed = $this->consumedSupplies->byEvent();
+        $results = MonthlyResults::of($orders, $events, $consumed);
         $year ??= DateRange::yearOf(new \DateTimeImmutable('now'));
 
         $years = $results->years();
@@ -65,7 +69,7 @@ final readonly class GetDashboardHandler
             $months,
             $results->year($year)->toArray(),
             array_map(static fn (int $y): array => ['year' => $y] + $results->year($y)->toArray(), $results->years()),
-            $this->eventsOf($year, $events, $orders),
+            $this->eventsOf($year, $events, $orders, $consumed),
             array_map(static fn (ProductSales $product): array => [
                 'id' => (string) $product->productId,
                 'name' => $product->productName,
@@ -96,12 +100,13 @@ final readonly class GetDashboardHandler
     }
 
     /**
-     * @param list<Event> $events
-     * @param list<Order> $orders
+     * @param list<Event>          $events
+     * @param list<Order>          $orders
+     * @param array<string, Money> $consumed
      *
      * @return list<array{id: string, name: string, startDate: string, turnover: int, result: int}>
      */
-    private function eventsOf(int $year, array $events, array $orders): array
+    private function eventsOf(int $year, array $events, array $orders, array $consumed): array
     {
         $ordersByEvent = [];
         foreach ($orders as $order) {
@@ -116,7 +121,7 @@ final readonly class GetDashboardHandler
             if (!$event->startsIn($year)) {
                 continue;
             }
-            $result = EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? []);
+            $result = EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? [], $consumed[(string) $event->id()] ?? null);
             $rows[] = [
                 'id' => (string) $event->id(),
                 'name' => $event->name(),

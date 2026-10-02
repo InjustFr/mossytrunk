@@ -21,7 +21,8 @@
         "expenses": "Expenses",
         "urssafRate": "12.8%",
         "supplies": "Supplies",
-        "channelCosts": "Channel costs"
+        "channelCosts": "Channel costs",
+        "consumedSupplies": "Supplies used up (inventory)"
     },
     "summary": "{orders} across {events}",
     "orderCount": "{count} order | {count} orders",

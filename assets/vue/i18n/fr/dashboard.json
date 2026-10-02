@@ -21,7 +21,8 @@
         "expenses": "Dépenses",
         "urssafRate": "12,8 %",
         "supplies": "Fournitures",
-        "channelCosts": "Frais des canaux"
+        "channelCosts": "Frais des canaux",
+        "consumedSupplies": "Fournitures consommées (inventaire)"
     },
     "summary": "{orders} sur {events}",
     "orderCount": "{count} commande | {count} commandes",

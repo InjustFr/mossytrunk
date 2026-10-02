@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Event\GetEventReport;
 
+use App\Application\Stock\ConsumedSupplies;
 use App\Domain\Event\EventRepository;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Product\ProductRepository;
@@ -17,6 +18,7 @@ final readonly class GetEventReportHandler
         private EventRepository $events,
         private OrderRepository $orders,
         private ProductRepository $products,
+        private ConsumedSupplies $consumedSupplies,
     ) {
     }
 
@@ -24,7 +26,7 @@ final readonly class GetEventReportHandler
     {
         $event = $this->events->get(Ulid::fromString($eventId));
 
-        $result = EventResult::of($event, $this->orders->sales($event->id()));
+        $result = EventResult::of($event, $this->orders->sales($event->id()), $this->consumedSupplies->atEvent($event->id()));
 
         $products = [];
         foreach ($this->products->findByIds(ProductSales::productIds($result->productSales)) as $product) {

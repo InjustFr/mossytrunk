@@ -14,9 +14,10 @@ discounts          = Σ order discounts (rules, « Remise {service} »)
 turnover (CA)      = gross sales − discounts                  = Σ order totals
 cost of goods      = Σ line costs (units taken from stock)
 supplies           = Σ order supply costs (O17)
+supplies consumed  = Σ cost of supplies missing at the event's inventories (K17)
 channel costs      = Σ order channel charges + postage (O18)
 URSSAF             = 12.8 % × turnover   (rounded to the cent, half up)
-result (Résultat)  = turnover − cost of goods − supplies − channel costs − expenses − URSSAF
+result (Résultat)  = turnover − cost of goods − supplies − supplies consumed − channel costs − expenses − URSSAF
 ```
 
 | # | Rule | Where | Tests |
@@ -26,6 +27,7 @@ result (Résultat)  = turnover − cost of goods − supplies − channel costs 
 | R3 | Only the event's own orders count | `GetEventReportHandler` | `EventReportTest` |
 | R4 | The result can be negative (loss) | `EventResult` | `EventResultTest` |
 | R5 | Supplies and channel costs of the event's orders lower the result; they do not change the turnover nor URSSAF (rows shown only when not zero) | `SalesFigures::of()` | `ChannelCostTest` |
+| R6 | Supplies found missing at the event's inventories (flyers, giveaways) are consumed by the event: « Fournitures consommées (inventaire) » lowers its result, in the list of events and the dashboard too (month the event starts, like its expenses) | `ConsumedSupplies`, `EventResult::of()`, `MonthlyResults::of()` | `StockUseCasesTest` |
 
 ## Display (visual grouping only — not domain concepts)
 

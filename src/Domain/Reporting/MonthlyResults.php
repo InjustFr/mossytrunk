@@ -12,7 +12,7 @@ use App\Domain\Shared\Money;
 /**
  * Results per calendar month (Europe/Paris):
  * - an order counts in the month of its date;
- * - an event's expenses count in the month the event starts.
+ * - an event's expenses and the supplies consumed at it count in the month the event starts.
  */
 final readonly class MonthlyResults
 {
@@ -24,10 +24,11 @@ final readonly class MonthlyResults
     }
 
     /**
-     * @param list<Order> $orders
-     * @param list<Event> $events
+     * @param list<Order>          $orders
+     * @param list<Event>          $events
+     * @param array<string, Money> $consumedSuppliesByEvent keyed by event id
      */
-    public static function of(array $orders, array $events): self
+    public static function of(array $orders, array $events, array $consumedSuppliesByEvent = []): self
     {
         $ordersByMonth = [];
         foreach ($orders as $order) {
@@ -35,14 +36,16 @@ final readonly class MonthlyResults
         }
 
         $expensesByMonth = [];
+        $consumedByMonth = [];
         foreach ($events as $event) {
             $month = self::monthKey($event->period()->start());
             $expensesByMonth[$month] = ($expensesByMonth[$month] ?? Money::zero())->add($event->totalExpenses());
+            $consumedByMonth[$month] = ($consumedByMonth[$month] ?? Money::zero())->add($consumedSuppliesByEvent[(string) $event->id()] ?? Money::zero());
         }
 
         $months = [];
         foreach (array_unique([...array_keys($ordersByMonth), ...array_keys($expensesByMonth)]) as $month) {
-            $months[$month] = SalesFigures::of($ordersByMonth[$month] ?? [], $expensesByMonth[$month] ?? Money::zero());
+            $months[$month] = SalesFigures::of($ordersByMonth[$month] ?? [], $expensesByMonth[$month] ?? Money::zero(), $consumedByMonth[$month] ?? Money::zero());
         }
 
         return new self($months);

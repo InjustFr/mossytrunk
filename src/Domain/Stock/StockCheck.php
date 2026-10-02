@@ -106,7 +106,12 @@ class StockCheck
 
     public function unexplainedUnits(): int
     {
-        return array_sum(array_map(static fn (StockCheckLine $line): int => $line->unexplained(), $this->lines()));
+        return array_sum(array_map(static fn (StockCheckLine $line): int => $line->flagged(), $this->lines()));
+    }
+
+    public function consumedSupplies(): Money
+    {
+        return Money::sum(array_map(static fn (StockCheckLine $line): Money => $line->consumedCost(), $this->lines()));
     }
 
     public function id(): Ulid

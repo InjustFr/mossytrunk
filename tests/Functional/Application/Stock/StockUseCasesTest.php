@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Stock;
 
+use App\Application\Event\GetEventReport\GetEventReportHandler;
 use App\Application\Event\ListEvents\EventSummaryView;
 use App\Application\Event\ListEvents\ListEventsHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
@@ -14,6 +15,8 @@ use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RefundOrder\RefundOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Application\Product\CreateProduct\CreateProduct;
+use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
@@ -32,6 +35,7 @@ use App\Application\Stock\TakeStockCheck\CountedItem;
 use App\Application\Stock\TakeStockCheck\TakeStockCheck;
 use App\Application\Stock\TakeStockCheck\TakeStockCheckHandler;
 use App\Domain\Order\Order;
+use App\Domain\Product\ProductKind;
 use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
@@ -159,6 +163,25 @@ final class StockUseCasesTest extends KernelTestCase
 
         self::assertSame(0, $this->event()->unexplainedUnits);
         self::assertTrue($this->checks()[0]->lines[0]['dismissed']);
+    }
+
+    public function testSuppliesMissingAtTheInventoryAreConsumedByTheEvent(): void
+    {
+        $flyer = (string) self::getContainer()->get(CreateProductHandler::class)(new CreateProduct('Flyer', 0, typeId: (string) self::getContainer()->get(CreateProductTypeHandler::class)('Papeterie')->id(), kind: ProductKind::Supply));
+        $this->restock($flyer, null, 100, 1_000);
+        $this->restock($this->sticker, null, 10, 1_000);
+        $this->place('2026-07-10 15:00', [new RequestedLine($this->sticker, null, 2)]);
+
+        self::getContainer()->get(TakeStockCheckHandler::class)(new TakeStockCheck($this->eventId, [new CountedItem($flyer, null, 70), new CountedItem($this->sticker, null, 8)]));
+        $this->clear();
+
+        $line = array_values(array_filter($this->checks()[0]->lines, static fn (array $line): bool => $line['supply']))[0];
+        self::assertSame([0, 30, 300], [$line['unexplained'], $line['consumed'], $line['consumedCost']]);
+        self::assertSame(0, $this->event()->unexplainedUnits);
+        $report = self::getContainer()->get(GetEventReportHandler::class)($this->eventId);
+        self::assertSame(300, $report->total['consumedSupplies']);
+        self::assertSame($report->total['turnover'] - $report->total['costOfGoods'] - 300 - $report->total['urssaf'], $report->total['result']);
+        self::assertSame($report->total['result'], $this->event()->result);
     }
 
     public function testStockSheetListsEverySellableItemWithWhatTheEventSold(): void

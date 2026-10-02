@@ -49,7 +49,15 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
     public function withUnexplainedUnits(): array
     {
         return $this->checks()
-            ->andWhere('EXISTS (SELECT 1 FROM '.StockCheck::class.' u JOIN u.lines ul WHERE u = c AND ul.unexplained > 0)')
+            ->andWhere('EXISTS (SELECT 1 FROM '.StockCheck::class.' u JOIN u.lines ul WHERE u = c AND ul.unexplained > 0 AND ul.supply = false)')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function consumingSupplies(): array
+    {
+        return $this->checks()
+            ->andWhere('EXISTS (SELECT 1 FROM '.StockCheck::class.' s JOIN s.lines sl WHERE s = c AND sl.supply = true AND sl.unexplained > 0)')
             ->getQuery()
             ->getResult();
     }

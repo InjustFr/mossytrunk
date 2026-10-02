@@ -16,7 +16,7 @@ Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [ev
 | B5 | Selectable years = years with orders or expenses, plus the current year | `GetDashboardHandler` | `GetDashboardTest` |
 | B6 | The year's events = events **starting** in the year (as for expenses, B3), ranked by result, best first | `Event::startsIn()`, `GetDashboardHandler` | `GetDashboardTest` |
 | B7 | Best sellers = order lines of the year's orders (B2) summed per product, all variants together, before discounts; top 5 products, and every product type (untyped products together, « Sans type »), by sales | `SalesByProduct`, `GetDashboardHandler` | `SalesByProductTest`, `GetDashboardTest` |
-| B8 | Supplies and channel costs (charges + postage) of the orders count like their cost of goods: in the month of the order (B2), shown together as « Frais de vente » in the tables | `SalesFigures`, `ResultsTable.vue` | `ChannelCostTest` |
+| B8 | Supplies and channel costs (charges + postage) of the orders count like their cost of goods: in the month of the order (B2); supplies consumed at an event's inventory count in the month the event starts (B3); all shown together as « Frais de vente » in the tables | `SalesFigures`, `ResultsTable.vue` | `ChannelCostTest` |
 
 ## Display
 
