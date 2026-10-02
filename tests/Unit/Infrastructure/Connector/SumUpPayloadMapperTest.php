@@ -57,11 +57,16 @@ final class SumUpPayloadMapperTest extends TestCase
         self::assertNull($payment(null));
     }
 
-    public function testKeepsTheFeeSumUpTookAndKnowsCashCostsNothing(): void
+    public function testKeepsTheFeeSumUpTookOnItsPayoutsAndKnowsCashCostsNothing(): void
     {
-        self::assertSame(18, self::fee(['payment_type' => 'POS', 'fee_amount' => 0.175]));
-        self::assertNull(self::fee(['payment_type' => 'POS']), 'not reported yet');
-        self::assertNull(self::fee(['payment_type' => 'POS', 'fee_amount' => 0]), 'not reported yet');
+        self::assertSame(16, self::fee(['payment_type' => 'POS', 'events' => [['type' => 'PAYOUT', 'amount' => 8.84, 'fee_amount' => 0.16]]]));
+        self::assertSame(30, self::fee(['payment_type' => 'POS', 'events' => [
+            ['type' => 'PAYOUT', 'fee_amount' => 0.175],
+            ['type' => 'PAYOUT', 'fee_amount' => 0.12],
+            ['type' => 'REFUND', 'fee_amount' => 0.5],
+        ]]));
+        self::assertNull(self::fee(['payment_type' => 'POS']), 'not paid out yet');
+        self::assertNull(self::fee(['payment_type' => 'POS', 'events' => [['type' => 'REFUND', 'fee_amount' => 0.5]]]), 'not paid out yet');
         self::assertSame(0, self::fee(['payment_type' => 'CASH']));
     }
 

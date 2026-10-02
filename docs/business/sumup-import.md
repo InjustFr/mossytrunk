@@ -11,7 +11,7 @@ Code: `src/Infrastructure/Connector/SumUp/` — `SumUpConnector`, `SumUpApiGatew
 ## What is read from SumUp
 
 - `GET /v2.1/merchants/{code}/transactions/history?statuses[]=SUCCESSFUL&types[]=PAYMENT` (all pages, `links[rel=next]`)
-- `GET /v2.1/merchants/{code}/transactions?id=…` for each payment → `fee_amount` (SumUp's fee, see S14) and `products[]` (`name`, `description` = variant (trimmed), `price_with_vat`, `quantity`, and `category` / `category_name` **when present** — not documented by SumUp, read defensively)
+- `GET /v2.1/merchants/{code}/transactions?id=…` for each payment → `events[]` (the `PAYOUT` events carry SumUp's `fee_amount`, see S14) and `products[]` (`name`, `description` = variant (trimmed), `price_with_vat`, `quantity`, and `category` / `category_name` **when present** — not documented by SumUp, read defensively)
 - Mapping: transaction code = external id and order reference; charged = `amount − tip_amount`; no shipping; line name = the item (lowercased as its external reference). Euros are converted to cents.
 
 ## Rules
@@ -27,7 +27,7 @@ Code: `src/Infrastructure/Connector/SumUp/` — `SumUpConnector`, `SumUpApiGatew
 | S11 | SumUp spreads a basket discount over the lines: a line is sold at the **higher** of the product's price and SumUp's line price (see I9) | `LinePrices::MayBeDiscounted` | `ImportSumUpSalesTest` |
 | S12 | A product's `description` is its **variant**: a variant of the named product; a product **split per variant** (`<name> <variant>`, `<name> - <variant>`, `<name> (<variant>)` without variants of its own); otherwise, when creating products, a new variant learnt by the named product when it has variants or was created by this import. On another existing product without variants the description is ignored | `SumUpPayloadMapper::variant()`, `ExternalItemResolver` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
 | S13 | The order keeps SumUp's **payment method**: `payment_type` `CASH` → « Espèces », any other value (`POS`, `ECOM`…) → « Carte »; unknown when SumUp sends none | `SumUpPayloadMapper::paymentMethod()` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
-| S14 | The sale keeps the **fee SumUp took** (`fee_amount`, > 0); a cash payment costs no fee; a card payment without a fee yet stays unknown until a later import reads it (see I12). `app:sumup:transaction <code> --workspace=<name>` prints `fee_amount` and `events` to check what SumUp returns | `SumUpPayloadMapper::fee()` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
+| S14 | The sale keeps the **fee SumUp took**: the sum of the `fee_amount` of its `PAYOUT` events (SumUp reports it once the payment is paid out, usually the next day); a cash payment costs no fee; a card payment not paid out yet keeps an unknown fee until a later import reads it (see I12). `app:sumup:transaction <code> --workspace=<name>` prints the `events` to check what SumUp returns | `SumUpPayloadMapper::fee()` | `SumUpPayloadMapperTest`, `ImportSumUpSalesTest` |
 
 ## Catalogue export
 

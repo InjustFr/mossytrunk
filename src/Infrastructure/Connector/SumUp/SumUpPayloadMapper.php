@@ -13,6 +13,7 @@ use App\Infrastructure\Http\Json;
 final class SumUpPayloadMapper
 {
     private const string KEYPAD_AMOUNT = 'custom amount';
+    private const string PAYOUT = 'PAYOUT';
 
     /**
      * @param array<string, mixed> $transaction
@@ -40,12 +41,16 @@ final class SumUpPayloadMapper
      */
     private static function fee(array $transaction, ?PaymentMethod $paymentMethod): ?Money
     {
-        $fee = self::cents(Json::number($transaction['fee_amount'] ?? 0));
-        if ($fee > 0) {
-            return Money::cents($fee);
+        if (PaymentMethod::Cash === $paymentMethod) {
+            return Money::zero();
         }
 
-        return PaymentMethod::Cash === $paymentMethod ? Money::zero() : null;
+        $payouts = array_filter(Json::objects($transaction['events'] ?? []), static fn (array $event): bool => self::PAYOUT === ($event['type'] ?? null));
+        if ([] === $payouts) {
+            return null;
+        }
+
+        return Money::cents(array_sum(array_map(static fn (array $payout): int => self::cents(Json::number($payout['fee_amount'] ?? 0)), $payouts)));
     }
 
     private static function paymentMethod(mixed $paymentType): ?PaymentMethod

@@ -36,7 +36,7 @@ final class ShowSumUpTransactionCommandTest extends KernelTestCase
             return new JsonMockResponse([
                 'transaction_code' => 'TAAA6MPKY9S',
                 'amount' => 3.0,
-                'fee_amount' => 0.05,
+                'events' => [['type' => 'PAYOUT', 'fee_amount' => 0.05]],
                 'card' => ['last_4_digits' => '4242'],
                 'products' => [['name' => 'Eevee Aquali', 'price_label' => 'Sticker', 'price_with_vat' => 3.0, 'quantity' => 1]],
             ]);
