@@ -11,7 +11,7 @@ import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import BatchChannelPrice from './BatchChannelPrice.vue';
 import VariantPicker from './VariantPicker.vue';
-import { channelPriceChangePayload, emptyChannelPriceChange } from '../../composables/useChannelPrices.js';
+import { channelPriceChangePayload, emptyChannelPriceChange, mainChannelOf } from '../../composables/useChannelPrices.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
@@ -34,6 +34,7 @@ const form = reactive({ sellingPrice: null, typeId: UNCHANGED, addVariants: [], 
 const errors = ref({});
 const saving = ref(false);
 
+const mainChannel = computed(() => mainChannelOf(props.channels));
 const changeType = computed(() => form.typeId !== UNCHANGED);
 const union = (lists) => [...new Set(lists.flat())];
 const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -72,7 +73,7 @@ async function onSubmit() {
             <p v-if="errors.form" class="product-batch-form__error" role="alert">{{ errors.form }}</p>
 
             <FormSection :description="t('products.batch.intro', count)">
-                <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
+                <FormField :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-batch-form__price" />
                 </FormField>
                 <FormField as="group" :label="t('products.batch.priceSince')" :error="errors.priceSince" :hint="t('products.batch.priceSinceHint')">

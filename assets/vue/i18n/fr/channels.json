@@ -1,0 +1,72 @@
+{
+    "title": "Canaux de vente",
+    "add": "Ajouter un canal",
+    "intro": "Chaque canal a ses prix. Le canal principal porte le prix de vente des produits ; un autre canal sans prix propre le suit. Un canal de marché n'a que des commandes passées pendant un événement. Lié à un service, un canal donne ses prix aux ventes importées et au catalogue exporté.",
+    "empty": "Aucun canal.",
+    "linkedTo": "Lié à {service}",
+    "notLinked": "Lié à aucun service",
+    "edit": "Modifier {name}",
+    "editTitle": "Modifier {name}",
+    "remove": "Supprimer {name}",
+    "removeMessage": "Ses prix sont oubliés : les produits gardent leur prix de vente. Les commandes passées ne changent pas.",
+    "name": "Nom",
+    "namePlaceholder": "Ex. Boutique Etsy",
+    "service": "Service lié",
+    "noService": "Aucun",
+    "serviceHint": "Les ventes importées de ce service sont comptées à ses prix.",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "create": "Ajouter le canal",
+    "created": "Canal « {name} » ajouté.",
+    "updated": "Canal « {name} » modifié.",
+    "removed": "Canal « {name} » supprimé.",
+    "kind": "Type",
+    "kinds": {
+        "market": "Marché",
+        "online": "En ligne"
+    },
+    "kindHints": {
+        "market": "Ses commandes ont toujours un événement.",
+        "online": "Ventes hors événement (boutique en ligne…)."
+    },
+    "mainHint": "Canal principal : ses prix sont les prix de vente des produits.",
+    "main": "Canal principal",
+    "columns": {
+        "name": "Canal",
+        "kind": "Type",
+        "service": "Service"
+    },
+    "open": "Ouvrir {name}",
+    "detail": {
+        "back": "Canaux de vente",
+        "fallbackTitle": "Canal de vente",
+        "edit": "Modifier",
+        "settings": "Réglages",
+        "kind": "Type",
+        "service": "Service lié"
+    },
+    "prices": {
+        "title": "Prix",
+        "intro": "Sans prix propre, un produit suit son prix {main}.",
+        "mainIntro": "Les prix de ce canal sont les prix de vente des produits.",
+        "search": "Rechercher un produit",
+        "product": "Produit",
+        "mainPrice": "Prix {main}",
+        "price": "Prix {channel}",
+        "follows": "Suit le prix {main}",
+        "edit": "Modifier le prix de {name}",
+        "editTitle": "Prix de {name} sur {channel}",
+        "amount": "Prix",
+        "follow": "Suivre le prix {main}",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "saved": "Prix de {name} enregistré.",
+        "batch": "Modifier les prix affichés",
+        "batchTitle": "Modifier les prix de {channel}",
+        "batchIntro": "Change le prix sur ce canal du produit affiché. | Change le prix sur ce canal des {count} produits affichés.",
+        "apply": "Appliquer à {count} produit | Appliquer à {count} produits",
+        "batchSaved": "{count} produit mis à jour. | {count} produits mis à jour.",
+        "empty": "Aucun produit.",
+        "actions": "Actions"
+    }
+}

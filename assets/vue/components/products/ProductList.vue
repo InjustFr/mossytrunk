@@ -36,7 +36,8 @@ const stockDetail = (product) => stockOf(product).entries.map((item) => t('produ
 
 const channelColumn = (channel) => `channel:${channel.id}`;
 const otherChannels = computed(() => otherChannelsOf(props.channels));
-const sellingPriceHeader = computed(() => mainChannelOf(props.channels)?.name ?? t('products.list.sellingPrice'));
+const mainChannel = computed(() => mainChannelOf(props.channels));
+const sellingPriceHeader = computed(() => mainChannel.value?.name ?? t('products.list.sellingPrice'));
 
 const columns = computed(() => ({
     type: (product) => `${product.typeName} ${product.displayName}`,
@@ -122,7 +123,7 @@ function setChecked(id, checked) {
                     v-for="channel in otherChannels"
                     :key="channel.id"
                     :class="['data-table__cell--number', { 'product-list__follows': ownPriceOn(product, channel) === null }]"
-                    :title="ownPriceOn(product, channel) === null ? t('products.list.followsSellingPrice') : null"
+                    :title="ownPriceOn(product, channel) === null ? t('products.list.followsSellingPrice', { channel: mainChannel?.name ?? '' }) : null"
                 >
                     <MoneyAmount :cents="priceOn(product, channel)" />
                 </td>

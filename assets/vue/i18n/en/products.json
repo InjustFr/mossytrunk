@@ -57,7 +57,9 @@
         "stock": "Stock",
         "movements": "Movements",
         "design": "Design",
-        "channelPrices": "Price per channel"
+        "channelPrices": "Price per channel",
+        "mainPrice": "{channel} price (main channel)",
+        "editChannelPrice": "Edit the {channel} price"
     },
     "filters": {
         "all": "All",
@@ -96,7 +98,7 @@
         "archive": "Archive {name}",
         "restore": "Unarchive {name}",
         "typeArchived": "Type archived",
-        "followsSellingPrice": "Follows the selling price"
+        "followsSellingPrice": "Follows the {channel} price"
     },
     "form": {
         "type": "Type",
@@ -115,7 +117,8 @@
         "more": "Reference and stock",
         "lowStockSummary": "alert at {threshold}",
         "channelPrice": "{channel} price",
-        "channelPriceHint": "Empty: follows the selling price."
+        "channelPriceHint": "Empty: follows the {channel} price.",
+        "mainPrice": "{channel} price (main channel)"
     },
     "batch": {
         "intro": "Applies to the {count} selected product; anything left empty stays as is. | Applies to the {count} selected products; anything left empty stays as is.",

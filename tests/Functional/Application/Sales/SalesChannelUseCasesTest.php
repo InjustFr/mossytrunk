@@ -20,7 +20,7 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Sales\DeleteChannel\DeleteChannelHandler;
 use App\Application\Sales\ListChannels\ListChannelsHandler;
-use App\Application\Sales\ListChannels\SalesChannelView;
+use App\Application\Sales\SalesChannelView;
 use App\Application\Sales\SaveChannel\SaveChannelHandler;
 use App\Domain\Integration\UnknownItems;
 use App\Domain\Sales\ChannelKind;

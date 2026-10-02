@@ -16,7 +16,7 @@ import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useProducts } from '../../composables/useProducts.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
 import { formatCents } from '../../composables/useMoney.js';
-import { otherChannelsOf } from '../../composables/useChannelPrices.js';
+import { mainChannelOf, otherChannelsOf } from '../../composables/useChannelPrices.js';
 
 const props = defineProps({
     product: { type: Object, default: null },
@@ -44,6 +44,7 @@ const referenceSuggestion = useSuggestion(
 const type = computed(() => types.value.find((candidate) => candidate.id === form.typeId) ?? null);
 const displayName = computed(() => [type.value?.prefixesNames ? type.value.name : null, form.name.trim()].filter(Boolean).join(' '));
 const otherChannels = computed(() => otherChannelsOf(props.channels));
+const mainChannel = computed(() => mainChannelOf(props.channels));
 const moreOpen = ref(false);
 const moreSummary = computed(() => [form.reference, t('products.form.lowStockSummary', { threshold: form.lowStockThreshold ?? 0 })].filter(Boolean).join(', '));
 
@@ -115,7 +116,7 @@ async function onSubmit() {
                 <FormField :label="t('products.form.name')" :error="errors.name">
                     <input v-model="form.name" type="text" required :placeholder="t('products.form.namePlaceholder')">
                 </FormField>
-                <FormField :label="t('products.form.sellingPrice')" :error="errors.sellingPrice">
+                <FormField :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
                     <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
                 </FormField>
                 <FormField
@@ -123,7 +124,7 @@ async function onSubmit() {
                     :key="channel.id"
                     :label="t('products.form.channelPrice', { channel: channel.name })"
                     :error="errors[`channelPrices[${index}].price`]"
-                    :hint="t('products.form.channelPriceHint')"
+                    :hint="t('products.form.channelPriceHint', { channel: mainChannel?.name ?? '' })"
                 >
                     <BaseMoneyField
                         :model-value="form.channelPrices[channel.id] ?? null"

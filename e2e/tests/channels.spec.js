@@ -11,7 +11,9 @@ test('a sales channel gets its own prices, one by one or in batch', async ({ pag
     const fern = await createProduct(request, { name: 'Fougère', sellingPrice: 600, type });
 
     await page.goto('/settings');
-    const channels = page.getByRole('region', { name: 'Canaux de vente' });
+    await page.getByRole('link', { name: 'Canaux de vente' }).click();
+    await expect(page).toHaveURL(/\/channels$/);
+    const channels = page.getByRole('main');
     await expect(channels).toContainText(main.name);
     await expect(channels.getByRole('button', { name: `Supprimer ${main.name}` })).toHaveCount(0);
     await page.getByRole('button', { name: 'Ajouter un canal' }).click();
@@ -45,7 +47,20 @@ test('a sales channel gets its own prices, one by one or in batch', async ({ pag
     await page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
     await expect(page.getByRole('row').filter({ hasText: moss.displayName })).toContainText('5,00');
 
-    await page.goto('/settings');
+    await page.goto('/channels');
+    await page.getByRole('link', { name }).click();
+    await page.getByRole('searchbox', { name: 'Rechercher un produit' }).fill(type.name);
+    await page.getByRole('button', { name: `Modifier le prix de ${fern.displayName}` }).click();
+    const price = page.getByRole('dialog', { name: `Prix de ${fern.displayName} sur ${name}` });
+    await price.getByRole('switch').click();
+    await price.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText(`Prix de ${fern.displayName} enregistré.`);
+    await expect(page.getByRole('row').filter({ hasText: fern.displayName }).getByRole('cell').nth(2)).toContainText('6,00');
+    await page.getByRole('button', { name: `Modifier le prix de ${moss.displayName}` }).click();
+    await page.getByRole('dialog').getByLabel('Prix', { exact: true }).fill('4,80');
+    await page.getByRole('dialog').getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByRole('row').filter({ hasText: moss.displayName })).toContainText('4,80');
+
     await page.getByRole('button', { name: `Supprimer ${name}` }).click();
     await page.getByRole('alertdialog').getByRole('button', { name: /Supprimer|Confirmer/ }).click();
     await expect(page.getByTestId('toast').last()).toContainText(`Canal « ${name} » supprimé.`);

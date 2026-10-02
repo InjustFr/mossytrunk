@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Sales\ListChannels;
+namespace App\Application\Sales;
 
 final readonly class SalesChannelView
 {

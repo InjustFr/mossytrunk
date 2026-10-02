@@ -1,13 +1,15 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
+import { ArrowLeft, Pencil } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
+import IconButton from '../components/ui/IconButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import ChannelPriceForm from '../components/channels/ChannelPriceForm.vue';
 import PriceHistory from '../components/products/PriceHistory.vue';
 import ProductDesign from '../components/products/ProductDesign.vue';
 import ProductForm from '../components/products/ProductForm.vue';
@@ -21,7 +23,7 @@ import { listUrl } from '../composables/useQueryState.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
-import { otherChannelsOf, ownPriceOn, priceOn } from '../composables/useChannelPrices.js';
+import { mainChannelOf, otherChannelsOf, ownPriceOn, priceOn } from '../composables/useChannelPrices.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 
@@ -34,7 +36,7 @@ const { restock } = useStock();
 const { gabarits, load: loadGabarits } = useGabarits();
 const { board, load: loadBoard } = useDesignBoard();
 const { load: loadTypes } = useProductTypes();
-const { channels, load: loadChannels } = useSalesChannels();
+const { channels, load: loadChannels, setPrice } = useSalesChannels();
 const toast = useToast();
 const { t } = useI18n();
 
@@ -42,6 +44,10 @@ const detail = ref(null);
 const version = ref(0);
 const editOpen = ref(false);
 const restockOpen = ref(false);
+const pricingChannel = ref(null);
+const channelPriceOpen = computed({ get: () => pricingChannel.value !== null, set: (open) => { if (!open) pricingChannel.value = null; } });
+const mainChannel = computed(() => mainChannelOf(channels.value));
+const mainPriceLabel = computed(() => (mainChannel.value ? t('products.detail.mainPrice', { channel: mainChannel.value.name }) : t('products.detail.sellingPrice')));
 
 const product = computed(() => detail.value?.product ?? null);
 const margin = computed(() => (product.value && product.value.stockUnitCost > 0 ? product.value.sellingPrice - product.value.stockUnitCost : null));
@@ -55,6 +61,12 @@ async function load() {
 async function onSaved(name) {
     editOpen.value = false;
     toast.success(t('products.toast.updated', { name }));
+    await load();
+}
+
+async function onChannelPriceSaved(name) {
+    toast.success(t('channels.prices.saved', { name }));
+    pricingChannel.value = null;
     await load();
 }
 
@@ -103,12 +115,13 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                 <div><dt>{{ t('products.detail.reference') }}</dt><dd>{{ product.reference }}</dd></div>
                 <div><dt>{{ t('products.detail.type') }}</dt><dd>{{ product.typeName }}</dd></div>
                 <div><dt>{{ t('products.detail.variants') }}</dt><dd>{{ product.variants.join(', ') || t('products.single') }}</dd></div>
-                <div><dt>{{ t('products.detail.sellingPrice') }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
+                <div><dt>{{ mainPriceLabel }}</dt><dd><MoneyAmount :cents="product.sellingPrice" /></dd></div>
                 <div v-for="channel in otherChannelsOf(channels)" :key="channel.id">
                     <dt>{{ t('products.form.channelPrice', { channel: channel.name }) }}</dt>
                     <dd>
                         <MoneyAmount :cents="priceOn(product, channel)" />
-                        <span v-if="ownPriceOn(product, channel) === null" class="product-page__muted"> · {{ t('products.list.followsSellingPrice') }}</span>
+                        <span v-if="ownPriceOn(product, channel) === null" class="product-page__muted"> · {{ t('products.list.followsSellingPrice', { channel: mainChannel?.name ?? '' }) }}</span>
+                        <IconButton :icon="Pencil" :label="t('products.detail.editChannelPrice', { channel: channel.name })" @click="pricingChannel = channel" />
                     </dd>
                 </div>
                 <div>
@@ -144,7 +157,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                     </BaseCard>
                 </div>
                 <aside class="product-page__side">
-                    <BaseCard :title="t('products.detail.sellingPrice')">
+                    <BaseCard :title="mainPriceLabel">
                         <PriceHistory :history="detail.priceHistory" :save="onPriceSaved" :forget="onPriceForgotten" />
                     </BaseCard>
                     <BaseCard :title="t('products.detail.design')">
@@ -163,6 +176,18 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
 
         <BaseModal v-model:open="editOpen" :title="t('products.page.editTitle')">
             <ProductForm v-if="product" :product="product" :channels="channels" :submit="(payload) => update(productId, payload)" @saved="onSaved" @cancel="editOpen = false" />
+        </BaseModal>
+        <BaseModal v-model:open="channelPriceOpen" :title="t('channels.prices.editTitle', { name: product?.displayName ?? '', channel: pricingChannel?.name ?? '' })">
+            <ChannelPriceForm
+                v-if="product && pricingChannel && mainChannel"
+                :key="pricingChannel.id"
+                :product="product"
+                :channel="pricingChannel"
+                :main="mainChannel"
+                :submit="(price) => setPrice(productId, pricingChannel.id, price)"
+                @saved="onChannelPriceSaved"
+                @cancel="pricingChannel = null"
+            />
         </BaseModal>
         <BaseModal v-model:open="restockOpen" :title="t('products.page.restockTitle', { name: product?.displayName ?? '' })">
             <RestockForm v-if="product" :product="product" :submit="restock" @saved="onRestocked" @cancel="restockOpen = false" />

@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Sales\ListChannels;
+namespace App\Application\Sales\GetChannel;
 
 use App\Application\Sales\ChannelViews;
 use App\Application\Sales\SalesChannelView;
 use App\Domain\Sales\SalesChannelRepository;
+use Symfony\Component\Uid\Ulid;
 
-final readonly class ListChannelsHandler
+final readonly class GetChannelHandler
 {
     public function __construct(
         private SalesChannelRepository $channels,
@@ -16,11 +17,8 @@ final readonly class ListChannelsHandler
     ) {
     }
 
-    /**
-     * @return list<SalesChannelView>
-     */
-    public function __invoke(): array
+    public function __invoke(string $channelId): SalesChannelView
     {
-        return array_map($this->views->of(...), $this->channels->all());
+        return $this->views->of($this->channels->get(Ulid::fromString($channelId)));
     }
 }

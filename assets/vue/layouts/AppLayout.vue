@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Tag, Truck } from '@lucide/vue';
+import { CalendarDays, Landmark, LayoutDashboard, LogOut, Palette, Percent, Receipt, Settings, Store, Tag, Truck } from '@lucide/vue';
 import { ConfigProvider, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot, TooltipProvider } from 'reka-ui';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -22,6 +22,7 @@ const groups = [
             { href: '/orders', label: 'layout.nav.orders', icon: Receipt },
             { href: '/events', label: 'layout.nav.events', icon: CalendarDays },
             { href: '/discounts', label: 'layout.nav.discounts', icon: Percent },
+            { href: '/channels', label: 'layout.nav.channels', icon: Store },
         ],
     },
     {

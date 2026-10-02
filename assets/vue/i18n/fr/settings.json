@@ -19,40 +19,6 @@
             "unavailable": "Complétez d'abord les accès de {label}."
         }
     },
-    "channels": {
-        "title": "Canaux de vente",
-        "add": "Ajouter un canal",
-        "intro": "Chaque canal a ses prix. Le canal principal porte le prix de vente des produits ; un autre canal sans prix propre le suit. Un canal de marché n'a que des commandes passées pendant un événement. Lié à un service, un canal donne ses prix aux ventes importées et au catalogue exporté.",
-        "empty": "Aucun canal.",
-        "linkedTo": "Lié à {service}",
-        "notLinked": "Lié à aucun service",
-        "edit": "Modifier {name}",
-        "editTitle": "Modifier {name}",
-        "remove": "Supprimer {name}",
-        "removeMessage": "Ses prix sont oubliés : les produits gardent leur prix de vente. Les commandes passées ne changent pas.",
-        "name": "Nom",
-        "namePlaceholder": "Ex. Boutique Etsy",
-        "service": "Service lié",
-        "noService": "Aucun",
-        "serviceHint": "Les ventes importées de ce service sont comptées à ses prix.",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
-        "create": "Ajouter le canal",
-        "created": "Canal « {name} » ajouté.",
-        "updated": "Canal « {name} » modifié.",
-        "removed": "Canal « {name} » supprimé.",
-        "kind": "Type",
-        "kinds": {
-            "market": "Marché",
-            "online": "En ligne"
-        },
-        "kindHints": {
-            "market": "Ses commandes ont toujours un événement.",
-            "online": "Ventes hors événement (boutique en ligne…)."
-        },
-        "main": "Prix de vente",
-        "mainHint": "Canal principal : ses prix sont les prix de vente des produits."
-    },
     "references": {
         "title": "Références",
         "intro": "Choisissez comment MossyTrunk numérote vos commandes, commandes fournisseur et produits. Un format mêle votre texte et des balises remplacées à chaque création.",

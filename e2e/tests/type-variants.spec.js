@@ -41,7 +41,7 @@ test('a type owns its variants: rename one everywhere, then filter products by v
     const form = page.getByRole('dialog', { name: 'Nouveau produit' }).locator('form');
     await choose(page, form.getByRole('combobox', { name: 'Type' }), print);
     await form.getByLabel('Nom').fill('Forêt');
-    await form.getByLabel('Prix de vente').fill('15');
+    await form.getByLabel(/^Prix .+ \(canal principal\)$/).fill('15');
     await form.getByRole('button', { name: 'A5', exact: true }).click();
     await form.getByRole('button', { name: 'A3', exact: true }).click();
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();

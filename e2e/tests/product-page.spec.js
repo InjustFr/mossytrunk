@@ -18,10 +18,10 @@ test('the product page shows stock, movements and selling price history', async 
     await expect(movements).toContainText('+20');
 
     await page.getByRole('button', { name: 'Modifier', exact: true }).click();
-    await page.getByRole('dialog', { name: 'Modifier le produit' }).getByLabel('Prix de vente').fill('5');
+    await page.getByRole('dialog', { name: 'Modifier le produit' }).getByLabel(/^Prix .+ \(canal principal\)$/).fill('5');
     await page.getByRole('dialog', { name: 'Modifier le produit' }).getByRole('button', { name: 'Enregistrer' }).click();
 
-    const prices = page.getByRole('region', { name: 'Prix de vente' });
+    const prices = page.getByRole('region', { name: /^Prix .+ \(canal principal\)$/ });
     await expect(prices.getByRole('listitem')).toHaveCount(2);
     await expect(prices.getByRole('listitem').first()).toContainText('5,00');
     await expect(prices.getByRole('listitem').first()).toContainText('+1,00');
@@ -31,7 +31,7 @@ test('fix an imported selling price and date it, then record the price it had be
     const product = await createProduct(request, { name: unique('Import'), sellingPrice: 99_900 });
 
     await page.goto(`/products/${product.id}`);
-    const prices = page.getByRole('region', { name: 'Prix de vente' });
+    const prices = page.getByRole('region', { name: /^Prix .+ \(canal principal\)$/ });
     await prices.getByRole('button', { name: /^Modifier le prix du/ }).click();
     await prices.getByLabel('Prix', { exact: true }).fill('4,50');
     await fillDate(prices.getByRole('group', { name: 'Depuis le' }), '2026-09-01');

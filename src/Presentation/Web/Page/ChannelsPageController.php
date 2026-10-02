@@ -10,8 +10,8 @@ use Symfony\Component\HttpKernel\Attribute\AsController;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AsController]
-#[Route('/settings', name: 'settings', methods: ['GET'])]
-final readonly class SettingsPageController
+#[Route('/channels', name: 'channels', methods: ['GET'])]
+final readonly class ChannelsPageController
 {
     public function __construct(private VuePage $page)
     {
@@ -19,6 +19,6 @@ final readonly class SettingsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('SettingsPage', 'settings', preload: ['/api/workspace/settings', '/api/services', '/api/references/formats']);
+        return $this->page->render('ChannelsPage', 'channels', preload: ['/api/sales-channels', '/api/services']);
     }
 }

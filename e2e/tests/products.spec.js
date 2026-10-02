@@ -19,7 +19,7 @@ test('create a product with variants and a suggested reference, then change its 
     await form.getByLabel('Nom').fill(name);
     await form.getByRole('button', { name: 'Référence et stock' }).click();
     await expect(form.getByLabel('Référence')).toHaveValue(new RegExp(`^${type.code}-TSH`));
-    await form.getByLabel('Prix de vente').fill('20');
+    await form.getByLabel(/^Prix .+ \(canal principal\)$/).fill('20');
     await form.getByRole('button', { name: 'Mousse', exact: true }).click();
     await form.getByRole('button', { name: 'Fougère', exact: true }).click();
     await expect(form.getByRole('button', { name: 'Fougère', exact: true })).toHaveAttribute('data-state', 'on');
@@ -41,7 +41,7 @@ test('create a product with variants and a suggested reference, then change its 
     await expect(edit.getByLabel('Référence')).toHaveValue(new RegExp(`^${type.code}-TSH`));
     await expect(edit.getByText('Pas encore acheté')).toBeVisible();
     await edit.getByLabel('Référence').fill(reference);
-    await edit.getByLabel('Prix de vente').fill('25');
+    await edit.getByLabel(/^Prix .+ \(canal principal\)$/).fill('25');
     await edit.getByRole('button', { name: 'Enregistrer' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('mis à jour');
@@ -75,7 +75,7 @@ test('create a type inline with its colour and display products as "Type Nom"', 
 
     await form.getByLabel('Nom').fill('Forêt');
     await expect(form.getByRole('figure', { name: "Aperçu de l'étiquette" })).toContainText(`${typeName} Forêt`);
-    await form.getByLabel('Prix de vente').fill('15');
+    await form.getByLabel(/^Prix .+ \(canal principal\)$/).fill('15');
     await form.getByRole('button', { name: 'Ajouter le produit' }).click();
 
     await expect(page.getByTestId('toast')).toContainText(`Produit « ${typeName} Forêt » ajouté.`);
@@ -98,7 +98,7 @@ test('filter by type and edit the selection in batch', async ({ page, request })
 
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();
     const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
-    await batch.getByLabel('Prix de vente').fill('5');
+    await batch.getByLabel(/^Prix .+ \(canal principal\)$/).fill('5');
     await batch.getByRole('spinbutton', { name: 'Alerte stock bas' }).fill('2');
     await batch.getByRole('group', { name: 'Variantes à ajouter' }).getByRole('button', { name: 'Brillant' }).click();
     await batch.getByRole('button', { name: 'Appliquer à 2 produits' }).click();
@@ -129,7 +129,7 @@ test('a batch price can start on a past day, kept in the price history', async (
     await page.getByRole('checkbox', { name: 'Tout sélectionner' }).check();
     await page.getByRole('button', { name: 'Modifier la sélection' }).click();
     const batch = page.getByRole('dialog', { name: 'Modifier la sélection' });
-    await batch.getByLabel('Prix de vente').fill('3,50');
+    await batch.getByLabel(/^Prix .+ \(canal principal\)$/).fill('3,50');
     await fillDate(batch.getByRole('group', { name: 'Prix à partir du' }), since);
     await batch.getByRole('button', { name: 'Appliquer à 1 produit' }).click();
     await expect(page.getByTestId('toast')).toContainText('1 produit mis à jour.');

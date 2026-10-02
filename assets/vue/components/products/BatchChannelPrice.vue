@@ -15,6 +15,7 @@ const props = defineProps({
     channels: { type: Array, required: true },
     products: { type: Array, required: true },
     errors: { type: Object, default: () => ({}) },
+    fixedTarget: { type: Boolean, default: false },
 });
 const change = defineModel({ type: Object, required: true });
 const { t } = useI18n();
@@ -46,12 +47,12 @@ const previews = computed(() => props.products.slice(0, 3).map((product) => ({
 watch(() => change.value.target, (targetId) => {
     if (target.value?.main && change.value.mode === CHANNEL_PRICE_MODES.sellingPrice) change.value.mode = CHANNEL_PRICE_MODES.fixed;
     if (change.value.source === null || change.value.source === targetId) change.value.source = sourceOptions.value[0]?.value ?? null;
-});
+}, { immediate: true });
 </script>
 
 <template>
-    <FormSection :title="t('products.channelPrice.title')" :description="t('products.channelPrice.intro')">
-        <FormField as="group" :label="t('products.channelPrice.target')" :error="errors['channelPrice.channelId']">
+    <FormSection :title="fixedTarget ? null : t('products.channelPrice.title')" :description="fixedTarget ? null : t('products.channelPrice.intro')">
+        <FormField v-if="!fixedTarget" as="group" :label="t('products.channelPrice.target')" :error="errors['channelPrice.channelId']">
             <BaseSelect v-model="change.target" :options="targetOptions" :aria-label="t('products.channelPrice.target')" class="batch-channel-price__select" />
         </FormField>
         <template v-if="active">

@@ -10,14 +10,11 @@ import ConnectedServices from '../components/settings/ConnectedServices.vue';
 import ServiceModal from '../components/settings/ServiceModal.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
 import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
-import SalesChannelForm from '../components/settings/SalesChannelForm.vue';
-import SalesChannels from '../components/settings/SalesChannels.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
 import { useReferenceFormats } from '../composables/useReferenceFormats.js';
-import { useSalesChannels } from '../composables/useSalesChannels.js';
 
 const { t } = useI18n();
 
@@ -25,7 +22,6 @@ const { settings, load } = useWorkspaceSettings();
 const services = useServices();
 const toast = useToast();
 const references = useReferenceFormats();
-const salesChannels = useSalesChannels();
 
 const modalOpen = ref(false);
 const editing = ref(null);
@@ -120,37 +116,11 @@ async function onFormatSaved(renamed) {
     await references.load();
 }
 
-const editingChannel = ref(null);
-const channelModalOpen = ref(false);
-
-function openChannel(channel) {
-    editingChannel.value = channel;
-    channelModalOpen.value = true;
-}
-
-const saveChannel = (payload) => (editingChannel.value ? salesChannels.update(editingChannel.value.id, payload) : salesChannels.create(payload));
-
-async function onChannelSaved(name) {
-    toast.success(t(editingChannel.value ? 'settings.channels.updated' : 'settings.channels.created', { name }));
-    channelModalOpen.value = false;
-    await salesChannels.load();
-}
-
-async function onChannelRemoved(channel) {
-    try {
-        await salesChannels.remove(channel.id);
-        toast.success(t('settings.channels.removed', { name: channel.name }));
-    } catch (error) {
-        toast.error(error.message);
-    }
-    await salesChannels.load();
-}
-
 const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
 onMounted(async () => {
-    await Promise.all([load(), services.load(), references.load(), salesChannels.load()]);
+    await Promise.all([load(), services.load(), references.load()]);
     announceConnectionOutcome();
 });
 </script>
@@ -177,14 +147,6 @@ onMounted(async () => {
                 />
                 <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>
-            <BaseCard :title="t('settings.channels.title')">
-                <template #actions>
-                    <BaseButton variant="secondary" @click="openChannel(null)"><Plus size="1rem" aria-hidden="true" /> {{ t('settings.channels.add') }}</BaseButton>
-                </template>
-                <p class="settings-page__intro">{{ t('settings.channels.intro') }}</p>
-                <SalesChannels v-if="salesChannels.channels.value.length" :channels="salesChannels.channels.value" @edit="openChannel" @remove="onChannelRemoved" />
-                <EmptyState v-else>{{ t('settings.channels.empty') }}</EmptyState>
-            </BaseCard>
             <BaseCard :title="t('settings.references.title')">
                 <p class="settings-page__intro">{{ t('settings.references.intro') }}</p>
                 <ReferenceFormats :formats="references.formats.value" @edit="openFormat" />
@@ -198,17 +160,6 @@ onMounted(async () => {
             :update="services.update"
             @saved="onSaved"
         />
-        <BaseModal v-model:open="channelModalOpen" :title="editingChannel ? t('settings.channels.editTitle', { name: editingChannel.name }) : t('settings.channels.add')">
-            <SalesChannelForm
-                v-if="channelModalOpen"
-                :key="editingChannel?.id ?? 'new'"
-                :channel="editingChannel"
-                :services="services.services.value"
-                :submit="saveChannel"
-                @saved="onChannelSaved"
-                @cancel="channelModalOpen = false"
-            />
-        </BaseModal>
         <BaseModal v-model:open="formatModalOpen" :title="t('settings.references.edit', { kind: formatKind })">
             <ReferenceFormatForm
                 v-if="editingFormat"

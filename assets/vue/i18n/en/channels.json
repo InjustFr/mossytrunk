@@ -1,0 +1,72 @@
+{
+    "title": "Sales channels",
+    "add": "Add a channel",
+    "intro": "Each channel has its prices. The main channel carries the products' selling price; another channel without its own price follows it. A market channel only has orders placed during an event. Linked to a service, a channel prices the imported sales and the exported catalogue.",
+    "empty": "No channel.",
+    "linkedTo": "Linked to {service}",
+    "notLinked": "Not linked to a service",
+    "edit": "Edit {name}",
+    "editTitle": "Edit {name}",
+    "remove": "Delete {name}",
+    "removeMessage": "Its prices are forgotten: products keep their selling price. Past orders do not change.",
+    "name": "Name",
+    "namePlaceholder": "E.g. Etsy shop",
+    "service": "Linked service",
+    "noService": "None",
+    "serviceHint": "Sales imported from this service are counted at its prices.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Add the channel",
+    "created": "Channel “{name}” added.",
+    "updated": "Channel “{name}” updated.",
+    "removed": "Channel “{name}” deleted.",
+    "kind": "Kind",
+    "kinds": {
+        "market": "Market",
+        "online": "Online"
+    },
+    "kindHints": {
+        "market": "Its orders always have an event.",
+        "online": "Sales outside events (online shop…)."
+    },
+    "mainHint": "Main channel: its prices are the products' selling prices.",
+    "main": "Main channel",
+    "columns": {
+        "name": "Channel",
+        "kind": "Kind",
+        "service": "Service"
+    },
+    "open": "Open {name}",
+    "detail": {
+        "back": "Sales channels",
+        "fallbackTitle": "Sales channel",
+        "edit": "Edit",
+        "settings": "Settings",
+        "kind": "Kind",
+        "service": "Linked service"
+    },
+    "prices": {
+        "title": "Prices",
+        "intro": "Without its own price, a product follows its {main} price.",
+        "mainIntro": "This channel's prices are the products' selling prices.",
+        "search": "Search a product",
+        "product": "Product",
+        "mainPrice": "{main} price",
+        "price": "{channel} price",
+        "follows": "Follows the {main} price",
+        "edit": "Edit the price of {name}",
+        "editTitle": "Price of {name} on {channel}",
+        "amount": "Price",
+        "follow": "Follow the {main} price",
+        "save": "Save",
+        "cancel": "Cancel",
+        "saved": "Price of {name} saved.",
+        "batch": "Edit the shown prices",
+        "batchTitle": "Edit the prices of {channel}",
+        "batchIntro": "Changes the price on this channel of the shown product. | Changes the price on this channel of the {count} shown products.",
+        "apply": "Apply to {count} product | Apply to {count} products",
+        "batchSaved": "{count} product updated. | {count} products updated.",
+        "empty": "No product.",
+        "actions": "Actions"
+    }
+}

@@ -57,7 +57,9 @@
         "stock": "Réserve",
         "movements": "Mouvements",
         "design": "Design",
-        "channelPrices": "Prix par canal"
+        "channelPrices": "Prix par canal",
+        "mainPrice": "Prix {channel} (canal principal)",
+        "editChannelPrice": "Modifier le prix {channel}"
     },
     "filters": {
         "all": "Tous",
@@ -96,7 +98,7 @@
         "archive": "Archiver {name}",
         "restore": "Désarchiver {name}",
         "typeArchived": "Type archivé",
-        "followsSellingPrice": "Suit le prix de vente"
+        "followsSellingPrice": "Suit le prix {channel}"
     },
     "form": {
         "type": "Type",
@@ -115,7 +117,8 @@
         "more": "Référence et stock",
         "lowStockSummary": "alerte à {threshold}",
         "channelPrice": "Prix {channel}",
-        "channelPriceHint": "Vide : suit le prix de vente."
+        "channelPriceHint": "Vide : suit le prix {channel}.",
+        "mainPrice": "Prix {channel} (canal principal)"
     },
     "batch": {
         "intro": "S'applique au {count} produit sélectionné ; ce qui reste vide ne change pas. | S'applique aux {count} produits sélectionnés ; ce qui reste vide ne change pas.",

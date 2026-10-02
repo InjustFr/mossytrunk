@@ -6,7 +6,7 @@ import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
-import ServiceOptions from './ServiceOptions.vue';
+import ServiceOptions from '../settings/ServiceOptions.vue';
 
 const props = defineProps({
     channel: { type: Object, default: null },
@@ -17,13 +17,13 @@ const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
 const NONE = '__none__';
-const KINDS = ['market', 'online'].map((kind) => ({ value: kind, label: `settings.channels.kinds.${kind}`, description: `settings.channels.kindHints.${kind}` }));
+const KINDS = ['market', 'online'].map((kind) => ({ value: kind, label: `channels.kinds.${kind}`, description: `channels.kindHints.${kind}` }));
 const form = reactive({ name: props.channel?.name ?? '', kind: props.channel?.kind ?? 'online', service: props.channel?.service ?? NONE });
 const errors = ref({});
 const saving = ref(false);
 
 const serviceOptions = computed(() => [
-    { value: NONE, label: t('settings.channels.noService') },
+    { value: NONE, label: t('channels.noService') },
     ...props.services.map((service) => ({ value: service.key, label: service.label })),
 ]);
 
@@ -46,19 +46,19 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="sales-channel-form__error" role="alert">{{ errors.form }}</p>
             <FormSection>
-                <FormField :label="t('settings.channels.name')" :error="errors.name">
-                    <input v-model="form.name" type="text" required maxlength="100" :placeholder="t('settings.channels.namePlaceholder')">
+                <FormField :label="t('channels.name')" :error="errors.name">
+                    <input v-model="form.name" type="text" required maxlength="100" :placeholder="t('channels.namePlaceholder')">
                 </FormField>
-                <FormField as="group" :label="t('settings.channels.kind')" :error="errors.kind">
-                    <ServiceOptions v-model="form.kind" :options="KINDS" :label="t('settings.channels.kind')" />
+                <FormField as="group" :label="t('channels.kind')" :error="errors.kind">
+                    <ServiceOptions v-model="form.kind" :options="KINDS" :label="t('channels.kind')" />
                 </FormField>
-                <FormField as="group" :label="t('settings.channels.service')" :error="errors.service" :hint="t('settings.channels.serviceHint')">
-                    <BaseSelect v-model="form.service" :options="serviceOptions" :aria-label="t('settings.channels.service')" />
+                <FormField as="group" :label="t('channels.service')" :error="errors.service" :hint="t('channels.serviceHint')">
+                    <BaseSelect v-model="form.service" :options="serviceOptions" :aria-label="t('channels.service')" />
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('settings.channels.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t(channel ? 'settings.channels.save' : 'settings.channels.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('channels.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t(channel ? 'channels.save' : 'channels.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>
