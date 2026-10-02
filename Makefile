@@ -8,9 +8,9 @@ CONSOLE = $(PHP) php bin/console
 IMAGE ?= docker.io/injust/mossytrunk
 TAG ?= $(shell git rev-parse --short=7 HEAD)
 PLATFORM ?= linux/amd64
-DEPLOY_HOST ?=
-DEPLOY_DIR ?= mossytrunk
-REMOTE_DOCKER ?= docker
+DEPLOY_HOST ?= debian@duprat.cloud
+DEPLOY_DIR ?= /mnt/mossytrunk
+REMOTE_DOCKER ?= sudo -n docker
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
 .PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e qa ci image push deploy deploy-files
@@ -97,14 +97,9 @@ deploy-files: ## Copy deploy/ (compose, env template, README) to DEPLOY_HOST:DEP
 	ssh $(DEPLOY_HOST) 'mkdir -p $(DEPLOY_DIR)'
 	scp deploy/compose.yaml deploy/.env.dist deploy/README.md $(DEPLOY_HOST):$(DEPLOY_DIR)/
 
-deploy: ## Run IMAGE:TAG (published by CI) on DEPLOY_HOST: write them to .env, pull, restart
-	@test -n "$(DEPLOY_HOST)" || { echo "Set DEPLOY_HOST=user@server"; exit 1; }
-	@docker manifest inspect $(IMAGE):$(TAG) >/dev/null 2>&1 || { echo "$(IMAGE):$(TAG) is not published: CI only publishes it once the full test suite passes (still running, or failed?)"; exit 1; }
+deploy: ## Run IMAGE:TAG (published by CI) on DEPLOY_HOST: set TAG in its .env, pull, restart
+	@curl -sf -o /dev/null https://hub.docker.com/v2/repositories/$(patsubst docker.io/%,%,$(IMAGE))/tags/$(TAG) || { echo "$(IMAGE):$(TAG) is not published: CI only publishes it once the full test suite passes (still running, or failed?)"; exit 1; }
 	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
-		test -f .env || { echo "Create $(DEPLOY_DIR)/.env from .env.dist first (see README.md)"; exit 1; }; \
-		for pair in IMAGE=$(IMAGE) TAG=$(TAG); do \
-			key=$${pair%%=*}; \
-			if grep -q "^$$key=" .env; then sed -i "s|^$$key=.*|$$pair|" .env; else echo "$$pair" >> .env; fi; \
-		done; \
+		sed -i "s|^IMAGE=.*|IMAGE=$(IMAGE)|; s|^TAG=.*|TAG=$(TAG)|" .env; \
 		$(REMOTE_DOCKER) compose pull app; \
 		$(REMOTE_DOCKER) compose up -d'

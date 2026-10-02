@@ -36,7 +36,7 @@ make cs / make cs-fix # PHP-CS-Fixer (@Symfony + declare(strict_types=1) in ever
 make phpstan         # PHPStan level 10 (phpstan.dist.neon, Symfony/Doctrine/PHPUnit extensions) — keep it at 0 errors
 make e2e             # builds assets into public/build-e2e (ASSETS_DIR, so the dev watcher's public/build is untouched), boots php-e2e (APP_ENV=test, fake SumUp/Etsy gateways), runs Playwright
 docker compose exec php php bin/console …
-make deploy DEPLOY_HOST=user@server DEPLOY_DIR=…   # run the current commit's image (published by CI) on the server; make push = manual push after `make qa`; `make deploy` refuses a commit whose image CI did not publish
+make deploy          # run the current commit's image (published by CI) on the server (defaults: debian@duprat.cloud:/mnt/mossytrunk, sudo docker; override DEPLOY_HOST/DEPLOY_DIR/REMOTE_DOCKER); make push = manual push after `make qa`; `make deploy` refuses a commit whose image CI did not publish
 ```
 Host port overridable with `HTTP_PORT`. Postgres exposed on `5433` (compose.override.yaml).
 

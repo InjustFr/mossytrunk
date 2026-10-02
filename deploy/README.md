@@ -87,7 +87,7 @@ Every push to `main` runs the full test suite (`make ci`) and, only if it passes
 From a dev machine, once the Actions run for the commit is green:
 
 ```bash
-make deploy DEPLOY_HOST=user@server DEPLOY_DIR=/path/to/mossytrunk      # add REMOTE_DOCKER="sudo -n docker" when docker needs sudo
+make deploy      # defaults to DEPLOY_HOST=debian@duprat.cloud DEPLOY_DIR=/mnt/mossytrunk REMOTE_DOCKER="sudo -n docker"; override them for another server
 ```
 
 It writes `IMAGE` and `TAG` (the current commit, override with `TAG=<sha>`) into the server `.env`, pulls the image and restarts the app. By hand on the server:
