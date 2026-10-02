@@ -6,6 +6,7 @@ namespace App\Application\Sales;
 
 use App\Application\Integration\Connectors;
 use App\Domain\Product\Product;
+use App\Domain\Sales\ChannelCost;
 use App\Domain\Sales\SalesChannel;
 
 final readonly class ChannelViews
@@ -24,6 +25,7 @@ final readonly class ChannelViews
             $channel->kind()->value,
             $channel->isMain(),
             array_map(static fn (Product $supply): array => ['id' => (string) $supply->id(), 'name' => $supply->displayName(), 'variants' => $supply->variants()], $channel->supplies()),
+            array_map(static fn (ChannelCost $cost): array => ['id' => (string) $cost->id(), 'label' => $cost->label(), 'kind' => $cost->kind()->value, 'amount' => $cost->amount()], $channel->costs()),
         );
     }
 }

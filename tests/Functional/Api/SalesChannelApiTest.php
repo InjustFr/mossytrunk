@@ -21,7 +21,7 @@ final class SalesChannelApiTest extends WebTestCase
         $etsy = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
         $client->jsonRequest('GET', '/api/sales-channels');
         $channels = Json::decode((string) $client->getResponse()->getContent());
-        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => 'etsy', 'serviceLabel' => 'Etsy', 'kind' => 'online', 'main' => false, 'supplies' => []], Json::at($channels, 1));
+        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => 'etsy', 'serviceLabel' => 'Etsy', 'kind' => 'online', 'main' => false, 'supplies' => [], 'costs' => []], Json::at($channels, 1));
         self::assertSame(['Marchés', 'market', true], [Json::at($channels, 0, 'name'), Json::at($channels, 0, 'kind'), Json::at($channels, 0, 'main')]);
 
         $type = ProductTypesApi::create($client);
@@ -55,7 +55,7 @@ final class SalesChannelApiTest extends WebTestCase
         $client->jsonRequest('POST', '/api/sales-channels', ['name' => 'Etsy']);
         $etsy = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
         $client->jsonRequest('GET', "/api/sales-channels/$etsy");
-        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => null, 'serviceLabel' => null, 'kind' => 'online', 'main' => false, 'supplies' => []], Json::decode((string) $client->getResponse()->getContent()));
+        self::assertSame(['id' => $etsy, 'name' => 'Etsy', 'service' => null, 'serviceLabel' => null, 'kind' => 'online', 'main' => false, 'supplies' => [], 'costs' => []], Json::decode((string) $client->getResponse()->getContent()));
         $client->jsonRequest('GET', '/api/sales-channels');
         $main = Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'id');
 
@@ -75,6 +75,44 @@ final class SalesChannelApiTest extends WebTestCase
         $client->jsonRequest('PUT', "/api/products/$foret/channel-prices/$etsy", ['price' => null]);
         $client->jsonRequest('GET', "/api/products/$foret");
         self::assertSame([], Json::at(Json::decode((string) $client->getResponse()->getContent()), 'product', 'channelPrices'));
+    }
+
+    public function testAChannelChargesItsCostsOnEachOrderAndAnOrderPaysItsPostage(): void
+    {
+        $client = self::signedInClient();
+        $client->jsonRequest('GET', '/api/sales-channels');
+        $main = Json::string(Json::decode((string) $client->getResponse()->getContent()), 0, 'id');
+        $client->jsonRequest('POST', "/api/sales-channels/$main/costs", ['label' => 'Commission', 'kind' => 'percent', 'amount' => 175]);
+        self::assertResponseStatusCodeSame(201);
+        $commission = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+        $client->jsonRequest('POST', "/api/sales-channels/$main/costs", ['label' => ' ', 'kind' => 'fixed', 'amount' => 10]);
+        self::assertResponseStatusCodeSame(422);
+        $client->jsonRequest('POST', "/api/sales-channels/$main/costs", ['label' => 'Sac', 'kind' => 'gift', 'amount' => 10]);
+        self::assertResponseStatusCodeSame(422);
+
+        $client->jsonRequest('POST', '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
+        $client->jsonRequest('POST', '/api/products', ['name' => 'Forêt', 'sellingPrice' => 2_000, 'typeId' => ProductTypesApi::create($client)]);
+        $product = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+        $client->jsonRequest('POST', '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'variant' => null, 'quantity' => 1]]]);
+        $order = Json::string(Json::decode((string) $client->getResponse()->getContent()), 'id');
+
+        $client->jsonRequest('PUT', "/api/sales-channels/$main/costs/$commission", ['label' => 'Commission SumUp', 'kind' => 'percent', 'amount' => 200]);
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('PUT', "/api/orders/$order/postage", ['postage' => 150]);
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', "/api/orders/$order");
+        $view = Json::decode((string) $client->getResponse()->getContent());
+        self::assertSame([[['label' => 'Commission', 'amount' => 35]], 150, 185], [Json::at($view, 'charges'), Json::at($view, 'postage'), Json::at($view, 'channelCosts')]);
+
+        $client->jsonRequest('POST', '/api/orders/charges', ['orderIds' => [$order]]);
+        self::assertSame(['updated' => 1], Json::decode((string) $client->getResponse()->getContent()));
+        $client->jsonRequest('GET', "/api/orders/$order");
+        self::assertSame([['label' => 'Commission SumUp', 'amount' => 40]], Json::at(Json::decode((string) $client->getResponse()->getContent()), 'charges'));
+
+        $client->jsonRequest('GET', "/api/sales-channels/$main");
+        self::assertSame([['id' => $commission, 'label' => 'Commission SumUp', 'kind' => 'percent', 'amount' => 200]], Json::at(Json::decode((string) $client->getResponse()->getContent()), 'costs'));
+        $client->jsonRequest('DELETE', "/api/sales-channels/$main/costs/$commission");
+        self::assertResponseStatusCodeSame(204);
     }
 
     public function testAChannelNeedsANameAndAFreeService(): void

@@ -15,8 +15,9 @@ export function useOrders() {
     const place = (payload) => api.post('/api/orders', payload);
     const removeSelected = (orderIds) => api.post('/api/orders/deletion', { orderIds });
     const addSupplies = (orderIds, payload) => api.post('/api/orders/supplies', { orderIds, ...payload });
+    const recomputeCharges = (orderIds) => api.post('/api/orders/charges', { orderIds });
 
-    return { orders, eventFilter, load, place, removeSelected, addSupplies };
+    return { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges };
 }
 
 export function useOrder(orderId) {
@@ -35,5 +36,7 @@ export function useOrder(orderId) {
     const addSupply = (payload) => api.post('/api/orders/supplies', { orderIds: [orderId], ...payload });
     const removeSupply = (supplyLineId) => api.del(`/api/orders/${orderId}/supplies/${supplyLineId}`);
 
-    return { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply };
+    const stamp = (payload) => api.put(`/api/orders/${orderId}/postage`, payload);
+
+    return { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply, stamp };
 }

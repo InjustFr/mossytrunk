@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
+import { ArrowLeft, Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -8,6 +8,8 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import ChannelCostForm from '../components/channels/ChannelCostForm.vue';
+import ChannelCosts from '../components/channels/ChannelCosts.vue';
 import ChannelBatchPriceForm from '../components/channels/ChannelBatchPriceForm.vue';
 import ChannelPriceForm from '../components/channels/ChannelPriceForm.vue';
 import ChannelPrices from '../components/channels/ChannelPrices.vue';
@@ -68,6 +70,28 @@ async function onRemoved() {
     }
 }
 
+const editingCost = ref(null);
+const costOpen = ref(false);
+
+function openCost(cost) {
+    editingCost.value = cost;
+    costOpen.value = true;
+}
+
+const saveCost = (payload) => (editingCost.value ? salesChannels.reviseCost(props.channelId, editingCost.value.id, payload) : salesChannels.addCost(props.channelId, payload));
+
+async function onCostSaved(label) {
+    costOpen.value = false;
+    toast.success(t(editingCost.value ? 'channels.costs.updated' : 'channels.costs.added', { label }));
+    await loadChannel();
+}
+
+async function onCostRemoved(cost) {
+    await salesChannels.removeCost(props.channelId, cost.id);
+    toast.success(t('channels.costs.removed', { label: cost.label }));
+    await loadChannel();
+}
+
 async function onSuppliesChanged(supplyIds) {
     try {
         await salesChannels.offerSupplies(props.channelId, supplyIds);
@@ -120,6 +144,14 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                 <div><dt>{{ t('channels.detail.service') }}</dt><dd>{{ channel.serviceLabel ?? t('channels.noService') }}</dd></div>
             </dl>
 
+            <BaseCard :title="t('channels.costs.title')">
+                <template #actions>
+                    <BaseButton variant="secondary" @click="openCost(null)"><Plus size="1rem" aria-hidden="true" /> {{ t('channels.costs.add') }}</BaseButton>
+                </template>
+                <p class="channel-page__intro">{{ t('channels.costs.intro') }}</p>
+                <ChannelCosts :costs="channel.costs" @edit="openCost" @remove="onCostRemoved" />
+            </BaseCard>
+
             <BaseCard :title="t('channels.supplies.title')">
                 <p class="channel-page__intro">{{ t('channels.supplies.intro') }}</p>
                 <ChannelSupplies :supplies="activeSupplies" :offered="channel.supplies" @change="onSuppliesChanged" />
@@ -144,6 +176,9 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                 @saved="onSaved"
                 @cancel="editOpen = false"
             />
+        </BaseModal>
+        <BaseModal v-model:open="costOpen" :title="editingCost ? t('channels.costs.editTitle') : t('channels.costs.add')">
+            <ChannelCostForm v-if="costOpen" :key="editingCost?.id ?? 'new'" :cost="editingCost" :submit="saveCost" @saved="onCostSaved" @cancel="costOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="priceOpen" :title="t('channels.prices.editTitle', { name: pricing?.displayName ?? '', channel: channel?.name ?? '' })">
             <ChannelPriceForm

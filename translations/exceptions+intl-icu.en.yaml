@@ -65,6 +65,7 @@ integration:
     service_already_added: '{service} is already added.'
     unknown_service: 'Unknown service “{service}”.'
 order:
+    negative_postage: 'Postage cannot be negative.'
     several_channels: 'The chosen orders are on several channels: choose orders of a single channel.'
     supply_not_on_channel: '“{supply}” is not a supply of the channel of order {reference}.'
     not_mergeable: 'These orders cannot be merged: {reason, select, same_order {it is the same order} different_event {they are not from the same event} different_source {they do not come from the same source} refunded {one of them is refunded} other {{reason}}}.'
@@ -124,6 +125,7 @@ reference:
     token_without_size: '"{token}" takes no size.'
     unknown_token: '"{token}" is not a tag available here.'
 sales:
+    empty_cost_label: 'The cost needs a name.'
     not_a_supply: '“{product}” is not a supply.'
     channel_has_orders_without_event: '“{channel}” has {count, plural, one {# order} other {# orders}} without an event: a market channel accepts none.'
     channel_name_taken: 'The channel “{name}” already exists.'
@@ -134,7 +136,7 @@ sales:
     unknown_service: 'Unknown service “{service}”.'
 shared:
     date_range_ends_before_start: 'The end date must be on or after the start date.'
-    negative_amount: '{subject, select, price {The price} paid_price {The price paid} selling_price {The selling price} buying_price {The buying price} overall_discount {The overall discount} delivery_cost {The delivery cost} other {The amount}} cannot be negative.'
+    negative_amount: '{subject, select, price {The price} paid_price {The price paid} selling_price {The selling price} buying_price {The buying price} overall_discount {The overall discount} delivery_cost {The delivery cost} channel_cost {A channel cost} other {The amount}} cannot be negative.'
     non_positive_amount: '{subject, select, price {The price} discount {The discount} expense_amount {The expense amount} other {The amount}} must be greater than zero.'
     not_found: '{subject, select, external_item {Item} order {Order} supplier_order {Supplier order} product {Product} product_type {Product type} price {Price} discount {Discount} supplier {Supplier} stock_check {Stock check} stock_check_line {Stock check line} design {Design} adaptation {Adaptation} template {Template} collection {Collection} sales_channel {Sales channel} event {Event} workspace {Workspace} user {User} service {Service} other {Item}} not found ({id}).'
 stock:

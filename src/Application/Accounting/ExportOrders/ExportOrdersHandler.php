@@ -16,7 +16,7 @@ use App\Domain\Shared\Money;
 
 final readonly class ExportOrdersHandler
 {
-    private const array COLUMNS = ['reference', 'externalReferences', 'date', 'time', 'source', 'event', 'payment', 'items', 'detail', 'subtotal', 'discounts', 'shipping', 'total', 'cost', 'margin'];
+    private const array COLUMNS = ['reference', 'externalReferences', 'date', 'time', 'source', 'event', 'payment', 'items', 'detail', 'subtotal', 'discounts', 'shipping', 'total', 'cost', 'supplies', 'channelCosts', 'margin'];
 
     public function __construct(
         private OrderRepository $orders,
@@ -54,7 +54,9 @@ final readonly class ExportOrdersHandler
                 self::amount($order->shipping()),
                 self::amount($order->total()),
                 self::amount($order->costOfGoods()),
-                self::amount($order->total()->subtract($order->costOfGoods())),
+                self::amount($order->suppliesCost()),
+                self::amount($order->channelCosts()),
+                self::amount($order->total()->subtract($order->costOfGoods())->subtract($order->suppliesCost())->subtract($order->channelCosts())),
             ];
         }
 

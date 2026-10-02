@@ -74,5 +74,29 @@
         "intro": "The supplies that can be added to this channel's orders (sleeves, envelopes…). They are taken from stock.",
         "none": "No supply: create some in Products › Supplies.",
         "saved": "Channel supplies saved."
+    },
+    "costs": {
+        "title": "Costs per order",
+        "intro": "Taxes, fees and fixed costs paid on each order of this channel. They are computed when the order is created; postage is typed on each order.",
+        "empty": "No cost.",
+        "add": "Add a cost",
+        "edit": "Edit {label}",
+        "editTitle": "Edit the cost",
+        "remove": "Delete {label}",
+        "removeMessage": "Past orders keep their costs, unless you recompute them.",
+        "label": "Name",
+        "labelPlaceholder": "E.g. Etsy fee",
+        "kind": "Amount",
+        "kinds": {
+            "fixed": "€ per order",
+            "percent": "% of the order"
+        },
+        "amount": "Amount",
+        "cancel": "Cancel",
+        "save": "Save",
+        "added": "Cost “{label}” added.",
+        "updated": "Cost “{label}” updated.",
+        "removed": "Cost “{label}” deleted.",
+        "summary": "Costs: {costs}"
     }
 }

@@ -9,6 +9,7 @@ use App\Domain\Event\Event;
 use App\Domain\Identity\Workspace;
 use App\Domain\Order\Exception\DiscountExceedsSubtotal;
 use App\Domain\Order\Exception\EmptyOrder;
+use App\Domain\Order\Exception\NegativePostage;
 use App\Domain\Order\Exception\NegativeShippingCost;
 use App\Domain\Order\Exception\OrderAlreadyRefunded;
 use App\Domain\Order\Exception\OrderOutsideEvent;
@@ -19,6 +20,7 @@ use App\Domain\Product\SellableItem;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
+use App\Domain\Sales\OrderCharge;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
@@ -93,6 +95,13 @@ class Order implements Referenced
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $refundedAt = null;
 
+    /** @var list<array{label: string, amount: int}> */
+    #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
+    private array $channelCharges = [];
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'postage_')]
+    private Money $postage;
+
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts
@@ -115,6 +124,7 @@ class Order implements Referenced
         $this->channel = $channel;
         $this->workspace = $workspace;
         $this->shipping = Money::zero();
+        $this->postage = Money::zero();
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
@@ -126,6 +136,7 @@ class Order implements Referenced
         }
 
         $this->applyDiscounts($discounts);
+        $this->chargeChannelCosts();
     }
 
     /**
@@ -156,6 +167,7 @@ class Order implements Referenced
         if ($gap->isPositive()) {
             $order->applyDiscounts(self::importDiscounts($gap, $ruleDiscounts, $discountLabel));
         }
+        $order->chargeChannelCosts();
 
         return $order;
     }
@@ -303,6 +315,40 @@ class Order implements Referenced
         $this->shipping = $this->shipping->add($other->shipping);
         $this->placedAt = min($this->placedAt, $other->placedAt);
         $this->paymentMethod = PaymentMethod::combined($this->paymentMethod, $other->paymentMethod);
+        $this->postage = $this->postage->add($other->postage);
+        $this->chargeChannelCosts();
+    }
+
+    public function chargeChannelCosts(): void
+    {
+        $this->channelCharges = null === $this->channel ? [] : array_map(static fn (OrderCharge $charge): array => $charge->toArray(), $this->channel->chargesOn($this->total()));
+    }
+
+    /**
+     * @return list<OrderCharge>
+     */
+    public function channelCharges(): array
+    {
+        return array_map(OrderCharge::fromArray(...), $this->channelCharges);
+    }
+
+    public function stamp(Money $postage): void
+    {
+        if ($postage->isNegative()) {
+            throw new NegativePostage();
+        }
+
+        $this->postage = $postage;
+    }
+
+    public function postage(): Money
+    {
+        return $this->postage;
+    }
+
+    public function channelCosts(): Money
+    {
+        return Money::sum(array_map(static fn (OrderCharge $charge): Money => $charge->amount, $this->channelCharges()))->add($this->postage);
     }
 
     private function lineTwinOf(OrderLine $line): ?OrderLine

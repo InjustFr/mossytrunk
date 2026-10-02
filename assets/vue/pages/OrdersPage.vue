@@ -24,7 +24,7 @@ import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useToast } from '../composables/useToast.js';
 
-const { orders, eventFilter, load, place, removeSelected, addSupplies } = useOrders();
+const { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges } = useOrders();
 const { channels, load: loadChannels } = useSalesChannels();
 const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
 const { articles: products, load: loadProducts } = useProducts();
@@ -59,6 +59,13 @@ const supplyBlocker = computed(() => {
     if (checkedChannel.value.supplies.length === 0) return t('orders.supplies.noneOnChannel', { channel: checkedChannel.value.name });
     return null;
 });
+
+async function recomputeChecked() {
+    const { updated } = await recomputeCharges(checkedIds.value);
+    toast.success(t('orders.selection.recomputed', updated));
+    checkedIds.value = [];
+    await load();
+}
 
 async function onSuppliesAdded(count) {
     supplyOpen.value = false;
@@ -141,6 +148,7 @@ onMounted(async () => {
             <OrderList v-model:checked-ids="checkedIds" :orders="visible" :filtered="filtering" :highlight-id="lastPlacedId" />
         </BaseCard>
         <SelectionBar :count="checkedIds.length" :summary="t('orders.selection.count', checkedIds.length)" @clear="checkedIds = []">
+            <BaseButton variant="secondary" @click="recomputeChecked">{{ t('orders.selection.recompute') }}</BaseButton>
             <BaseButton variant="secondary" :disabled="supplyBlocker !== null" :title="supplyBlocker" @click="supplyOpen = true">{{ t('orders.selection.addSupply') }}</BaseButton>
             <ConfirmButton
                 variant="danger"

@@ -19,7 +19,9 @@
         "turnover": "Chiffre d'affaires",
         "costOfGoods": "Coût d'achat",
         "expenses": "Dépenses",
-        "urssafRate": "12,8 %"
+        "urssafRate": "12,8 %",
+        "supplies": "Fournitures",
+        "channelCosts": "Frais des canaux"
     },
     "summary": "{orders} sur {events}",
     "orderCount": "{count} commande | {count} commandes",
@@ -56,6 +58,7 @@
         "result": "Résultat",
         "total": "Total",
         "hideEmpty": "Masquer les mois sans activité",
-        "showAll": "Afficher les {count} mois"
+        "showAll": "Afficher les {count} mois",
+        "sellingCosts": "Frais de vente"
     }
 }

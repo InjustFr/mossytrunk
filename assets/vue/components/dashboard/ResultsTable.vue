@@ -30,6 +30,7 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
                     <th class="data-table__cell--number">{{ t('dashboard.table.orders') }}</th>
                     <th class="data-table__cell--number">{{ t('dashboard.table.turnover') }}</th>
                     <th class="data-table__cell--number">{{ t('dashboard.table.costOfGoods') }}</th>
+                    <th class="data-table__cell--number">{{ t('dashboard.table.sellingCosts') }}</th>
                     <th class="data-table__cell--number">{{ t('dashboard.table.expenses') }}</th>
                     <th class="data-table__cell--number">{{ t('dashboard.table.urssaf') }}</th>
                     <th class="data-table__cell--number">{{ t('dashboard.table.result') }}</th>
@@ -41,6 +42,7 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
                     <td class="data-table__cell--number">{{ row.orderCount }}</td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="row.turnover" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="row.costOfGoods" /></td>
+                    <td class="data-table__cell--number"><MoneyAmount :cents="row.supplies + row.channelCosts" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="row.expenses" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="row.urssaf" /></td>
                     <td class="data-table__cell--number results-table__result"><MoneyAmount :cents="row.result" signed /></td>
@@ -52,6 +54,7 @@ const visibleRows = computed(() => (props.collapsible && !showAll.value ? props.
                     <td class="data-table__cell--number">{{ total.orderCount }}</td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.turnover" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.costOfGoods" /></td>
+                    <td class="data-table__cell--number"><MoneyAmount :cents="total.supplies + total.channelCosts" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.expenses" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.urssaf" /></td>
                     <td class="data-table__cell--number"><MoneyAmount :cents="total.result" signed /></td>

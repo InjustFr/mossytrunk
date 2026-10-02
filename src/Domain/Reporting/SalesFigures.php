@@ -11,7 +11,7 @@ use App\Domain\Shared\Money;
  * Profitability figures of a set of orders and expenses (an event, a month, a year):
  *   turnover = gross sales − discounts + shipping charged
  *   URSSAF   = 12.8 % × turnover
- *   result   = turnover − cost of goods − expenses − URSSAF
+ *   result   = turnover − cost of goods − supplies − channel costs − expenses − URSSAF
  */
 final readonly class SalesFigures
 {
@@ -22,6 +22,8 @@ final readonly class SalesFigures
         public Money $shipping,
         public Money $turnover,
         public Money $costOfGoods,
+        public Money $supplies,
+        public Money $channelCosts,
         public Money $expenses,
         public Money $urssaf,
         public Money $result,
@@ -38,6 +40,8 @@ final readonly class SalesFigures
         $shipping = Money::sum(array_map(static fn (Order $order): Money => $order->shipping(), $orders));
         $turnover = $grossSales->subtract($discounts)->add($shipping);
         $costOfGoods = Money::sum(array_map(static fn (Order $order): Money => $order->costOfGoods(), $orders));
+        $supplies = Money::sum(array_map(static fn (Order $order): Money => $order->suppliesCost(), $orders));
+        $channelCosts = Money::sum(array_map(static fn (Order $order): Money => $order->channelCosts(), $orders));
         $urssaf = UrssafContribution::on($turnover);
 
         return new self(
@@ -47,9 +51,11 @@ final readonly class SalesFigures
             $shipping,
             $turnover,
             $costOfGoods,
+            $supplies,
+            $channelCosts,
             $expenses,
             $urssaf,
-            $turnover->subtract($costOfGoods)->subtract($expenses)->subtract($urssaf),
+            $turnover->subtract($costOfGoods)->subtract($supplies)->subtract($channelCosts)->subtract($expenses)->subtract($urssaf),
         );
     }
 
@@ -70,6 +76,8 @@ final readonly class SalesFigures
             $this->shipping->add($other->shipping),
             $this->turnover->add($other->turnover),
             $this->costOfGoods->add($other->costOfGoods),
+            $this->supplies->add($other->supplies),
+            $this->channelCosts->add($other->channelCosts),
             $this->expenses->add($other->expenses),
             $this->urssaf->add($other->urssaf),
             $this->result->add($other->result),
@@ -77,7 +85,7 @@ final readonly class SalesFigures
     }
 
     /**
-     * @return array{orderCount: int, grossSales: int, discounts: int, shipping: int, turnover: int, costOfGoods: int, expenses: int, urssaf: int, result: int}
+     * @return array{orderCount: int, grossSales: int, discounts: int, shipping: int, turnover: int, costOfGoods: int, supplies: int, channelCosts: int, expenses: int, urssaf: int, result: int}
      */
     public function toArray(): array
     {
@@ -88,6 +96,8 @@ final readonly class SalesFigures
             'shipping' => $this->shipping->amount(),
             'turnover' => $this->turnover->amount(),
             'costOfGoods' => $this->costOfGoods->amount(),
+            'supplies' => $this->supplies->amount(),
+            'channelCosts' => $this->channelCosts->amount(),
             'expenses' => $this->expenses->amount(),
             'urssaf' => $this->urssaf->amount(),
             'result' => $this->result->amount(),

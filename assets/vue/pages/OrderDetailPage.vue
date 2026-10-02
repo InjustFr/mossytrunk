@@ -12,6 +12,7 @@ import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import OrderLines from '../components/orders/OrderLines.vue';
 import OrderTotals from '../components/orders/OrderTotals.vue';
 import OrderMargin from '../components/orders/OrderMargin.vue';
+import PostageForm from '../components/orders/PostageForm.vue';
 import OrderSupplies from '../components/orders/OrderSupplies.vue';
 import SupplyForm from '../components/orders/SupplyForm.vue';
 import PaymentMethod from '../components/orders/PaymentMethod.vue';
@@ -29,7 +30,14 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply } = useOrder(props.orderId);
+const { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply, stamp } = useOrder(props.orderId);
+const postageOpen = ref(false);
+
+async function onPostageSaved() {
+    postageOpen.value = false;
+    toast.success(t('orders.postage.saved'));
+    await load();
+}
 const { channels, load: loadChannels } = useSalesChannels();
 const supplyOpen = ref(false);
 const channelSupplies = computed(() => channels.value.find((channel) => channel.id === order.value?.channelId)?.supplies ?? []);
@@ -127,12 +135,24 @@ onMounted(() => Promise.all([load(), loadProducts(), loadChannels()]));
                         </p>
                     </BaseCard>
                     <BaseCard :title="t('orders.detail.margin')">
-                        <OrderMargin :total="order.total" :cost-of-goods="order.costOfGoods" :supplies-cost="order.suppliesCost" :margin="order.margin" />
+                        <OrderMargin
+                            :total="order.total"
+                            :cost-of-goods="order.costOfGoods"
+                            :supplies-cost="order.suppliesCost"
+                            :charges="order.charges"
+                            :postage="order.postage"
+                            :postage-editable="order.channelId !== null"
+                            :margin="order.margin"
+                            @edit-postage="postageOpen = true"
+                        />
                     </BaseCard>
                 </div>
             </div>
         </div>
 
+        <BaseModal v-model:open="postageOpen" :title="t('orders.postage.title')">
+            <PostageForm v-if="postageOpen && order" :postage="order.postage" :submit="stamp" @saved="onPostageSaved" @cancel="postageOpen = false" />
+        </BaseModal>
         <BaseModal v-model:open="supplyOpen" :title="t('orders.supplies.add')">
             <SupplyForm v-if="supplyOpen" :supplies="channelSupplies" :submit="addSupply" @saved="onSupplyAdded" @cancel="supplyOpen = false" />
         </BaseModal>

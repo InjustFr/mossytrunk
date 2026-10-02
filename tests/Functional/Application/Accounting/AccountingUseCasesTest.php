@@ -92,7 +92,7 @@ final class AccountingUseCasesTest extends KernelTestCase
         self::assertSame('commandes-2026-07-01-au-2026-07-31.csv', $csv->filename);
         $lines = explode("\r\n", trim($csv->content));
         self::assertStringStartsWith("\u{FEFF}Référence;Réf. externes;Date;Heure;Source;Événement", $lines[0]);
-        self::assertMatchesRegularExpression('/^CMD-20260710-\w{6};;10\/07\/2026;15:00;Saisie;Japan Expo;;3;3 × Sticker;12,00;0,00;0,00;12,00;3,00;9,00$/', $lines[1]);
+        self::assertMatchesRegularExpression('/^CMD-20260710-\w{6};;10\/07\/2026;15:00;Saisie;Japan Expo;;3;3 × Sticker;12,00;0,00;0,00;12,00;3,00;0,00;0,00;9,00$/', $lines[1]);
     }
 
     public function testCsvExportFollowsTheLanguage(): void

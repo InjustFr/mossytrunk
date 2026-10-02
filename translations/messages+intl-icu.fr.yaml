@@ -44,6 +44,8 @@ export:
             shipping: 'Frais de port'
             total: 'Total encaissé'
             cost: 'Coût d''achat'
+            supplies: 'Fournitures'
+            channelCosts: 'Frais du canal'
             margin: 'Marge'
         payment:
             card: 'Carte'

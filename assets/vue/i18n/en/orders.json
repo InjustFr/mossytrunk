@@ -84,7 +84,8 @@
         "buyingCost": "Buying cost",
         "gross": "Gross margin",
         "note": "Before URSSAF contributions and event expenses.",
-        "supplies": "Supplies"
+        "supplies": "Supplies",
+        "postage": "Postage"
     },
     "totals": {
         "subtotal": "Subtotal",
@@ -124,7 +125,9 @@
         "confirmDelete": "Delete {count} order? | Delete {count} orders?",
         "deleteMessage": "For an order entered by mistake: it disappears along with its stock withdrawal. This cannot be undone. | For orders entered by mistake: they disappear along with their stock withdrawals. This cannot be undone.",
         "deleted": "{count} order deleted. | {count} orders deleted.",
-        "addSupply": "Add a supply"
+        "addSupply": "Add a supply",
+        "recompute": "Recompute channel costs",
+        "recomputed": "Costs recomputed for {count} order. | Costs recomputed for {count} orders."
     },
     "filters": {
         "searchLabel": "Search orders",
@@ -149,5 +152,14 @@
         "noChannel": "This order has no channel: it cannot have supplies.",
         "severalChannels": "Choose orders of a single channel to add them a supply.",
         "intro": "Adds the supply to {count} order of the {channel} channel, taken from stock. | Adds the supply to each of the {count} orders of the {channel} channel, taken from stock."
+    },
+    "postage": {
+        "edit": "Edit the postage",
+        "title": "Postage",
+        "amount": "Postage",
+        "hint": "What shipping cost (stamp, label…).",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saved": "Postage saved."
     }
 }

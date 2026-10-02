@@ -84,7 +84,8 @@
         "buyingCost": "Coût d'achat",
         "gross": "Marge brute",
         "note": "Avant cotisations URSSAF et dépenses de l'événement.",
-        "supplies": "Fournitures"
+        "supplies": "Fournitures",
+        "postage": "Affranchissement"
     },
     "totals": {
         "subtotal": "Sous-total",
@@ -124,7 +125,9 @@
         "confirmDelete": "Supprimer {count} commande ? | Supprimer {count} commandes ?",
         "deleteMessage": "Pour une commande saisie par erreur : elle disparaît, et sa sortie de stock aussi. Cette action est définitive. | Pour des commandes saisies par erreur : elles disparaissent, et leurs sorties de stock aussi. Cette action est définitive.",
         "deleted": "{count} commande supprimée. | {count} commandes supprimées.",
-        "addSupply": "Ajouter une fourniture"
+        "addSupply": "Ajouter une fourniture",
+        "recompute": "Recalculer les frais du canal",
+        "recomputed": "Frais recalculés pour {count} commande. | Frais recalculés pour {count} commandes."
     },
     "filters": {
         "searchLabel": "Rechercher une commande",
@@ -149,5 +152,14 @@
         "noChannel": "Cette commande n'a pas de canal : elle ne peut pas avoir de fourniture.",
         "severalChannels": "Choisissez des commandes d'un seul canal pour leur ajouter une fourniture.",
         "intro": "Ajoute la fourniture à {count} commande du canal {channel}, prise dans le stock. | Ajoute la fourniture à chacune des {count} commandes du canal {channel}, prise dans le stock."
+    },
+    "postage": {
+        "edit": "Modifier l'affranchissement",
+        "title": "Affranchissement",
+        "amount": "Affranchissement",
+        "hint": "Ce que l'envoi a coûté (timbre, étiquette…).",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "saved": "Affranchissement enregistré."
     }
 }

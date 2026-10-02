@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import IconButton from '../ui/IconButton.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
+import { costSummary } from '../../composables/useChannelCosts.js';
 
 const { t } = useI18n();
 
@@ -24,6 +25,7 @@ const emit = defineEmits(['edit', 'remove']);
                 </h3>
                 <p class="sales-channels__service">
                     {{ channel.serviceLabel ? t('channels.linkedTo', { service: channel.serviceLabel }) : t('channels.notLinked') }}
+                    <template v-if="channel.costs.length"> · {{ t('channels.costs.summary', { costs: costSummary(channel.costs) }) }}</template>
                 </p>
             </div>
             <div class="sales-channels__actions">

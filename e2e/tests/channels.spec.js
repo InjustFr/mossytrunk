@@ -112,3 +112,38 @@ test('a channel offers supplies that are added to its orders, one by one or in b
     await page.getByRole('group', { name: 'Fournitures' }).getByRole('button', { name: sleeveName }).click();
     await expect(page.getByTestId('toast').last()).toContainText('Fournitures du canal enregistrées.');
 });
+
+test('a channel charges its costs on each order, and an order gets its postage', async ({ page, request }) => {
+    const main = (await (await request.get('/api/sales-channels')).json()).find((channel) => channel.main);
+    const label = unique('Commission');
+
+    await page.goto(`/channels/${main.id}`);
+    const costs = page.getByRole('region', { name: 'Frais par commande' });
+    await costs.getByRole('button', { name: 'Ajouter un frais' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Ajouter un frais' });
+    await dialog.getByLabel('Nom').fill(label);
+    await dialog.getByRole('spinbutton').fill('10');
+    await dialog.getByRole('button', { name: 'Ajouter un frais' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText(`Frais « ${label} » ajouté.`);
+    await expect(costs).toContainText('10 %');
+
+    const event = await createEvent(request);
+    const print = await createProduct(request, { name: unique('Print'), sellingPrice: 1_500 });
+    const order = await (await request.post('/api/orders', { data: { placedAt: `${event.startDate}T10:00`, lines: [{ productId: print.id, variant: null, quantity: 1 }] } })).json();
+
+    await page.goto(`/orders/${order.id}`);
+    const margin = page.getByRole('region', { name: 'Marge' });
+    await expect(margin.getByRole('definition').filter({ hasText: '1,50' })).toBeVisible();
+    await expect(margin).toContainText(label);
+    await margin.getByRole('button', { name: "Modifier l'affranchissement" }).click();
+    const postage = page.getByRole('dialog', { name: 'Affranchissement' });
+    await postage.getByLabel('Affranchissement').fill('2,32');
+    await postage.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Affranchissement enregistré.');
+    await expect(margin).toContainText('2,32');
+
+    await page.goto(`/channels/${main.id}`);
+    await costs.getByRole('button', { name: `Supprimer ${label}` }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: /Supprimer|Confirmer/ }).click();
+    await expect(page.getByTestId('toast').last()).toContainText(`Frais « ${label} » supprimé.`);
+});

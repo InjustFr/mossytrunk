@@ -20,6 +20,8 @@ const rate = (value) => t('events.report.rate', { rate: new Intl.NumberFormat(in
 const lines = computed(() => [
     { key: 'turnover', label: t('events.report.turnover'), amount: props.report.total.turnover, open: props.report.orders.count > 0 },
     { key: 'costOfGoods', label: t('events.report.buyingCost'), amount: props.report.total.costOfGoods, sign: '−' },
+    ...(props.report.total.supplies > 0 ? [{ key: 'supplies', label: t('events.report.supplies'), amount: props.report.total.supplies, sign: '−' }] : []),
+    ...(props.report.total.channelCosts > 0 ? [{ key: 'channelCosts', label: t('events.report.channelCosts'), amount: props.report.total.channelCosts, sign: '−' }] : []),
     { key: 'expenses', label: t('events.report.expenses'), amount: props.report.total.expenses, sign: '−' },
     { key: 'urssaf', label: 'URSSAF', hint: rate(props.report.urssaf.rate), amount: props.report.total.urssaf, sign: '−' },
 ]);

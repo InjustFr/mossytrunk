@@ -64,7 +64,9 @@
         "rate": "{rate} %",
         "grossSales": "Ventes brutes",
         "discountsGiven": "Remises accordées",
-        "seeOrders": "Voir les commandes"
+        "seeOrders": "Voir les commandes",
+        "supplies": "Fournitures",
+        "channelCosts": "Frais des canaux"
     },
     "expenseForm": {
         "label": "Libellé",

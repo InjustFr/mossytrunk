@@ -13,8 +13,10 @@ gross sales        = Σ order subtotals (unit selling price snapshot × qty)
 discounts          = Σ order discounts (rules, « Remise {service} »)
 turnover (CA)      = gross sales − discounts                  = Σ order totals
 cost of goods      = Σ line costs (units taken from stock)
+supplies           = Σ order supply costs (O17)
+channel costs      = Σ order channel charges + postage (O18)
 URSSAF             = 12.8 % × turnover   (rounded to the cent, half up)
-result (Résultat)  = turnover − cost of goods − expenses − URSSAF
+result (Résultat)  = turnover − cost of goods − supplies − channel costs − expenses − URSSAF
 ```
 
 | # | Rule | Where | Tests |
@@ -23,6 +25,7 @@ result (Résultat)  = turnover − cost of goods − expenses − URSSAF
 | R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A cost of 0 means *unknown* (product never bought) and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
 | R3 | Only the event's own orders count | `GetEventReportHandler` | `EventReportTest` |
 | R4 | The result can be negative (loss) | `EventResult` | `EventResultTest` |
+| R5 | Supplies and channel costs of the event's orders lower the result; they do not change the turnover nor URSSAF (rows shown only when not zero) | `SalesFigures::of()` | `ChannelCostTest` |
 
 ## Display (visual grouping only — not domain concepts)
 

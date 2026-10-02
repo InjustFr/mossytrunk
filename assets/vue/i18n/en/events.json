@@ -64,7 +64,9 @@
         "rate": "{rate}%",
         "grossSales": "Gross sales",
         "discountsGiven": "Discounts given",
-        "seeOrders": "See orders"
+        "seeOrders": "See orders",
+        "supplies": "Supplies",
+        "channelCosts": "Channel costs"
     },
     "expenseForm": {
         "label": "Label",

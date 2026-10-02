@@ -19,5 +19,9 @@ export function useSalesChannels() {
 
     const offerSupplies = (id, supplyIds) => api.put(`${CHANNELS_URL}/${id}/supplies`, { supplyIds });
 
-    return { channels, load, loadOne, create, update, remove, setPrice, offerSupplies };
+    const addCost = (id, payload) => api.post(`${CHANNELS_URL}/${id}/costs`, payload);
+    const reviseCost = (id, costId, payload) => api.put(`${CHANNELS_URL}/${id}/costs/${costId}`, payload);
+    const removeCost = (id, costId) => api.del(`${CHANNELS_URL}/${id}/costs/${costId}`);
+
+    return { channels, load, loadOne, create, update, remove, setPrice, offerSupplies, addCost, reviseCost, removeCost };
 }

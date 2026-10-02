@@ -8,6 +8,8 @@ use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Sales\Exception\EmptyChannelName;
 use App\Domain\Sales\Exception\NotASupply;
+use App\Domain\Shared\Exception\NotFound;
+use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -50,12 +52,18 @@ class SalesChannel
     #[ORM\InverseJoinColumn(name: 'product_id', onDelete: 'CASCADE')]
     private Collection $supplies;
 
+    /** @var Collection<int, ChannelCost> */
+    #[ORM\OneToMany(targetEntity: ChannelCost::class, mappedBy: 'channel', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $costs;
+
     private function __construct(Workspace $workspace, string $name, ChannelKind $kind, ?string $service)
     {
         $this->id = new Ulid();
         $this->workspace = $workspace;
         $this->createdAt = new \DateTimeImmutable();
         $this->supplies = new ArrayCollection();
+        $this->costs = new ArrayCollection();
         $this->rename($name);
         $this->kind = $kind;
         $this->linkTo($service);
@@ -109,6 +117,51 @@ class SalesChannel
     public function supplies(): array
     {
         return array_values($this->supplies->toArray());
+    }
+
+    public function addCost(string $label, ChannelCostKind $kind, int $amount): ChannelCost
+    {
+        $cost = new ChannelCost($this, $label, $kind, $amount);
+        $this->costs->add($cost);
+
+        return $cost;
+    }
+
+    public function reviseCost(Ulid $costId, string $label, ChannelCostKind $kind, int $amount): void
+    {
+        $this->cost($costId)->revise($label, $kind, $amount);
+    }
+
+    public function removeCost(Ulid $costId): void
+    {
+        $this->costs->removeElement($this->cost($costId));
+    }
+
+    /**
+     * @return list<ChannelCost>
+     */
+    public function costs(): array
+    {
+        return array_values($this->costs->toArray());
+    }
+
+    /**
+     * @return list<OrderCharge>
+     */
+    public function chargesOn(Money $orderTotal): array
+    {
+        return array_map(static fn (ChannelCost $cost): OrderCharge => $cost->on($orderTotal), $this->costs());
+    }
+
+    private function cost(Ulid $costId): ChannelCost
+    {
+        foreach ($this->costs as $cost) {
+            if ($cost->id()->equals($costId)) {
+                return $cost;
+            }
+        }
+
+        throw new NotFound('channel_cost', (string) $costId);
     }
 
     public function acceptsOrderWithoutEvent(): bool

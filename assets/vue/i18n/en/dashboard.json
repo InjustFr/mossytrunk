@@ -19,7 +19,9 @@
         "turnover": "Turnover",
         "costOfGoods": "Buying cost",
         "expenses": "Expenses",
-        "urssafRate": "12.8%"
+        "urssafRate": "12.8%",
+        "supplies": "Supplies",
+        "channelCosts": "Channel costs"
     },
     "summary": "{orders} across {events}",
     "orderCount": "{count} order | {count} orders",
@@ -56,6 +58,7 @@
         "result": "Result",
         "total": "Total",
         "hideEmpty": "Hide months without activity",
-        "showAll": "Show all {count} months"
+        "showAll": "Show all {count} months",
+        "sellingCosts": "Selling costs"
     }
 }

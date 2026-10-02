@@ -44,6 +44,8 @@ export:
             shipping: 'Shipping'
             total: 'Total received'
             cost: 'Buying cost'
+            supplies: 'Supplies'
+            channelCosts: 'Channel costs'
             margin: 'Margin'
         payment:
             card: 'Card'

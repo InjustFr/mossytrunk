@@ -74,5 +74,29 @@
         "intro": "Les fournitures que l'on peut ajouter aux commandes de ce canal (pochettes, enveloppes…). Elles sont prises dans le stock.",
         "none": "Aucune fourniture : créez-en dans Produits › Fournitures.",
         "saved": "Fournitures du canal enregistrées."
+    },
+    "costs": {
+        "title": "Frais par commande",
+        "intro": "Taxes, commissions et frais fixes payés sur chaque commande de ce canal. Ils sont calculés à la création de la commande ; l'affranchissement se saisit sur chaque commande.",
+        "empty": "Aucun frais.",
+        "add": "Ajouter un frais",
+        "edit": "Modifier {label}",
+        "editTitle": "Modifier le frais",
+        "remove": "Supprimer {label}",
+        "removeMessage": "Les commandes passées gardent leurs frais, sauf si vous les recalculez.",
+        "label": "Nom",
+        "labelPlaceholder": "Ex. Commission Etsy",
+        "kind": "Montant",
+        "kinds": {
+            "fixed": "€ par commande",
+            "percent": "% de la commande"
+        },
+        "amount": "Montant",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "added": "Frais « {label} » ajouté.",
+        "updated": "Frais « {label} » modifié.",
+        "removed": "Frais « {label} » supprimé.",
+        "summary": "Frais : {costs}"
     }
 }
