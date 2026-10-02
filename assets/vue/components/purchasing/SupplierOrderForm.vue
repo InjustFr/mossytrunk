@@ -1,5 +1,9 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
+import BaseModal from '../ui/BaseModal.vue';
+import ProductForm from '../products/ProductForm.vue';
+import { useProducts } from '../../composables/useProducts.js';
+import { useToast } from '../../composables/useToast.js';
 import { X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -23,6 +27,7 @@ const props = defineProps({
     suppliers: { type: Array, required: true },
     saveSupplier: { type: Function, required: true },
     submit: { type: Function, required: true },
+    reloadProducts: { type: Function, required: true },
 });
 const emit = defineEmits(['saved', 'cancel']);
 
@@ -31,6 +36,23 @@ const blank = () => ({ supplierId: '', orderedOn: today(), supplierReference: ''
 const form = reactive(blank());
 const errors = ref({});
 const saving = ref(false);
+const received = computed(() => props.order?.status === 'received');
+const picker = ref(null);
+const productOpen = ref(false);
+const { create: createProduct } = useProducts();
+const toast = useToast();
+let createdId = null;
+
+async function submitProduct(payload) {
+    createdId = (await createProduct(payload)).id;
+}
+
+async function onProductCreated(name) {
+    productOpen.value = false;
+    toast.success(t('purchasing.form.productCreated', { name }));
+    await props.reloadProducts();
+    picker.value?.choose(createdId);
+}
 
 watch(() => props.order, (order) => {
     Object.assign(form, order
@@ -38,7 +60,7 @@ watch(() => props.order, (order) => {
             supplierId: order.supplier.id,
             orderedOn: order.orderedOn,
             supplierReference: order.supplierReference ?? '',
-            lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice })),
+            lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice, receivedQuantity }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice, received: receivedQuantity })),
             discount: order.discount,
             deliveryFees: order.deliveryFees,
         }
@@ -56,9 +78,10 @@ function addLine(line) {
     if (existing) {
         existing.quantity += line.quantity;
         existing.totalPrice = (existing.totalPrice ?? 0) + line.totalPrice;
+        if (received.value) existing.received = (existing.received ?? 0) + line.quantity;
         return;
     }
-    form.lines.push(line);
+    form.lines.push(received.value ? { ...line, received: line.quantity } : line);
 }
 
 async function onSubmit() {
@@ -69,7 +92,7 @@ async function onSubmit() {
             supplierId: form.supplierId,
             orderedOn: form.orderedOn,
             supplierReference: form.supplierReference.trim() || null,
-            lines: form.lines.map(({ productId, variant, quantity, totalPrice }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0 })),
+            lines: form.lines.map(({ productId, variant, quantity, totalPrice, received: got }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0, received: received.value ? got ?? -1 : null })),
             discount: form.discount ?? 0,
             deliveryFees: form.deliveryFees ?? 0,
         });
@@ -102,26 +125,28 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
 
-            <FormSection :title="t('purchasing.form.orderedProducts')">
+            <FormSection :title="t('purchasing.form.orderedProducts')" :description="received ? t('purchasing.form.receivedHint') : null">
                 <table v-if="form.lines.length" class="supplier-order-form__lines">
                     <thead class="supplier-order-form__head">
                         <tr>
                             <th>{{ t('purchasing.form.product') }}</th>
                             <th>{{ t('purchasing.form.quantity') }}</th>
+                            <th v-if="received">{{ t('purchasing.form.received') }}</th>
                             <th>{{ t('purchasing.form.totalPrice') }}</th>
                             <th>{{ t('purchasing.form.unitCost') }}</th>
                             <th />
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(line, index) in form.lines" :key="`${line.productId}|${line.variant ?? ''}`" class="supplier-order-form__line">
+                        <tr v-for="(line, index) in form.lines" :key="`${line.productId}|${line.variant ?? ''}`" :class="['supplier-order-form__line', { 'supplier-order-form__line--received': received }]">
                             <td class="supplier-order-form__label">
                                 {{ line.label }}
-                                <span v-if="errors[`lines[${index}].quantity`] || errors[`lines[${index}].totalPrice`]" class="supplier-order-form__line-error" role="alert">
-                                    {{ errors[`lines[${index}].quantity`] ?? errors[`lines[${index}].totalPrice`] }}
+                                <span v-if="errors[`lines[${index}].quantity`] || errors[`lines[${index}].totalPrice`] || errors[`lines[${index}].received`]" class="supplier-order-form__line-error" role="alert">
+                                    {{ errors[`lines[${index}].quantity`] ?? errors[`lines[${index}].totalPrice`] ?? errors[`lines[${index}].received`] }}
                                 </span>
                             </td>
                             <td><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
+                            <td v-if="received"><BaseNumberField v-model="line.received" :min="0" :label="t('purchasing.form.receivedOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__unit-cost"><span aria-hidden="true">{{ t('purchasing.form.unitCost') }}</span> <MoneyAmount :cents="unitCost(line, index)" /></td>
                             <td><IconButton :icon="X" :label="t('purchasing.form.remove', { label: line.label })" @click="form.lines.splice(index, 1)" /></td>
@@ -135,7 +160,7 @@ async function onSubmit() {
                     </tfoot>
                 </table>
                 <p v-if="errors.lines" class="supplier-order-form__line-error" role="alert">{{ errors.lines }}</p>
-                <PurchaseLinePicker :products="products" @add="addLine" />
+                <PurchaseLinePicker ref="picker" :products="products" @add="addLine" @create="productOpen = true" />
             </FormSection>
 
             <FormSection :title="t('purchasing.form.extras')" :description="t('purchasing.form.extrasHint')">
@@ -153,6 +178,9 @@ async function onSubmit() {
                 <BaseButton type="submit" :loading="saving">{{ order ? t('purchasing.form.save') : t('purchasing.form.place') }}</BaseButton>
             </FormActions>
         </fieldset>
+        <BaseModal v-model:open="productOpen" :title="t('purchasing.form.newProductTitle')">
+            <ProductForm v-if="productOpen" :product="null" :submit="submitProduct" @saved="onProductCreated" @cancel="productOpen = false" />
+        </BaseModal>
     </form>
 </template>
 
@@ -184,6 +212,7 @@ async function onSubmit() {
     border-bottom: 0.0625rem solid var(--color-border);
 }
 
+.supplier-order-form__line--received { grid-template-columns: 7rem 7rem 7.5rem minmax(0, 1fr) auto; }
 .supplier-order-form__line td { padding: 0; }
 .supplier-order-form__label { grid-column: 1 / -1; color: var(--color-ink); font-weight: 500; }
 

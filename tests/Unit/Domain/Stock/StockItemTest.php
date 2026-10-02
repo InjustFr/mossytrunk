@@ -26,6 +26,20 @@ final class StockItemTest extends TestCase
         $this->sticker = Costs::bought(Product::create(TestWorkspace::get(), 'STK', 'Sticker', Money::cents(400), TestProductType::get()), 90);
     }
 
+    public function testASupplierOrderLotIsRestatedKeepingWhatWasSold(): void
+    {
+        $order = new Ulid();
+        $stock = $this->stock();
+        $stock->restate($order, 100, Money::cents(1_000), self::at('2026-01-01'));
+        $stock->withdraw(30, Money::cents(90));
+
+        $lot = $stock->restate($order, 50, Money::cents(1_000), self::at('2026-01-01'));
+
+        self::assertSame([20, 20, 400], [$stock->onHand(), $lot?->remaining(), $stock->remainingValue()->amount()]);
+        self::assertNull($stock->restate($order, 0, Money::zero(), self::at('2026-01-01')));
+        self::assertSame([-30, []], [$stock->onHand(), $stock->lots()]);
+    }
+
     public function testOldestLotIsSoldFirst(): void
     {
         $stock = $this->stock();

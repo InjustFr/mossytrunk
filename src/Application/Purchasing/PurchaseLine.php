@@ -11,6 +11,7 @@ final readonly class PurchaseLine
         public ?string $variant,
         public int $quantity,
         public int $totalPriceCents,
+        public ?int $received = null,
     ) {
     }
 }

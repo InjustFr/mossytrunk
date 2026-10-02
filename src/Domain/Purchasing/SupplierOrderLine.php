@@ -92,6 +92,29 @@ class SupplierOrderLine
         $this->receivedQuantity = $quantity;
     }
 
+    /**
+     * @internal the order absorbs another order buying the same item
+     */
+    public function absorb(self $other): void
+    {
+        $this->orderedQuantity += $other->orderedQuantity;
+        $this->totalPrice = $this->totalPrice->add($other->totalPrice);
+        $this->receivedQuantity = null === $this->receivedQuantity && null === $other->receivedQuantity ? null : (int) $this->receivedQuantity + (int) $other->receivedQuantity;
+    }
+
+    /**
+     * @internal the order takes the lines of an order it absorbs
+     */
+    public function copyInto(SupplierOrder $order, int $position): self
+    {
+        $copy = clone $this;
+        $copy->id = new Ulid();
+        $copy->order = $order;
+        $copy->position = $position;
+
+        return $copy;
+    }
+
     public function isFor(Ulid $productId, ?string $variant): bool
     {
         return $this->productId->equals($productId) && $this->variant === $variant;

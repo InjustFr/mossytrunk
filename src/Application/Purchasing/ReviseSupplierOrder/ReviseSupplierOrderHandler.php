@@ -6,6 +6,7 @@ namespace App\Application\Purchasing\ReviseSupplierOrder;
 
 use App\Application\Purchasing\PurchasedItems;
 use App\Application\Purchasing\SupplierOrderDraft;
+use App\Application\Purchasing\SupplierOrderStock;
 use App\Application\Transaction;
 use App\Domain\Purchasing\SupplierOrderRepository;
 use App\Domain\Purchasing\SupplierRepository;
@@ -18,6 +19,7 @@ final readonly class ReviseSupplierOrderHandler
         private SupplierRepository $suppliers,
         private SupplierOrderRepository $orders,
         private PurchasedItems $items,
+        private SupplierOrderStock $stock,
         private Transaction $transaction,
     ) {
     }
@@ -33,6 +35,7 @@ final readonly class ReviseSupplierOrderHandler
             Money::cents($draft->deliveryFeesCents),
         );
         $order->referToSupplierOrder($draft->supplierReference);
+        $this->stock->follow($order);
         $this->transaction->commit();
     }
 }

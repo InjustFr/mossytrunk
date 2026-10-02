@@ -23,6 +23,11 @@ interface StockRepository
     public function ofProduct(Ulid $productId): array;
 
     /**
+     * @return list<StockItem> the items holding a lot received from that supplier order
+     */
+    public function receivedFrom(Ulid $supplierOrderId): array;
+
+    /**
      * @return list<StockItem>
      */
     public function all(): array;

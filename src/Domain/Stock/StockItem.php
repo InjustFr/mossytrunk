@@ -146,6 +146,78 @@ class StockItem
         $this->rebalanceLots();
     }
 
+    public function restate(Ulid $supplierOrderId, int $quantity, Money $totalCost, \DateTimeImmutable $receivedAt): ?StockLot
+    {
+        $previous = $this->lotFrom($supplierOrderId);
+        if (null === $previous) {
+            return $quantity > 0 ? $this->receive($quantity, $totalCost, LotOrigin::SupplierOrder, $receivedAt, $supplierOrderId) : null;
+        }
+        if ($quantity < 0) {
+            throw new NonPositiveStockQuantity();
+        }
+        if ($totalCost->isNegative()) {
+            throw new NegativeAmount('paid_price');
+        }
+
+        $delta = $quantity - $previous->quantity();
+        $this->lots->removeElement($previous);
+        $this->onHand += $delta;
+        $lot = null;
+        if ($quantity > 0) {
+            $lot = new StockLot($this, $quantity, max(0, min($quantity, $previous->remaining() + $delta)), $totalCost, $receivedAt, LotOrigin::SupplierOrder, $supplierOrderId);
+            $this->lots->add($lot);
+        }
+        $this->rebalanceLots();
+        $this->lastUnitCostCents = $this->latestPurchase()?->unitCost()->amount() ?? $this->lastUnitCostCents;
+
+        return $lot;
+    }
+
+    public function moveLotsOf(Ulid $fromSupplierOrderId, Ulid $toSupplierOrderId): void
+    {
+        $moved = $this->lotFrom($fromSupplierOrderId);
+        if (null === $moved) {
+            return;
+        }
+        $kept = $this->lotFrom($toSupplierOrderId);
+        $this->lots->removeElement($moved);
+        if (null !== $kept) {
+            $this->lots->removeElement($kept);
+        }
+        $this->lots->add(new StockLot(
+            $this,
+            $moved->quantity() + ($kept?->quantity() ?? 0),
+            $moved->remaining() + ($kept?->remaining() ?? 0),
+            $moved->totalCost()->add($kept?->totalCost() ?? Money::zero()),
+            null === $kept ? $moved->receivedAt() : min($moved->receivedAt(), $kept->receivedAt()),
+            LotOrigin::SupplierOrder,
+            $toSupplierOrderId,
+        ));
+    }
+
+    public function isLatestPurchase(StockLot $lot): bool
+    {
+        return $this->latestPurchase() === $lot;
+    }
+
+    private function latestPurchase(): ?StockLot
+    {
+        $purchases = array_values(array_filter($this->lots(), static fn (StockLot $lot): bool => $lot->isPurchase()));
+
+        return [] === $purchases ? null : $purchases[\count($purchases) - 1];
+    }
+
+    private function lotFrom(Ulid $supplierOrderId): ?StockLot
+    {
+        foreach ($this->lots as $lot) {
+            if ($lot->isFrom($supplierOrderId)) {
+                return $lot;
+            }
+        }
+
+        return null;
+    }
+
     public function nextUnitCost(Money $fallbackUnitCost): Money
     {
         foreach ($this->lots() as $lot) {

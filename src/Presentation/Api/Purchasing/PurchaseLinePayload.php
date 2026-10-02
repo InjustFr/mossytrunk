@@ -18,11 +18,13 @@ final readonly class PurchaseLinePayload
         public int $quantity = 1,
         #[Assert\PositiveOrZero(message: 'pricePaid.negative')]
         public int $totalPrice = 0,
+        #[Assert\PositiveOrZero(message: 'supplierOrder.received.negative')]
+        public ?int $received = null,
     ) {
     }
 
     public function toLine(): PurchaseLine
     {
-        return new PurchaseLine($this->productId, $this->variant, $this->quantity, $this->totalPrice);
+        return new PurchaseLine($this->productId, $this->variant, $this->quantity, $this->totalPrice, $this->received);
     }
 }

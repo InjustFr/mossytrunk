@@ -27,6 +27,7 @@ final readonly class PurchasedItems
             $this->products->get(Ulid::fromString($line->productId))->sellable($line->variant),
             $line->quantity,
             Money::cents($line->totalPriceCents),
+            $line->received,
         ), $lines);
     }
 }

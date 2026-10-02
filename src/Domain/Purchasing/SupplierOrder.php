@@ -10,6 +10,7 @@ use App\Domain\Purchasing\Exception\EmptySupplierOrder;
 use App\Domain\Purchasing\Exception\OrderedTwice;
 use App\Domain\Purchasing\Exception\ReceivedQuantityMissing;
 use App\Domain\Purchasing\Exception\SupplierOrderAlreadyReceived;
+use App\Domain\Purchasing\Exception\SupplierOrdersNotMergeable;
 use App\Domain\Purchasing\Exception\SupplierReferenceTooLong;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
@@ -92,7 +93,6 @@ class SupplierOrder implements Referenced
      */
     public function revise(Supplier $supplier, \DateTimeImmutable $orderedOn, array $items, ?Money $discount = null, ?Money $deliveryFees = null): void
     {
-        $this->assertStillOrdered();
         if ([] === $items) {
             throw new EmptySupplierOrder();
         }
@@ -114,10 +114,67 @@ class SupplierOrder implements Referenced
                     throw new OrderedTwice($purchased->item->label());
                 }
             }
-            $this->lines->add(new SupplierOrderLine($this, $purchased, $position));
+            $line = new SupplierOrderLine($this, $purchased, $position);
+            if ($this->isReceived()) {
+                $line->receive($purchased->received ?? throw new ReceivedQuantityMissing($line->label()));
+            }
+            $this->lines->add($line);
         }
 
         $this->allocate($discount, $deliveryFees);
+    }
+
+    public function absorb(self $other): void
+    {
+        $obstacle = match (true) {
+            $other === $this || $other->id->equals($this->id) => 'same_order',
+            !$other->supplier->id()->equals($this->supplier->id()) => 'different_supplier',
+            $other->status !== $this->status => 'different_status',
+            default => null,
+        };
+        if (null !== $obstacle) {
+            throw new SupplierOrdersNotMergeable($obstacle);
+        }
+
+        foreach ($other->lines() as $line) {
+            $twin = $this->lineFor($line->productId(), $line->variant());
+            if (null === $twin) {
+                $this->lines->add($line->copyInto($this, $this->lines->count()));
+                continue;
+            }
+            $twin->absorb($line);
+        }
+        $this->orderedOn = min($this->orderedOn, $other->orderedOn);
+        $this->receivedAt = null === $this->receivedAt || null === $other->receivedAt ? $this->receivedAt : min($this->receivedAt, $other->receivedAt);
+        $this->joinSupplierReference($other->supplierReference);
+        $this->allocate($this->discount->add($other->discount), $this->deliveryFees->add($other->deliveryFees));
+    }
+
+    private function joinSupplierReference(?string $other): void
+    {
+        if (null === $other || $other === $this->supplierReference) {
+            return;
+        }
+        $joined = null === $this->supplierReference ? $other : $this->supplierReference.', '.$other;
+        if (mb_strlen($joined) <= self::SUPPLIER_REFERENCE_MAX_LENGTH) {
+            $this->supplierReference = $joined;
+        }
+    }
+
+    private function lineFor(Ulid $productId, ?string $variant): ?SupplierOrderLine
+    {
+        foreach ($this->lines as $line) {
+            if ($line->isFor($productId, $variant)) {
+                return $line;
+            }
+        }
+
+        return null;
+    }
+
+    public function isReceived(): bool
+    {
+        return SupplierOrderStatus::Received === $this->status;
     }
 
     public function referToSupplierOrder(?string $supplierReference): void
@@ -167,7 +224,7 @@ class SupplierOrder implements Referenced
 
     public function assertStillOrdered(): void
     {
-        if (SupplierOrderStatus::Received === $this->status) {
+        if ($this->isReceived()) {
             throw new SupplierOrderAlreadyReceived($this->reference);
         }
     }

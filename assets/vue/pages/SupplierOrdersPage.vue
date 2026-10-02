@@ -82,7 +82,7 @@ onMounted(async () => {
         </BaseCard>
 
         <BaseModal v-model:open="formOpen" :title="t('purchasing.page.newOrderTitle')" variant="drawer">
-            <SupplierOrderForm :products="products" :suppliers="suppliers" :save-supplier="saveAndReload" :submit="create" @saved="onOrderSaved" @cancel="formOpen = false" />
+            <SupplierOrderForm :products="products" :suppliers="suppliers" :save-supplier="saveAndReload" :submit="create" :reload-products="loadProducts" @saved="onOrderSaved" @cancel="formOpen = false" />
         </BaseModal>
         <BaseModal v-model:open="suppliersOpen" :title="t('purchasing.page.suppliers')">
             <SupplierManager :suppliers="suppliers" :save="saveSupplier" @saved="onSupplierSaved" />

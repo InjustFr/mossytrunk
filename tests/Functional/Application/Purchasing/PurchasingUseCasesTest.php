@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Purchasing;
 
+use App\Application\Product\GetProduct\GetProductHandler;
+use App\Application\Product\ListProducts\ProductView;
 use App\Application\Purchasing\DeleteSupplierOrder\DeleteSupplierOrderHandler;
 use App\Application\Purchasing\GetSupplierOrder\GetSupplierOrderHandler;
 use App\Application\Purchasing\ListSupplierOrders\ListSupplierOrdersHandler;
 use App\Application\Purchasing\ListSuppliers\ListSuppliersHandler;
+use App\Application\Purchasing\MergeSupplierOrders\MergeSupplierOrdersHandler;
 use App\Application\Purchasing\PlaceSupplierOrder\PlaceSupplierOrderHandler;
 use App\Application\Purchasing\PurchaseLine;
 use App\Application\Purchasing\ReceiveSupplierOrder\ReceiveSupplierOrderHandler;
@@ -80,7 +83,79 @@ final class PurchasingUseCasesTest extends KernelTestCase
         self::assertSame(2_000 - 200 + 300, $sticker->remainingValue);
     }
 
-    public function testAReceivedOrderCanNeitherBeRevisedNorDeleted(): void
+    public function testAReceivedOrderIsCorrectedAndItsStockFollows(): void
+    {
+        $orderId = $this->place([new PurchaseLine($this->sticker, null, 100, 2_000), new PurchaseLine($this->tshirt, 'M', 10, 8_000)]);
+        $lines = $this->view($orderId)->lines;
+        self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$lines[0]['id'] => 100, $lines[1]['id'] => 10]);
+        $this->clear();
+
+        self::getContainer()->get(ReviseSupplierOrderHandler::class)($orderId, new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-09-01'), [
+            new PurchaseLine($this->sticker, null, 100, 2_400, 80),
+            new PurchaseLine($this->tshirt, 'S', 5, 4_000, 5),
+        ]));
+        $this->clear();
+
+        $view = $this->view($orderId);
+        self::assertSame(['received', 30], [$view->status, $view->lines[0]['unitCost']]);
+        $sticker = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0];
+        self::assertSame([80, 2_400], [$sticker->onHand, $sticker->remainingValue]);
+        [$small, $medium] = self::getContainer()->get(GetProductStockHandler::class)($this->tshirt);
+        self::assertSame([5, 0], [$small->onHand, $medium->onHand]);
+        self::assertSame(30, $this->productView($this->sticker)->buyingPrice);
+    }
+
+    public function testAReceivedOrderNeedsEveryReceivedQuantity(): void
+    {
+        $orderId = $this->place([new PurchaseLine($this->sticker, null, 10, 300)]);
+        self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$this->view($orderId)->lines[0]['id'] => 10]);
+
+        $this->expectException(InvalidPurchase::class);
+        self::getContainer()->get(ReviseSupplierOrderHandler::class)($orderId, new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-09-01'), [new PurchaseLine($this->sticker, null, 10, 300)]));
+    }
+
+    public function testTwoOrdersOfTheSameSupplierAreMergedLineByLine(): void
+    {
+        $first = $this->place([new PurchaseLine($this->sticker, null, 100, 2_000)]);
+        $second = (string) self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-08-20'), [new PurchaseLine($this->sticker, null, 50, 1_000), new PurchaseLine($this->tshirt, 'S', 2, 1_600)], 0, 500));
+
+        self::getContainer()->get(MergeSupplierOrdersHandler::class)($first, $second);
+        $this->clear();
+
+        $view = $this->view($first);
+        self::assertSame(['2026-08-20', 500], [$view->orderedOn, $view->deliveryFees]);
+        self::assertSame([['Sticker', 150, 3_000], ['T-shirt — S', 2, 1_600]], array_map(static fn (array $line): array => [$line['label'], $line['orderedQuantity'], $line['totalPrice']], $view->lines));
+        self::assertCount(1, self::getContainer()->get(ListSupplierOrdersHandler::class)());
+    }
+
+    public function testMergingReceivedOrdersKeepsTheirStockInOneLot(): void
+    {
+        $first = $this->place([new PurchaseLine($this->sticker, null, 100, 2_000)]);
+        $second = $this->place([new PurchaseLine($this->sticker, null, 100, 4_000)]);
+        foreach ([$first, $second] as $orderId) {
+            self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$this->view($orderId)->lines[0]['id'] => 100]);
+        }
+        $this->clear();
+
+        self::getContainer()->get(MergeSupplierOrdersHandler::class)($first, $second);
+        $this->clear();
+
+        $stock = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0];
+        self::assertSame([200, 6_000, 1], [$stock->onHand, $stock->remainingValue, \count($stock->lots)]);
+        self::assertSame(30, $this->view($first)->lines[0]['unitCost']);
+    }
+
+    public function testOnlyOrdersOfTheSameSupplierAndStatusAreMerged(): void
+    {
+        $first = $this->place([new PurchaseLine($this->sticker, null, 10, 300)]);
+        $second = $this->place([new PurchaseLine($this->sticker, null, 10, 300)]);
+        self::getContainer()->get(ReceiveSupplierOrderHandler::class)($second, [$this->view($second)->lines[0]['id'] => 10]);
+
+        $this->expectException(InvalidPurchase::class);
+        self::getContainer()->get(MergeSupplierOrdersHandler::class)($first, $second);
+    }
+
+    public function testAReceivedOrderCannotBeDeleted(): void
     {
         $orderId = $this->place([new PurchaseLine($this->sticker, null, 10, 300)]);
         self::getContainer()->get(ReceiveSupplierOrderHandler::class)($orderId, [$this->view($orderId)->lines[0]['id'] => 10]);
@@ -129,6 +204,11 @@ final class PurchasingUseCasesTest extends KernelTestCase
     private function place(array $lines): string
     {
         return (string) self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-09-01'), $lines));
+    }
+
+    private function productView(string $productId): ProductView
+    {
+        return self::getContainer()->get(GetProductHandler::class)($productId)->product;
     }
 
     private function view(string $orderId): SupplierOrderView

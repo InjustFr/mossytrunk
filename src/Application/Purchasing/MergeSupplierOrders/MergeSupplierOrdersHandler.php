@@ -2,32 +2,29 @@
 
 declare(strict_types=1);
 
-namespace App\Application\Purchasing\ReceiveSupplierOrder;
+namespace App\Application\Purchasing\MergeSupplierOrders;
 
 use App\Application\Purchasing\SupplierOrderStock;
 use App\Application\Transaction;
 use App\Domain\Purchasing\SupplierOrderRepository;
-use Psr\Clock\ClockInterface;
 use Symfony\Component\Uid\Ulid;
 
-final readonly class ReceiveSupplierOrderHandler
+final readonly class MergeSupplierOrdersHandler
 {
     public function __construct(
         private SupplierOrderRepository $orders,
         private SupplierOrderStock $stock,
-        private ClockInterface $clock,
         private Transaction $transaction,
     ) {
     }
 
-    /**
-     * @param array<string, int> $receivedQuantities
-     */
-    public function __invoke(string $orderId, array $receivedQuantities): void
+    public function __invoke(string $orderId, string $absorbedOrderId): void
     {
         $order = $this->orders->get(Ulid::fromString($orderId));
-        $order->receive($receivedQuantities, $this->clock->now());
-        $this->stock->follow($order);
+        $absorbed = $this->orders->get(Ulid::fromString($absorbedOrderId));
+        $order->absorb($absorbed);
+        $this->stock->moveInto($absorbed, $order);
+        $this->orders->remove($absorbed);
         $this->transaction->commit();
     }
 }

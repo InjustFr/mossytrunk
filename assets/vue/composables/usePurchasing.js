@@ -36,6 +36,8 @@ export function useSupplierOrders() {
         update: (id, payload) => api.put(`/api/supplier-orders/${id}`, payload),
         remove: (id) => api.del(`/api/supplier-orders/${id}`),
         receive: (id, lines) => api.post(`/api/supplier-orders/${id}/reception`, { lines }),
+        merge: (id, absorbedId) => api.post(`/api/supplier-orders/${id}/merge`, { orderId: absorbedId }),
+        list: () => api.get('/api/supplier-orders'),
     };
 }
 

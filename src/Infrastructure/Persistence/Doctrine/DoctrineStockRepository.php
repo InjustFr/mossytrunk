@@ -6,7 +6,9 @@ namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
+use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockItem;
+use App\Domain\Stock\StockLot;
 use App\Domain\Stock\StockRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -69,6 +71,16 @@ final readonly class DoctrineStockRepository implements StockRepository
         return $this->items()
             ->andWhere('p.id = :product')
             ->setParameter('product', $productId, UlidType::NAME)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function receivedFrom(Ulid $supplierOrderId): array
+    {
+        return $this->items()
+            ->andWhere('EXISTS (SELECT 1 FROM '.StockLot::class.' r WHERE r.item = s AND r.sourceId = :order AND r.origin = :origin)')
+            ->setParameter('order', $supplierOrderId, UlidType::NAME)
+            ->setParameter('origin', LotOrigin::SupplierOrder->value)
             ->getQuery()
             ->getResult();
     }

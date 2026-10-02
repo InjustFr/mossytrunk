@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
@@ -15,7 +16,7 @@ const { t } = useI18n();
 const props = defineProps({
     products: { type: Array, required: true },
 });
-const emit = defineEmits(['add']);
+const emit = defineEmits(['add', 'create']);
 const { activeTypes, variantsOf } = useProductTypes();
 
 const PRODUCT = 'product';
@@ -93,6 +94,13 @@ function addProduct() {
     reset();
 }
 
+function choose(id) {
+    mode.value = PRODUCT;
+    productId.value = id ?? '';
+}
+
+defineExpose({ choose });
+
 function addType() {
     if (!typeId.value) {
         error.value = t('purchasing.picker.chooseType');
@@ -128,6 +136,7 @@ function addType() {
             <ToggleGroupItem :value="PRODUCT" class="purchase-line-picker__mode">{{ t('purchasing.picker.oneProduct') }}</ToggleGroupItem>
             <ToggleGroupItem :value="TYPE" class="purchase-line-picker__mode">{{ t('purchasing.picker.wholeType') }}</ToggleGroupItem>
         </ToggleGroupRoot>
+        <BaseButton variant="ghost" class="purchase-line-picker__create" @click="emit('create')"><Plus size="1rem" aria-hidden="true" /> {{ t('purchasing.form.newProduct') }}</BaseButton>
 
         <template v-if="mode === PRODUCT">
             <label class="purchase-line-picker__field purchase-line-picker__product">
@@ -185,7 +194,8 @@ function addType() {
     background: var(--color-bg);
 }
 
-.purchase-line-picker__modes { display: flex; flex: 1 1 100%; gap: var(--space-2); }
+.purchase-line-picker__modes { display: flex; flex: 1 1 auto; gap: var(--space-2); }
+.purchase-line-picker__create { margin-left: auto; }
 
 .purchase-line-picker__mode {
     padding: var(--space-1) var(--space-3);

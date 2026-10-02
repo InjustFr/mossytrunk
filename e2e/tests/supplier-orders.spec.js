@@ -51,3 +51,53 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await expect(productRow).toContainText('24');
     await expect(productRow).toContainText('2,67');
 });
+
+test('create a supply from the order form, correct the order once received, then merge another order into it', async ({ page, request }) => {
+    const supplier = await (await request.post('/api/suppliers', { data: { name: unique('Emballages') } })).json();
+    const type = await (await request.post('/api/product-types', { data: { name: unique('Emballage'), code: `E${Date.now().toString(36).slice(-5)}`.toUpperCase(), variants: [], prefixesNames: false } })).json();
+    const sleeve = unique('Pochette');
+
+    await page.goto('/supplier-orders');
+    await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+    const form = page.getByRole('dialog', { name: 'Nouvelle commande fournisseur' }).locator('form').first();
+    await choose(page, form.getByRole('combobox', { name: 'Fournisseur' }), supplier.name);
+    await form.getByRole('button', { name: 'Nouveau produit' }).click();
+    const productForm = page.getByRole('dialog', { name: 'Nouveau produit' });
+    await productForm.getByRole('radio', { name: /^Fourniture/ }).click();
+    await choose(page, productForm.getByRole('combobox', { name: 'Type' }), type.name);
+    await productForm.getByLabel('Nom').fill(sleeve);
+    await productForm.getByRole('button', { name: 'Ajouter le produit' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText(`Produit « ${sleeve} » créé`);
+    await expect(form.getByRole('combobox', { name: 'Produit' })).toHaveValue(sleeve);
+    await form.getByRole('spinbutton', { name: 'Quantité commandée' }).fill('100');
+    await form.getByLabel('Prix total', { exact: true }).fill('10');
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await form.getByRole('button', { name: 'Passer la commande' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Commande fournisseur passée.');
+
+    const orders = (await (await request.get('/api/supplier-orders')).json()).filter((order) => order.supplier.id === supplier.id);
+    const [order] = orders;
+    await request.post(`/api/supplier-orders/${order.id}/reception`, { data: { lines: [{ lineId: order.lines[0].id, received: 100 }] } });
+
+    await page.goto(`/supplier-orders/${order.id}`);
+    await page.getByRole('button', { name: 'Modifier' }).click();
+    const edit = page.getByRole('dialog', { name: 'Modifier la commande fournisseur' });
+    await edit.getByRole('spinbutton', { name: `Quantité reçue de ${sleeve}` }).fill('80');
+    await edit.getByRole('button', { name: 'Enregistrer' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('mise à jour');
+    await expect(edit).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: sleeve })).toContainText('80');
+
+    const other = await (await request.post('/api/supplier-orders', { data: { supplierId: supplier.id, orderedOn: '2026-09-01', lines: [{ productId: order.lines[0].productId, variant: null, quantity: 50, totalPrice: 500 }] } })).json();
+    const otherLines = (await (await request.get(`/api/supplier-orders/${other.id}`)).json()).lines;
+    await request.post(`/api/supplier-orders/${other.id}/reception`, { data: { lines: [{ lineId: otherLines[0].id, received: 50 }] } });
+
+    await page.reload();
+    await page.getByRole('button', { name: 'Fusionner' }).click();
+    const merge = page.getByRole('dialog', { name: 'Fusionner avec une autre commande' });
+    await merge.getByRole('radio').first().click();
+    await merge.getByRole('button', { name: 'Fusionner' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('fusionnée');
+    await expect(merge).toHaveCount(0);
+    await expect(page.getByRole('row').filter({ hasText: sleeve })).toContainText('130');
+});

@@ -45,7 +45,10 @@
         "unitCost": "Unit cost",
         "planned": "planned",
         "nothingReceived": "Nothing received",
-        "supplierReference": "Supplier ref."
+        "supplierReference": "Supplier ref.",
+        "merge": "Merge",
+        "mergeTitle": "Merge with another order",
+        "merged": "Order {reference} merged into {target}."
     },
     "list": {
         "empty": "No supplier orders. Place one to track what you are waiting for.",
@@ -80,7 +83,13 @@
         "save": "Save",
         "place": "Place the order",
         "supplierReference": "Supplier reference",
-        "supplierReferenceHint": "The order number at the supplier."
+        "supplierReferenceHint": "The order number at the supplier.",
+        "received": "Received",
+        "receivedOf": "Received quantity of {label}",
+        "receivedHint": "Order already received: the stock follows the received quantities and corrected costs. Past sales keep their cost.",
+        "newProduct": "New product",
+        "newProductTitle": "New product",
+        "productCreated": "Product “{name}” created: add it to the order."
     },
     "picker": {
         "product": "Product",
@@ -153,5 +162,13 @@
         "nothingReceived": "Nothing received",
         "reviewHint": "Received quantities enter the reserve at actual cost. The order can no longer be edited.",
         "validate": "Confirm the unpacking"
+    },
+    "merge": {
+        "intro": "The chosen order joins {reference}: its lines are added (quantities and prices summed for the same product), its discount and fees too, then it disappears. Only orders from the same supplier and with the same status can be merged.",
+        "none": "No other order from this supplier with the same status.",
+        "choose": "Order to merge",
+        "units": "{count} item | {count} items",
+        "cancel": "Cancel",
+        "submit": "Merge"
     }
 }

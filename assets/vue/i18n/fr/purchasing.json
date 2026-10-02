@@ -45,7 +45,10 @@
         "unitCost": "Coût unitaire",
         "planned": "prévu",
         "nothingReceived": "Rien reçu",
-        "supplierReference": "Réf. fournisseur"
+        "supplierReference": "Réf. fournisseur",
+        "merge": "Fusionner",
+        "mergeTitle": "Fusionner avec une autre commande",
+        "merged": "Commande {reference} fusionnée dans {target}."
     },
     "list": {
         "empty": "Aucune commande fournisseur. Passez-en une pour suivre ce que vous attendez.",
@@ -80,7 +83,13 @@
         "save": "Enregistrer",
         "place": "Passer la commande",
         "supplierReference": "Référence fournisseur",
-        "supplierReferenceHint": "Le numéro de commande chez le fournisseur."
+        "supplierReferenceHint": "Le numéro de commande chez le fournisseur.",
+        "received": "Reçu",
+        "receivedOf": "Quantité reçue de {label}",
+        "receivedHint": "Commande déjà reçue : la réserve suit les quantités reçues et les coûts corrigés. Les ventes passées gardent leur coût.",
+        "newProduct": "Nouveau produit",
+        "newProductTitle": "Nouveau produit",
+        "productCreated": "Produit « {name} » créé : ajoutez-le à la commande."
     },
     "picker": {
         "product": "Produit",
@@ -153,5 +162,13 @@
         "nothingReceived": "Rien reçu",
         "reviewHint": "Les quantités reçues entrent en réserve au coût réel. La commande ne pourra plus être modifiée.",
         "validate": "Valider le déballage"
+    },
+    "merge": {
+        "intro": "La commande choisie rejoint {reference} : ses lignes s'ajoutent (quantités et prix additionnés pour un même produit), sa remise et ses frais aussi, puis elle disparaît. Seules les commandes du même fournisseur et au même statut peuvent être fusionnées.",
+        "none": "Aucune autre commande de ce fournisseur avec le même statut.",
+        "choose": "Commande à fusionner",
+        "units": "{count} article | {count} articles",
+        "cancel": "Annuler",
+        "submit": "Fusionner"
     }
 }

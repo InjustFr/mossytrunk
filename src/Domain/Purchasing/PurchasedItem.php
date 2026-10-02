@@ -17,6 +17,7 @@ final readonly class PurchasedItem
         public SellableItem $item,
         public int $quantity,
         public Money $totalPrice,
+        public ?int $received = null,
     ) {
         $this->productId = $item->productId ?? throw new UnknownProductPurchased($item->label());
     }

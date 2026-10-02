@@ -121,6 +121,16 @@ class StockLot
         return $this->receivedAt;
     }
 
+    public function isFrom(Ulid $supplierOrderId): bool
+    {
+        return LotOrigin::SupplierOrder === $this->origin && null !== $this->sourceId && $this->sourceId->equals($supplierOrderId);
+    }
+
+    public function isPurchase(): bool
+    {
+        return LotOrigin::Purchase === $this->origin || LotOrigin::SupplierOrder === $this->origin;
+    }
+
     public function isReturnOf(Ulid $orderId): bool
     {
         return LotOrigin::Return === $this->origin && null !== $this->sourceId && $this->sourceId->equals($orderId);

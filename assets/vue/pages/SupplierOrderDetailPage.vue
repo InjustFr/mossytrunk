@@ -9,6 +9,7 @@ import BaseModal from '../components/ui/BaseModal.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import MergeSupplierOrderForm from '../components/purchasing/MergeSupplierOrderForm.vue';
 import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderReception from '../components/purchasing/SupplierOrderReception.vue';
 import { formatDate, formatDateTime } from '../composables/useDate.js';
@@ -25,7 +26,7 @@ const props = defineProps({
     orderId: { type: String, required: true },
 });
 
-const { loadOne, update, remove, receive } = useSupplierOrders();
+const { loadOne, update, remove, receive, merge, list } = useSupplierOrders();
 const { suppliers, load: loadSuppliers, save: saveSupplier } = useSuppliers();
 const { products, load: loadProducts } = useProducts();
 const { load: loadTypes } = useProductTypes();
@@ -33,6 +34,7 @@ const toast = useToast();
 
 const order = ref(null);
 const editOpen = ref(false);
+const mergeOpen = ref(false);
 const receiving = ref(false);
 const isOrdered = computed(() => order.value?.status === 'ordered');
 const status = computed(() => (order.value ? SUPPLIER_ORDER_STATUSES[order.value.status] : null));
@@ -61,6 +63,12 @@ async function onRemove() {
     }
 }
 
+async function onMerged(absorbed) {
+    mergeOpen.value = false;
+    toast.success(t('purchasing.detail.merged', { reference: absorbed.reference, target: order.value.reference }));
+    await Promise.all([load(), loadProducts()]);
+}
+
 async function onReceived() {
     receiving.value = false;
     toast.success(t('purchasing.detail.received', { reference: order.value.reference }));
@@ -74,10 +82,11 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
     <AppLayout :title="order?.reference ?? t('purchasing.detail.title')">
         <template #back><a class="back-link" :href="listUrl('/supplier-orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('purchasing.detail.back') }}</a></template>
         <template #actions>
-            <template v-if="isOrdered && !receiving">
-                <ConfirmButton variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />
+            <template v-if="order && !receiving">
+                <ConfirmButton v-if="isOrdered" variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />
+                <BaseButton variant="secondary" @click="mergeOpen = true">{{ t('purchasing.detail.merge') }}</BaseButton>
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('purchasing.detail.edit') }}</BaseButton>
-                <BaseButton @click="receiving = true">{{ t('purchasing.detail.unpack') }}</BaseButton>
+                <BaseButton v-if="isOrdered" @click="receiving = true">{{ t('purchasing.detail.unpack') }}</BaseButton>
             </template>
         </template>
 
@@ -149,9 +158,13 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                 :suppliers="suppliers"
                 :save-supplier="saveAndReload"
                 :submit="(payload) => update(orderId, payload)"
+                :reload-products="loadProducts"
                 @saved="onSaved"
                 @cancel="editOpen = false"
             />
+        </BaseModal>
+        <BaseModal v-model:open="mergeOpen" :title="t('purchasing.detail.mergeTitle')">
+            <MergeSupplierOrderForm v-if="mergeOpen && order" :order="order" :orders="list" :submit="(absorbedId) => merge(orderId, absorbedId)" @merged="onMerged" @cancel="mergeOpen = false" />
         </BaseModal>
     </AppLayout>
 </template>
