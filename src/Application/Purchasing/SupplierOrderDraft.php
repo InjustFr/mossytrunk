@@ -16,6 +16,7 @@ final readonly class SupplierOrderDraft
         public int $discountCents = 0,
         public int $deliveryFeesCents = 0,
         public ?string $supplierReference = null,
+        public ?\DateTimeImmutable $receivedOn = null,
     ) {
     }
 }

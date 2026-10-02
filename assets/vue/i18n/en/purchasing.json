@@ -98,7 +98,8 @@
         "paidTooHigh": "The total paid is more than the products and delivery: add the difference to the delivery fees.",
         "discountFromPaid": "Deduced discount",
         "draftRestored": "Order picked up where you left it.",
-        "draftDiscard": "Start over"
+        "draftDiscard": "Start over",
+        "receivedOn": "Received on"
     },
     "picker": {
         "product": "Product",

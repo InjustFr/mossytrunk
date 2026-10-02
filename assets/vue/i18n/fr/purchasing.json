@@ -98,7 +98,8 @@
         "paidTooHigh": "Le total payé dépasse les produits et la livraison : ajoutez la différence aux frais de livraison.",
         "discountFromPaid": "Remise déduite",
         "draftRestored": "Commande reprise là où vous l'aviez laissée.",
-        "draftDiscard": "Repartir de zéro"
+        "draftDiscard": "Repartir de zéro",
+        "receivedOn": "Reçue le"
     },
     "picker": {
         "product": "Produit",

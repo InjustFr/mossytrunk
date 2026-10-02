@@ -93,11 +93,11 @@ final class PurchasingUseCasesTest extends KernelTestCase
         self::getContainer()->get(ReviseSupplierOrderHandler::class)($orderId, new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-09-01'), [
             new PurchaseLine($this->sticker, null, 100, 2_400, 80),
             new PurchaseLine($this->tshirt, 'S', 5, 4_000, 5),
-        ]));
+        ], supplierReference: 'FAC-42', receivedOn: new \DateTimeImmutable('2026-09-05 12:00', new \DateTimeZone('Europe/Paris'))));
         $this->clear();
 
         $view = $this->view($orderId);
-        self::assertSame(['received', 30], [$view->status, $view->lines[0]['unitCost']]);
+        self::assertSame(['received', 30, '2026-09-05', 'FAC-42'], [$view->status, $view->lines[0]['unitCost'], $view->receivedOn, $view->supplierReference]);
         $sticker = self::getContainer()->get(GetProductStockHandler::class)($this->sticker)[0];
         self::assertSame([80, 2_400], [$sticker->onHand, $sticker->remainingValue]);
         [$small, $medium] = self::getContainer()->get(GetProductStockHandler::class)($this->tshirt);

@@ -6,6 +6,7 @@ namespace App\Application\Purchasing;
 
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Purchasing\SupplierOrderLine;
+use App\Domain\Shared\DateRange;
 
 final readonly class SupplierOrderView
 {
@@ -21,6 +22,7 @@ final readonly class SupplierOrderView
         public string $orderedOn,
         public string $status,
         public ?string $receivedAt,
+        public ?string $receivedOn,
         public int $subtotal,
         public int $discount,
         public int $deliveryFees,
@@ -41,6 +43,7 @@ final readonly class SupplierOrderView
             $order->orderedOn()->format('Y-m-d'),
             $order->status()->value,
             $order->receivedAt()?->format(\DateTimeInterface::ATOM),
+            $order->receivedAt()?->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
             $order->subtotal()->amount(),
             $order->discount()->amount(),
             $order->deliveryFees()->amount(),

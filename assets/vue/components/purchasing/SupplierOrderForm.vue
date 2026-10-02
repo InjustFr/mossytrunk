@@ -33,7 +33,7 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 
 const today = () => new Date().toLocaleDateString('sv-SE');
-const blank = () => ({ supplierId: '', orderedOn: today(), supplierReference: '', lines: [], discount: 0, deliveryFees: 0 });
+const blank = () => ({ supplierId: '', orderedOn: today(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0 });
 const form = reactive(blank());
 const errors = ref({});
 const saving = ref(false);
@@ -60,6 +60,7 @@ watch(() => props.order, (order) => {
         ? {
             supplierId: order.supplier.id,
             orderedOn: order.orderedOn,
+            receivedOn: order.receivedOn,
             supplierReference: order.supplierReference ?? '',
             lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice, receivedQuantity }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice, received: receivedQuantity })),
             discount: order.discount,
@@ -146,6 +147,7 @@ async function onSubmit() {
         await props.submit({
             supplierId: form.supplierId,
             orderedOn: form.orderedOn,
+            receivedOn: received.value ? form.receivedOn : null,
             supplierReference: form.supplierReference.trim() || null,
             lines: form.lines.map(({ productId, variant, quantity, totalPrice, received: got }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0, received: received.value ? got ?? -1 : null })),
             discount: discount.value,
@@ -179,6 +181,9 @@ async function onSubmit() {
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
                     <div class="supplier-order-form__date"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
+                </FormField>
+                <FormField v-if="received" as="group" :label="t('purchasing.form.receivedOn')" :error="errors.receivedOn">
+                    <div class="supplier-order-form__date"><BaseDatePicker v-model="form.receivedOn" :aria-label="t('purchasing.form.receivedOn')" /></div>
                 </FormField>
                 <FormField :label="t('purchasing.form.supplierReference')" :error="errors.supplierReference" :hint="t('purchasing.form.supplierReferenceHint')" optional>
                     <input v-model="form.supplierReference" type="text" maxlength="100" autocomplete="off" class="supplier-order-form__reference">

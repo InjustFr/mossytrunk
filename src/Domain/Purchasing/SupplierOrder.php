@@ -172,6 +172,13 @@ class SupplierOrder implements Referenced
         return null;
     }
 
+    public function redateReception(\DateTimeImmutable $receivedAt): void
+    {
+        if ($this->isReceived()) {
+            $this->receivedAt = $receivedAt;
+        }
+    }
+
     public function isReceived(): bool
     {
         return SupplierOrderStatus::Received === $this->status;

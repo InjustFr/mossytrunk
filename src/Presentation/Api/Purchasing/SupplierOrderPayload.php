@@ -6,6 +6,7 @@ namespace App\Presentation\Api\Purchasing;
 
 use App\Application\Purchasing\PurchaseLine;
 use App\Application\Purchasing\SupplierOrderDraft;
+use App\Domain\Shared\DateRange;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class SupplierOrderPayload
@@ -29,6 +30,8 @@ final readonly class SupplierOrderPayload
         public int $deliveryFees = 0,
         #[Assert\Length(max: 100)]
         public ?string $supplierReference = null,
+        #[Assert\Date(message: 'date.invalid')]
+        public ?string $receivedOn = null,
     ) {
     }
 
@@ -41,6 +44,7 @@ final readonly class SupplierOrderPayload
             $this->discount,
             $this->deliveryFees,
             $this->supplierReference,
+            null === $this->receivedOn || '' === $this->receivedOn ? null : new \DateTimeImmutable($this->receivedOn.' 12:00', new \DateTimeZone(DateRange::TIMEZONE)),
         );
     }
 }

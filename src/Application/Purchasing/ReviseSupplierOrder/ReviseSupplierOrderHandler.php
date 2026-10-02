@@ -35,6 +35,9 @@ final readonly class ReviseSupplierOrderHandler
             Money::cents($draft->deliveryFeesCents),
         );
         $order->referToSupplierOrder($draft->supplierReference);
+        if (null !== $draft->receivedOn) {
+            $order->redateReception($draft->receivedOn);
+        }
         $this->stock->follow($order);
         $this->transaction->commit();
     }
