@@ -28,6 +28,7 @@ use App\Domain\Product\ProductType;
 use App\Domain\Purchasing\PurchasedItem;
 use App\Domain\Purchasing\Supplier;
 use App\Domain\Purchasing\SupplierOrder;
+use App\Domain\Sales\ChannelCostKind;
 use App\Domain\Sales\PriceAdjustment;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\Money;
@@ -56,6 +57,9 @@ final class ConventionSeasonStory extends Story
     private Workspace $workspace;
 
     private SalesChannel $market;
+
+    private Product $sleeve;
+    private Product $envelope;
 
     /** @var array<string, StockItem> */
     private array $stock = [];
@@ -100,6 +104,15 @@ final class ConventionSeasonStory extends Story
             $this->product('ORI-CLAIRIERE', '« Clairière »', 12_000, 0, type: $type('Aquarelle originale', 'AQU')), // unique product
         ];
         $catalogue = [...$stickers, ...$prints, ...$others];
+
+        $packaging = $type('Emballage', 'EMB');
+        $packaging->prefixNames(false);
+        $stationery = $type('Papeterie', 'PAP');
+        $stationery->prefixNames(false);
+        $this->sleeve = $this->supply('EMB-POCHETTE', 'Pochette', 5, ['Petite', 'Grande'], $packaging);
+        $this->envelope = $this->supply('EMB-ENVELOPPE', 'Enveloppe kraft', 25, [], $packaging);
+        $flyer = $this->supply('PAP-FLYER', 'Flyer', 8, [], $stationery);
+        $this->market->offerSupplies([$this->sleeve]);
 
         $rule = static fn (string $name, array $conditions, DiscountAction $action, ?ValidityPeriod $validity = null): DiscountRule => DiscountRuleFactory::createOne([
             'workspace' => $workspace,
@@ -148,6 +161,11 @@ final class ConventionSeasonStory extends Story
         foreach ($others[1]->variants() as $variant) {
             $this->receive($others[1], $variant, 15, $received);
         }
+        foreach ($this->sleeve->variants() as $variant) {
+            $this->receive($this->sleeve, $variant, 300, $received);
+        }
+        $this->receive($this->envelope, null, 100, $received);
+        $this->receive($flyer, null, 500, $received);
 
         $this->sellDuring($events[0], $catalogue, $rules, 45);
         $this->receive($stickers[0], null, 100, new \DateTimeImmutable('-60 days'), 80);
@@ -156,7 +174,9 @@ final class ConventionSeasonStory extends Story
 
         $pins = $this->stockOf($others[2], null);
         $forestA4 = $this->stockOf($prints[0], 'A4');
+        $flyers = $this->stockOf($flyer, null);
         $this->entityManager->persist(StockCheck::take($events[2], new \DateTimeImmutable('-11 days'), [
+            new StockCount($flyers, $flyers->onHand() - 35, $flyer->buyingPrice()),
             new StockCount($pins, $pins->onHand() - 2, $others[2]->buyingPrice()),
             new StockCount($forestA4, max(0, $forestA4->onHand()), $prints[0]->buyingPrice()),
         ]));
@@ -187,11 +207,37 @@ final class ConventionSeasonStory extends Story
     }
 
     /**
+     * @param list<string> $variants
+     */
+    private function supply(string $reference, string $name, int $buying, array $variants, ProductType $type): Product
+    {
+        $supply = $this->persisted(Product::supply($this->workspace, $reference, $name, $type, $variants));
+        $supply->bought(Money::cents($buying));
+
+        return $supply;
+    }
+
+    private function packInto(Order $order, string $sleeve, bool $posted): void
+    {
+        $supplies = [$this->sleeve->sellable($sleeve)];
+        if ($posted) {
+            $supplies[] = $this->envelope->sellable(null);
+        }
+        foreach ($supplies as $supply) {
+            $product = $supply->productId?->equals($this->envelope->id()) ? $this->envelope : $this->sleeve;
+            $order->useSupply($supply, 1, $this->stockOf($product, $supply->variant)->withdraw(1, $supply->buyingPrice));
+        }
+    }
+
+    /**
      * @param list<Product> $stickers
      */
     private function etsy(array $stickers, Product $forest): void
     {
         $shop = $this->persisted(SalesChannel::open($this->workspace, 'Boutique Etsy', service: 'etsy'));
+        $shop->addCost('Frais de transaction', ChannelCostKind::Fixed, 20);
+        $shop->addCost('Commission Etsy', ChannelCostKind::Percent, 650);
+        $shop->offerSupplies([$this->sleeve, $this->envelope]);
         foreach ([...$stickers, $forest] as $product) {
             $product->setPriceOn($shop, PriceAdjustment::byCents(100)->applyTo($product->sellingPrice()));
         }
@@ -200,7 +246,7 @@ final class ConventionSeasonStory extends Story
             $item = $product->sellableOn($shop, $variant);
             $placedAt = new \DateTimeImmutable(\sprintf('%d days 14:00', $daysAgo));
             $receiptId = (string) (3_100_000_000 + abs($daysAgo));
-            $this->entityManager->persist(Order::imported(
+            $order = $this->persisted(Order::imported(
                 self::reference('CMD', $placedAt),
                 $this->workspace,
                 'etsy',
@@ -216,6 +262,8 @@ final class ConventionSeasonStory extends Story
                 'Remise Etsy',
                 $shop,
             ));
+            $this->packInto($order, $product->hasVariants() ? 'Grande' : 'Petite', true);
+            $order->stamp(Money::cents($product->hasVariants() ? 232 : 139));
         }
         $this->entityManager->persist(ServiceConnection::create($this->workspace, 'etsy', ['keystring' => 'mossydemo'], SalesContext::Online, UnknownItems::LinkByHand));
         $this->entityManager->persist(ExternalItem::seen($this->workspace, 'etsy', '1500000042', 'Tote bag brodé mousse forestière — coton bio', 'Noir', new \DateTimeImmutable('-6 days')));
@@ -336,7 +384,9 @@ final class ConventionSeasonStory extends Story
             }
 
             $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
-            $this->entityManager->persist(Order::place(self::reference('CMD', $placedAt), $event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt), $this->market));
+            $order = $this->persisted(Order::place(self::reference('CMD', $placedAt), $event, $placedAt, $items, $this->discountCalculator->calculate($basket, $rules, $placedAt), $this->market));
+            $printed = array_filter($items, static fn (OrderedItem $ordered): bool => \in_array($ordered->item->variant, ['A5', 'A4', 'A3'], true));
+            $this->packInto($order, [] === $printed ? 'Petite' : 'Grande', false);
         }
     }
 

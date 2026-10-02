@@ -100,7 +100,7 @@ Enforced by `deptrac.yaml`. Rules:
 
 `fixtures/` (namespace `App\Fixtures`, dev/test only, outside the onion layers): Foundry factories build entities through their
 named constructors (`Instantiator::namedConstructor()`, hydration disabled — no setters). `ConventionSeasonStory` creates a
-catalogue with variants, discount rules, past events with expenses and orders (discounts computed by `DiscountCalculator`) and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
+catalogue with variants, supplies (sleeves on every market order, envelopes and postage on Etsy orders, flyers consumed at an inventory), discount rules, past events with expenses and orders (discounts computed by `DiscountCalculator`), an Etsy channel with per-order costs and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
 `OtherWorkspaceStory` adds « Autre atelier » (user `autre@mossytrunk.local` / `mossytrunk`) with a few products, to check isolation.
 
 ## Testing expectations
