@@ -24,7 +24,7 @@ test('order from a new supplier, receive more than ordered, and stock the real u
     await form.getByLabel('Frais de livraison').fill('4');
     await form.getByLabel('Frais de livraison').press('Tab');
     await expect(form.getByRole('row').filter({ hasText: `${product.name} — A4` })).toContainText('3,20');
-    await expect(form.getByText('Total payé')).toContainText('64,00');
+    await expect(form.getByText(/^Total payé/)).toContainText('64,00');
     await form.getByRole('button', { name: 'Passer la commande' }).click();
 
     await expect(page.getByTestId('toast').last()).toContainText('Commande fournisseur passée.');
@@ -100,4 +100,34 @@ test('create a supply from the order form, correct the order once received, then
     await expect(page.getByTestId('toast').last()).toContainText('fusionnée');
     await expect(merge).toHaveCount(0);
     await expect(page.getByRole('row').filter({ hasText: sleeve })).toContainText('130');
+});
+
+test('an order being written survives closing the drawer, and its discount can come from the total paid', async ({ page, request }) => {
+    const supplier = await (await request.post('/api/suppliers', { data: { name: unique('Atelier') } })).json();
+    const product = await createProduct(request, { name: unique('Badge'), sellingPrice: 500 });
+
+    await page.goto('/supplier-orders');
+    await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+    let form = page.getByRole('dialog', { name: 'Nouvelle commande fournisseur' }).locator('form').first();
+    await choose(page, form.getByRole('combobox', { name: 'Fournisseur' }), supplier.name);
+    await choose(page, form.getByRole('combobox', { name: 'Produit' }), product.name);
+    await form.getByRole('spinbutton', { name: 'Quantité commandée' }).fill('10');
+    await form.getByLabel('Prix total', { exact: true }).fill('60');
+    await form.getByRole('button', { name: 'Ajouter', exact: true }).click();
+    await form.getByRole('button', { name: 'Annuler' }).click();
+
+    await page.getByRole('button', { name: 'Nouvelle commande' }).click();
+    form = page.getByRole('dialog', { name: 'Nouvelle commande fournisseur' }).locator('form').first();
+    await expect(form.getByRole('status')).toContainText('Commande reprise');
+    await expect(form.getByRole('row').filter({ hasText: product.name })).toBeVisible();
+
+    await form.getByRole('button', { name: 'Par le total payé' }).click();
+    await form.getByLabel('Total réellement payé').fill('50');
+    await form.getByLabel('Total réellement payé').press('Tab');
+    await expect(form.getByText('Remise déduite')).toContainText('10,00');
+    await form.getByRole('button', { name: 'Passer la commande' }).click();
+    await expect(page.getByTestId('toast').last()).toContainText('Commande fournisseur passée.');
+
+    const order = (await (await request.get('/api/supplier-orders')).json()).find((candidate) => candidate.supplier.id === supplier.id);
+    expect([order.discount, order.total]).toEqual([1_000, 5_000]);
 });

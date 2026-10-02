@@ -26,6 +26,11 @@ const productId = ref('');
 const variant = ref('');
 const typeId = ref('');
 const typeVariants = ref([]);
+const collectionId = ref('');
+const ANY = '__any__';
+const PER_UNIT = 'unit';
+const FOR_ALL = 'all';
+const pricing = ref(PER_UNIT);
 const quantity = ref(1);
 const totalPrice = ref(null);
 const unitPrice = ref(null);
@@ -44,8 +49,15 @@ const label = (item, chosen) => (chosen ? `${item.displayName} — ${chosen}` : 
 const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const wanted = (candidate) => typeVariants.value.length === 0 || typeVariants.value.some((chosen) => same(chosen, candidate));
 
+const collectionOptions = computed(() => {
+    const seen = new Map();
+    purchasable.value.filter((p) => p.typeId === typeId.value && p.collectionId).forEach((p) => seen.set(p.collectionId, p.collectionName));
+    return [{ value: ANY, label: t('purchasing.picker.anyCollection') }, ...[...seen].map(([value, label]) => ({ value, label }))];
+});
+const inCollection = (p) => !collectionId.value || collectionId.value === ANY || p.collectionId === collectionId.value;
+
 const typeItems = computed(() => purchasable.value
-    .filter((p) => p.typeId === typeId.value)
+    .filter((p) => p.typeId === typeId.value && inCollection(p))
     .flatMap((p) => {
         if (p.activeVariants.length === 0) {
             return typeVariants.value.length === 0 ? [{ product: p, variant: null }] : [];
@@ -60,6 +72,7 @@ watch(productId, () => {
 
 watch(typeId, () => {
     typeVariants.value = [];
+    collectionId.value = ANY;
     error.value = null;
 });
 
@@ -111,15 +124,18 @@ function addType() {
         return;
     }
     const units = Math.max(1, quantity.value ?? 1);
-    for (const item of typeItems.value) {
+    const count = typeItems.value.length;
+    const total = unitPrice.value ?? 0;
+    const shareOf = (index) => (pricing.value === FOR_ALL ? Math.floor(total / count) + (index < total % count ? 1 : 0) : total * units);
+    typeItems.value.forEach((item, index) => {
         emit('add', {
             productId: item.product.id,
             variant: item.variant,
             label: label(item.product, item.variant),
             quantity: units,
-            totalPrice: (unitPrice.value ?? 0) * units,
+            totalPrice: shareOf(index),
         });
-    }
+    });
     reset();
 }
 </script>
@@ -163,6 +179,10 @@ function addType() {
                 <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.type') }}</span>
                 <BaseSelect v-model="typeId" :options="typeOptions" :placeholder="t('purchasing.picker.chooseTypePlaceholder')" :aria-label="t('purchasing.picker.type')" />
             </div>
+            <div v-if="typeId && collectionOptions.length > 1" class="purchase-line-picker__field purchase-line-picker__product">
+                <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.collection') }}</span>
+                <BaseSelect v-model="collectionId" :options="collectionOptions" :aria-label="t('purchasing.picker.collection')" />
+            </div>
             <div v-if="typeId && variantsOf(typeId).length" class="purchase-line-picker__field purchase-line-picker__product">
                 <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.onlyVariants') }}</span>
                 <VariantPicker v-model="typeVariants" :options="variantsOf(typeId)" />
@@ -171,8 +191,21 @@ function addType() {
                 <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.quantityEach') }}</span>
                 <BaseNumberField v-model="quantity" :min="1" :label="t('purchasing.picker.quantityEach')" />
             </div>
+            <div class="purchase-line-picker__field purchase-line-picker__pricing">
+                <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.priceFor') }}</span>
+                <ToggleGroupRoot
+                    :model-value="pricing"
+                    type="single"
+                    class="purchase-line-picker__pricing-modes"
+                    :aria-label="t('purchasing.picker.priceFor')"
+                    @update:model-value="(value) => value && (pricing = value)"
+                >
+                    <ToggleGroupItem :value="PER_UNIT" class="purchase-line-picker__pricing-mode">{{ t('purchasing.picker.perUnit') }}</ToggleGroupItem>
+                    <ToggleGroupItem :value="FOR_ALL" class="purchase-line-picker__pricing-mode">{{ t('purchasing.picker.forAll') }}</ToggleGroupItem>
+                </ToggleGroupRoot>
+            </div>
             <label class="purchase-line-picker__field purchase-line-picker__price">
-                <span class="purchase-line-picker__label">{{ t('purchasing.picker.unitPrice') }}</span>
+                <span class="purchase-line-picker__label">{{ t(pricing === FOR_ALL ? 'purchasing.picker.forAll' : 'purchasing.picker.unitPrice') }}</span>
                 <BaseMoneyField v-model="unitPrice" />
             </label>
             <BaseButton variant="secondary" class="purchase-line-picker__add" :disabled="!typeId" @click="addType">
@@ -229,6 +262,24 @@ function addType() {
 
 .purchase-line-picker__price :deep(.money-field__input:focus) { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 0.1875rem var(--color-accent-soft); }
 
+.purchase-line-picker__pricing { flex: 0 0 auto; }
+.purchase-line-picker__pricing-modes { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
+
+.purchase-line-picker__pricing-mode {
+    min-height: 2.375rem;
+    padding: 0 var(--space-3);
+    border: none;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.purchase-line-picker__pricing-mode + .purchase-line-picker__pricing-mode { border-left: 0.0625rem solid var(--color-border-strong); }
+.purchase-line-picker__pricing-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
+.purchase-line-picker__pricing-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 .purchase-line-picker__add { margin-left: auto; }
 .purchase-line-picker__error { flex: 1 1 100%; margin: 0; color: var(--color-danger); font-size: 0.8125rem; }
 </style>

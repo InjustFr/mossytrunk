@@ -1,5 +1,6 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseModal from '../ui/BaseModal.vue';
 import ProductForm from '../products/ProductForm.vue';
 import { useProducts } from '../../composables/useProducts.js';
@@ -68,9 +69,59 @@ watch(() => props.order, (order) => {
     errors.value = {};
 }, { immediate: true });
 
+const BY_DISCOUNT = 'discount';
+const BY_PAID = 'paid';
+const adjustBy = ref(BY_DISCOUNT);
+const paid = ref(null);
+
 const subtotal = computed(() => form.lines.reduce((sum, line) => sum + (line.totalPrice ?? 0), 0));
-const total = computed(() => subtotal.value - (form.discount ?? 0) + (form.deliveryFees ?? 0));
-const landed = computed(() => landedCosts(form.lines, form.discount, form.deliveryFees));
+const beforeDiscount = computed(() => subtotal.value + (form.deliveryFees ?? 0));
+const paidTooHigh = computed(() => adjustBy.value === BY_PAID && paid.value !== null && paid.value > beforeDiscount.value);
+const discount = computed(() => (adjustBy.value === BY_PAID ? Math.max(0, beforeDiscount.value - (paid.value ?? beforeDiscount.value)) : form.discount ?? 0));
+const total = computed(() => beforeDiscount.value - discount.value);
+const landed = computed(() => landedCosts(form.lines, discount.value, form.deliveryFees));
+
+const DRAFT_KEY = 'mossytrunk.supplier-order-draft';
+const draftRestored = ref(false);
+
+function readDraft() {
+    try {
+        return JSON.parse(window.localStorage.getItem(DRAFT_KEY) ?? 'null');
+    } catch {
+        return null;
+    }
+}
+
+function writeDraft(draft) {
+    try {
+        if (draft === null) window.localStorage.removeItem(DRAFT_KEY);
+        else window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+        return;
+    }
+}
+
+function discardDraft() {
+    writeDraft(null);
+    Object.assign(form, blank());
+    adjustBy.value = BY_DISCOUNT;
+    paid.value = null;
+    draftRestored.value = false;
+}
+
+onMounted(() => {
+    if (props.order) return;
+    const draft = readDraft();
+    if (!draft?.form?.lines?.length && !draft?.form?.supplierId) return;
+    Object.assign(form, { ...blank(), ...draft.form });
+    adjustBy.value = draft.adjustBy ?? BY_DISCOUNT;
+    paid.value = draft.paid ?? null;
+    draftRestored.value = true;
+});
+
+watch([form, adjustBy, paid], () => {
+    if (!props.order) writeDraft({ form: JSON.parse(JSON.stringify(form)), adjustBy: adjustBy.value, paid: paid.value });
+}, { deep: true });
 const unitCost = (line, index) => (line.quantity > 0 ? Math.round(landed.value[index] / line.quantity) : 0);
 
 function addLine(line) {
@@ -85,6 +136,10 @@ function addLine(line) {
 }
 
 async function onSubmit() {
+    if (paidTooHigh.value) {
+        errors.value = { paid: t('purchasing.form.paidTooHigh') };
+        return;
+    }
     saving.value = true;
     errors.value = {};
     try {
@@ -93,9 +148,10 @@ async function onSubmit() {
             orderedOn: form.orderedOn,
             supplierReference: form.supplierReference.trim() || null,
             lines: form.lines.map(({ productId, variant, quantity, totalPrice, received: got }) => ({ productId, variant, quantity: quantity ?? 0, totalPrice: totalPrice ?? 0, received: received.value ? got ?? -1 : null })),
-            discount: form.discount ?? 0,
+            discount: discount.value,
             deliveryFees: form.deliveryFees ?? 0,
         });
+        if (!props.order) writeDraft(null);
         emit('saved');
     } catch (error) {
         errors.value = error.fieldErrors ?? {};
@@ -112,6 +168,10 @@ async function onSubmit() {
     <form class="supplier-order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="supplier-order-form__error" role="alert">{{ errors.form }}</p>
+            <p v-if="draftRestored" class="supplier-order-form__draft" role="status">
+                {{ t('purchasing.form.draftRestored') }}
+                <BaseButton variant="ghost" @click="discardDraft">{{ t('purchasing.form.draftDiscard') }}</BaseButton>
+            </p>
 
             <FormSection>
                 <FormField as="group" :label="t('purchasing.form.supplier')" :error="errors.supplierId">
@@ -164,12 +224,30 @@ async function onSubmit() {
             </FormSection>
 
             <FormSection :title="t('purchasing.form.extras')" :description="t('purchasing.form.extrasHint')">
-                <FormField :label="t('purchasing.form.discount')" :error="errors.discount">
-                    <BaseMoneyField v-model="form.discount" class="supplier-order-form__money" />
-                </FormField>
                 <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees">
                     <BaseMoneyField v-model="form.deliveryFees" class="supplier-order-form__money" />
                 </FormField>
+                <FormField as="group" :label="t('purchasing.form.adjustBy')">
+                    <ToggleGroupRoot
+                        :model-value="adjustBy"
+                        type="single"
+                        class="supplier-order-form__adjust"
+                        :aria-label="t('purchasing.form.adjustBy')"
+                        @update:model-value="(value) => value && (adjustBy = value)"
+                    >
+                        <ToggleGroupItem :value="BY_DISCOUNT" class="supplier-order-form__adjust-mode">{{ t('purchasing.form.byDiscount') }}</ToggleGroupItem>
+                        <ToggleGroupItem :value="BY_PAID" class="supplier-order-form__adjust-mode">{{ t('purchasing.form.byPaid') }}</ToggleGroupItem>
+                    </ToggleGroupRoot>
+                </FormField>
+                <FormField v-if="adjustBy === BY_DISCOUNT" :label="t('purchasing.form.discount')" :error="errors.discount">
+                    <BaseMoneyField v-model="form.discount" class="supplier-order-form__money" />
+                </FormField>
+                <template v-else>
+                    <FormField :label="t('purchasing.form.paid')" :error="errors.paid ?? (paidTooHigh ? t('purchasing.form.paidTooHigh') : null)" :hint="t('purchasing.form.paidHint')">
+                        <BaseMoneyField v-model="paid" class="supplier-order-form__money" />
+                    </FormField>
+                    <p class="supplier-order-form__deduced">{{ t('purchasing.form.discountFromPaid') }} <MoneyAmount :cents="discount" /></p>
+                </template>
                 <p class="supplier-order-form__total">{{ t('purchasing.form.totalPaid') }} <strong><MoneyAmount :cents="total" /></strong></p>
             </FormSection>
 
@@ -253,5 +331,24 @@ async function onSubmit() {
 }
 
 .supplier-order-form__total strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.supplier-order-form__draft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-accent-soft); font-size: 0.875rem; }
+.supplier-order-form__deduced { margin: 0; color: var(--color-muted); font-size: 0.875rem; }
+.supplier-order-form__adjust { display: inline-flex; align-self: flex-start; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
+
+.supplier-order-form__adjust-mode {
+    min-height: 2.25rem;
+    padding: 0 var(--space-3);
+    border: none;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+}
+
+.supplier-order-form__adjust-mode + .supplier-order-form__adjust-mode { border-left: 0.0625rem solid var(--color-border-strong); }
+.supplier-order-form__adjust-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
+.supplier-order-form__adjust-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 .supplier-order-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

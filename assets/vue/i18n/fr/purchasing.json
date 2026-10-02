@@ -89,7 +89,16 @@
         "receivedHint": "Commande déjà reçue : la réserve suit les quantités reçues et les coûts corrigés. Les ventes passées gardent leur coût.",
         "newProduct": "Nouveau produit",
         "newProductTitle": "Nouveau produit",
-        "productCreated": "Produit « {name} » créé : ajoutez-le à la commande."
+        "productCreated": "Produit « {name} » créé : ajoutez-le à la commande.",
+        "adjustBy": "Ajuster le total",
+        "byDiscount": "Par une remise",
+        "byPaid": "Par le total payé",
+        "paid": "Total réellement payé",
+        "paidHint": "La remise est déduite : produits + livraison − total payé.",
+        "paidTooHigh": "Le total payé dépasse les produits et la livraison : ajoutez la différence aux frais de livraison.",
+        "discountFromPaid": "Remise déduite",
+        "draftRestored": "Commande reprise là où vous l'aviez laissée.",
+        "draftDiscard": "Repartir de zéro"
     },
     "picker": {
         "product": "Produit",
@@ -111,7 +120,12 @@
         "unitPrice": "Prix unitaire",
         "addLines": "Ajouter {count} ligne | Ajouter {count} lignes",
         "chooseType": "Choisissez un type.",
-        "nothingToAdd": "Aucun article de ce type ne correspond à ces variantes."
+        "nothingToAdd": "Aucun article de ce type ne correspond à ces variantes.",
+        "collection": "Collection",
+        "anyCollection": "Toutes les collections",
+        "priceFor": "Prix",
+        "perUnit": "Prix unitaire",
+        "forAll": "Prix total"
     },
     "suppliers": {
         "empty": "Aucun fournisseur pour l'instant.",

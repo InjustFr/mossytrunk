@@ -89,7 +89,16 @@
         "receivedHint": "Order already received: the stock follows the received quantities and corrected costs. Past sales keep their cost.",
         "newProduct": "New product",
         "newProductTitle": "New product",
-        "productCreated": "Product “{name}” created: add it to the order."
+        "productCreated": "Product “{name}” created: add it to the order.",
+        "adjustBy": "Adjust the total",
+        "byDiscount": "By a discount",
+        "byPaid": "By the total paid",
+        "paid": "Total actually paid",
+        "paidHint": "The discount is deduced: products + delivery − total paid.",
+        "paidTooHigh": "The total paid is more than the products and delivery: add the difference to the delivery fees.",
+        "discountFromPaid": "Deduced discount",
+        "draftRestored": "Order picked up where you left it.",
+        "draftDiscard": "Start over"
     },
     "picker": {
         "product": "Product",
@@ -111,7 +120,12 @@
         "unitPrice": "Unit price",
         "addLines": "Add {count} line | Add {count} lines",
         "chooseType": "Choose a type.",
-        "nothingToAdd": "No item of this type matches these variants."
+        "nothingToAdd": "No item of this type matches these variants.",
+        "collection": "Collection",
+        "anyCollection": "All collections",
+        "priceFor": "Price",
+        "perUnit": "Unit price",
+        "forAll": "Total price"
     },
     "suppliers": {
         "empty": "No suppliers yet.",
