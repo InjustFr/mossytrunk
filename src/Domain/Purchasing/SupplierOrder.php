@@ -15,6 +15,7 @@ use App\Domain\Purchasing\Exception\SupplierOrdersNotMergeable;
 use App\Domain\Purchasing\Exception\SupplierReferenceTooLong;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferenceSubject;
+use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\Common\Collections\ArrayCollection;

@@ -22,6 +22,7 @@ use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
 use App\Domain\Sales\OrderCharge;
 use App\Domain\Sales\SalesChannel;
+use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -364,6 +365,17 @@ class Order implements Referenced
         }
 
         return null;
+    }
+
+    /**
+     * @return list<array{line: OrderLine, revenue: Money}>
+     */
+    public function lineRevenues(): array
+    {
+        $lines = $this->lines();
+        $discounts = CostAllocation::proportionally($this->discountTotal(), array_map(static fn (OrderLine $line): Money => $line->total(), $lines));
+
+        return array_map(static fn (OrderLine $line, Money $discount): array => ['line' => $line, 'revenue' => $line->total()->subtract($discount)], $lines, $discounts);
     }
 
     public function fillMissingCosts(Ulid $productId, ?string $variant, Money $unitCost): int

@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Purchasing;
-
-use App\Domain\Shared\Money;
+namespace App\Domain\Shared;
 
 final class CostAllocation
 {

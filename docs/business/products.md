@@ -110,7 +110,7 @@ UI: trash icon on each row of `/products`, with a confirmation.
 | `RenameTypeVariant` | `POST /api/product-types/{id}/variant-renaming` `{from, to}` |
 | `SuggestTypeCode` | `GET /api/product-types/code-suggestion?name=` → `{code}` |
 
-`ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals before discounts, every variant together, see [dashboard](dashboard.md) B7).
+`ListProducts` also returns each product's sales of the **current year** (Europe/Paris): `salesYear`, `unitsSold` and `sales` (line totals after their share of the discounts (O20), every variant together, see [dashboard](dashboard.md) B7).
 
 UI: `/products` (`ProductsPage.vue`) — filters, list with selection, create/edit and batch edit in modals. The list is sortable and shows each product's type (with its colour mark), collection (the collection of its design, see [designs.md](designs.md); « — » without one), stock, cost (stock cost, see K10), margin (selling − cost, and its share of the selling price), units sold and sales of the year.
 Products never bought (buying price 0) show a warning icon (Lucide `TriangleAlert`) to remind that the margin is overstated, and no margin. A « N produits sans coût d'achat » toggle keeps only those products (`/products?purchase-price=missing`, linked from the dashboard warning).

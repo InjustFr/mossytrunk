@@ -24,14 +24,14 @@ final readonly class SalesByProduct
     {
         $products = [];
         foreach ($orders as $order) {
-            foreach ($order->lines() as $line) {
+            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
                 $productId = $line->productId();
                 if (null === $productId) {
                     continue;
                 }
                 $key = (string) $productId;
                 $products[$key] = ($products[$key] ?? new ProductSales($line->productName(), $productId, $line->productName(), null, 0, Money::zero(), Money::zero(), false))
-                    ->add($line->quantity(), $line->total(), $line->cost(), $line->cost()->isZero());
+                    ->add($line->quantity(), $revenue, $line->cost(), $line->cost()->isZero());
             }
         }
 

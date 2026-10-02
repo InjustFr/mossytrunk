@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Unit\Domain\Purchasing;
+namespace App\Tests\Unit\Domain\Shared;
 
-use App\Domain\Purchasing\CostAllocation;
+use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\Money;
 use PHPUnit\Framework\TestCase;
 

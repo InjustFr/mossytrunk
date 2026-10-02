@@ -68,10 +68,10 @@ final readonly class EventResult
         /** @var array<string, ProductSales> $sales */
         $sales = [];
         foreach ($orders as $order) {
-            foreach ($order->lines() as $line) {
+            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
                 $key = $line->productId().'|'.$line->variant();
                 $sales[$key] = ($sales[$key] ?? new ProductSales($line->label(), $line->productId(), $line->productName(), $line->variant(), 0, Money::zero(), Money::zero(), false))
-                    ->add($line->quantity(), $line->total(), $line->cost(), $line->cost()->isZero());
+                    ->add($line->quantity(), $revenue, $line->cost(), $line->cost()->isZero());
             }
         }
 

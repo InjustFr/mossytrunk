@@ -35,7 +35,7 @@ The report is a **receipt**: the result in large type (with its share of the tur
 chiffre d'affaires − coût d'achat − dépenses − URSSAF (rate shown) = **Résultat**.
 
 - **Chiffre d'affaires** unfolds (open when there are orders) into gross sales, discounts and the **orders recap**: an accordion
-  grouped by **type → product → variants** (quantity and sales before discounts at each level; warning icon when a cost is unknown).
+  grouped by **type → product → variants** (quantity and sales after their share of the discounts, O20, at each level — the products add up to the turnover without shipping; warning icon when a cost is unknown).
   Types and names are the products' current ones (untyped or deleted products under « Sans type »), see `GetEventReport/OrderRecap.php` (`OrderRecapTest`).
   The article list can be hidden with « Afficher le détail des articles » (remembered in the browser). Link to the orders list filtered on the event.
 - Expenses are listed (and edited) in their own card below the receipt.

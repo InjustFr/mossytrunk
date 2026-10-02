@@ -58,7 +58,9 @@ final class EventResultTest extends TestCase
 
         self::assertSame(['T-shirt — M', 'T-shirt — S', 'Print', 'Sticker'], array_column($result->productSales, 'label'));
         self::assertSame(3, $result->productSales[0]->quantity);
-        self::assertSame(6_000, $result->productSales[0]->sales->amount());
+        self::assertSame(6_000 - 125, $result->productSales[0]->sales->amount());
+        self::assertSame(1_200 - 75, $result->productSales[3]->sales->amount());
+        self::assertSame($result->turnover->amount(), array_sum(array_map(static fn ($sales): int => $sales->sales->amount(), $result->productSales)));
         self::assertTrue($result->productSales[2]->unknownCost);
         self::assertFalse($result->productSales[0]->unknownCost);
     }
