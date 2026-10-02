@@ -97,6 +97,14 @@
         "added": "Frais « {label} » ajouté.",
         "updated": "Frais « {label} » modifié.",
         "removed": "Frais « {label} » supprimé.",
-        "summary": "Frais : {costs}"
+        "summary": "Frais : {costs}",
+        "paymentMethod": "Moyen de paiement",
+        "serviceFees": "Frais de {service} selon le paiement",
+        "serviceFeesHint": "Ils se règlent dans Paramètres, sur le service.",
+        "paymentMethods": {
+            "card": "Carte",
+            "cash": "Espèces",
+            "mixed": "Mixte"
+        }
     }
 }

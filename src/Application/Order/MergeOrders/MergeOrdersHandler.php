@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Order\MergeOrders;
 
+use App\Application\Order\OrderCharges;
 use App\Application\Transaction;
 use App\Domain\Order\OrderRepository;
 use Symfony\Component\Uid\Ulid;
@@ -12,6 +13,7 @@ final readonly class MergeOrdersHandler
 {
     public function __construct(
         private OrderRepository $orders,
+        private OrderCharges $charges,
         private Transaction $transaction,
     ) {
     }
@@ -22,6 +24,7 @@ final readonly class MergeOrdersHandler
         $absorbed = $this->orders->get(Ulid::fromString($absorbedOrderId));
 
         $order->absorb($absorbed);
+        $this->charges->charge($order);
         $this->orders->remove($absorbed);
         $this->transaction->commit();
     }

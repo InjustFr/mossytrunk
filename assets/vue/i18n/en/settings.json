@@ -101,7 +101,18 @@
         "publishReferences": "Write references to {label}",
         "publishReferencesConfirm": "Write references",
         "publishReferencesMessage": "Each {label} listing linked to a product gets its reference as SKU (« reference-variant » per variation). Prices, titles, quantities and photos stay as they are.",
-        "referencesPublished": "{label}: {updated} listing updated ({linked} linked items). | {label}: {updated} listings updated ({linked} linked items)."
+        "referencesPublished": "{label}: {updated} listing updated ({linked} linked items). | {label}: {updated} listings updated ({linked} linked items).",
+        "fees": "Payment fees",
+        "feesHint": "Applied to the orders of the channel linked to this service, by payment method.",
+        "addFee": "Add a payment fee",
+        "editFee": "Edit {label}",
+        "removeFee": "Delete {label}",
+        "removeFeeMessage": "Orders already imported keep their fees, unless you recompute them.",
+        "feeTitle": "{service} payment fee",
+        "feeAdded": "Fee “{label}” added.",
+        "feeUpdated": "Fee “{label}” updated.",
+        "feeRemoved": "Fee “{label}” deleted.",
+        "noFees": "No payment fee."
     },
     "form": {
         "access": "Access",

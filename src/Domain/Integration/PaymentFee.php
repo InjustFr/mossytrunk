@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Sales;
+namespace App\Domain\Integration;
 
+use App\Domain\Order\PaymentMethod;
+use App\Domain\Sales\ChannelCostKind;
 use App\Domain\Sales\Exception\EmptyCostLabel;
+use App\Domain\Sales\OrderCharge;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
@@ -12,16 +15,19 @@ use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 #[ORM\Entity]
-#[ORM\Table(name: 'sales_channel_cost')]
-class ChannelCost
+#[ORM\Table(name: 'service_payment_fee')]
+class PaymentFee
 {
     #[ORM\Id]
     #[ORM\Column(type: UlidType::NAME, unique: true)]
     private Ulid $id;
 
-    #[ORM\ManyToOne(targetEntity: SalesChannel::class, inversedBy: 'costs')]
-    #[ORM\JoinColumn(name: 'channel_id', nullable: false, onDelete: 'CASCADE')]
-    private SalesChannel $channel;
+    #[ORM\ManyToOne(targetEntity: ServiceConnection::class, inversedBy: 'fees')]
+    #[ORM\JoinColumn(name: 'connection_id', nullable: false, onDelete: 'CASCADE')]
+    private ServiceConnection $connection;
+
+    #[ORM\Column(length: 16, enumType: PaymentMethod::class)]
+    private PaymentMethod $paymentMethod;
 
     #[ORM\Column(length: 100)]
     private string $label;
@@ -33,19 +39,19 @@ class ChannelCost
     private int $amount;
 
     /**
-     * @internal built by SalesChannel
+     * @internal built by ServiceConnection
      */
-    public function __construct(SalesChannel $channel, string $label, ChannelCostKind $kind, int $amount)
+    public function __construct(ServiceConnection $connection, PaymentMethod $paymentMethod, string $label, ChannelCostKind $kind, int $amount)
     {
         $this->id = new Ulid();
-        $this->channel = $channel;
-        $this->revise($label, $kind, $amount);
+        $this->connection = $connection;
+        $this->revise($paymentMethod, $label, $kind, $amount);
     }
 
     /**
-     * @internal revised through SalesChannel
+     * @internal revised through ServiceConnection
      */
-    public function revise(string $label, ChannelCostKind $kind, int $amount): void
+    public function revise(PaymentMethod $paymentMethod, string $label, ChannelCostKind $kind, int $amount): void
     {
         $label = trim($label);
         if ('' === $label) {
@@ -55,9 +61,15 @@ class ChannelCost
             throw new NegativeAmount('channel_cost');
         }
 
+        $this->paymentMethod = $paymentMethod;
         $this->label = $label;
         $this->kind = $kind;
         $this->amount = $amount;
+    }
+
+    public function appliesTo(?PaymentMethod $paymentMethod): bool
+    {
+        return $this->paymentMethod === $paymentMethod;
     }
 
     public function on(Money $orderTotal): OrderCharge
@@ -68,6 +80,11 @@ class ChannelCost
     public function id(): Ulid
     {
         return $this->id;
+    }
+
+    public function paymentMethod(): PaymentMethod
+    {
+        return $this->paymentMethod;
     }
 
     public function label(): string

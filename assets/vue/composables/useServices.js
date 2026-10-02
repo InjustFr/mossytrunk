@@ -31,6 +31,9 @@ export function useServices() {
     const update = (service, payload) => api.put(`/api/services/${service}`, payload);
     const remove = (service) => api.del(`/api/services/${service}`);
     const disconnect = (service) => api.del(`/api/services/${service}/authorization`);
+    const addFee = (service, payload) => api.post(`/api/services/${service}/fees`, payload);
+    const reviseFee = (service, feeId, payload) => api.put(`/api/services/${service}/fees/${feeId}`, payload);
+    const removeFee = (service, feeId) => api.del(`/api/services/${service}/fees/${feeId}`);
 
     function importCatalogue(service, file) {
         const data = new FormData();
@@ -41,5 +44,5 @@ export function useServices() {
     const readCatalogue = (service) => api.post(`/api/services/${service}/catalogue/read`);
     const publishReferences = (service) => api.post(`/api/services/${service}/references`);
 
-    return { services, added, ready, load, add, update, remove, disconnect, importCatalogue, readCatalogue, publishReferences };
+    return { addFee, reviseFee, removeFee, services, added, ready, load, add, update, remove, disconnect, importCatalogue, readCatalogue, publishReferences };
 }

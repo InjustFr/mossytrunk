@@ -7,6 +7,13 @@ namespace App\Domain\Integration;
 use App\Domain\Identity\Workspace;
 use App\Domain\Integration\Exception\InvalidSetting;
 use App\Domain\Integration\Exception\UnknownService;
+use App\Domain\Order\PaymentMethod;
+use App\Domain\Sales\ChannelCostKind;
+use App\Domain\Sales\OrderCharge;
+use App\Domain\Shared\Exception\NotFound;
+use App\Domain\Shared\Money;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -52,6 +59,11 @@ class ServiceConnection
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
+    /** @var Collection<int, PaymentFee> */
+    #[ORM\OneToMany(targetEntity: PaymentFee::class, mappedBy: 'connection', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $fees;
+
     /**
      * @param array<string, string> $settings
      */
@@ -65,6 +77,7 @@ class ServiceConnection
         $this->workspace = $workspace;
         $this->service = $service;
         $this->createdAt = new \DateTimeImmutable();
+        $this->fees = new ArrayCollection();
         $this->configure($settings);
         $this->choose($salesContext, $unknownItems);
     }
@@ -98,6 +111,54 @@ class ServiceConnection
         $this->settings = $cleaned;
 
         return $changed;
+    }
+
+    public function addFee(PaymentMethod $paymentMethod, string $label, ChannelCostKind $kind, int $amount): PaymentFee
+    {
+        $fee = new PaymentFee($this, $paymentMethod, $label, $kind, $amount);
+        $this->fees->add($fee);
+
+        return $fee;
+    }
+
+    public function reviseFee(Ulid $feeId, PaymentMethod $paymentMethod, string $label, ChannelCostKind $kind, int $amount): void
+    {
+        $this->fee($feeId)->revise($paymentMethod, $label, $kind, $amount);
+    }
+
+    public function removeFee(Ulid $feeId): void
+    {
+        $this->fees->removeElement($this->fee($feeId));
+    }
+
+    /**
+     * @return list<PaymentFee>
+     */
+    public function fees(): array
+    {
+        return array_values($this->fees->toArray());
+    }
+
+    /**
+     * @return list<OrderCharge>
+     */
+    public function feesOn(?PaymentMethod $paymentMethod, Money $orderTotal): array
+    {
+        return array_values(array_map(
+            static fn (PaymentFee $fee): OrderCharge => $fee->on($orderTotal),
+            array_filter($this->fees(), static fn (PaymentFee $fee): bool => $fee->appliesTo($paymentMethod)),
+        ));
+    }
+
+    private function fee(Ulid $feeId): PaymentFee
+    {
+        foreach ($this->fees as $fee) {
+            if ($fee->id()->equals($feeId)) {
+                return $fee;
+            }
+        }
+
+        throw new NotFound('payment_fee', (string) $feeId);
     }
 
     public function choose(SalesContext $salesContext, UnknownItems $unknownItems): void

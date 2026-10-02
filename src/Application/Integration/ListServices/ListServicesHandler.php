@@ -15,6 +15,7 @@ use App\Application\Integration\ServiceField;
 use App\Application\Workspace\WorkspaceSecrets;
 use App\Domain\Identity\SecretName;
 use App\Domain\Integration\ExternalItemRepository;
+use App\Domain\Integration\PaymentFee;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\ServiceConnectionRepository;
 
@@ -90,6 +91,7 @@ final readonly class ListServicesHandler
             $connection->isAuthorized(),
             $connection->accountName(),
             $this->items->unlinkedCount($connection->service()),
+            array_map(static fn (PaymentFee $fee): array => ['id' => (string) $fee->id(), 'paymentMethod' => $fee->paymentMethod()->value, 'label' => $fee->label(), 'kind' => $fee->kind()->value, 'amount' => $fee->amount()], $connection->fees()),
         );
     }
 }

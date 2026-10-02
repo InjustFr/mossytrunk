@@ -46,6 +46,7 @@ function openPrice(product) {
 }
 
 const main = computed(() => mainChannelOf(salesChannels.channels.value));
+const linkedService = computed(() => services.services.value.find((service) => service.key === channel.value?.service && service.connection) ?? null);
 const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const shownProducts = computed(() => {
     const needle = normalize(search.value.trim());
@@ -150,6 +151,11 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                 </template>
                 <p class="channel-page__intro">{{ t('channels.costs.intro') }}</p>
                 <ChannelCosts :costs="channel.costs" @edit="openCost" @remove="onCostRemoved" />
+                <div v-if="linkedService" class="channel-page__service-fees">
+                    <h3 class="channel-page__subtitle">{{ t('channels.costs.serviceFees', { service: linkedService.label }) }}</h3>
+                    <ChannelCosts v-if="linkedService.connection.fees.length" :costs="linkedService.connection.fees" readonly />
+                    <p class="channel-page__intro"><a href="/settings">{{ t('channels.costs.serviceFeesHint') }}</a></p>
+                </div>
             </BaseCard>
 
             <BaseCard :title="t('channels.supplies.title')">
@@ -211,6 +217,8 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
 .channel-page__facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-4) var(--space-5); margin: 0; }
 .channel-page__facts dt { color: var(--color-muted); font-size: 0.8rem; }
 .channel-page__facts dd { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin: 0; font-weight: 600; }
+.channel-page__service-fees { margin-top: var(--space-4); }
+.channel-page__subtitle { margin: 0 0 var(--space-2); font-family: var(--font-body); font-size: 0.9375rem; font-weight: 600; }
 .channel-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
 
 .channel-page__search {

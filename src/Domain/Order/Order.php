@@ -319,9 +319,13 @@ class Order implements Referenced
         $this->chargeChannelCosts();
     }
 
-    public function chargeChannelCosts(): void
+    /**
+     * @param list<OrderCharge> $paymentFees
+     */
+    public function chargeChannelCosts(array $paymentFees = []): void
     {
-        $this->channelCharges = null === $this->channel ? [] : array_map(static fn (OrderCharge $charge): array => $charge->toArray(), $this->channel->chargesOn($this->total()));
+        $charges = [...(null === $this->channel ? [] : $this->channel->chargesOn($this->total())), ...$paymentFees];
+        $this->channelCharges = array_map(static fn (OrderCharge $charge): array => $charge->toArray(), $charges);
     }
 
     /**

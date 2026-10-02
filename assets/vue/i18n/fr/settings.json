@@ -101,7 +101,18 @@
         "publishReferences": "Écrire les références sur {label}",
         "publishReferencesConfirm": "Écrire les références",
         "publishReferencesMessage": "Chaque annonce {label} associée à un produit reçoit sa référence comme SKU (« référence-variante » par variation). Prix, titres, quantités et photos ne changent pas.",
-        "referencesPublished": "{label} : {updated} annonce mise à jour ({linked} articles associés). | {label} : {updated} annonces mises à jour ({linked} articles associés)."
+        "referencesPublished": "{label} : {updated} annonce mise à jour ({linked} articles associés). | {label} : {updated} annonces mises à jour ({linked} articles associés).",
+        "fees": "Frais de paiement",
+        "feesHint": "Appliqués aux commandes du canal lié à ce service, selon leur moyen de paiement.",
+        "addFee": "Ajouter un frais de paiement",
+        "editFee": "Modifier {label}",
+        "removeFee": "Supprimer {label}",
+        "removeFeeMessage": "Les commandes déjà importées gardent leurs frais, sauf si vous les recalculez.",
+        "feeTitle": "Frais de paiement {service}",
+        "feeAdded": "Frais « {label} » ajouté.",
+        "feeUpdated": "Frais « {label} » modifié.",
+        "feeRemoved": "Frais « {label} » supprimé.",
+        "noFees": "Aucun frais de paiement."
     },
     "form": {
         "access": "Accès",

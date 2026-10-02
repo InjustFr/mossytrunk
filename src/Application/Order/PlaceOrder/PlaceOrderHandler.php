@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Order\PlaceOrder;
 
+use App\Application\Order\OrderCharges;
 use App\Application\Order\OrderPricing;
 use App\Application\Reference\ReferenceGenerator;
 use App\Application\Sales\OrderChannel;
@@ -29,6 +30,7 @@ final readonly class PlaceOrderHandler
         private ReferenceGenerator $references,
         private Transaction $transaction,
         private OrderChannel $orderChannel,
+        private OrderCharges $charges,
     ) {
     }
 
@@ -39,6 +41,7 @@ final readonly class PlaceOrderHandler
         $items = $this->stock->withdraw($event, $this->pricing->items($command->lines, $command->placedAt));
         $order = Order::place($this->references->next(ReferenceKind::Order, ReferenceSubject::at($command->placedAt)), $event, $command->placedAt, $items, $this->pricing->discounts($items, $command->placedAt), $this->orderChannel->of(null, $event));
 
+        $this->charges->charge($order);
         $this->orders->add($order);
         $this->transaction->commit();
 

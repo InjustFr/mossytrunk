@@ -8,6 +8,7 @@ use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
 use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
+use App\Application\Order\OrderCharges;
 use App\Application\Order\OrderPricing;
 use App\Application\Reference\ReferenceGenerator;
 use App\Application\Sales\OrderChannel;
@@ -27,6 +28,7 @@ use App\Domain\Shared\DateRange;
 final readonly class ImportSalesHandler
 {
     public function __construct(
+        private OrderCharges $charges,
         private Connectors $connectors,
         private ServiceConnectionRepository $connections,
         private ConnectionSession $session,
@@ -96,7 +98,7 @@ final readonly class ImportSalesHandler
             }
 
             $items = $this->stock->withdraw($event, $items);
-            $this->orders->add(Order::imported(
+            $order = Order::imported(
                 $this->references->next(ReferenceKind::Order, ReferenceSubject::at($sale->placedAt)),
                 $connection->workspace(),
                 $service,
@@ -111,7 +113,9 @@ final readonly class ImportSalesHandler
                 $atEvent ? $this->pricing->discounts($items, $sale->placedAt) : [],
                 $this->translator->trans('import.discount', ['service' => $description->label]),
                 $channel,
-            ));
+            );
+            $this->charges->charge($order);
+            $this->orders->add($order);
             ++$imported;
         }
 
