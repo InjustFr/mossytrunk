@@ -1,13 +1,18 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { test, expect } from '@playwright/test';
-import { createEvent, createProduct } from './support/api.js';
+import { createEvent, createType } from './support/api.js';
+import { unique } from './support/unique.js';
 
 const notebookPage = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../tests/Fixtures/notebook/page.png');
 
+const findProduct = async (request, name) => (await (await request.get('/api/products')).json()).find((product) => product.displayName === name);
+
 async function productNamed(request, name) {
-    const products = await (await request.get('/api/products')).json();
-    return products.find((product) => product.displayName === name) ?? createProduct(request, { name, sellingPrice: 1_200 });
+    const existing = await findProduct(request, name);
+    if (existing) return existing;
+    await request.post('/api/products', { data: { name, sellingPrice: 1_200, variants: [], typeId: (await createType(request, unique('Divers'), { prefixesNames: false })).id } });
+    return findProduct(request, name);
 }
 
 async function placeOrder(request, event, time, lines) {

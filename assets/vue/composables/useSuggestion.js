@@ -9,8 +9,9 @@ export function useSuggestion(target, source, fetchSuggestion, { follow = true }
 
     async function refresh() {
         const call = ++latest;
+        const before = target.value;
         const suggestion = await fetchSuggestion(source()).catch(() => null);
-        if (call === latest && following.value && suggestion !== null) {
+        if (call === latest && following.value && suggestion !== null && target.value === before) {
             target.value = suggestion;
         }
     }
@@ -23,7 +24,6 @@ export function useSuggestion(target, source, fetchSuggestion, { follow = true }
     function edited(value = target.value) {
         latest++;
         following.value = value.trim() === '';
-        if (following.value) refresh();
     }
 
     function reset(shouldFollow) {

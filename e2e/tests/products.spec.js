@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
 import { fillDate } from './support/date.js';
-import { unique } from './support/unique.js';
+import { unique, uniqueTypeCode } from './support/unique.js';
 import { createProduct, createType, defineVariants } from './support/api.js';
 
 const uniqueCode = (prefix) => `${prefix}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toUpperCase();
@@ -200,7 +200,7 @@ test('delete a product', async ({ page, request }) => {
 test('create a product type with a colour and a suggested code, then rename it, change its code and give it a custom colour offered to other types', async ({ page, request }) => {
     const name = unique('Carte');
     const renamed = unique('Affiche');
-    const code = uniqueCode('A').slice(0, 8);
+    const code = uniqueTypeCode();
 
     await page.goto('/products');
     await page.getByRole('button', { name: 'Types de produit' }).click();

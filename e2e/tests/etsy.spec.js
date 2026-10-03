@@ -47,6 +47,7 @@ test('connect the Etsy shop, import its orders and link an unknown listing to a 
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
+    await page.getByLabel('Rechercher une commande').fill('ETSY-3100000001');
     await page.getByRole('row').filter({ hasText: 'ETSY-3100000001' }).getByRole('link', { name: /^CMD-/ }).click();
     await expect(page.getByText('Boutique Etsy · importée depuis Etsy')).toBeVisible();
     await expect(page.getByText('Frais de port')).toBeVisible();
