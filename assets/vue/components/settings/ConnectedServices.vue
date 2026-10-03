@@ -1,6 +1,5 @@
 <script setup>
-import { Download, Pencil, Plus, Trash2 } from '@lucide/vue';
-import ChannelCosts from '../channels/ChannelCosts.vue';
+import { Download, Pencil, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
@@ -15,7 +14,7 @@ defineProps({
     services: { type: Array, required: true },
     importing: { type: String, default: null },
 });
-const emit = defineEmits(['edit', 'remove', 'disconnect', 'import-catalogue', 'read-catalogue', 'publish-references', 'add-fee', 'edit-fee', 'remove-fee']);
+const emit = defineEmits(['edit', 'remove', 'disconnect', 'import-catalogue', 'read-catalogue', 'publish-references']);
 
 const labelOf = (options, value) => {
     const label = options.find((option) => option.value === value)?.label;
@@ -50,19 +49,6 @@ function status(service) {
                         <dd>{{ labelOf(UNKNOWN_ITEMS, service.connection.unknownItems) }}</dd>
                     </div>
                 </dl>
-                <section class="connected-services__fees" :aria-label="t('settings.connected.fees')">
-                    <p class="connected-services__fees-title">
-                        {{ t('settings.connected.fees') }}
-                        <BaseButton variant="ghost" @click="emit('add-fee', service)"><Plus size="1rem" aria-hidden="true" /> {{ t('settings.connected.addFee') }}</BaseButton>
-                    </p>
-                    <ChannelCosts
-                        v-if="service.connection.fees.length"
-                        :costs="service.connection.fees"
-                        @edit="(fee) => emit('edit-fee', service, fee)"
-                        @remove="(fee) => emit('remove-fee', service, fee)"
-                    />
-                    <p v-else class="connected-services__fees-hint">{{ t('settings.connected.feesHint') }}</p>
-                </section>
                 <p v-if="service.connection.itemsToLink" class="connected-services__waiting">
                     <a href="/orders">{{ t('settings.connected.itemsToLink', service.connection.itemsToLink) }}</a>
                 </p>
@@ -162,7 +148,4 @@ function status(service) {
     .connected-services__row { grid-template-columns: auto 1fr; }
     .connected-services__actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
-.connected-services__fees { margin-top: var(--space-3); }
-.connected-services__fees-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; font-size: 0.875rem; font-weight: 600; }
-.connected-services__fees-hint { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.8125rem; }
 </style>

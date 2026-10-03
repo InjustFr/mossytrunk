@@ -11,7 +11,6 @@ import ServiceModal from '../components/settings/ServiceModal.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
 import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
-import ChannelCostForm from '../components/channels/ChannelCostForm.vue';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
@@ -117,30 +116,6 @@ async function onFormatSaved(renamed) {
     await references.load();
 }
 
-const feeService = ref(null);
-const editingFee = ref(null);
-const feeOpen = ref(false);
-
-function openFee(service, fee = null) {
-    feeService.value = service;
-    editingFee.value = fee;
-    feeOpen.value = true;
-}
-
-const saveFee = (payload) => (editingFee.value ? services.reviseFee(feeService.value.key, editingFee.value.id, payload) : services.addFee(feeService.value.key, payload));
-
-async function onFeeSaved(label) {
-    feeOpen.value = false;
-    toast.success(t(editingFee.value ? 'settings.connected.feeUpdated' : 'settings.connected.feeAdded', { label }));
-    await services.load();
-}
-
-async function onFeeRemoved(service, fee) {
-    await services.removeFee(service.key, fee.id);
-    toast.success(t('settings.connected.feeRemoved', { label: fee.label }));
-    await services.load();
-}
-
 const onRemove = (service) => run(() => services.remove(service.key), t('settings.services.removed', { label: service.label }));
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
@@ -169,9 +144,6 @@ onMounted(async () => {
                     @import-catalogue="(service, file) => onImportCatalogue(service, () => services.importCatalogue(service.key, file))"
                     @read-catalogue="(service) => onImportCatalogue(service, () => services.readCatalogue(service.key))"
                     @publish-references="onPublishReferences"
-                    @add-fee="(service) => openFee(service)"
-                    @edit-fee="openFee"
-                    @remove-fee="onFeeRemoved"
                 />
                 <EmptyState v-else>{{ t('settings.services.empty', { available }) }}</EmptyState>
             </BaseCard>
@@ -188,9 +160,6 @@ onMounted(async () => {
             :update="services.update"
             @saved="onSaved"
         />
-        <BaseModal v-model:open="feeOpen" :title="t('settings.connected.feeTitle', { service: feeService?.label ?? '' })">
-            <ChannelCostForm v-if="feeOpen" :key="editingFee?.id ?? 'new'" :cost="editingFee" :submit="saveFee" with-payment-method @saved="onFeeSaved" @cancel="feeOpen = false" />
-        </BaseModal>
         <BaseModal v-model:open="formatModalOpen" :title="t('settings.references.edit', { kind: formatKind })">
             <ReferenceFormatForm
                 v-if="editingFormat"

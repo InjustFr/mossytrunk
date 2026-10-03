@@ -8,7 +8,6 @@ import { formatCostAmount } from '../../composables/useChannelCosts.js';
 
 defineProps({
     costs: { type: Array, required: true },
-    readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(['edit', 'remove']);
 const { t } = useI18n();
@@ -19,11 +18,10 @@ const { t } = useI18n();
     <ul v-else class="channel-costs">
         <li v-for="cost in costs" :key="cost.id" class="channel-costs__row">
             <span class="channel-costs__label">
-                <span v-if="cost.paymentMethod" class="channel-costs__method">{{ t(`channels.costs.paymentMethods.${cost.paymentMethod}`) }}</span>
                 {{ cost.label }}
             </span>
             <span class="channel-costs__amount">{{ formatCostAmount(cost) }}</span>
-            <span v-if="!readonly" class="channel-costs__actions">
+            <span class="channel-costs__actions">
                 <IconButton :icon="Pencil" :label="t('channels.costs.edit', { label: cost.label })" @click="emit('edit', cost)" />
                 <ConfirmButton :icon="Trash2" :label="t('channels.costs.remove', { label: cost.label })" :message="t('channels.costs.removeMessage')" @confirm="emit('remove', cost)" />
             </span>
@@ -36,7 +34,6 @@ const { t } = useI18n();
 .channel-costs__row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-top: 0.0625rem solid var(--color-border); }
 .channel-costs__row:first-child { border-top: none; }
 .channel-costs__label { flex: 1 1 auto; min-width: 0; }
-.channel-costs__method { margin-right: var(--space-2); padding: 0.0625rem var(--space-2); border-radius: 62.4375rem; background: var(--color-bg); color: var(--color-muted); font-size: 0.75rem; }
 .channel-costs__amount { font-variant-numeric: tabular-nums; }
 .channel-costs__actions { display: flex; gap: var(--space-1); }
 </style>

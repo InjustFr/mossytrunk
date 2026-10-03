@@ -7,7 +7,6 @@ namespace App\Tests\Functional\Application\Integration;
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
-use App\Application\Integration\AddPaymentFee\AddPaymentFeeHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
@@ -33,7 +32,6 @@ use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Order\Exception\LineAlreadyIdentified;
 use App\Domain\Order\PaymentMethod;
-use App\Domain\Sales\ChannelCostKind;
 use App\Domain\Sales\ChannelKind;
 use App\Domain\Shared\Money;
 use App\Infrastructure\Connector\SumUp\FakeSumUpGateway;
@@ -208,11 +206,10 @@ final class ImportSumUpSalesTest extends KernelTestCase
         self::assertSame(1, $report->itemsToLink);
     }
 
-    public function testTheFeeSumUpReportedReplacesTheConfiguredOneOnceKnown(): void
+    public function testTheFeeSumUpReportedIsChargedOnceKnown(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
         self::getContainer()->get(SaveChannelHandler::class)(null, 'Stand', ChannelKind::Market, 'sumup');
-        self::getContainer()->get(AddPaymentFeeHandler::class)('sumup', PaymentMethod::Card, 'Carte', ChannelCostKind::Percent, 175);
         self::createProduct('Badge', 1_000, 50);
         $sale = static fn (string $code, ?int $fee): ExternalSale => ExternalSales::sumUp($code, new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(1_000), [ExternalSales::line('Badge', Money::cents(1_000), 1)], PaymentMethod::Card, null === $fee ? null : Money::cents($fee));
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([$sale('TX-PAID', 17), $sale('TX-PENDING', null)]);
@@ -221,7 +218,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
 
         $charges = static fn (string $code): array => self::getContainer()->get(GetOrderHandler::class)(self::ordersBySale()[$code]->id)->charges;
         self::assertSame([['label' => 'SumUp fees', 'amount' => 17]], $charges('TX-PAID'));
-        self::assertSame([['label' => 'Carte', 'amount' => 18]], $charges('TX-PENDING'), 'estimated until SumUp reports the fee');
+        self::assertSame([], $charges('TX-PENDING'), 'no fee until SumUp reports it');
 
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([$sale('TX-PAID', 17), $sale('TX-PENDING', 19)]);
         self::assertSame(1, $this->import()->feesUpdated);

@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
-import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
@@ -14,7 +13,6 @@ import { COST_KINDS } from '../../composables/useChannelCosts.js';
 const props = defineProps({
     cost: { type: Object, default: null },
     submit: { type: Function, required: true },
-    withPaymentMethod: { type: Boolean, default: false },
 });
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
@@ -24,9 +22,7 @@ const form = reactive({
     kind: props.cost?.kind ?? COST_KINDS.percent,
     cents: props.cost?.kind === COST_KINDS.fixed ? props.cost.amount : null,
     percent: props.cost?.kind === COST_KINDS.percent ? props.cost.amount / 100 : null,
-    paymentMethod: props.cost?.paymentMethod ?? 'card',
 });
-const paymentMethods = computed(() => ['card', 'cash', 'mixed'].map((method) => ({ value: method, label: t(`channels.costs.paymentMethods.${method}`) })));
 const errors = ref({});
 const saving = ref(false);
 const percentFormat = { style: 'unit', unit: 'percent', maximumFractionDigits: 2 };
@@ -38,7 +34,7 @@ async function onSubmit() {
     saving.value = true;
     errors.value = {};
     try {
-        await props.submit({ label: form.label, kind: form.kind, amount: amount.value, ...(props.withPaymentMethod ? { paymentMethod: form.paymentMethod } : {}) });
+        await props.submit({ label: form.label, kind: form.kind, amount: amount.value });
         emit('saved', form.label.trim());
     } catch (error) {
         errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
@@ -53,9 +49,6 @@ async function onSubmit() {
         <fieldset class="form-lock" :disabled="saving">
             <p v-if="errors.form" class="channel-cost-form__error" role="alert">{{ errors.form }}</p>
             <FormSection>
-                <FormField v-if="withPaymentMethod" as="group" :label="t('channels.costs.paymentMethod')" :error="errors.paymentMethod">
-                    <BaseSelect v-model="form.paymentMethod" :options="paymentMethods" :aria-label="t('channels.costs.paymentMethod')" class="channel-cost-form__method" />
-                </FormField>
                 <FormField :label="t('channels.costs.label')" :error="errors.label">
                     <input v-model="form.label" type="text" required maxlength="100" :placeholder="t('channels.costs.labelPlaceholder')">
                 </FormField>
@@ -95,7 +88,6 @@ async function onSubmit() {
 .channel-cost-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .channel-cost-form__amount { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .channel-cost-form__field { max-width: 9rem; }
-.channel-cost-form :deep(.channel-cost-form__method) { max-width: 12rem; }
 .channel-cost-form__kinds { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 
 .channel-cost-form__kind {

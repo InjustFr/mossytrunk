@@ -97,14 +97,6 @@
         "added": "Cost “{label}” added.",
         "updated": "Cost “{label}” updated.",
         "removed": "Cost “{label}” deleted.",
-        "summary": "Costs: {costs}",
-        "paymentMethod": "Payment method",
-        "serviceFees": "{service} fees by payment",
-        "serviceFeesHint": "Set them in Settings, on the service.",
-        "paymentMethods": {
-            "card": "Card",
-            "cash": "Cash",
-            "mixed": "Mixed"
-        }
+        "summary": "Costs: {costs}"
     }
 }

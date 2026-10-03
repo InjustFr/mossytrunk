@@ -7,8 +7,7 @@ namespace App\Application\Integration\ListServices;
 final readonly class ConnectionView
 {
     /**
-     * @param array<string, FieldValueView>                                                            $values
-     * @param list<array{id: string, paymentMethod: string, label: string, kind: string, amount: int}> $fees
+     * @param array<string, FieldValueView> $values
      */
     public function __construct(
         public array $values,
@@ -18,7 +17,6 @@ final readonly class ConnectionView
         public bool $authorized,
         public ?string $accountName,
         public int $itemsToLink,
-        public array $fees,
     ) {
     }
 }

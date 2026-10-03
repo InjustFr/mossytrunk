@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Sales;
 
-use App\Application\Integration\AddPaymentFee\AddPaymentFeeHandler;
 use App\Application\Integration\CompleteAuthorization\CompleteAuthorizationHandler;
 use App\Application\Integration\ConfigureConnection\AddConnectionHandler;
 use App\Application\Integration\ExportCatalogue\ExportCatalogueHandler;
 use App\Application\Integration\ImportSales\ImportSalesHandler;
-use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Order\ListOrders\OrderSummaryView;
 use App\Application\Product\BatchUpdateProducts\BatchUpdateProducts;
@@ -25,8 +23,6 @@ use App\Application\Sales\ListChannels\ListChannelsHandler;
 use App\Application\Sales\SalesChannelView;
 use App\Application\Sales\SaveChannel\SaveChannelHandler;
 use App\Domain\Integration\UnknownItems;
-use App\Domain\Order\PaymentMethod;
-use App\Domain\Sales\ChannelCostKind;
 use App\Domain\Sales\ChannelKind;
 use App\Domain\Sales\Exception\ChannelHasOrdersWithoutEvent;
 use App\Domain\Sales\Exception\ChannelNameTaken;
@@ -103,21 +99,6 @@ final class SalesChannelUseCasesTest extends KernelTestCase
 
         $this->expectException(ChannelHasOrdersWithoutEvent::class);
         self::getContainer()->get(SaveChannelHandler::class)($etsy, 'Etsy', ChannelKind::Market, 'etsy');
-    }
-
-    public function testTheFeesOfAServiceForThePaymentMethodApplyToItsChannel(): void
-    {
-        $this->channel('Etsy', 'etsy');
-        ExternalSales::connect(self::getContainer()->get(AddConnectionHandler::class), 'etsy', ['keystring' => 'keystring123', 'shared_secret' => 'shared-secret'], unknownItems: UnknownItems::CreateProduct);
-        self::getContainer()->get(CompleteAuthorizationHandler::class)('etsy', 'code', 'verifier', 'https://app.test/settings/etsy/callback');
-        self::getContainer()->get(AddPaymentFeeHandler::class)('etsy', PaymentMethod::Card, 'Paiement par carte', ChannelCostKind::Percent, 400);
-        self::getContainer()->get(AddPaymentFeeHandler::class)('etsy', PaymentMethod::Cash, 'Espèces', ChannelCostKind::Fixed, 99);
-        self::getContainer()->get(ImportSalesHandler::class)('etsy');
-        self::getContainer()->get('doctrine')->getManager()->clear();
-
-        $order = array_values(array_filter(self::getContainer()->get(ListOrdersHandler::class)(), static fn (OrderSummaryView $order): bool => 'Etsy' === $order->channelName))[0];
-        $view = self::getContainer()->get(GetOrderHandler::class)($order->id);
-        self::assertSame([['label' => 'Paiement par carte', 'amount' => (int) round($view->total * 0.04)]], $view->charges);
     }
 
     public function testProductsGetTheirOwnPriceOnAChannelUntilItIsDeleted(): void
