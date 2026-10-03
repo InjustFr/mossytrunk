@@ -155,8 +155,10 @@ final class DesignUseCasesTest extends KernelTestCase
     {
         $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', null);
         $heron = self::createProduct('Héron', 400, 60, ['5 cm']);
+        $aigrette = self::createProduct('Aigrette', 400, 60, ['5 cm']);
         $loutre = self::createProduct('Loutre', 400, 60, ['5 cm']);
         self::getContainer()->get(DesignProductHandler::class)($heron, $this->sticker, $collectionId);
+        self::getContainer()->get(DesignProductHandler::class)($aigrette, $this->sticker, $collectionId);
         self::getContainer()->get(DesignProductHandler::class)($loutre, $this->sticker);
         $this->clear();
 
@@ -166,6 +168,7 @@ final class DesignUseCasesTest extends KernelTestCase
         }
 
         self::assertSame([$collectionId, 'Sous-bois'], $collections['Héron']);
+        self::assertSame([$collectionId, 'Sous-bois'], $collections['Aigrette']);
         self::assertSame([null, null], $collections['Loutre']);
     }
 

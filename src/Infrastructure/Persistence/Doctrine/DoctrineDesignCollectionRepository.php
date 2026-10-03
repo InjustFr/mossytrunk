@@ -9,8 +9,8 @@ use App\Domain\Design\Design;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Design\DesignCollectionRepository;
 use App\Domain\Shared\Exception\NotFound;
+use App\Infrastructure\Persistence\Doctrine\Reporting\SqlValue;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
@@ -45,22 +45,31 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
 
     public function byProduct(): array
     {
+        $collections = [];
+        foreach ($this->all() as $collection) {
+            $collections[$collection->id()->toRfc4122()] = $collection;
+        }
+
         $rows = $this->entityManager->createQueryBuilder()
-            ->select('c', 'x.productId AS productId')
-            ->from(DesignCollection::class, 'c')
-            ->join(Design::class, 'd', Join::WITH, 'd.collection = c')
+            ->select('x.productId AS productId', 'IDENTITY(d.collection) AS collectionId')
+            ->from(Design::class, 'd')
             ->join('d.declinations', 'x')
-            ->where('c.workspace = :workspace')
+            ->where('d.workspace = :workspace')
+            ->andWhere('d.collection IS NOT NULL')
             ->andWhere('x.productId IS NOT NULL')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->getQuery()
-            ->getResult();
+            ->getScalarResult();
 
-        $collections = [];
-        foreach ($rows as ['productId' => $productId, 0 => $collection]) {
-            $collections[(string) $productId] = $collection;
+        $byProduct = [];
+        foreach ($rows as $row) {
+            $productId = \is_array($row) ? $row['productId'] ?? null : null;
+            $collection = $collections[SqlValue::string(\is_array($row) ? $row['collectionId'] ?? null : null)] ?? null;
+            if (null !== $collection && ($productId instanceof Ulid || \is_string($productId))) {
+                $byProduct[(string) Ulid::fromString((string) $productId)] = $collection;
+            }
         }
 
-        return $collections;
+        return $byProduct;
     }
 }
