@@ -51,9 +51,9 @@ services:
         condition: service_healthy
     environment:
       APP_ENV: test
-      APP_DEBUG: 1
+      APP_DEBUG: 0
       E2E_NATIVE_SESSIONS: 1
-      ASSETS_DIR: build-e2e
+      ASSETS_DIR: ${E2E_ASSETS_DIR:-build-e2e}
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
       MAILER_DSN: smtp://mailpit:1025
     volumes:

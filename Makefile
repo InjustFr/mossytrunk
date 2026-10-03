@@ -11,9 +11,12 @@ PLATFORM ?= linux/amd64
 DEPLOY_HOST ?= debian@duprat.cloud
 DEPLOY_DIR ?= /mnt/mossytrunk
 REMOTE_DOCKER ?= sudo -n docker
+E2E_ASSETS_DIR ?= build-e2e
+export E2E_ASSETS_DIR
+OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e qa ci image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-checks ci-test image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -69,8 +72,11 @@ cs-fix: ## Apply the coding standard
 phpstan: ## Static analysis (level in phpstan.dist.neon)
 	$(PHP) vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
-e2e: assets-e2e ## Playwright end-to-end tests against a dedicated app container
+e2e: assets-e2e e2e-run ## Playwright end-to-end tests against a dedicated app container
+
+e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default build-e2e)
 	$(DC) --profile e2e up -d --wait php-e2e mailpit
+	$(EXEC) php-e2e php bin/console cache:clear --env=test
 	$(EXEC) php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
 	$(EXEC) php-e2e php bin/console doctrine:database:create --env=test
 	$(EXEC) php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
@@ -84,7 +90,13 @@ ci: ## Full suite from a fresh checkout, as run by GitHub Actions before publish
 	$(DC) up -d --wait php database mailpit
 	$(PHP) composer install --no-interaction --no-progress
 	$(RUN) --no-deps node npm ci --no-audit --no-fund
-	$(MAKE) assets qa
+	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
+	$(MAKE) e2e-run E2E_ASSETS_DIR=build
+
+ci-checks: cs phpstan deptrac ci-test
+
+ci-test: assets
+	$(MAKE) test
 
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .
