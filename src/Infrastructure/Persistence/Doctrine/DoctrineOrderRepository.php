@@ -14,6 +14,8 @@ use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -44,25 +46,24 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function list(?Ulid $eventId = null): array
     {
-        return $this->withSupplies($this->orders($eventId)->getQuery()->getResult());
+        return $this->loaded($this->orders($eventId)->getQuery());
     }
 
     public function sales(?Ulid $eventId = null): array
     {
-        return $this->withSupplies($this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery()->getResult());
+        return $this->loaded($this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery());
     }
 
     public function salesWithin(DateRange $period): array
     {
         [$from, $until] = $this->bounds($period);
 
-        return $this->withSupplies($this->orders(null)
+        return $this->loaded($this->orders(null)
             ->andWhere('o.refundedAt IS NULL')
             ->andWhere('o.placedAt >= :from AND o.placedAt < :until')
             ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
-            ->getQuery()
-            ->getResult());
+            ->getQuery());
     }
 
     public function firstSaleAt(): ?\DateTimeImmutable
@@ -90,24 +91,17 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     }
 
     /**
-     * @param list<Order> $orders
+     * @param Query<null, Order> $query
      *
      * @return list<Order>
      */
-    private function withSupplies(array $orders): array
+    private function loaded(Query $query): array
     {
-        if ([] !== $orders) {
-            $this->entityManager->createQueryBuilder()
-                ->select('o', 's')
-                ->from(Order::class, 'o')
-                ->leftJoin('o.supplies', 's')
-                ->where('o.id IN (:ids)')
-                ->setParameter('ids', array_map(static fn (Order $order): string => $order->id()->toRfc4122(), $orders))
-                ->getQuery()
-                ->getResult();
+        foreach (['lines', 'supplies', 'importedSales'] as $collection) {
+            $query->setFetchMode(Order::class, $collection, ClassMetadata::FETCH_EAGER);
         }
 
-        return $orders;
+        return $query->getResult();
     }
 
     public function mergeCandidatesOf(Order $order): array
@@ -123,17 +117,15 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             $query->andWhere('o.event IS NULL');
         }
 
-        return $query->getQuery()->getResult();
+        return $this->loaded($query->getQuery());
     }
 
     private function orders(?Ulid $eventId): QueryBuilder
     {
         $query = $this->entityManager->createQueryBuilder()
-            ->select('o', 'l', 'e', 'i')
+            ->select('o', 'e')
             ->from(Order::class, 'o')
             ->leftJoin('o.event', 'e')
-            ->leftJoin('o.lines', 'l')
-            ->leftJoin('o.importedSales', 'i')
             ->where('o.workspace = :workspace')
             ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('o.placedAt', 'DESC');
