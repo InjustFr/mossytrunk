@@ -15,6 +15,7 @@ final readonly class ReportPeriod
 
     public function __construct(
         private OrderRepository $orders,
+        private SalesLedger $sales,
         private ClockInterface $clock,
     ) {
     }
@@ -31,15 +32,14 @@ final readonly class ReportPeriod
     }
 
     /**
-     * @return list<int> the years with sales, most recent first
+     * @return list<int> the current year and the years with sales, most recent first
      */
     public function years(): array
     {
-        $today = $this->clock->now();
-        $first = $this->orders->firstSaleAt() ?? $today;
-        $last = $this->orders->lastSaleAt() ?? $today;
+        $years = array_values(array_unique([DateRange::yearOf($this->clock->now()), ...array_map(static fn (string $month): int => (int) substr($month, 0, 4), array_keys($this->sales->totalsByMonth()))]));
+        rsort($years);
 
-        return range(DateRange::yearOf(max($today, $last)), DateRange::yearOf(min($today, $first)));
+        return $years;
     }
 
     /**

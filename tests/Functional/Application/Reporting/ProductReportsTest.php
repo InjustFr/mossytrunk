@@ -55,6 +55,17 @@ final class ProductReportsTest extends KernelTestCase
         self::assertSame(2_400, $report->totals['revenue']);
     }
 
+    public function testTheYearsToChooseAreTheCurrentOneAndThoseWithSales(): void
+    {
+        $container = self::getContainer();
+        $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Marché', 'Lyon', new \DateTimeImmutable('2033-06-04'), new \DateTimeImmutable('2033-06-04')));
+        $container->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2033-06-04 11:00'), [new RequestedLine($this->sticker, null, 1)]));
+
+        $years = $container->get(GetProductsReportHandler::class)('2030')->years;
+
+        self::assertSame([2033, 2030, (int) date('Y')], $years);
+    }
+
     public function testAProductTellsItsSalesStockAndDiscountsMonthByMonth(): void
     {
         $report = self::getContainer()->get(GetProductReportHandler::class)($this->print, '2030');
