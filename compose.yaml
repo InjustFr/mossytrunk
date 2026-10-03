@@ -34,6 +34,7 @@ services:
     environment:
       BASE_URL: http://php-e2e
       CI: ${CI:-}
+      E2E_OWN_DATABASE: ${E2E_OWN_DATABASE:-}
       MAILPIT_URL: http://mailpit:8025
     volumes:
       - ./:/app

@@ -12,11 +12,12 @@ DEPLOY_HOST ?= debian@duprat.cloud
 DEPLOY_DIR ?= /mnt/mossytrunk
 REMOTE_DOCKER ?= sudo -n docker
 E2E_ASSETS_DIR ?= build-e2e
+PLAYWRIGHT_ARGS ?=
 export E2E_ASSETS_DIR
 OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-checks ci-test image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-install ci-checks ci-test ci-e2e image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -82,15 +83,20 @@ e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default bui
 	$(EXEC) php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
 	$(EXEC) php-e2e php bin/console app:user:create e2e@mossytrunk.local --workspace=E2E --env=test
 	$(EXEC) php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
-	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test"
+	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
 
 qa: cs phpstan deptrac test e2e
 
-ci: ## Full suite from a fresh checkout, as run by GitHub Actions before publishing the image
+ci: ci-install ## Full suite from a fresh checkout (GitHub Actions runs its parts in parallel jobs: ci-checks, ci-e2e)
+	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
+	$(MAKE) e2e-run E2E_ASSETS_DIR=build
+
+ci-install:
 	$(DC) up -d --wait php database mailpit
 	$(PHP) composer install --no-interaction --no-progress
 	$(RUN) --no-deps node npm ci --no-audit --no-fund
-	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
+
+ci-e2e: assets ## Playwright on the production build (PLAYWRIGHT_ARGS to pick projects or a shard)
 	$(MAKE) e2e-run E2E_ASSETS_DIR=build
 
 ci-checks: cs phpstan deptrac ci-test

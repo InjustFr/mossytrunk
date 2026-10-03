@@ -14,6 +14,6 @@ final class ListProductsController extends AbstractController
 {
     public function __invoke(ListProductsHandler $listProducts): JsonResponse
     {
-        return $this->json($listProducts());
+        return new JsonResponse($listProducts());
     }
 }

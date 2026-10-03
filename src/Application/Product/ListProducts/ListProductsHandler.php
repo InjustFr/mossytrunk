@@ -6,8 +6,7 @@ namespace App\Application\Product\ListProducts;
 
 use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Stock\ProductStock;
-use App\Domain\Design\DesignCollection;
-use App\Domain\Design\DesignRepository;
+use App\Domain\Design\DesignCollectionRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Reporting\SalesByProduct;
@@ -21,7 +20,7 @@ final readonly class ListProductsHandler
         private ProductRepository $products,
         private ProductSalesLedger $sales,
         private StockRepository $stock,
-        private DesignRepository $designs,
+        private DesignCollectionRepository $collections,
         private ClockInterface $clock,
     ) {
     }
@@ -39,7 +38,7 @@ final readonly class ListProductsHandler
             $stockByProduct[(string) $item->product()->id()][] = $item;
         }
 
-        $collections = $this->collectionsByProduct();
+        $collections = $this->collections->byProduct();
 
         return array_map(
             static fn (Product $product): ProductView => ProductView::fromProduct(
@@ -51,27 +50,5 @@ final readonly class ListProductsHandler
             ),
             $this->products->catalogue(),
         );
-    }
-
-    /**
-     * @return array<string, DesignCollection>
-     */
-    private function collectionsByProduct(): array
-    {
-        $collections = [];
-        foreach ($this->designs->all() as $design) {
-            $collection = $design->collection();
-            if (null === $collection) {
-                continue;
-            }
-            foreach ($design->declinations() as $declination) {
-                $productId = $declination->productId();
-                if (null !== $productId) {
-                    $collections[(string) $productId] = $collection;
-                }
-            }
-        }
-
-        return $collections;
     }
 }

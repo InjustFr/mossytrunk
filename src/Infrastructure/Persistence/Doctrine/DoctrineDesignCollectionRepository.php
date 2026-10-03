@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine;
 
 use App\Application\WorkspaceContext;
+use App\Domain\Design\Design;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Design\DesignCollectionRepository;
 use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query\Expr\Join;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineDesignCollectionRepository implements DesignCollectionRepository
@@ -38,5 +41,26 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
     public function all(): array
     {
         return $this->entityManager->getRepository(DesignCollection::class)->findBy(['workspace' => $this->workspace->current()], ['name' => 'ASC']);
+    }
+
+    public function byProduct(): array
+    {
+        $rows = $this->entityManager->createQueryBuilder()
+            ->select('c', 'x.productId AS productId')
+            ->from(DesignCollection::class, 'c')
+            ->join(Design::class, 'd', Join::WITH, 'd.collection = c')
+            ->join('d.declinations', 'x')
+            ->where('c.workspace = :workspace')
+            ->andWhere('x.productId IS NOT NULL')
+            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+            ->getQuery()
+            ->getResult();
+
+        $collections = [];
+        foreach ($rows as ['productId' => $productId, 0 => $collection]) {
+            $collections[(string) $productId] = $collection;
+        }
+
+        return $collections;
     }
 }

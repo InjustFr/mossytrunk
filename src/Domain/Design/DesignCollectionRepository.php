@@ -18,4 +18,9 @@ interface DesignCollectionRepository
      * @return list<DesignCollection>
      */
     public function all(): array;
+
+    /**
+     * @return array<string, DesignCollection> the collection of each product declined from a design of a collection, keyed by product id
+     */
+    public function byProduct(): array;
 }

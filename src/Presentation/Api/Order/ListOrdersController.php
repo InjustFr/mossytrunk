@@ -15,6 +15,6 @@ final class ListOrdersController extends AbstractController
 {
     public function __invoke(ListOrdersHandler $listOrders, #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/'])] ?string $eventId = null): JsonResponse
     {
-        return $this->json($listOrders($eventId));
+        return new JsonResponse($listOrders($eventId));
     }
 }

@@ -18,6 +18,6 @@ export default defineConfig({
     projects: [
         { name: 'setup', testMatch: /auth\.setup\.js/ },
         { name: 'chromium', testIgnore: WORKSPACE_WIDE, use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE }, dependencies: ['setup'] },
-        { name: 'workspace-wide', testMatch: WORKSPACE_WIDE, workers: 1, use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE }, dependencies: ['chromium'] },
+        { name: 'workspace-wide', testMatch: WORKSPACE_WIDE, workers: 1, use: { ...devices['Desktop Chrome'], storageState: AUTH_STATE }, dependencies: [process.env.E2E_OWN_DATABASE ? 'setup' : 'chromium'] },
     ],
 });
