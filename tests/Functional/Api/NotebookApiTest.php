@@ -30,7 +30,12 @@ final class NotebookApiTest extends WebTestCase
         $client->jsonRequest('GET', "/api/events/$eventId/notebook");
         self::assertSame('null', $client->getResponse()->getContent());
 
-        self::created($client, "/api/events/$eventId/notebook", files: ['pages' => [self::page(), self::page()]]);
+        $client->request('POST', '/api/notebook/recognitions', files: ['photo' => self::photo()]);
+        self::assertResponseIsSuccessful();
+        $text = Json::string(self::body($client), 'text');
+        self::assertSame("Salon du dimanche\n1) 2 lichen\n2) fougère 12€ CB\n3) carnet lichen, 1 fougere", $text);
+
+        self::created($client, "/api/events/$eventId/notebook", ['pages' => [$text, 'Rien de plus']]);
 
         $client->jsonRequest('GET', "/api/events/$eventId/notebook");
         $report = self::body($client);
@@ -44,16 +49,32 @@ final class NotebookApiTest extends WebTestCase
         self::assertSame($notNoted, Json::string($report, 'notNoted', 0, 'id'));
     }
 
-    public function testOnlyImagesAreScanned(): void
+    public function testOnlyPhotosAreRecognisedAndPagesAreRequired(): void
     {
         $client = self::signedInClient();
         $eventId = self::created($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
 
-        $client->request('POST', "/api/events/$eventId/notebook", files: ['pages' => [new UploadedFile(__FILE__, 'page.php', 'image/png', test: true)]]);
+        $client->request('POST', '/api/notebook/recognitions', files: ['photo' => new UploadedFile(__FILE__, 'page.php', 'image/png', test: true)]);
         self::assertResponseStatusCodeSame(422);
 
-        $client->request('POST', "/api/events/$eventId/notebook");
+        $client->jsonRequest('POST', "/api/events/$eventId/notebook", ['pages' => []]);
         self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testTheNotebookTemplateIsConfiguredPerWorkspace(): void
+    {
+        $client = self::signedInClient();
+
+        $client->jsonRequest('PUT', '/api/notebook-template', ['separation' => 'gap', 'abbreviations' => [['short' => 'stk', 'full' => 'sticker']]]);
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', '/api/notebook-template');
+        self::assertSame(['separation' => 'gap', 'abbreviations' => [['short' => 'stk', 'full' => 'sticker']]], self::body($client));
+
+        $client->jsonRequest('PUT', '/api/notebook-template', ['separation' => 'columns', 'abbreviations' => [['short' => '', 'full' => 'sticker']]]);
+        self::assertResponseStatusCodeSame(422);
+
+        self::signedInClientOf($client, 'Autre atelier')->jsonRequest('GET', '/api/notebook-template');
+        self::assertSame(['separation' => 'numbered', 'abbreviations' => []], self::body($client));
     }
 
     public function testAnotherWorkspaceCannotScanTheNotebookOfAnEvent(): void
@@ -62,13 +83,13 @@ final class NotebookApiTest extends WebTestCase
         $eventId = self::created($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']);
 
         $other = self::signedInClientOf($client, 'Autre atelier');
-        $other->request('POST', "/api/events/$eventId/notebook", files: ['pages' => [self::page()]]);
+        $other->jsonRequest('POST', "/api/events/$eventId/notebook", ['pages' => ['1) sticker']]);
         self::assertResponseStatusCodeSame(404);
         $other->jsonRequest('GET', "/api/events/$eventId/notebook");
         self::assertResponseStatusCodeSame(404);
     }
 
-    private static function page(): UploadedFile
+    private static function photo(): UploadedFile
     {
         return new UploadedFile(\dirname(__DIR__, 2).'/Fixtures/notebook/page.png', 'page.png', 'image/png', test: true);
     }
@@ -81,16 +102,11 @@ final class NotebookApiTest extends WebTestCase
     }
 
     /**
-     * @param array<string, mixed>              $body
-     * @param array<string, list<UploadedFile>> $files
+     * @param array<string, mixed> $body
      */
-    private static function created(KernelBrowser $client, string $uri, array $body = [], array $files = []): string
+    private static function created(KernelBrowser $client, string $uri, array $body): string
     {
-        if ([] === $files) {
-            $client->jsonRequest('POST', $uri, $body);
-        } else {
-            $client->request('POST', $uri, files: $files);
-        }
+        $client->jsonRequest('POST', $uri, $body);
         self::assertResponseStatusCodeSame(201, (string) $client->getResponse()->getContent());
 
         return Json::string(self::body($client), 'id');

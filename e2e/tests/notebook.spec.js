@@ -30,10 +30,14 @@ test('the photographed notebook is compared sale by sale with the event orders',
 
     await page.goto(`/events/${event.id}`);
     await page.getByRole('link', { name: 'Comparer le carnet' }).click();
-    await page.getByLabel('Ajouter des photos').setInputFiles([notebookPage, notebookPage]);
-    await expect(page.getByRole('img', { name: 'Page 2' })).toBeVisible();
+    await page.getByLabel('Ajouter des photos').setInputFiles(notebookPage);
+    const text = page.getByRole('textbox', { name: 'Texte de la page 1' });
+    await expect(text).toHaveValue(/1\) 2 lichen/);
+    await page.getByRole('button', { name: 'Taper une page' }).click();
+    await page.getByRole('textbox', { name: 'Texte de la page 2' }).fill('Rien de vendu');
     await page.getByRole('button', { name: 'Retirer la page 2' }).click();
-    await expect(page.getByRole('img', { name: 'Page 2' })).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Texte de la page 2' })).toHaveCount(0);
+    await text.fill((await text.inputValue()).replace('2) fougère', '2) fougere'));
     await page.getByRole('button', { name: 'Analyser le carnet' }).click();
 
     await expect(page.getByTestId('toast')).toContainText('Carnet analysé : 3 ventes lues.');

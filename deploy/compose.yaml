@@ -15,6 +15,10 @@ services:
     volumes:
       - app_share:/app/var/share
 
+  htr:
+    image: ${HTR_IMAGE:-docker.io/injust/mossytrunk-htr}:${TAG:-latest}
+    restart: unless-stopped
+
   database:
     image: postgres:18-alpine
     restart: unless-stopped

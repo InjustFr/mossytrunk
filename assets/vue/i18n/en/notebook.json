@@ -2,17 +2,21 @@
     "page": {
         "title": "Sales notebook",
         "eventFallback": "Event",
-        "intro": "Take a photo of each page of the notebook kept during the event. The sales written down are read, then compared one by one with the event's orders (SumUp and entered by hand): whatever is missing on either side is reported. Order numbers written in the notebook are ignored.",
+        "intro": "Take a photo of each page of the notebook kept during the event: each photo is read on its own and its text shows next to it so you can fix it (you can also type a page). Sales are then split following the notebook template in {settings} and compared one by one with the event's orders. Order numbers, prices and payment methods are ignored.",
         "addPhotos": "Add photos",
         "pageNumber": "Page {number}",
         "removePage": "Remove page {number}",
         "pages": "{count} page | {count} pages",
         "analyse": "Analyse the notebook",
-        "analysing": "Reading the notebook: this can take a minute or two.",
         "analysed": "Notebook analysed: {count} sale read. | Notebook analysed: {count} sales read.",
         "newScan": "New analysis",
         "cancel": "Cancel",
-        "scannedAt": "Notebook analysed on {date}, {pages}."
+        "scannedAt": "Notebook analysed on {date}, {pages}.",
+        "settingsLink": "Settings",
+        "addTyped": "Type a page",
+        "reading": "Reading the photo…",
+        "pageText": "Text of page {number}",
+        "textPlaceholder": "1) 2 fox stickers\n2) dragon print A4"
     },
     "report": {
         "notebookSales": "Sales written",
@@ -35,5 +39,34 @@
         "refunded": "Refunded",
         "onlyNoted": "Written only",
         "onlySold": "Sold only"
+    },
+    "template": {
+        "title": "Sales notebook",
+        "intro": "How sales are written in the notebook kept at events: used to split the pages read into sales before comparing them with the orders.",
+        "separationLabel": "Sale separation",
+        "separation": {
+            "numbered": {
+                "label": "Each sale starts with its number",
+                "description": "“12) 2 stickers, 1 print”; following lines without a number belong to the same sale. The number is followed by ), ., -, : or /. Lines before the first number of a page are ignored."
+            },
+            "line": {
+                "label": "One sale per line",
+                "description": "Each line is a whole sale; a number at the start of the line is ignored."
+            },
+            "gap": {
+                "label": "Sales separated by a gap or a rule",
+                "description": "The lines of a sale follow each other; a wider gap than usual or a rule (----) starts the next sale."
+            }
+        },
+        "abbreviations": "Abbreviations",
+        "abbreviationsHint": "Replaced before recognising products (whole word, case ignored): “stk” → “sticker”, “L” → “Lichen”.",
+        "short": "Abbreviation {number}",
+        "full": "Meaning of abbreviation {number}",
+        "shortPlaceholder": "stk",
+        "fullPlaceholder": "sticker",
+        "remove": "Remove abbreviation {number}",
+        "add": "Add an abbreviation",
+        "save": "Save the template",
+        "saved": "Notebook template saved."
     }
 }

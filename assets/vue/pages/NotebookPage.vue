@@ -5,10 +5,10 @@ import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
-import NotebookPhotos from '../components/notebook/NotebookPhotos.vue';
+import NotebookPages from '../components/notebook/NotebookPages.vue';
 import NotebookReport from '../components/notebook/NotebookReport.vue';
 import { useEvent } from '../composables/useEvents.js';
-import { useNotebook } from '../composables/useNotebook.js';
+import { useNotebook, useNotebookPages } from '../composables/useNotebook.js';
 import { useToast } from '../composables/useToast.js';
 import { formatDateTime } from '../composables/useDate.js';
 
@@ -18,24 +18,25 @@ const props = defineProps({
 
 const { event, load: loadEvent } = useEvent(props.eventId);
 const notebook = useNotebook(props.eventId);
+const { pages, addPhotos, addTyped, remove, clear, write } = useNotebookPages(notebook.recognize);
 const toast = useToast();
 const { t } = useI18n();
 
 const report = ref(null);
-const photos = ref([]);
 const rescanning = ref(false);
 const scanning = ref(false);
 const error = ref(null);
 const showUpload = computed(() => report.value === null || rescanning.value);
+const ready = computed(() => pages.value.length > 0 && pages.value.every((page) => !page.reading) && pages.value.some((page) => page.text.trim() !== ''));
 
 async function onAnalyse() {
     scanning.value = true;
     error.value = null;
     try {
-        await notebook.scan(photos.value);
+        await notebook.scan(pages.value.filter((page) => page.text.trim() !== '').map((page) => page.text));
         await notebook.load(report);
         toast.success(t('notebook.page.analysed', report.value.summary.entries));
-        photos.value = [];
+        clear();
         rescanning.value = false;
     } catch (exception) {
         error.value = exception.message;
@@ -46,7 +47,7 @@ async function onAnalyse() {
 
 function cancelRescan() {
     rescanning.value = false;
-    photos.value = [];
+    clear();
     error.value = null;
 }
 
@@ -62,13 +63,14 @@ onMounted(() => Promise.all([notebook.load(report), loadEvent()]));
 
         <div class="notebook-page">
             <BaseCard v-if="showUpload">
-                <p class="notebook-page__intro">{{ t('notebook.page.intro') }}</p>
-                <NotebookPhotos v-model="photos" />
+                <i18n-t keypath="notebook.page.intro" tag="p" class="notebook-page__intro" scope="global">
+                    <template #settings><a href="/settings">{{ t('notebook.page.settingsLink') }}</a></template>
+                </i18n-t>
+                <NotebookPages :pages="pages" @add-photos="addPhotos" @add-typed="addTyped" @remove="remove" @write="write" />
                 <p v-if="error" class="notebook-page__error" role="alert">{{ error }}</p>
-                <p v-if="scanning" class="notebook-page__progress" role="status">{{ t('notebook.page.analysing') }}</p>
                 <div class="notebook-page__actions">
                     <BaseButton v-if="rescanning" variant="ghost" :disabled="scanning" @click="cancelRescan">{{ t('notebook.page.cancel') }}</BaseButton>
-                    <BaseButton :loading="scanning" :disabled="photos.length === 0" @click="onAnalyse">{{ t('notebook.page.analyse') }}</BaseButton>
+                    <BaseButton :loading="scanning" :disabled="!ready" @click="onAnalyse">{{ t('notebook.page.analyse') }}</BaseButton>
                 </div>
             </BaseCard>
 
@@ -84,7 +86,6 @@ onMounted(() => Promise.all([notebook.load(report), loadEvent()]));
 .notebook-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .notebook-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); }
 .notebook-page__error { margin: var(--space-3) 0 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
-.notebook-page__progress { margin: var(--space-3) 0 0; color: var(--color-muted); }
 .notebook-page__actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-4); }
 .notebook-page__scanned { margin: 0; color: var(--color-muted); font-size: 0.85rem; }
 </style>

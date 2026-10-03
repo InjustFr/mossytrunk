@@ -60,6 +60,10 @@ services:
     volumes:
       - ./:/app
 
+  htr:
+    image: mossytrunk-htr
+    build: docker/htr
+
   mailpit:
     image: axllent/mailpit
     ports:

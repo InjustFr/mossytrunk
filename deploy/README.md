@@ -1,6 +1,6 @@
 # MossyTrunk — running on a server
 
-This folder is all a server needs: `compose.yaml` runs the app image (FrankenPHP, assets built in) and a PostgreSQL 18 database. No source checkout, no PHP or Node on the host.
+This folder is all a server needs: `compose.yaml` runs the app image (FrankenPHP, assets built in), a PostgreSQL 18 database and the handwriting recognition service (`htr`: Kraken with the McCATMuS model, CPU only, image `docker.io/injust/mossytrunk-htr` at the same tag, about 1.4 GB, used to read photos of the sales notebook). No source checkout, no PHP or Node on the host.
 
 ## Prerequisites
 
@@ -27,6 +27,7 @@ Fill `.env`:
 | `TRUSTED_PROXIES` | Who may set `X-Forwarded-*`: the proxy IP/CIDR (e.g. `203.0.113.10`), `private_ranges`, or `REMOTE_ADDR` (trust whoever connects — only when a firewall lets nothing but the proxy reach `APP_PORT`) |
 | `DEFAULT_URI` | Public URL, e.g. `https://mossytrunk.example.com` (used in email links) |
 | `APP_SECRET` | `openssl rand -hex 32` |
+| `HTR_URL` | Handwriting recognition service, `http://htr:8000` (the `htr` service of this compose file) |
 | `APP_ENCRYPTION_KEY` | `openssl rand -base64 32` (encrypts the per-workspace API keys, e.g. SumUp, entered in the settings page) |
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` (`POSTGRES_DB` / `POSTGRES_USER` can stay `app`) |
 | `MAILER_DSN` / `MAILER_FROM` | SMTP DSN (`smtp://user:pass@smtp.example.com:587`) and sender address |

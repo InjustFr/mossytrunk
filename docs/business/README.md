@@ -61,6 +61,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Service connecté | `Domain\Integration\ServiceConnection` | An external service (SumUp, Etsy…) added to the workspace, with its access and import options |
 | Article à associer | `Domain\Integration\ExternalItem` | A service item not matched to a product, waiting to be linked |
 | Carnet de ventes | `Domain\Notebook\NotebookScan` | Photos of the paper notebook kept at an event, read into sales and compared with the event's orders |
+| Modèle de carnet | `Domain\Notebook\NotebookTemplate` | How a workspace writes its notebook: sale separation and abbreviations |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |

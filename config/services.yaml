@@ -40,18 +40,7 @@ services:
 
     App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
     App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'
-    App\Application\Notebook\NotebookReader: '@App\Infrastructure\Notebook\ClaudeNotebookReader'
-
-    Anthropic\Client:
-        lazy: true
-        arguments:
-            $apiKey: '%env(ANTHROPIC_API_KEY)%'
-            $requestOptions: { transporter: '@app.anthropic_transport' }
-
-    app.anthropic_transport:
-        class: Symfony\Component\HttpClient\Psr18Client
-        arguments:
-            - !service { class: Symfony\Contracts\HttpClient\HttpClientInterface, factory: ['@http_client', 'withOptions'], arguments: [{ timeout: 300, max_duration: 300 }] }
+    App\Application\Notebook\HandwritingRecognizer: '@App\Infrastructure\Notebook\KrakenRecognizer'
 
     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
         arguments:
@@ -68,8 +57,8 @@ when@test:
         App\Infrastructure\Connector\Etsy\FakeEtsyGateway:
             autowire: true
             public: true
-        App\Application\Notebook\NotebookReader: '@App\Infrastructure\Notebook\FakeNotebookReader'
-        App\Infrastructure\Notebook\FakeNotebookReader:
+        App\Application\Notebook\HandwritingRecognizer: '@App\Infrastructure\Notebook\FakeHandwritingRecognizer'
+        App\Infrastructure\Notebook\FakeHandwritingRecognizer:
             autowire: true
             public: true
         App\Tests\Support\EndToEndSessionStorageFactory:

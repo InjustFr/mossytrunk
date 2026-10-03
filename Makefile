@@ -20,7 +20,7 @@ BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(T
 .PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-install ci-checks ci-test ci-e2e image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
-	$(DC) up -d --wait php database node mailpit
+	$(DC) up -d --wait php database node mailpit htr
 
 down:
 	$(DC) down
@@ -117,7 +117,8 @@ deploy-files: ## Copy deploy/ (compose, env template, README) to DEPLOY_HOST:DEP
 
 deploy: ## Run IMAGE:TAG (published by CI) on DEPLOY_HOST: set TAG in its .env, pull, restart
 	@curl -sf -o /dev/null https://hub.docker.com/v2/repositories/$(patsubst docker.io/%,%,$(IMAGE))/tags/$(TAG) || { echo "$(IMAGE):$(TAG) is not published: CI only publishes it once the full test suite passes (still running, or failed?)"; exit 1; }
+	scp deploy/compose.yaml $(DEPLOY_HOST):$(DEPLOY_DIR)/
 	ssh $(DEPLOY_HOST) 'set -e; cd $(DEPLOY_DIR); \
 		sed -i "s|^IMAGE=.*|IMAGE=$(IMAGE)|; s|^TAG=.*|TAG=$(TAG)|" .env; \
-		$(REMOTE_DOCKER) compose pull app; \
+		$(REMOTE_DOCKER) compose pull app htr; \
 		$(REMOTE_DOCKER) compose up -d'

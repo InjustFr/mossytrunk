@@ -1,7 +1,8 @@
+import { ref } from 'vue';
 import { useApi } from './useApi.js';
 
-const MAX_SIDE = 2000;
-const QUALITY = 0.85;
+const MAX_SIDE = 2400;
+const QUALITY = 0.9;
 
 async function downscaled(file) {
     const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -19,15 +20,59 @@ export function useNotebook(eventId) {
     const api = useApi();
     const url = `/api/events/${eventId}/notebook`;
 
-    async function scan(files) {
+    async function recognize(file) {
         const form = new FormData();
-        const pages = await Promise.all(files.map(downscaled));
-        pages.forEach((page, index) => form.append('pages[]', page, `page-${index + 1}.jpg`));
-        return api.post(url, form);
+        form.append('photo', await downscaled(file), 'page.jpg');
+        return (await api.query('/api/notebook/recognitions', form)).text;
     }
 
     return {
         load: (target) => api.load(url, target),
-        scan,
+        scan: (pages) => api.post(url, { pages }),
+        recognize,
     };
+}
+
+export function useNotebookPages(recognize) {
+    const pages = ref([]);
+    let nextId = 0;
+    let queue = Promise.resolve();
+
+    const update = (id, changes) => {
+        pages.value = pages.value.map((page) => (page.id === id ? { ...page, ...changes } : page));
+    };
+
+    function addPhotos(files) {
+        files.forEach((file) => {
+            const id = ++nextId;
+            pages.value = [...pages.value, { id, preview: URL.createObjectURL(file), text: '', reading: true, error: null }];
+            queue = queue.then(async () => {
+                if (!pages.value.some((page) => page.id === id)) return;
+                try {
+                    update(id, { text: await recognize(file), reading: false });
+                } catch (exception) {
+                    update(id, { reading: false, error: exception.message });
+                }
+            });
+        });
+    }
+
+    function addTyped() {
+        pages.value = [...pages.value, { id: ++nextId, preview: null, text: '', reading: false, error: null }];
+    }
+
+    function remove(id) {
+        const page = pages.value.find((candidate) => candidate.id === id);
+        if (page?.preview) URL.revokeObjectURL(page.preview);
+        pages.value = pages.value.filter((candidate) => candidate.id !== id);
+    }
+
+    function clear() {
+        pages.value.forEach((page) => page.preview && URL.revokeObjectURL(page.preview));
+        pages.value = [];
+    }
+
+    const write = (id, text) => update(id, { text });
+
+    return { pages, addPhotos, addTyped, remove, clear, write };
 }

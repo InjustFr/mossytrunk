@@ -6,21 +6,26 @@ namespace App\Tests\Functional\Application\Notebook;
 
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Notebook\ConfigureNotebookTemplate\ConfigureNotebookTemplate;
+use App\Application\Notebook\ConfigureNotebookTemplate\ConfigureNotebookTemplateHandler;
 use App\Application\Notebook\GetNotebookReconciliation\GetNotebookReconciliationHandler;
 use App\Application\Notebook\GetNotebookReconciliation\NotebookReconciliationView;
+use App\Application\Notebook\GetNotebookTemplate\GetNotebookTemplateHandler;
 use App\Application\Notebook\NotebookPage;
+use App\Application\Notebook\RecognizeNotebookPage\RecognizeNotebookPageHandler;
 use App\Application\Notebook\ScanNotebook\ScanNotebook;
 use App\Application\Notebook\ScanNotebook\ScanNotebookHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RefundOrder\RefundOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Domain\Notebook\Abbreviation;
 use App\Domain\Notebook\Exception\InvalidNotebook;
-use App\Domain\Notebook\NotebookEntry;
-use App\Domain\Notebook\NotebookLine;
-use App\Domain\Product\ProductRepository;
+use App\Domain\Notebook\RecognizedLine;
+use App\Domain\Notebook\RecognizedPage;
+use App\Domain\Notebook\SaleSeparation;
 use App\Domain\Shared\Exception\NotFound;
-use App\Infrastructure\Notebook\FakeNotebookReader;
+use App\Infrastructure\Notebook\FakeHandwritingRecognizer;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,18 +51,13 @@ final class NotebookUseCasesTest extends KernelTestCase
         $this->print = self::createProduct('Tirage Dragon', 1_500, variants: ['A4', 'A3']);
     }
 
-    public function testTheReaderGetsThePagesAndTheCatalogueAndTheScanIsCompared(): void
+    public function testThePagesAreSplitIntoSalesMatchedToTheCatalogueAndCompared(): void
     {
         $this->place('2026-07-10 10:00', new RequestedLine($this->sticker, null, 2));
         $this->place('2026-07-10 11:00', new RequestedLine($this->print, 'A3', 1));
-        $this->reader()->willRead([
-            $this->entry('2 stickers', 2, $this->sticker),
-            $this->entry('dragon A4', 1, $this->print, 'A4'),
-        ]);
 
-        $this->scan(new NotebookPage('page-1.jpg', 'image/jpeg', 'photo'));
+        $this->scan("Samedi\n1) 2 sticker mousse 8€\n2) tirage dragon A4");
 
-        self::assertSame(['page-1.jpg'], array_map(static fn (NotebookPage $page): string => $page->name, $this->reader()->pagesRead()));
         $report = $this->report();
         self::assertSame(1, $report->summary['matching']);
         self::assertSame(1, $report->summary['differing']);
@@ -65,15 +65,41 @@ final class NotebookUseCasesTest extends KernelTestCase
         self::assertSame([['label' => 'Tirage Dragon — A3', 'quantity' => 1]], $report->differing[0]['onlySold']);
     }
 
+    public function testThePagesFollowTheWorkspaceTemplate(): void
+    {
+        $this->place('2026-07-10 10:00', new RequestedLine($this->sticker, null, 1));
+        $this->place('2026-07-10 11:00', new RequestedLine($this->print, 'A4', 2));
+        self::getContainer()->get(ConfigureNotebookTemplateHandler::class)(new ConfigureNotebookTemplate(SaleSeparation::OnePerLine, [new Abbreviation('stk', 'sticker mousse'), new Abbreviation('dr', 'dragon')]));
+
+        $this->scan("stk\n2 dr A4");
+
+        self::assertSame(2, $this->report()->summary['matching']);
+        self::assertEquals(['separation' => 'line', 'abbreviations' => [['short' => 'stk', 'full' => 'sticker mousse'], ['short' => 'dr', 'full' => 'dragon']]], (array) self::getContainer()->get(GetNotebookTemplateHandler::class)());
+    }
+
+    public function testANewWorkspaceStartsWithNumberedSalesAndNoAbbreviation(): void
+    {
+        self::assertEquals(['separation' => 'numbered', 'abbreviations' => []], (array) self::getContainer()->get(GetNotebookTemplateHandler::class)());
+    }
+
+    public function testAPhotoIsReadIntoTextWithGapsAsBlankLines(): void
+    {
+        self::getContainer()->get(FakeHandwritingRecognizer::class)->willRecognize(new RecognizedPage([
+            new RecognizedLine('2 lichen', 100),
+            new RecognizedLine('fougère', 150),
+            new RecognizedLine('badge', 300),
+        ]));
+
+        self::assertSame("2 lichen\nfougère\n\nbadge", self::getContainer()->get(RecognizeNotebookPageHandler::class)(new NotebookPage('page.jpg', 'image/jpeg', 'photo')));
+    }
+
     public function testScanningAgainReplacesThePreviousReading(): void
     {
         $order = $this->place('2026-07-10 10:00', new RequestedLine($this->sticker, null, 1));
-        $this->reader()->willRead([$this->entry('tirage', 1, $this->print, 'A4')]);
-        $this->scan(new NotebookPage('a.jpg', 'image/jpeg', 'photo'));
+        $this->scan('1) tirage dragon');
         self::assertSame(1, $this->report()->summary['notNoted']);
 
-        $this->reader()->willRead([$this->entry('sticker', 1, $this->sticker)]);
-        $this->scan(new NotebookPage('a.jpg', 'image/jpeg', 'photo'), new NotebookPage('b.jpg', 'image/jpeg', 'photo'));
+        $this->scan('1) sticker mousse', 'Dimanche');
 
         $report = $this->report();
         self::assertSame(2, $report->pages);
@@ -85,8 +111,7 @@ final class NotebookUseCasesTest extends KernelTestCase
     {
         $order = $this->place('2026-07-10 10:00', new RequestedLine($this->sticker, null, 1));
         self::getContainer()->get(RefundOrderHandler::class)((string) $order);
-        $this->reader()->willRead([$this->entry('sticker', 1, $this->sticker)]);
-        $this->scan(new NotebookPage('a.jpg', 'image/jpeg', 'photo'));
+        $this->scan('1) sticker mousse');
 
         self::assertTrue($this->report()->matching[0]['order']['refunded']);
     }
@@ -98,16 +123,13 @@ final class NotebookUseCasesTest extends KernelTestCase
 
     public function testNothingReadOnThePagesIsRejected(): void
     {
-        $this->reader()->willRead([]);
-
         $this->expectException(InvalidNotebook::class);
-        $this->scan(new NotebookPage('a.jpg', 'image/jpeg', 'photo'));
+        $this->scan("Samedi\n12€ CB");
     }
 
     public function testAnotherWorkspaceDoesNotSeeTheScan(): void
     {
-        $this->reader()->willRead([$this->entry('sticker', 1, $this->sticker)]);
-        $this->scan(new NotebookPage('a.jpg', 'image/jpeg', 'photo'));
+        $this->scan('1) sticker mousse');
 
         self::actAsMemberOf('Autre atelier');
 
@@ -115,7 +137,7 @@ final class NotebookUseCasesTest extends KernelTestCase
         $this->report();
     }
 
-    private function scan(NotebookPage ...$pages): void
+    private function scan(string ...$pages): void
     {
         self::getContainer()->get(ScanNotebookHandler::class)(new ScanNotebook($this->eventId, array_values($pages)));
         self::getContainer()->get(EntityManagerInterface::class)->clear();
@@ -132,18 +154,5 @@ final class NotebookUseCasesTest extends KernelTestCase
     private function place(string $placedAt, RequestedLine ...$lines): Ulid
     {
         return self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable($placedAt, new \DateTimeZone('Europe/Paris')), array_values($lines)))->id();
-    }
-
-    private function entry(string $written, int $quantity, string $productId, ?string $variant = null): NotebookEntry
-    {
-        $product = self::getContainer()->get(ProductRepository::class)->get(Ulid::fromString($productId));
-        $label = null === $variant ? $product->displayName() : \sprintf('%s — %s', $product->displayName(), $variant);
-
-        return new NotebookEntry(1, [new NotebookLine($written, $quantity, $label, $product->id(), $variant, $product->type()->id())]);
-    }
-
-    private function reader(): FakeNotebookReader
-    {
-        return self::getContainer()->get(FakeNotebookReader::class);
     }
 }

@@ -8,8 +8,8 @@ use App\Domain\Shared\Exception\DomainException;
 
 final class InvalidNotebookPages extends DomainException
 {
-    public function __construct(int $maxPages, int $maxMegabytes)
+    public function __construct(int $maxPages)
     {
-        parent::__construct('notebook.invalid_pages', ['max' => $maxPages, 'megabytes' => $maxMegabytes]);
+        parent::__construct('notebook.invalid_pages', ['max' => $maxPages]);
     }
 }

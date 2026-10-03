@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\Notebook;
 
 use App\Application\Notebook\NotebookCatalogue;
+use App\Domain\Notebook\NotebookLine;
+use App\Domain\Notebook\WrittenItem;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Money;
@@ -13,52 +15,70 @@ use PHPUnit\Framework\TestCase;
 
 final class NotebookCatalogueTest extends TestCase
 {
+    private ProductType $notebooks;
     private ProductType $prints;
+    private Product $lichen;
+    private Product $fern;
     private Product $dragon;
     private NotebookCatalogue $catalogue;
 
     protected function setUp(): void
     {
+        $this->notebooks = ProductType::create(TestWorkspace::get(), 'Carnet', 'CAR');
+        $this->notebooks->prefixNames(false);
         $this->prints = ProductType::create(TestWorkspace::get(), 'Tirage', 'TIR');
-        $this->prints->prefixNames(false);
+        $this->lichen = Product::create(TestWorkspace::get(), 'CAR-1', 'Carnet Lichen', Money::cents(1_200), $this->notebooks);
+        $this->fern = Product::create(TestWorkspace::get(), 'CAR-2', 'Carnet Fougère', Money::cents(1_200), $this->notebooks);
         $this->dragon = Product::create(TestWorkspace::get(), 'TIR-1', 'Dragon', Money::cents(1_500), $this->prints, ['A4', 'A3']);
-        $this->catalogue = NotebookCatalogue::of([$this->dragon]);
+        $this->catalogue = NotebookCatalogue::of([$this->lichen, $this->fern, $this->dragon]);
     }
 
-    public function testTheCatalogueListsProductsByType(): void
+    public function testTheDistinctiveWordNamesTheProduct(): void
     {
-        self::assertSame(
-            [['id' => (string) $this->prints->id(), 'name' => 'Tirage', 'products' => [['id' => (string) $this->dragon->id(), 'name' => 'Dragon', 'variants' => ['A4', 'A3']]]]],
-            $this->catalogue->types(),
-        );
+        $line = $this->line('lichen', 2);
+
+        self::assertTrue($this->lichen->id()->equals($line->productId));
+        self::assertTrue($this->notebooks->id()->equals($line->typeId));
+        self::assertSame('Carnet Lichen', $line->label);
+        self::assertSame(2, $line->quantity);
+        self::assertSame('lichen', $line->written);
     }
 
-    public function testAProductLineTakesTheProductTypeAndItsVariantSpelling(): void
+    public function testSmallReadingMistakesAndAccentsAreTolerated(): void
     {
-        $line = $this->catalogue->line('dragon a4', 2, (string) $this->dragon->id(), 'a4', null);
+        self::assertTrue($this->fern->id()->equals($this->line('fougere')->productId));
+        self::assertTrue($this->lichen->id()->equals($this->line('lichcn')->productId));
+    }
+
+    public function testAVariantWrittenWithTheProductIsKept(): void
+    {
+        $line = $this->line('tirage dragon a4');
 
         self::assertTrue($this->dragon->id()->equals($line->productId));
-        self::assertTrue($this->prints->id()->equals($line->typeId));
         self::assertSame('A4', $line->variant);
-        self::assertSame('Dragon — A4', $line->label);
+        self::assertSame('Tirage Dragon — A4', $line->label);
     }
 
-    public function testAnUnknownVariantIsDropped(): void
+    public function testAWordSharedBySeveralProductsOnlyNamesTheirType(): void
     {
-        $line = $this->catalogue->line('dragon A5', 1, (string) $this->dragon->id(), 'A5', null);
+        $line = $this->line('carnet');
 
-        self::assertNull($line->variant);
-        self::assertSame('Dragon', $line->label);
+        self::assertNull($line->productId);
+        self::assertTrue($this->notebooks->id()->equals($line->typeId));
+        self::assertSame('Carnet', $line->label);
     }
 
-    public function testAnUnknownProductFallsBackToItsTypeThenToWhatIsWritten(): void
+    public function testAnUnknownItemStaysAsWritten(): void
     {
-        $typed = $this->catalogue->line('tirage', 1, 'nope', null, (string) $this->prints->id());
-        self::assertNull($typed->productId);
-        self::assertSame('Tirage', $typed->label);
+        $line = $this->line('truc vert');
 
-        $unknown = $this->catalogue->line('truc vert', 1, null, null, 'nope');
-        self::assertNull($unknown->typeId);
-        self::assertSame('truc vert', $unknown->label);
+        self::assertNull($line->productId);
+        self::assertNull($line->typeId);
+        self::assertSame('truc vert', $line->label);
+    }
+
+    private function line(string $written, int $quantity = 1): NotebookLine
+    {
+        return $this->catalogue->line(new WrittenItem($written, $quantity), $written);
     }
 }
