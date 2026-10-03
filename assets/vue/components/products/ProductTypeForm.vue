@@ -38,9 +38,9 @@ const moreOpen = ref(false);
 const { suggestCode, renameVariant } = useProductTypes();
 const codeSuggestion = useSuggestion(toRef(form, 'code'), () => form.name, suggestCode, { follow: !props.type });
 
-function onCodeInput() {
-    form.code = form.code.toUpperCase();
-    codeSuggestion.edited();
+function onCodeInput(event) {
+    form.code = event.target.value.toUpperCase();
+    codeSuggestion.edited(form.code);
 }
 
 const typeName = computed(() => form.name.trim() || t('products.types.exampleType'));

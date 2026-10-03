@@ -153,7 +153,7 @@ async function onSubmit() {
 
             <FormDisclosure v-model:open="moreOpen" :title="t('products.form.more')" :summary="moreSummary">
                 <FormField :label="t('products.form.reference')" :error="errors.reference" :hint="isEditing ? null : t('products.form.referenceSuggested')">
-                    <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited()">
+                    <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited($event.target.value)">
                 </FormField>
                 <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.form.lowStockThresholdHint')">
                     <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" class="product-form__threshold" />

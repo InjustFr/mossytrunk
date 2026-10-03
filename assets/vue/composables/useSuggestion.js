@@ -20,8 +20,9 @@ export function useSuggestion(target, source, fetchSuggestion, { follow = true }
         if (following.value) timer = setTimeout(refresh, DELAY);
     }, { immediate: follow });
 
-    function edited() {
-        following.value = target.value.trim() === '';
+    function edited(value = target.value) {
+        latest++;
+        following.value = value.trim() === '';
         if (following.value) refresh();
     }
 
