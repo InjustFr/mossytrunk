@@ -289,6 +289,21 @@ final class OrderTest extends TestCase
         self::assertFalse($order->canAbsorb($this->imported('TX1', 1, 400)));
     }
 
+    public function testAnOrderIsTickedOffOnceCheckedAndCanBeUnticked(): void
+    {
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
+        self::assertFalse($order->isChecked());
+
+        $order->check(self::at('2026-07-13 09:00'));
+        $order->check(self::at('2026-07-14 09:00'));
+        self::assertTrue($order->isChecked());
+        self::assertEquals(self::at('2026-07-13 09:00'), $order->checkedAt());
+
+        $order->uncheck();
+        self::assertFalse($order->isChecked());
+        self::assertNull($order->checkedAt());
+    }
+
     public function testARefundedOrderIsRefundedOnceAndCannotBeChangedAnymore(): void
     {
         $order = $this->imported('TX1', 1, 400);

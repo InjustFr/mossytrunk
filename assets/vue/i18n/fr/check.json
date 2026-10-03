@@ -1,0 +1,17 @@
+{
+    "title": "Vérification des commandes",
+    "eventFallback": "Événement",
+    "intro": "Passez en revue chaque commande de l'événement (avec votre carnet par exemple) et cochez-la quand elle est bonne. Pour corriger une commande, ouvrez-la depuis sa référence. Vous pouvez vous arrêter quand vous voulez : les commandes cochées le restent.",
+    "progressLabel": "Commandes vérifiées",
+    "progress": "{checked} / {total} commande vérifiée | {checked} / {total} commandes vérifiées",
+    "toCheckOnly": "Seulement les commandes à vérifier",
+    "tick": "Commande {reference} vérifiée",
+    "refunded": "Remboursée",
+    "unidentified": "Produit inconnu",
+    "empty": "Aucune commande pour cet événement.",
+    "nothingLeft": "Plus aucune commande à vérifier.",
+    "allChecked": "La commande est vérifiée. | Les {count} commandes sont vérifiées.",
+    "backToEvent": "Retour à l'événement",
+    "stop": "Arrêter pour l'instant",
+    "toStockCheck": "Passer à l'inventaire"
+}

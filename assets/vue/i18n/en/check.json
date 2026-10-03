@@ -1,0 +1,17 @@
+{
+    "title": "Order check",
+    "eventFallback": "Event",
+    "intro": "Go through each order of the event (with your notebook, for instance) and tick it once it is right. To fix an order, open it from its reference. You can stop whenever you like: ticked orders stay ticked.",
+    "progressLabel": "Orders checked",
+    "progress": "{checked} / {total} order checked | {checked} / {total} orders checked",
+    "toCheckOnly": "Only orders left to check",
+    "tick": "Order {reference} checked",
+    "refunded": "Refunded",
+    "unidentified": "Unknown product",
+    "empty": "No order for this event.",
+    "nothingLeft": "No order left to check.",
+    "allChecked": "The order is checked. | All {count} orders are checked.",
+    "backToEvent": "Back to the event",
+    "stop": "Stop for now",
+    "toStockCheck": "Go to the stock check"
+}

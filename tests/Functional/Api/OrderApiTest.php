@@ -166,6 +166,26 @@ final class OrderApiTest extends WebTestCase
         self::assertEqualsCanonicalizing(['lines[0].productId', 'lines[0].quantity'], $paths);
     }
 
+    public function testOrdersOfAnEventAreTickedOffOneByOne(): void
+    {
+        $client = self::signedInClient();
+        $product = Json::string($this->post($client, '/api/products', ['name' => 'Sticker', 'sellingPrice' => 400, 'typeId' => ProductTypesApi::create($client)]), 'id');
+        $eventId = Json::string($this->post($client, '/api/events', ['name' => 'Japan Expo', 'location' => 'Villepinte', 'startDate' => '2026-07-09', 'endDate' => '2026-07-12']), 'id');
+        $order = Json::string($this->post($client, '/api/orders', ['placedAt' => '2026-07-10T15:30', 'lines' => [['productId' => $product, 'quantity' => 2]]]), 'id');
+
+        $client->jsonRequest('PUT', "/api/orders/$order/check");
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', "/api/events/$eventId/orders-to-check");
+        $orders = Json::decode((string) $client->getResponse()->getContent());
+        self::assertTrue(Json::at($orders, 0, 'checked'));
+        self::assertSame(2, Json::int($orders, 0, 'lines', 0, 'quantity'));
+
+        $client->jsonRequest('DELETE', "/api/orders/$order/check");
+        self::assertResponseStatusCodeSame(204);
+        $client->jsonRequest('GET', "/api/events/$eventId/orders-to-check");
+        self::assertFalse(Json::at(Json::decode((string) $client->getResponse()->getContent()), 0, 'checked'));
+    }
+
     /**
      * @param array<string, mixed> $body
      *

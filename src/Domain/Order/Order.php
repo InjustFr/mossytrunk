@@ -97,6 +97,9 @@ class Order implements Referenced
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $refundedAt = null;
 
+    #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $checkedAt = null;
+
     /** @var list<array{label: string, amount: int}> */
     #[ORM\Column(type: Types::JSON, options: ['default' => '[]'])]
     private array $channelCharges = [];
@@ -327,6 +330,26 @@ class Order implements Referenced
     public function refundedAt(): ?\DateTimeImmutable
     {
         return $this->refundedAt;
+    }
+
+    public function check(\DateTimeImmutable $checkedAt): void
+    {
+        $this->checkedAt ??= $checkedAt;
+    }
+
+    public function uncheck(): void
+    {
+        $this->checkedAt = null;
+    }
+
+    public function isChecked(): bool
+    {
+        return null !== $this->checkedAt;
+    }
+
+    public function checkedAt(): ?\DateTimeImmutable
+    {
+        return $this->checkedAt;
     }
 
     public function canAbsorb(self $other): bool

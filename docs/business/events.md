@@ -38,4 +38,4 @@ The profitability of an event is described in [event-report.md](event-report.md)
 
 `ListEvents` also gives each event its number of `days`, `costOfGoods` and `urssaf`; `GetEvent` gives its `timing`.
 
-UI: `/events` — **À venir** (ongoing ones included, « En cours », otherwise « dans N jours »; soonest first) with the **committed expenses** (and the result once it has orders), then **Passés**: bars of each event's result, best first, and a comparison table sortable on every column (days, orders, CA, dépenses, résultat, marge = résultat / CA, résultat par jour); creation modal, `/events/{id}` (details, edit, expenses, report).
+UI: `/events` — **À venir** (ongoing ones included, « En cours », otherwise « dans N jours »; soonest first) with the **committed expenses** (and the result once it has orders), then **Passés**: bars of each event's result, best first, and a comparison table sortable on every column (days, orders, CA, dépenses, résultat, marge = résultat / CA, résultat par jour); creation modal, `/events/{id}` (details, edit, expenses, report, « Vérifier les commandes » → order check, see [orders](orders.md) O22, « Faire l'inventaire »).
