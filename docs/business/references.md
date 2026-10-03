@@ -37,6 +37,7 @@ Model: `src/Domain/Reference/` — `ReferenceFormat` (per workspace and kind: te
 | R5 | Renumbering products replaces references typed by hand too; they are the SKUs written to SumUp and Etsy, so the catalogue export and « Écrire les références sur Etsy » should be redone (the form says so) | `ReferenceFormatForm.vue` | — |
 | R6 | The service's own references kept with imported sales (SumUp transaction code, `ETSY-<receipt id>`) never change | `ImportedSale` | — |
 | R7 | A product reference typed at creation or edition is kept as typed (P2); the format only drives the suggestion | `CreateProductHandler`, `UpdateProductHandler` | `ProductUseCasesTest` |
+| R8 | A new workspace starts with the standard format of every kind, so its first creations never race to set one up (a workspace created before gets it at its first use) | `CreateUserHandler`, `DoctrineReferenceFormatRepository::of()` | `AccountUseCasesTest` |
 
 ## Use cases & API
 

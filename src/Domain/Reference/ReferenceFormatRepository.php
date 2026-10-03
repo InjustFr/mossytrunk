@@ -7,4 +7,6 @@ namespace App\Domain\Reference;
 interface ReferenceFormatRepository
 {
     public function of(ReferenceKind $kind): ReferenceFormat;
+
+    public function add(ReferenceFormat $format): void;
 }

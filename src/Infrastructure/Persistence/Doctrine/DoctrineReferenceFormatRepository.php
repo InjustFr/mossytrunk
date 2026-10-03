@@ -25,6 +25,11 @@ final readonly class DoctrineReferenceFormatRepository implements ReferenceForma
             ?? $this->standard($kind);
     }
 
+    public function add(ReferenceFormat $format): void
+    {
+        $this->entityManager->persist($format);
+    }
+
     private function pending(ReferenceKind $kind): ?ReferenceFormat
     {
         foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $entity) {

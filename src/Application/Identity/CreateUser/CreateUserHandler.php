@@ -14,6 +14,9 @@ use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
 use App\Domain\Identity\Workspace;
 use App\Domain\Identity\WorkspaceRepository;
+use App\Domain\Reference\ReferenceFormat;
+use App\Domain\Reference\ReferenceFormatRepository;
+use App\Domain\Reference\ReferenceKind;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Sales\SalesChannelRepository;
 
@@ -27,6 +30,7 @@ final readonly class CreateUserHandler
         private Transaction $transaction,
         private SalesChannelRepository $channels,
         private Translator $translator,
+        private ReferenceFormatRepository $formats,
     ) {
     }
 
@@ -42,6 +46,9 @@ final readonly class CreateUserHandler
             $workspace = Workspace::create($command->workspaceName);
             $this->workspaces->add($workspace);
             $this->channels->add(SalesChannel::main($workspace, $this->translator->trans('sales.main_channel')));
+            foreach (ReferenceKind::cases() as $kind) {
+                $this->formats->add(ReferenceFormat::standard($workspace, $kind));
+            }
         }
 
         $user = User::invite($email, $workspace);
