@@ -70,6 +70,16 @@ final readonly class DeclarationPeriod
         return $this->end()->modify('last day of next month');
     }
 
+    /**
+     * @return list<string> the months of the period, "YYYY-MM"
+     */
+    public function months(): array
+    {
+        $first = ($this->index - 1) * $this->periodicity->months() + 1;
+
+        return array_map(fn (int $month): string => \sprintf('%04d-%02d', $this->year, $month), range($first, $first + $this->periodicity->months() - 1));
+    }
+
     public function range(): DateRange
     {
         return DateRange::fromDates($this->start(), $this->end());

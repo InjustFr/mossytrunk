@@ -17,6 +17,7 @@ use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
+use App\Tests\Support\RecordedSales;
 use App\Tests\Support\TestProductType;
 use App\Tests\Support\TestWorkspace;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +67,7 @@ final class ChannelCostTest extends TestCase
         $order = $this->order($etsy, 1);
         $order->stamp(Money::cents(200));
 
-        $result = EventResult::of($order->event() ?? self::fail('no event'), [$order]);
+        $result = EventResult::of($order->event() ?? self::fail('no event'), RecordedSales::totals([$order]), []);
 
         self::assertSame([318, 1_500 - 318 - 192], [$result->channelCosts->amount(), $result->result->amount()]);
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Stock\GetStockSheet;
 
+use App\Application\Reporting\ProductSalesLedger;
 use App\Domain\Event\EventRepository;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Stock\StockRepository;
 use Symfony\Component\Uid\Ulid;
@@ -14,7 +14,7 @@ final readonly class GetStockSheetHandler
 {
     public function __construct(
         private EventRepository $events,
-        private OrderRepository $orders,
+        private ProductSalesLedger $sales,
         private ProductRepository $products,
         private StockRepository $stock,
     ) {
@@ -28,11 +28,8 @@ final readonly class GetStockSheetHandler
         $event = $this->events->get(Ulid::fromString($eventId));
 
         $sold = [];
-        foreach ($this->orders->sales($event->id()) as $order) {
-            foreach ($order->lines() as $line) {
-                $key = self::key((string) $line->productId(), $line->variant());
-                $sold[$key] = ($sold[$key] ?? 0) + $line->quantity();
-            }
+        foreach ($this->sales->ofEvent($event->id()) as $product) {
+            $sold[self::key((string) $product->productId, $product->variant)] = $product->quantity;
         }
 
         $onHand = [];

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Event\ListEvents;
 
+use App\Application\Reporting\SalesLedger;
 use App\Application\Stock\ConsumedSupplies;
 use App\Domain\Event\EventRepository;
-use App\Domain\Order\Order;
-use App\Domain\Order\OrderRepository;
-use App\Domain\Reporting\EventResult;
+use App\Domain\Reporting\SalesFigures;
+use App\Domain\Reporting\SalesTotals;
 use App\Domain\Stock\StockCheckRepository;
 use Psr\Clock\ClockInterface;
 
@@ -20,7 +20,7 @@ final readonly class ListEventsHandler
 {
     public function __construct(
         private EventRepository $events,
-        private OrderRepository $orders,
+        private SalesLedger $sales,
         private StockCheckRepository $checks,
         private ClockInterface $clock,
         private ConsumedSupplies $consumedSupplies,
@@ -32,14 +32,7 @@ final readonly class ListEventsHandler
      */
     public function __invoke(): array
     {
-        /** @var array<string, list<Order>> $ordersByEvent */
-        $ordersByEvent = [];
-        foreach ($this->orders->sales() as $order) {
-            $event = $order->event();
-            if (null !== $event) {
-                $ordersByEvent[(string) $event->id()][] = $order;
-            }
-        }
+        $sales = $this->sales->totalsByEvent();
 
         $unexplained = [];
         foreach ($this->checks->withUnexplainedUnits() as $check) {
@@ -51,7 +44,8 @@ final readonly class ListEventsHandler
         $today = $this->clock->now();
         $views = [];
         foreach ($this->events->all() as $event) {
-            $views[] = EventSummaryView::of($event, EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? [], $consumed[(string) $event->id()] ?? null), $event->timingOn($today), $unexplained[(string) $event->id()] ?? 0);
+            $key = (string) $event->id();
+            $views[] = EventSummaryView::of($event, SalesFigures::of($sales[$key] ?? SalesTotals::zero(), $event->totalExpenses(), $consumed[$key] ?? null), $event->timingOn($today), $unexplained[$key] ?? 0);
         }
 
         return $views;

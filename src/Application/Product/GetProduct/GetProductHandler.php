@@ -6,13 +6,11 @@ namespace App\Application\Product\GetProduct;
 
 use App\Application\Product\ListProducts\ProductView;
 use App\Application\Product\ProductMovements;
+use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Stock\ProductStock;
 use App\Domain\Design\DesignRepository;
-use App\Domain\Order\Order;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\SellingPriceChange;
-use App\Domain\Reporting\SalesByProduct;
 use App\Domain\Shared\DateRange;
 use App\Domain\Stock\StockRepository;
 use Psr\Clock\ClockInterface;
@@ -22,7 +20,7 @@ final readonly class GetProductHandler
 {
     public function __construct(
         private ProductRepository $products,
-        private OrderRepository $orders,
+        private ProductSalesLedger $sales,
         private StockRepository $stock,
         private DesignRepository $designs,
         private ClockInterface $clock,
@@ -34,15 +32,13 @@ final readonly class GetProductHandler
     {
         $product = $this->products->get(Ulid::fromString($productId));
         $year = DateRange::yearOf($this->clock->now());
-        $orders = $this->orders->selling($product->id());
         $stockItems = $this->stock->ofProduct($product->id());
         $stock = ProductStock::of($product, $stockItems);
-        $sales = array_values(array_filter($orders, static fn (Order $order): bool => !$order->isRefunded()));
-        $ever = SalesByProduct::of($sales)->forProduct($product->id());
+        $ever = $this->sales->ofProduct($product->id());
         $design = $this->designs->findByProduct($product->id());
 
         return new ProductDetailView(
-            ProductView::fromProduct($product, $year, SalesByProduct::of(array_values(array_filter($sales, static fn (Order $order): bool => $order->isPlacedIn($year))))->forProduct($product->id()), $stock, $design?->collection()),
+            ProductView::fromProduct($product, $year, $this->sales->ofProduct($product->id(), DateRange::year($year)), $stock, $design?->collection()),
             $ever->quantity ?? 0,
             $ever?->sales->amount() ?? 0,
             $stock->items,

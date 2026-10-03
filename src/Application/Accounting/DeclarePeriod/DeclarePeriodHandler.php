@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Application\Accounting\DeclarePeriod;
 
 use App\Application\Accounting\PeriodTurnover;
+use App\Application\Reporting\SalesLedger;
 use App\Application\Transaction;
 use App\Application\WorkspaceContext;
 use App\Domain\Accounting\DeclarationPeriod;
 use App\Domain\Accounting\UrssafDeclaration;
 use App\Domain\Accounting\UrssafDeclarationRepository;
-use App\Domain\Order\OrderRepository;
 use Psr\Clock\ClockInterface;
 
 final readonly class DeclarePeriodHandler
 {
     public function __construct(
-        private OrderRepository $orders,
+        private SalesLedger $sales,
         private UrssafDeclarationRepository $declarations,
         private WorkspaceContext $workspace,
         private ClockInterface $clock,
@@ -36,7 +36,7 @@ final readonly class DeclarePeriodHandler
         $this->declarations->add(UrssafDeclaration::record(
             $this->workspace->current(),
             $period,
-            PeriodTurnover::of($period, $this->orders->sales())->turnover,
+            PeriodTurnover::of($period, $this->sales->totalsByMonth())->turnover,
             $this->clock->now(),
         ));
         $this->transaction->commit();

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Reporting\ProductsReport;
 
+use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Reporting\ReportPeriod;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Stock\StockRepository;
@@ -13,7 +13,7 @@ use App\Domain\Stock\StockRepository;
 final readonly class GetProductsReportHandler
 {
     public function __construct(
-        private OrderRepository $orders,
+        private ProductSalesLedger $sales,
         private ProductRepository $products,
         private StockRepository $stock,
         private ReportPeriod $periods,
@@ -25,20 +25,8 @@ final readonly class GetProductsReportHandler
         $range = $this->periods->resolve($period);
 
         $sold = [];
-        foreach ($this->orders->salesWithin($range) as $order) {
-            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
-                $productId = $line->productId();
-                if (null === $productId) {
-                    continue;
-                }
-                $key = (string) $productId;
-                $sold[$key] ??= ['units' => 0, 'gross' => 0, 'revenue' => 0, 'cost' => 0, 'unknownCost' => false];
-                $sold[$key]['units'] += $line->quantity();
-                $sold[$key]['gross'] += $line->total()->amount();
-                $sold[$key]['revenue'] += $revenue->amount();
-                $sold[$key]['cost'] += $line->cost()->amount();
-                $sold[$key]['unknownCost'] = $sold[$key]['unknownCost'] || $line->cost()->isZero();
-            }
+        foreach ($this->sales->within($range) as $product) {
+            $sold[(string) $product->productId] = ['units' => $product->quantity, 'gross' => $product->gross->amount(), 'revenue' => $product->sales->amount(), 'cost' => $product->cost->amount(), 'unknownCost' => $product->unknownCost];
         }
 
         $onHand = [];

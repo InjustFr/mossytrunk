@@ -48,6 +48,9 @@ class OrderLine
     #[ORM\Column]
     private int $quantity;
 
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'discount_')]
+    private Money $discount;
+
     /**
      * @internal built by Order
      */
@@ -65,6 +68,7 @@ class OrderLine
         $this->unitPrice = $item->sellingPrice;
         $this->cost = $cost;
         $this->quantity = $quantity;
+        $this->discount = Money::zero();
     }
 
     public function sells(SellableItem $item): bool
@@ -99,6 +103,9 @@ class OrderLine
         return null !== $this->productId && null !== $other->productId && $this->productId->equals($other->productId) && $this->variant === $other->variant;
     }
 
+    /**
+     * @internal identified through Order
+     */
     public function identify(SellableItem $item, Money $cost): void
     {
         if (!$this->sellsUnknownProduct()) {
@@ -150,6 +157,24 @@ class OrderLine
     public function cost(): Money
     {
         return $this->cost;
+    }
+
+    /**
+     * @internal the order shares its discounts between its lines
+     */
+    public function shareDiscount(Money $discount): void
+    {
+        $this->discount = $discount;
+    }
+
+    public function discount(): Money
+    {
+        return $this->discount;
+    }
+
+    public function revenue(): Money
+    {
+        return $this->total()->subtract($this->discount);
     }
 
     public function id(): Ulid

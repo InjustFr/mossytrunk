@@ -29,7 +29,7 @@ final readonly class IdentifyOrderLineHandler
 
         $withdrawn = $this->stock->withdraw($order->event(), [new OrderedItem($item, $line->quantity())]);
 
-        $line->identify($item, $withdrawn[0]->cost());
+        $order->identifyLine($line->id(), $item, $withdrawn[0]->cost());
         $this->transaction->commit();
     }
 }

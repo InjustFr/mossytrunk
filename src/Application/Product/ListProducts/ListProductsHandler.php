@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Application\Product\ListProducts;
 
+use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Stock\ProductStock;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Design\DesignRepository;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Reporting\SalesByProduct;
@@ -19,7 +19,7 @@ final readonly class ListProductsHandler
 {
     public function __construct(
         private ProductRepository $products,
-        private OrderRepository $orders,
+        private ProductSalesLedger $sales,
         private StockRepository $stock,
         private DesignRepository $designs,
         private ClockInterface $clock,
@@ -32,7 +32,7 @@ final readonly class ListProductsHandler
     public function __invoke(): array
     {
         $year = DateRange::yearOf($this->clock->now());
-        $sales = SalesByProduct::of($this->orders->salesWithin(DateRange::year($year)));
+        $sales = SalesByProduct::of($this->sales->within(DateRange::year($year)));
 
         $stockByProduct = [];
         foreach ($this->stock->all() as $item) {

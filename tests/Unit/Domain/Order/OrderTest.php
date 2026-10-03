@@ -59,6 +59,30 @@ final class OrderTest extends TestCase
         self::assertSame('CMD-1', $order->reference());
     }
 
+    public function testEachLineRecordsItsShareOfTheDiscountsInProportionToItsAmount(): void
+    {
+        $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [
+            new OrderedItem($this->sticker->sellable(null), 3),
+            new OrderedItem($this->tshirt->sellable('M'), 1),
+        ], [new AppliedDiscount('3 stickers pour 10 €', Money::cents(200))]);
+
+        self::assertSame([[75, 1_125], [125, 1_875]], array_map(static fn ($line): array => [$line->discount()->amount(), $line->revenue()->amount()], $order->lines()));
+    }
+
+    public function testTheRecordedFiguresFollowTheChangesOfTheOrder(): void
+    {
+        $order = Order::imported('CMD-1', TestWorkspace::get(), 'sumup', 'TX1', 'TX1', $this->event, self::at('2026-07-10 15:00'), [
+            new OrderedItem($this->sticker->sellable(null), 2),
+            new OrderedItem(SellableItem::unknown('Badge', Money::cents(500)), 1),
+        ], Money::cents(1_200), Money::zero(), PaymentMethod::Card, [], 'Remise SumUp');
+        self::assertSame([1_300, 100, 1_200, 160], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->total()->amount(), $order->costOfGoods()->amount()]);
+
+        $order->identifyLine($order->lines()[1]->id(), $this->tshirt->sellable('S')->at(Money::cents(500)), Money::cents(900));
+
+        self::assertSame(1_060, $order->costOfGoods()->amount());
+        self::assertSame([62, 38], array_map(static fn ($line): int => $line->discount()->amount(), $order->lines()));
+    }
+
     public function testCostsFromStockAreKeptAndMergedPerLine(): void
     {
         $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [

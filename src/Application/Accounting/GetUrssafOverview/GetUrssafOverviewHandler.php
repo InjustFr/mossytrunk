@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Application\Accounting\GetUrssafOverview;
 
 use App\Application\Accounting\PeriodTurnover;
+use App\Application\Reporting\SalesLedger;
 use App\Application\WorkspaceContext;
 use App\Domain\Accounting\DeclarationPeriod;
 use App\Domain\Accounting\UrssafDeclarationRepository;
-use App\Domain\Order\Order;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Reporting\UrssafContribution;
 use App\Domain\Shared\DateRange;
@@ -18,6 +18,7 @@ final readonly class GetUrssafOverviewHandler
 {
     public function __construct(
         private OrderRepository $orders,
+        private SalesLedger $sales,
         private UrssafDeclarationRepository $declarations,
         private WorkspaceContext $workspace,
         private ClockInterface $clock,
@@ -29,16 +30,16 @@ final readonly class GetUrssafOverviewHandler
         $today = $this->clock->now();
         $periodicity = $this->workspace->current()->declarationPeriodicity();
         $year ??= DateRange::yearOf($today);
-        $orders = $this->orders->sales();
+        $salesByMonth = $this->sales->totalsByMonth();
         $declarations = [];
         foreach ($this->declarations->all() as $declaration) {
             $declarations[$declaration->period()] = $declaration;
         }
-        $first = [] === $orders ? $today : min(array_map(static fn (Order $order): \DateTimeImmutable => $order->placedAt(), $orders));
-        $view = fn (DeclarationPeriod $period): DeclarationPeriodView => DeclarationPeriodView::of(PeriodTurnover::of($period, $orders), $declarations[$period->key()] ?? null, $today, $first);
+        $first = $this->orders->firstSaleAt() ?? $today;
+        $view = fn (DeclarationPeriod $period): DeclarationPeriodView => DeclarationPeriodView::of(PeriodTurnover::of($period, $salesByMonth), $declarations[$period->key()] ?? null, $today, $first);
 
         $periods = array_map($view, DeclarationPeriod::ofYear($year, $periodicity));
-        $years = array_values(array_unique([DateRange::yearOf($today), $year, ...array_map(static fn (Order $order): int => DateRange::yearOf($order->placedAt()), $orders)]));
+        $years = array_values(array_unique([DateRange::yearOf($today), $year, ...array_map(static fn (string $month): int => (int) substr($month, 0, 4), array_keys($salesByMonth))]));
         rsort($years);
 
         $pending = [];

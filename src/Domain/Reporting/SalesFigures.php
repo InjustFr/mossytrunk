@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Reporting;
 
-use App\Domain\Order\Order;
 use App\Domain\Shared\Money;
 
 /**
@@ -31,40 +30,31 @@ final readonly class SalesFigures
     ) {
     }
 
-    /**
-     * @param list<Order> $orders
-     */
-    public static function of(array $orders, Money $expenses, ?Money $consumedSupplies = null): self
+    public static function of(SalesTotals $sales, Money $expenses, ?Money $consumedSupplies = null): self
     {
-        $grossSales = Money::sum(array_map(static fn (Order $order): Money => $order->subtotal(), $orders));
-        $discounts = Money::sum(array_map(static fn (Order $order): Money => $order->discountTotal(), $orders));
-        $shipping = Money::sum(array_map(static fn (Order $order): Money => $order->shipping(), $orders));
-        $turnover = $grossSales->subtract($discounts)->add($shipping);
-        $costOfGoods = Money::sum(array_map(static fn (Order $order): Money => $order->costOfGoods(), $orders));
-        $supplies = Money::sum(array_map(static fn (Order $order): Money => $order->suppliesCost(), $orders));
-        $channelCosts = Money::sum(array_map(static fn (Order $order): Money => $order->channelCosts(), $orders));
+        $turnover = $sales->turnover();
         $consumedSupplies ??= Money::zero();
         $urssaf = UrssafContribution::on($turnover);
 
         return new self(
-            \count($orders),
-            $grossSales,
-            $discounts,
-            $shipping,
+            $sales->orderCount,
+            $sales->grossSales,
+            $sales->discounts,
+            $sales->shipping,
             $turnover,
-            $costOfGoods,
-            $supplies,
+            $sales->costOfGoods,
+            $sales->supplies,
             $consumedSupplies,
-            $channelCosts,
+            $sales->channelCosts,
             $expenses,
             $urssaf,
-            $turnover->subtract($costOfGoods)->subtract($supplies)->subtract($consumedSupplies)->subtract($channelCosts)->subtract($expenses)->subtract($urssaf),
+            $turnover->subtract($sales->costOfGoods)->subtract($sales->supplies)->subtract($consumedSupplies)->subtract($sales->channelCosts)->subtract($expenses)->subtract($urssaf),
         );
     }
 
     public static function zero(): self
     {
-        return self::of([], Money::zero());
+        return self::of(SalesTotals::zero(), Money::zero());
     }
 
     /**

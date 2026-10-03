@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Reporting;
 
-use App\Domain\Order\Order;
-use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class SalesByProduct
@@ -18,20 +16,14 @@ final readonly class SalesByProduct
     }
 
     /**
-     * @param list<Order> $orders
+     * @param list<ProductSales> $sales one per product
      */
-    public static function of(array $orders): self
+    public static function of(array $sales): self
     {
         $products = [];
-        foreach ($orders as $order) {
-            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
-                $productId = $line->productId();
-                if (null === $productId) {
-                    continue;
-                }
-                $key = (string) $productId;
-                $products[$key] = ($products[$key] ?? new ProductSales($line->productName(), $productId, $line->productName(), null, 0, Money::zero(), Money::zero(), false))
-                    ->add($line->quantity(), $revenue, $line->cost(), $line->cost()->isZero());
+        foreach ($sales as $product) {
+            if (null !== $product->productId) {
+                $products[(string) $product->productId] = $product;
             }
         }
 

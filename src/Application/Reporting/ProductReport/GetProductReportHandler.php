@@ -38,11 +38,11 @@ final readonly class GetProductReportHandler
             if ($order->isRefunded() || !isset($months[$month])) {
                 continue;
             }
-            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
+            foreach ($order->lines() as $line) {
                 if ($line->productId()?->equals($product->id()) ?? false) {
                     $months[$month]['units'] += $line->quantity();
                     $months[$month]['gross'] += $line->total()->amount();
-                    $months[$month]['revenue'] += $revenue->amount();
+                    $months[$month]['revenue'] += $line->revenue()->amount();
                 }
             }
         }

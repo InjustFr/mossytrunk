@@ -6,7 +6,7 @@ namespace App\Application\Event\ListEvents;
 
 use App\Domain\Event\Event;
 use App\Domain\Event\EventTiming;
-use App\Domain\Reporting\EventResult;
+use App\Domain\Reporting\SalesFigures;
 
 final readonly class EventSummaryView
 {
@@ -28,7 +28,7 @@ final readonly class EventSummaryView
     ) {
     }
 
-    public static function of(Event $event, EventResult $result, EventTiming $timing, int $unexplainedUnits = 0): self
+    public static function of(Event $event, SalesFigures $result, EventTiming $timing, int $unexplainedUnits = 0): self
     {
         return new self(
             (string) $event->id(),

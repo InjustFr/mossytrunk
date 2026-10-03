@@ -104,6 +104,24 @@ class Order implements Referenced
     #[ORM\Embedded(class: Money::class, columnPrefix: 'postage_')]
     private Money $postage;
 
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'subtotal_')]
+    private Money $subtotal;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'discount_total_')]
+    private Money $discountTotal;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'total_')]
+    private Money $total;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'cost_of_goods_')]
+    private Money $costOfGoods;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'supplies_cost_')]
+    private Money $suppliesCost;
+
+    #[ORM\Embedded(class: Money::class, columnPrefix: 'channel_costs_')]
+    private Money $channelCosts;
+
     /**
      * @param list<OrderedItem>     $items
      * @param list<AppliedDiscount> $discounts
@@ -127,6 +145,7 @@ class Order implements Referenced
         $this->workspace = $workspace;
         $this->shipping = Money::zero();
         $this->postage = Money::zero();
+        $this->channelCosts = Money::zero();
         $this->placedAt = $placedAt;
         $this->source = $source;
         $this->lines = new ArrayCollection();
@@ -165,7 +184,7 @@ class Order implements Referenced
         $order->paymentMethod = $paymentMethod;
         $order->shipping = $shipping;
 
-        $gap = $order->subtotal()->subtract($charged);
+        $gap = $order->linesTotal()->subtract($charged);
         if ($gap->isPositive()) {
             $order->applyDiscounts(self::importDiscounts($gap, $ruleDiscounts, $discountLabel));
         }
@@ -176,17 +195,17 @@ class Order implements Referenced
 
     public function subtotal(): Money
     {
-        return Money::sum($this->lines->map(static fn (OrderLine $line): Money => $line->total()));
+        return $this->subtotal;
     }
 
     public function discountTotal(): Money
     {
-        return Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $this->appliedDiscounts()));
+        return $this->discountTotal;
     }
 
     public function total(): Money
     {
-        return $this->subtotal()->subtract($this->discountTotal())->add($this->shipping);
+        return $this->total;
     }
 
     public function shipping(): Money
@@ -199,7 +218,7 @@ class Order implements Referenced
      */
     public function costOfGoods(): Money
     {
-        return Money::sum($this->lines->map(static fn (OrderLine $line): Money => $line->cost()));
+        return $this->costOfGoods;
     }
 
     public function id(): Ulid
@@ -357,8 +376,10 @@ class Order implements Referenced
      */
     public function chargeChannelCosts(array $paymentFees = []): void
     {
-        $charges = [...(null === $this->channel ? [] : $this->channel->chargesOn($this->total())), ...$paymentFees];
+        $this->recordSales();
+        $charges = [...(null === $this->channel ? [] : $this->channel->chargesOn($this->total)), ...$paymentFees];
         $this->channelCharges = array_map(static fn (OrderCharge $charge): array => $charge->toArray(), $charges);
+        $this->recordChannelCosts();
     }
 
     /**
@@ -376,6 +397,7 @@ class Order implements Referenced
         }
 
         $this->postage = $postage;
+        $this->recordChannelCosts();
     }
 
     public function postage(): Money
@@ -385,7 +407,7 @@ class Order implements Referenced
 
     public function channelCosts(): Money
     {
-        return Money::sum(array_map(static fn (OrderCharge $charge): Money => $charge->amount, $this->channelCharges()))->add($this->postage);
+        return $this->channelCosts;
     }
 
     private function lineTwinOf(OrderLine $line): ?OrderLine
@@ -397,17 +419,6 @@ class Order implements Referenced
         }
 
         return null;
-    }
-
-    /**
-     * @return list<array{line: OrderLine, revenue: Money}>
-     */
-    public function lineRevenues(): array
-    {
-        $lines = $this->lines();
-        $discounts = CostAllocation::proportionally($this->discountTotal(), array_map(static fn (OrderLine $line): Money => $line->total(), $lines));
-
-        return array_map(static fn (OrderLine $line, Money $discount): array => ['line' => $line, 'revenue' => $line->total()->subtract($discount)], $lines, $discounts);
     }
 
     public function fillMissingCosts(Ulid $productId, ?string $variant, Money $unitCost): int
@@ -422,6 +433,7 @@ class Order implements Referenced
                 ++$filled;
             }
         }
+        $this->recordSales();
 
         return $filled;
     }
@@ -444,10 +456,10 @@ class Order implements Referenced
         $twin = $this->supplyUsing($productId, $supply->variant);
         if (null === $twin) {
             $this->supplies->add(new OrderSupply($this, $productId, $supply, $quantity, $cost));
-
-            return;
+        } else {
+            $twin->add($quantity, $cost);
         }
-        $twin->add($quantity, $cost);
+        $this->recordSales();
     }
 
     public function returnSupply(Ulid $supplyLineId): OrderSupply
@@ -458,6 +470,7 @@ class Order implements Referenced
         foreach ($this->supplies as $supply) {
             if ($supply->id()->equals($supplyLineId)) {
                 $this->supplies->removeElement($supply);
+                $this->recordSales();
 
                 return $supply;
             }
@@ -476,7 +489,7 @@ class Order implements Referenced
 
     public function suppliesCost(): Money
     {
-        return Money::sum(array_map(static fn (OrderSupply $supply): Money => $supply->cost(), $this->supplies()));
+        return $this->suppliesCost;
     }
 
     private function supplyUsing(Ulid $productId, ?string $variant): ?OrderSupply
@@ -522,6 +535,7 @@ class Order implements Referenced
             $twin->add($line->quantity(), $line->cost());
             $this->lines->removeElement($line);
         }
+        $this->recordSales();
     }
 
     private function line(Ulid $lineId): OrderLine
@@ -542,6 +556,12 @@ class Order implements Referenced
         }
 
         return $this->line($lineId);
+    }
+
+    public function identifyLine(Ulid $lineId, SellableItem $item, Money $cost): void
+    {
+        $this->lineToIdentify($lineId)->identify($item, $cost);
+        $this->recordSales();
     }
 
     private function lineSelling(SellableItem $item, OrderLine $except): ?OrderLine
@@ -587,7 +607,7 @@ class Order implements Referenced
     private function applyDiscounts(array $discounts): void
     {
         $total = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));
-        if ($total->greaterThan($this->subtotal())) {
+        if ($total->greaterThan($this->linesTotal())) {
             throw new DiscountExceedsSubtotal();
         }
 
@@ -612,6 +632,30 @@ class Order implements Referenced
     public function workspace(): Workspace
     {
         return $this->workspace;
+    }
+
+    private function linesTotal(): Money
+    {
+        return Money::sum($this->lines->map(static fn (OrderLine $line): Money => $line->total()));
+    }
+
+    private function recordSales(): void
+    {
+        $lines = $this->lines();
+        $this->subtotal = $this->linesTotal();
+        $this->discountTotal = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $this->appliedDiscounts()));
+        $this->total = $this->subtotal->subtract($this->discountTotal)->add($this->shipping);
+        $shares = CostAllocation::proportionally($this->discountTotal, array_map(static fn (OrderLine $line): Money => $line->total(), $lines));
+        foreach ($lines as $index => $line) {
+            $line->shareDiscount($shares[$index]);
+        }
+        $this->costOfGoods = Money::sum(array_map(static fn (OrderLine $line): Money => $line->cost(), $lines));
+        $this->suppliesCost = Money::sum(array_map(static fn (OrderSupply $supply): Money => $supply->cost(), $this->supplies()));
+    }
+
+    private function recordChannelCosts(): void
+    {
+        $this->channelCosts = Money::sum(array_map(static fn (OrderCharge $charge): Money => $charge->amount, $this->channelCharges()))->add($this->postage);
     }
 
     private function mergeObstacleWith(self $other): ?string

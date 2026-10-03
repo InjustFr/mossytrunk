@@ -19,16 +19,6 @@ interface OrderRepository
     public function get(Ulid $id): Order;
 
     /**
-     * @return list<Order> most recent first, optionally restricted to one event
-     */
-    public function list(?Ulid $eventId = null): array;
-
-    /**
-     * @return list<Order> orders still counting as sales (not refunded), most recent first, optionally restricted to one event
-     */
-    public function sales(?Ulid $eventId = null): array;
-
-    /**
      * @return list<Order> orders still counting as sales (not refunded) placed within the period, most recent first
      */
     public function salesWithin(DateRange $period): array;

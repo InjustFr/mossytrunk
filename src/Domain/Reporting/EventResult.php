@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Reporting;
 
 use App\Domain\Event\Event;
-use App\Domain\Order\Order;
 use App\Domain\Shared\Money;
 
 /**
@@ -35,12 +34,12 @@ final readonly class EventResult
     }
 
     /**
-     * @param list<Order> $orders           the event's orders
-     * @param Money|null  $consumedSupplies the cost of the supplies found missing at its inventories
+     * @param list<ProductSales> $productSales     the event's sales per (product, variant)
+     * @param Money|null         $consumedSupplies the cost of the supplies found missing at its inventories
      */
-    public static function of(Event $event, array $orders, ?Money $consumedSupplies = null): self
+    public static function of(Event $event, SalesTotals $sales, array $productSales, ?Money $consumedSupplies = null): self
     {
-        $figures = SalesFigures::of($orders, $event->totalExpenses(), $consumedSupplies);
+        $figures = SalesFigures::of($sales, $event->totalExpenses(), $consumedSupplies);
 
         return new self(
             $figures->orderCount,
@@ -54,28 +53,17 @@ final readonly class EventResult
             $figures->expenses,
             $figures->urssaf,
             $figures->result,
-            self::productSales($orders),
+            self::ranked($productSales),
         );
     }
 
     /**
-     * @param list<Order> $orders
+     * @param list<ProductSales> $sales
      *
      * @return list<ProductSales>
      */
-    private static function productSales(array $orders): array
+    private static function ranked(array $sales): array
     {
-        /** @var array<string, ProductSales> $sales */
-        $sales = [];
-        foreach ($orders as $order) {
-            foreach ($order->lineRevenues() as ['line' => $line, 'revenue' => $revenue]) {
-                $key = $line->productId().'|'.$line->variant();
-                $sales[$key] = ($sales[$key] ?? new ProductSales($line->label(), $line->productId(), $line->productName(), $line->variant(), 0, Money::zero(), Money::zero(), false))
-                    ->add($line->quantity(), $revenue, $line->cost(), $line->cost()->isZero());
-            }
-        }
-
-        $sales = array_values($sales);
         usort($sales, static fn (ProductSales $a, ProductSales $b): int => [$b->sales->amount(), $a->label] <=> [$a->sales->amount(), $b->label]);
 
         return $sales;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Accounting;
 
 use App\Domain\Accounting\DeclarationPeriod;
-use App\Domain\Order\Order;
+use App\Domain\Reporting\SalesTotals;
 use App\Domain\Shared\Money;
 
 final readonly class PeriodTurnover
@@ -18,12 +18,15 @@ final readonly class PeriodTurnover
     }
 
     /**
-     * @param list<Order> $orders
+     * @param array<string, SalesTotals> $salesByMonth keyed "YYYY-MM" (Europe/Paris)
      */
-    public static function of(DeclarationPeriod $period, array $orders): self
+    public static function of(DeclarationPeriod $period, array $salesByMonth): self
     {
-        $inPeriod = array_values(array_filter($orders, static fn (Order $order): bool => $period->covers($order->placedAt())));
+        $sales = SalesTotals::zero();
+        foreach ($period->months() as $month) {
+            $sales = $sales->add($salesByMonth[$month] ?? SalesTotals::zero());
+        }
 
-        return new self($period, Money::sum(array_map(static fn (Order $order): Money => $order->total(), $inPeriod)), \count($inPeriod));
+        return new self($period, $sales->turnover(), $sales->orderCount);
     }
 }

@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Application\Dashboard\GetDashboard;
 
+use App\Application\Reporting\ProductSalesLedger;
+use App\Application\Reporting\SalesLedger;
 use App\Application\Stock\ConsumedSupplies;
 use App\Application\Stock\ProductStock;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
-use App\Domain\Order\Order;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\MonthlyResults;
 use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\SalesByProduct;
+use App\Domain\Reporting\SalesFigures;
+use App\Domain\Reporting\SalesTotals;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\StockRepository;
@@ -28,7 +29,8 @@ final readonly class GetDashboardHandler
     private const int TOP_PRODUCTS = 5;
 
     public function __construct(
-        private OrderRepository $orders,
+        private SalesLedger $sales,
+        private ProductSalesLedger $productSales,
         private EventRepository $events,
         private ProductRepository $products,
         private StockRepository $stock,
@@ -41,10 +43,9 @@ final readonly class GetDashboardHandler
      */
     public function __invoke(?int $year = null): DashboardView
     {
-        $orders = $this->orders->sales();
         $events = $this->events->all();
         $consumed = $this->consumedSupplies->byEvent();
-        $results = MonthlyResults::of($orders, $events, $consumed);
+        $results = MonthlyResults::of($this->sales->totalsByMonth(), $events, $consumed);
         $year ??= DateRange::yearOf(new \DateTimeImmutable('now'));
 
         $years = $results->years();
@@ -58,7 +59,7 @@ final readonly class GetDashboardHandler
             $months[] = ['month' => $month] + $results->month($year, $month)->toArray();
         }
 
-        $sales = SalesByProduct::of(array_values(array_filter($orders, static fn (Order $order): bool => $order->isPlacedIn($year))))->ranked();
+        $sales = SalesByProduct::of($this->productSales->within(DateRange::year($year)))->ranked();
         $products = $this->products->all();
         $typeNames = $this->typeNamesOf($products);
         $stocks = $this->stocksOf($products);
@@ -69,7 +70,7 @@ final readonly class GetDashboardHandler
             $months,
             $results->year($year)->toArray(),
             array_map(static fn (int $y): array => ['year' => $y] + $results->year($y)->toArray(), $results->years()),
-            $this->eventsOf($year, $events, $orders, $consumed),
+            $this->eventsOf($year, $events, $consumed),
             array_map(static fn (ProductSales $product): array => [
                 'id' => (string) $product->productId,
                 'name' => $product->productName,
@@ -101,27 +102,20 @@ final readonly class GetDashboardHandler
 
     /**
      * @param list<Event>          $events
-     * @param list<Order>          $orders
      * @param array<string, Money> $consumed
      *
      * @return list<array{id: string, name: string, startDate: string, turnover: int, result: int}>
      */
-    private function eventsOf(int $year, array $events, array $orders, array $consumed): array
+    private function eventsOf(int $year, array $events, array $consumed): array
     {
-        $ordersByEvent = [];
-        foreach ($orders as $order) {
-            $event = $order->event();
-            if (null !== $event) {
-                $ordersByEvent[(string) $event->id()][] = $order;
-            }
-        }
+        $sales = $this->sales->totalsByEvent();
 
         $rows = [];
         foreach ($events as $event) {
             if (!$event->startsIn($year)) {
                 continue;
             }
-            $result = EventResult::of($event, $ordersByEvent[(string) $event->id()] ?? [], $consumed[(string) $event->id()] ?? null);
+            $result = SalesFigures::of($sales[(string) $event->id()] ?? SalesTotals::zero(), $event->totalExpenses(), $consumed[(string) $event->id()] ?? null);
             $rows[] = [
                 'id' => (string) $event->id(),
                 'name' => $event->name(),

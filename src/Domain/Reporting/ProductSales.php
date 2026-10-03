@@ -18,6 +18,7 @@ final readonly class ProductSales
         public string $productName,
         public ?string $variant,
         public int $quantity,
+        public Money $gross,
         public Money $sales,
         public Money $cost,
         public bool $unknownCost,
@@ -32,10 +33,5 @@ final readonly class ProductSales
     public static function productIds(array $sales): array
     {
         return array_values(array_filter(array_map(static fn (self $line): ?Ulid => $line->productId, $sales)));
-    }
-
-    public function add(int $quantity, Money $sales, Money $cost, bool $unknownCost): self
-    {
-        return new self($this->label, $this->productId, $this->productName, $this->variant, $this->quantity + $quantity, $this->sales->add($sales), $this->cost->add($cost), $this->unknownCost || $unknownCost);
     }
 }

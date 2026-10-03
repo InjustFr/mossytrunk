@@ -11,6 +11,7 @@ use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
+use App\Infrastructure\Persistence\Doctrine\Reporting\SalePeriodBounds;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -44,19 +45,9 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ?? throw new NotFound('order', (string) $id);
     }
 
-    public function list(?Ulid $eventId = null): array
-    {
-        return $this->loaded($this->orders($eventId)->getQuery());
-    }
-
-    public function sales(?Ulid $eventId = null): array
-    {
-        return $this->loaded($this->orders($eventId)->andWhere('o.refundedAt IS NULL')->getQuery());
-    }
-
     public function salesWithin(DateRange $period): array
     {
-        [$from, $until] = $this->bounds($period);
+        [$from, $until] = SalePeriodBounds::of($period);
 
         return $this->loaded($this->orders(null)
             ->andWhere('o.refundedAt IS NULL')
@@ -219,7 +210,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function countOutside(Ulid $eventId, DateRange $period): int
     {
-        [$from, $until] = $this->bounds($period);
+        [$from, $until] = SalePeriodBounds::of($period);
 
         return (int) $this->entityManager->createQueryBuilder()
             ->select('COUNT(o.id)')
@@ -233,18 +224,5 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
             ->getQuery()
             ->getSingleScalarResult();
-    }
-
-    /**
-     * @return array{\DateTimeImmutable, \DateTimeImmutable}
-     */
-    private function bounds(DateRange $period): array
-    {
-        $timezone = new \DateTimeZone(DateRange::TIMEZONE);
-
-        return [
-            new \DateTimeImmutable($period->start()->format('Y-m-d'), $timezone),
-            new \DateTimeImmutable($period->end()->format('Y-m-d').' +1 day', $timezone),
-        ];
     }
 }
