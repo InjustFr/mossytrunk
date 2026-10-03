@@ -42,6 +42,7 @@ identity:
     empty_workspace_name: 'The workspace name is required.'
     invalid_email: 'Invalid email address “{email}”.'
     invalid_secret_name: 'Invalid key name “{name}”.'
+    invalid_theme_color: 'Invalid colour “{color}”: use a hexadecimal code such as #5b7f3a.'
     password_token_already_used: 'This link has already been used.'
     password_token_expired: 'This link has expired. Request a new one from “Forgot your password?”.'
     password_too_short: 'The password must contain at least {min} characters.'

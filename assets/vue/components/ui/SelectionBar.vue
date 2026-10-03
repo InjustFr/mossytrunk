@@ -32,13 +32,13 @@ const { t } = useI18n();
     margin: var(--space-4) auto 0;
     padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
     background: var(--color-ink);
-    color: #fff;
+    color: var(--color-surface);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
 }
 
 .selection-bar__count { font-weight: 600; }
-.selection-bar :deep(.button--ghost) { color: #ddd; }
+.selection-bar :deep(.button--ghost) { color: color-mix(in oklch, var(--color-surface) 85%, var(--color-ink)); }
 
 .selection-bar-enter-active,
 .selection-bar-leave-active { transition: opacity var(--transition), transform var(--transition); }

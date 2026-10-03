@@ -123,7 +123,7 @@
 .date-picker__day[data-highlighted-end],
 .date-picker__day--single[data-selected] {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-on-accent);
     border-radius: calc(var(--radius) - 0.125rem);
 }
 

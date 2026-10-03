@@ -4,26 +4,32 @@
  * with a mossy green accent for actions and positive figures.
  */
 :root {
-    --color-accent: #5b7f3a;
-    --color-accent-strong: #46652b;
-    --color-accent-soft: #eef3e8;
+    --theme-background: #f5f5f3;
+    --theme-accent: #5b7f3a;
 
-    --color-bg: #f5f5f3;
-    --color-surface: #ffffff;
-    --color-sidebar: #ffffff;
-    --color-text: #1b1b1b;
-    --color-muted: #6f6f6b;
-    --color-subtle: #9a9a95;
-    --color-border: #e4e4e0;
-    --color-border-strong: #cfcfca;
-    --color-ink: #111111;
-    --color-danger: #a8321f;
-    --color-danger-soft: #fbefec;
-    --color-success: #3f7d2c;
-    --color-warning: #a86b12;
-    --color-warning-soft: #fbf3e4;
+    --color-bg: var(--theme-background);
+    --color-surface: oklch(from var(--theme-background) min(1, l + 0.05 + clamp(0, (l - 0.62) * 100, 1)) calc(c * 0.5) h);
+    --color-sidebar: var(--color-surface);
+    --color-text: oklch(from var(--theme-background) calc(0.93 - 0.72 * clamp(0, (l - 0.62) * 100, 1)) min(c, 0.012) h);
+    --color-ink: oklch(from var(--theme-background) calc(0.97 - 0.79 * clamp(0, (l - 0.62) * 100, 1)) min(c, 0.01) h);
+    --color-muted: color-mix(in oklch, var(--color-text) 62%, var(--color-bg));
+    --color-subtle: color-mix(in oklch, var(--color-text) 40%, var(--color-bg));
+    --color-border: color-mix(in oklch, var(--color-text) 8%, var(--color-bg));
+    --color-border-strong: color-mix(in oklch, var(--color-text) 16%, var(--color-bg));
+    --color-hover: color-mix(in oklch, var(--color-text) 3%, var(--color-surface));
+
+    --color-accent: var(--theme-accent);
+    --color-accent-strong: color-mix(in oklch, var(--theme-accent) 80%, var(--color-ink));
+    --color-accent-soft: color-mix(in oklch, var(--theme-accent) 11%, var(--color-surface));
+    --color-on-accent: oklch(from var(--theme-accent) calc(0.99 - 0.78 * clamp(0, (l - 0.7) * 100, 1)) min(c, 0.02) h);
+
+    --color-danger: color-mix(in oklab, oklch(from var(--theme-background) calc(0.74 - 0.26 * clamp(0, (l - 0.62) * 100, 1)) 0.15 28) 85%, var(--theme-accent));
+    --color-success: color-mix(in oklab, oklch(from var(--theme-background) calc(0.76 - 0.25 * clamp(0, (l - 0.62) * 100, 1)) 0.13 145) 85%, var(--theme-accent));
+    --color-warning: color-mix(in oklab, oklch(from var(--theme-background) calc(0.8 - 0.22 * clamp(0, (l - 0.62) * 100, 1)) 0.13 70) 85%, var(--theme-accent));
+    --color-chart-out: color-mix(in oklab, oklch(from var(--theme-background) calc(0.72 - 0.22 * clamp(0, (l - 0.62) * 100, 1)) 0.11 262) 85%, var(--theme-accent));
+    --color-danger-soft: color-mix(in oklch, var(--color-danger) 10%, var(--color-surface));
+    --color-warning-soft: color-mix(in oklch, var(--color-warning) 12%, var(--color-surface));
     --color-backdrop: rgb(17 17 17 / 35%);
-    --color-chart-out: #4a68b0;
 
     --radius: 0.5rem;
     --space-1: 0.25rem;

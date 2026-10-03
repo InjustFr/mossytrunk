@@ -1,6 +1,21 @@
 {
     "title": "Settings",
     "workspace": "Workspace",
+    "appearance": {
+        "title": "Appearance",
+        "intro": "Choose the app’s colours, just for you: the text follows the background, the alert colours follow the background and the accent.",
+        "themesLabel": "Theme",
+        "background": "Background",
+        "accent": "Accent",
+        "saved": "Appearance saved.",
+        "themes": {
+            "moss": "Moss",
+            "terracotta": "Terracotta",
+            "fjord": "Fjord",
+            "plum": "Plum",
+            "night": "Night"
+        }
+    },
     "services": {
         "title": "Connected services",
         "add": "Add a service",

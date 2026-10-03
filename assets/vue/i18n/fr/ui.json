@@ -40,5 +40,10 @@
     "selection": {
         "label": "Sélection",
         "clear": "Désélectionner"
+    },
+    "color": {
+        "area": "Saturation et luminosité",
+        "hue": "Teinte",
+        "hex": "Code hexadécimal"
     }
 }

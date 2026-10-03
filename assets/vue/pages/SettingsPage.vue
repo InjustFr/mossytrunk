@@ -6,6 +6,7 @@ import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
+import AppearanceSettings from '../components/settings/AppearanceSettings.vue';
 import ConnectedServices from '../components/settings/ConnectedServices.vue';
 import ServiceModal from '../components/settings/ServiceModal.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
@@ -150,6 +151,10 @@ onMounted(async () => {
             <BaseCard :title="t('settings.references.title')">
                 <p class="settings-page__intro">{{ t('settings.references.intro') }}</p>
                 <ReferenceFormats :formats="references.formats.value" @edit="openFormat" />
+            </BaseCard>
+            <BaseCard :title="t('settings.appearance.title')">
+                <p class="settings-page__intro">{{ t('settings.appearance.intro') }}</p>
+                <AppearanceSettings />
             </BaseCard>
         </div>
         <ServiceModal

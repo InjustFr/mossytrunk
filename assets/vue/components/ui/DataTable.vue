@@ -88,7 +88,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 }
 
 .data-table__body :deep(tr) { transition: background var(--transition); }
-.data-table__body :deep(tr:hover) { background: #fafaf8; }
+.data-table__body :deep(tr:hover) { background: var(--color-hover); }
 
 .data-table :deep(.data-table__cell--number) { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .data-table :deep(.data-table__cell--actions) { text-align: right; white-space: nowrap; }

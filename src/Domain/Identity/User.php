@@ -33,6 +33,12 @@ class User
     #[ORM\Column(length: 2, nullable: true, enumType: Language::class)]
     private ?Language $language = null;
 
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $themeBackground = null;
+
+    #[ORM\Column(length: 7, nullable: true)]
+    private ?string $themeAccent = null;
+
     private function __construct(Ulid $id, string $email, Workspace $workspace)
     {
         $this->id = $id;
@@ -69,6 +75,21 @@ class User
     public function language(): ?Language
     {
         return $this->language;
+    }
+
+    public function wear(Theme $theme): void
+    {
+        $this->themeBackground = $theme->background;
+        $this->themeAccent = $theme->accent;
+    }
+
+    public function theme(): ?Theme
+    {
+        if (null === $this->themeBackground || null === $this->themeAccent) {
+            return null;
+        }
+
+        return Theme::of($this->themeBackground, $this->themeAccent);
     }
 
     public function hasPassword(): bool

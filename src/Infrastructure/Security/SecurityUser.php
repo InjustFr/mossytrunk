@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Security;
 
 use App\Domain\Identity\Language;
+use App\Domain\Identity\Theme;
 use App\Domain\Identity\User;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -19,12 +20,13 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
         public readonly Ulid $workspaceId,
         public readonly string $workspaceName,
         public readonly ?Language $language,
+        public readonly ?Theme $theme,
     ) {
     }
 
     public static function fromUser(User $user): self
     {
-        return new self($user->id(), $user->email(), $user->passwordHash(), $user->workspace()->id(), $user->workspace()->name(), $user->language());
+        return new self($user->id(), $user->email(), $user->passwordHash(), $user->workspace()->id(), $user->workspace()->name(), $user->language(), $user->theme());
     }
 
     public function getUserIdentifier(): string
@@ -55,10 +57,11 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
             'workspaceId' => (string) $this->workspaceId,
             'workspaceName' => $this->workspaceName,
             'language' => $this->language?->value,
+            'theme' => null === $this->theme ? null : [$this->theme->background, $this->theme->accent],
         ];
     }
 
-    /** @param array{id: string, email: string, password: ?string, workspaceId: string, workspaceName: string, language?: ?string} $data */
+    /** @param array{id: string, email: string, password: ?string, workspaceId: string, workspaceName: string, language?: ?string, theme?: ?array{string, string}} $data */
     public function __unserialize(array $data): void
     {
         $this->id = Ulid::fromString($data['id']);
@@ -67,5 +70,6 @@ final class SecurityUser implements UserInterface, PasswordAuthenticatedUserInte
         $this->workspaceId = Ulid::fromString($data['workspaceId']);
         $this->workspaceName = $data['workspaceName'];
         $this->language = Language::tryFrom($data['language'] ?? '');
+        $this->theme = isset($data['theme']) ? Theme::of(...$data['theme']) : null;
     }
 }

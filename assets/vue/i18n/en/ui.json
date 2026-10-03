@@ -40,5 +40,10 @@
     "selection": {
         "label": "Selection",
         "clear": "Deselect"
+    },
+    "color": {
+        "area": "Saturation and brightness",
+        "hue": "Hue",
+        "hex": "Hex code"
     }
 }

@@ -1,6 +1,21 @@
 {
     "title": "Paramètres",
     "workspace": "Espace de travail",
+    "appearance": {
+        "title": "Apparence",
+        "intro": "Choisissez les couleurs de l’application, rien que pour vous : le texte suit le fond, les couleurs d’alerte suivent le fond et l’accent.",
+        "themesLabel": "Thème",
+        "background": "Fond",
+        "accent": "Accent",
+        "saved": "Apparence enregistrée.",
+        "themes": {
+            "moss": "Mousse",
+            "terracotta": "Terre cuite",
+            "fjord": "Fjord",
+            "plum": "Prune",
+            "night": "Nuit"
+        }
+    },
     "services": {
         "title": "Services connectés",
         "add": "Ajouter un service",

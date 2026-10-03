@@ -109,7 +109,7 @@ button.order-recap__row {
     cursor: pointer;
 }
 
-button.order-recap__row:hover { background: #fafaf8; }
+button.order-recap__row:hover { background: var(--color-hover); }
 button.order-recap__row:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 
 .order-recap__row--group { font-weight: 600; }

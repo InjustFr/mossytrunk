@@ -110,7 +110,7 @@ const current = computed({
 
 .table-pagination__button:hover:not(:disabled) { border-color: var(--color-ink); }
 .table-pagination__button:disabled { opacity: 0.4; cursor: not-allowed; }
-.table-pagination__button[data-selected] { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+.table-pagination__button[data-selected] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 .table-pagination__gap { padding: 0 var(--space-1); }
 
 .table-pagination__size { display: flex; align-items: center; gap: var(--space-2); }

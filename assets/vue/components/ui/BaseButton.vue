@@ -42,7 +42,7 @@ defineProps({
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
 .button:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
-.button--primary { background: var(--color-accent); color: #fff; }
+.button--primary { background: var(--color-accent); color: var(--color-on-accent); }
 .button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }
 
 .button--secondary { background: var(--color-surface); border-color: var(--color-border-strong); color: var(--color-ink); }

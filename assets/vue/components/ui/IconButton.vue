@@ -52,7 +52,7 @@ defineProps({
     padding: var(--space-1) var(--space-2);
     border-radius: calc(var(--radius) - 0.125rem);
     background: var(--color-ink);
-    color: #fff;
+    color: var(--color-surface);
     font-size: 0.8rem;
     animation: icon-button-tooltip-in var(--transition);
 }
