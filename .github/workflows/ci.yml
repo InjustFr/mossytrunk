@@ -12,7 +12,6 @@ concurrency:
 
 env:
   IMAGE: docker.io/injust/mossytrunk
-  HTR_IMAGE: docker.io/injust/mossytrunk-htr
 
 jobs:
   checks:
@@ -100,14 +99,3 @@ jobs:
             type=gha,scope=prod
             type=gha,scope=dev
           cache-to: type=gha,scope=prod,mode=max
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: docker/htr
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.HTR_IMAGE }}:${{ steps.tag.outputs.sha }}
-            ${{ env.HTR_IMAGE }}:latest
-          cache-from: type=gha,scope=htr
-          cache-to: type=gha,scope=htr,mode=max

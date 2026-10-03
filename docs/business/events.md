@@ -22,7 +22,7 @@ Model: `src/Domain/Event/Event.php`, `Expense.php`, `EventScheduler.php`, `src/D
 | E6 | Expense label required, amount > 0 — on creation and when revised; expenses can be edited and removed | `Event::addExpense()`, `Event::reviseExpense()`, `Expense::revise()`, `Event::removeExpense()` | `EventTest`, `EventUseCasesTest` |
 | E7 | Relative to today (Paris day): an event is **upcoming** before its first day, **ongoing** during its days, **past** from the day after its last day | `Event::timingOn()`, `EventTiming`, `DateRange::isAfter()/isBefore()`; today comes from the Symfony Clock in `ListEventsHandler` | `EventTest`, `ListEventsTest` |
 
-The profitability of an event is described in [event-report.md](event-report.md); the comparison of its paper notebook with its orders in [notebook.md](notebook.md).
+The profitability of an event is described in [event-report.md](event-report.md).
 
 ## Use cases & API
 

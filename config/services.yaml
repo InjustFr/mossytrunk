@@ -40,7 +40,6 @@ services:
 
     App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
     App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'
-    App\Application\Notebook\HandwritingRecognizer: '@App\Infrastructure\Notebook\KrakenRecognizer'
 
     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
         arguments:
@@ -55,10 +54,6 @@ when@test:
             public: true
         App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\FakeEtsyGateway'
         App\Infrastructure\Connector\Etsy\FakeEtsyGateway:
-            autowire: true
-            public: true
-        App\Application\Notebook\HandwritingRecognizer: '@App\Infrastructure\Notebook\FakeHandwritingRecognizer'
-        App\Infrastructure\Notebook\FakeHandwritingRecognizer:
             autowire: true
             public: true
         App\Tests\Support\EndToEndSessionStorageFactory:

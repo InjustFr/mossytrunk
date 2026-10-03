@@ -10,13 +10,11 @@ import ConnectedServices from '../components/settings/ConnectedServices.vue';
 import ServiceModal from '../components/settings/ServiceModal.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
 import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
-import NotebookTemplateForm from '../components/settings/NotebookTemplateForm.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
 import { useReferenceFormats } from '../composables/useReferenceFormats.js';
-import { useNotebookTemplate } from '../composables/useNotebookTemplate.js';
 
 const { t } = useI18n();
 
@@ -24,8 +22,6 @@ const { settings, load } = useWorkspaceSettings();
 const services = useServices();
 const toast = useToast();
 const references = useReferenceFormats();
-const notebookTemplates = useNotebookTemplate();
-const notebookTemplate = ref(null);
 
 const modalOpen = ref(false);
 const editing = ref(null);
@@ -124,7 +120,7 @@ const onRemove = (service) => run(() => services.remove(service.key), t('setting
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
 onMounted(async () => {
-    await Promise.all([load(), services.load(), references.load(), notebookTemplates.load(notebookTemplate)]);
+    await Promise.all([load(), services.load(), references.load()]);
     announceConnectionOutcome();
 });
 </script>
@@ -154,10 +150,6 @@ onMounted(async () => {
             <BaseCard :title="t('settings.references.title')">
                 <p class="settings-page__intro">{{ t('settings.references.intro') }}</p>
                 <ReferenceFormats :formats="references.formats.value" @edit="openFormat" />
-            </BaseCard>
-            <BaseCard :title="t('notebook.template.title')">
-                <p class="settings-page__intro">{{ t('notebook.template.intro') }}</p>
-                <NotebookTemplateForm v-if="notebookTemplate" :template="notebookTemplate" :save="notebookTemplates.save" @saved="toast.success(t('notebook.template.saved'))" />
             </BaseCard>
         </div>
         <ServiceModal

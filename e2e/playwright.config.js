@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import { AUTH_STATE } from './tests/support/account.js';
 
-const WORKSPACE_WIDE = /(settings|sumup|etsy|language|references|channels|notebook-template)\.spec\.js/;
+const WORKSPACE_WIDE = /(settings|sumup|etsy|language|references|channels)\.spec\.js/;
 
 export default defineConfig({
     testDir: './tests',
