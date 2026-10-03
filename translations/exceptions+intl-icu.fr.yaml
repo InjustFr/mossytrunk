@@ -64,6 +64,13 @@ integration:
     invalid_setting: 'Paramètre invalide « {name} ».'
     service_already_added: '{service} est déjà ajouté.'
     unknown_service: 'Service inconnu « {service} ».'
+notebook:
+    empty: 'Aucune commande n''a été lue sur ces pages.'
+    empty_entry: 'Une commande du carnet doit compter au moins un article.'
+    non_positive_quantity: 'La quantité de « {written} » doit être supérieure à zéro.'
+    unreadable: 'Le carnet n''a pas pu être analysé : {reason}'
+    reader_not_configured: 'L''analyse du carnet n''est pas configurée : renseignez ANTHROPIC_API_KEY sur le serveur.'
+    invalid_pages: 'Ajoutez de 1 à {max} photos (JPEG, PNG, WebP), de {megabytes} Mo au plus chacune.'
 order:
     negative_postage: 'L''affranchissement ne peut pas être négatif.'
     several_channels: 'Les commandes choisies sont sur plusieurs canaux : choisissez des commandes d''un seul canal.'

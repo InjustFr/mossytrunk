@@ -1,0 +1,39 @@
+{
+    "page": {
+        "title": "Carnet de ventes",
+        "eventFallback": "Événement",
+        "intro": "Prenez en photo chaque page du carnet tenu pendant l'événement. Les ventes notées sont lues puis comparées une à une aux commandes de l'événement (SumUp et saisies) : ce qui manque d'un côté ou de l'autre est signalé. Les numéros de commande écrits dans le carnet sont ignorés.",
+        "addPhotos": "Ajouter des photos",
+        "pageNumber": "Page {number}",
+        "removePage": "Retirer la page {number}",
+        "pages": "{count} page | {count} pages",
+        "analyse": "Analyser le carnet",
+        "analysing": "Lecture du carnet en cours : cela peut prendre une à deux minutes.",
+        "analysed": "Carnet analysé : {count} vente lue. | Carnet analysé : {count} ventes lues.",
+        "newScan": "Nouvelle analyse",
+        "cancel": "Annuler",
+        "scannedAt": "Carnet analysé le {date}, {pages}."
+    },
+    "report": {
+        "notebookSales": "Ventes notées",
+        "orders": "Commandes",
+        "matching": "Concordantes",
+        "differing": "Avec écart",
+        "notRecorded": "Absentes de l'app",
+        "notNoted": "Absentes du carnet",
+        "allMatching": "Tout concorde : chaque vente du carnet correspond à une commande, et inversement.",
+        "notRecordedTitle": "Notées dans le carnet, absentes de l'app",
+        "notRecordedHint": "Une vente a peut-être été oubliée sur SumUp ou dans l'app : ajoutez la commande à l'événement.",
+        "notNotedTitle": "Dans l'app, absentes du carnet",
+        "notNotedHint": "La vente n'a pas été notée, ou il s'agit d'un doublon ou d'une erreur de saisie.",
+        "differingTitle": "Ventes avec écart",
+        "differingHint": "La vente du carnet correspond à une commande dont les articles ou les quantités diffèrent.",
+        "matchingTitle": "Ventes concordantes",
+        "sale": "Vente {number} du carnet · page {page}",
+        "written": "écrit « {written} »",
+        "unidentified": "Non reconnu",
+        "refunded": "Remboursée",
+        "onlyNoted": "Noté seulement",
+        "onlySold": "Vendu seulement"
+    }
+}

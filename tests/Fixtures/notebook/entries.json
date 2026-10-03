@@ -1,0 +1,7 @@
+{
+    "entries": [
+        { "page": 1, "lines": [{ "written": "2 lichen", "quantity": 2, "product": "Carnet Lichen", "variant": null }] },
+        { "page": 1, "lines": [{ "written": "fougère", "quantity": 1, "product": "Carnet Fougère", "variant": null }] },
+        { "page": 2, "lines": [{ "written": "lichen", "quantity": 1, "product": "Carnet Lichen", "variant": null }, { "written": "fougère", "quantity": 1, "product": "Carnet Fougère", "variant": null }] }
+    ]
+}

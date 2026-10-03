@@ -18,6 +18,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | [event-report.md](event-report.md) | Profitability of an event: Dépenses, Commandes, URSSAF 12.8 %, Total |
 | [dashboard.md](dashboard.md) | Results per month and per year |
 | [product-reports.md](product-reports.md) | Product report: best sellers, sales, stock flow and discounts over time |
+| [notebook.md](notebook.md) | Sales notebook photographed after an event, read and compared sale by sale with the event's orders |
 | [stock.md](stock.md) | Stock per sellable item in FIFO lots, low stock, inventory after an event and missing orders |
 | [references.md](references.md) | Reference formats per kind (orders, supplier orders, products): tags, numbering, renumbering existing items |
 | [supplier-orders.md](supplier-orders.md) | Suppliers, supplier orders, reception into stock at the real unit cost |
@@ -59,6 +60,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Déclaration URSSAF | `Domain\Accounting\UrssafDeclaration` | A month or quarter marked declared, with the turnover declared |
 | Service connecté | `Domain\Integration\ServiceConnection` | An external service (SumUp, Etsy…) added to the workspace, with its access and import options |
 | Article à associer | `Domain\Integration\ExternalItem` | A service item not matched to a product, waiting to be linked |
+| Carnet de ventes | `Domain\Notebook\NotebookScan` | Photos of the paper notebook kept at an event, read into sales and compared with the event's orders |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
 | Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |

@@ -64,6 +64,13 @@ integration:
     invalid_setting: 'Invalid setting “{name}”.'
     service_already_added: '{service} is already added.'
     unknown_service: 'Unknown service “{service}”.'
+notebook:
+    empty: 'No order could be read on these pages.'
+    empty_entry: 'A notebook order must have at least one item.'
+    non_positive_quantity: 'The quantity of “{written}” must be greater than zero.'
+    unreadable: 'The notebook could not be analysed: {reason}'
+    reader_not_configured: 'Notebook analysis is not configured: set ANTHROPIC_API_KEY on the server.'
+    invalid_pages: 'Add 1 to {max} photos (JPEG, PNG, WebP), {megabytes} MB at most each.'
 order:
     negative_postage: 'Postage cannot be negative.'
     several_channels: 'The chosen orders are on several channels: choose orders of a single channel.'

@@ -73,6 +73,7 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('events.detail.edit') }}</BaseButton>
                 <BaseButton variant="secondary" :href="`/events/${event.id}/stock-check`">{{ t('events.detail.stockCheck') }}</BaseButton>
+                <BaseButton variant="secondary" :href="`/events/${event.id}/notebook`">{{ t('events.detail.notebook') }}</BaseButton>
                 <BaseButton @click="openExpense()">{{ t('events.detail.addExpense') }}</BaseButton>
             </template>
         </template>

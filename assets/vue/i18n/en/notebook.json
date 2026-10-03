@@ -1,0 +1,39 @@
+{
+    "page": {
+        "title": "Sales notebook",
+        "eventFallback": "Event",
+        "intro": "Take a photo of each page of the notebook kept during the event. The sales written down are read, then compared one by one with the event's orders (SumUp and entered by hand): whatever is missing on either side is reported. Order numbers written in the notebook are ignored.",
+        "addPhotos": "Add photos",
+        "pageNumber": "Page {number}",
+        "removePage": "Remove page {number}",
+        "pages": "{count} page | {count} pages",
+        "analyse": "Analyse the notebook",
+        "analysing": "Reading the notebook: this can take a minute or two.",
+        "analysed": "Notebook analysed: {count} sale read. | Notebook analysed: {count} sales read.",
+        "newScan": "New analysis",
+        "cancel": "Cancel",
+        "scannedAt": "Notebook analysed on {date}, {pages}."
+    },
+    "report": {
+        "notebookSales": "Sales written",
+        "orders": "Orders",
+        "matching": "Matching",
+        "differing": "Different",
+        "notRecorded": "Missing from the app",
+        "notNoted": "Missing from the notebook",
+        "allMatching": "Everything matches: each sale in the notebook has its order, and the other way round.",
+        "notRecordedTitle": "Written in the notebook, missing from the app",
+        "notRecordedHint": "A sale may have been forgotten on SumUp or in the app: add the order to the event.",
+        "notNotedTitle": "In the app, missing from the notebook",
+        "notNotedHint": "The sale was not written down, or it is a duplicate or a mistake.",
+        "differingTitle": "Sales with differences",
+        "differingHint": "The notebook sale matches an order whose items or quantities differ.",
+        "matchingTitle": "Matching sales",
+        "sale": "Sale {number} in the notebook · page {page}",
+        "written": "written “{written}”",
+        "unidentified": "Not recognised",
+        "refunded": "Refunded",
+        "onlyNoted": "Written only",
+        "onlySold": "Sold only"
+    }
+}

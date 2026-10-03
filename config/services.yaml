@@ -40,6 +40,18 @@ services:
 
     App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
     App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'
+    App\Application\Notebook\NotebookReader: '@App\Infrastructure\Notebook\ClaudeNotebookReader'
+
+    Anthropic\Client:
+        lazy: true
+        arguments:
+            $apiKey: '%env(ANTHROPIC_API_KEY)%'
+            $requestOptions: { transporter: '@app.anthropic_transport' }
+
+    app.anthropic_transport:
+        class: Symfony\Component\HttpClient\Psr18Client
+        arguments:
+            - !service { class: Symfony\Contracts\HttpClient\HttpClientInterface, factory: ['@http_client', 'withOptions'], arguments: [{ timeout: 300, max_duration: 300 }] }
 
     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
         arguments:
@@ -54,6 +66,10 @@ when@test:
             public: true
         App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\FakeEtsyGateway'
         App\Infrastructure\Connector\Etsy\FakeEtsyGateway:
+            autowire: true
+            public: true
+        App\Application\Notebook\NotebookReader: '@App\Infrastructure\Notebook\FakeNotebookReader'
+        App\Infrastructure\Notebook\FakeNotebookReader:
             autowire: true
             public: true
         App\Tests\Support\EndToEndSessionStorageFactory:
