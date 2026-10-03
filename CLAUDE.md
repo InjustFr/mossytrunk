@@ -102,6 +102,7 @@ Enforced by `deptrac.yaml`. Rules:
 named constructors (`Instantiator::namedConstructor()`, hydration disabled — no setters). `ConventionSeasonStory` creates a
 catalogue with variants, supplies (sleeves on every market order, envelopes and postage on Etsy orders, flyers consumed at an inventory), discount rules, past events with expenses and orders (discounts computed by `DiscountCalculator`), an Etsy channel with per-order costs and an upcoming event in workspace « Atelier Mousse » (user `demo@mossytrunk.local` / `mossytrunk`);
 `OtherWorkspaceStory` adds « Autre atelier » (user `autre@mossytrunk.local` / `mossytrunk`) with a few products, to check isolation.
+`ProductionVolumeStory` adds « Atelier Volume » (user `volume@mossytrunk.local` / `mossytrunk`) with the production workspace's volume (76 products, 349 SumUp orders over 2 events with ~700 lines and supply uses, 6 supplier orders, 38 designs), to measure page performance (`Server-Timing`) on realistic data.
 
 ## Testing expectations
 

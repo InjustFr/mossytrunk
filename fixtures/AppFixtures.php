@@ -6,6 +6,7 @@ namespace App\Fixtures;
 
 use App\Fixtures\Story\ConventionSeasonStory;
 use App\Fixtures\Story\OtherWorkspaceStory;
+use App\Fixtures\Story\ProductionVolumeStory;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
@@ -18,5 +19,6 @@ final class AppFixtures extends Fixture
     {
         ConventionSeasonStory::load();
         OtherWorkspaceStory::load();
+        ProductionVolumeStory::load();
     }
 }
