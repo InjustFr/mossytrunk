@@ -7,6 +7,7 @@ namespace App\Domain\Event;
 use App\Domain\Event\Exception\EmptyExpenseLabel;
 use App\Domain\Shared\Exception\NonPositiveAmount;
 use App\Domain\Shared\Money;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -32,15 +33,21 @@ class Expense
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(Event $event, string $label, Money $amount)
+    #[ORM\Column(nullable: true)]
+    private ?int $sharedOverEvents = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $sharedUntil = null;
+
+    public function __construct(Event $event, string $label, Money $amount, ExpenseSpread $spread)
     {
         $this->id = new Ulid();
         $this->event = $event;
         $this->createdAt = new \DateTimeImmutable();
-        $this->revise($label, $amount);
+        $this->revise($label, $amount, $spread);
     }
 
-    public function revise(string $label, Money $amount): void
+    public function revise(string $label, Money $amount, ExpenseSpread $spread): void
     {
         $label = trim($label);
         if ('' === $label) {
@@ -52,6 +59,18 @@ class Expense
 
         $this->label = $label;
         $this->amount = $amount;
+        $this->sharedOverEvents = $spread->events;
+        $this->sharedUntil = $spread->until;
+    }
+
+    public function spread(): ExpenseSpread
+    {
+        return ExpenseSpread::of($this->sharedOverEvents, $this->sharedUntil);
+    }
+
+    public function event(): Event
+    {
+        return $this->event;
     }
 
     public function id(): Ulid

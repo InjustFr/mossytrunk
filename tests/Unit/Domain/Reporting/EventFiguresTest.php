@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Domain\Reporting;
 
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Event\Event;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Product\Product;
@@ -43,7 +44,7 @@ final class EventFiguresTest extends TestCase
             Order::place('CMD-1', $event, $at, [new OrderedItem($tshirt->sellable('M'), 2), new OrderedItem($print->sellable(null), 1)], []),
             Order::place('CMD-1', $event, $at, [new OrderedItem($tshirt->sellable('S'), 1)], []),
         ];
-        $result = SalesFigures::of(RecordedSales::totals($orders), $event->totalExpenses());
+        $result = SalesFigures::of(RecordedSales::totals($orders), ExpenseShares::among([$event])->totalOf($event));
 
         self::assertSame(3, $result->orderCount);
         self::assertSame(10_700, $result->grossSales->amount());
@@ -60,7 +61,7 @@ final class EventFiguresTest extends TestCase
         $event = Event::schedule(TestWorkspace::get(), 'Marché', 'Lyon', DateRange::fromDates(new \DateTimeImmutable('2026-12-05'), new \DateTimeImmutable('2026-12-05')));
         $event->addExpense('Stand', Money::cents(4_000));
 
-        $result = SalesFigures::of(SalesTotals::zero(), $event->totalExpenses());
+        $result = SalesFigures::of(SalesTotals::zero(), ExpenseShares::among([$event])->totalOf($event));
 
         self::assertTrue($result->urssaf->isZero());
         self::assertSame(-4_000, $result->result->amount());

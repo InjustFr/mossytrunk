@@ -11,6 +11,8 @@ final readonly class ReviseExpense
         public string $expenseId,
         public string $label,
         public int $amountCents,
+        public ?int $sharedOverEvents = null,
+        public ?\DateTimeImmutable $sharedUntil = null,
     ) {
     }
 }

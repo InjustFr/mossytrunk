@@ -7,6 +7,7 @@ namespace App\Application\Event\ListEvents;
 use App\Application\Reporting\SalesLedger;
 use App\Application\Stock\ConsumedSupplies;
 use App\Domain\Event\EventRepository;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Reporting\SalesFigures;
 use App\Domain\Reporting\SalesTotals;
 use App\Domain\Stock\StockCheckRepository;
@@ -38,10 +39,12 @@ final readonly class ListEventsHandler
 
         $consumed = $this->consumedSupplies->byEvent();
         $today = $this->clock->now();
+        $events = $this->events->all();
+        $shares = ExpenseShares::among($events);
         $views = [];
-        foreach ($this->events->all() as $event) {
+        foreach ($events as $event) {
             $key = (string) $event->id();
-            $views[] = EventSummaryView::of($event, SalesFigures::of($sales[$key] ?? SalesTotals::zero(), $event->totalExpenses(), $consumed[$key] ?? null), $event->timingOn($today), $unexplained[$key] ?? 0);
+            $views[] = EventSummaryView::of($event, SalesFigures::of($sales[$key] ?? SalesTotals::zero(), $shares->totalOf($event), $consumed[$key] ?? null), $event->timingOn($today), $unexplained[$key] ?? 0);
         }
 
         return $views;

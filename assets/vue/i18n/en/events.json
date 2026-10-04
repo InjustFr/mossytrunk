@@ -76,7 +76,11 @@
         "amount": "Amount",
         "cancel": "Cancel",
         "save": "Save",
-        "add": "Add expense"
+        "add": "Add expense",
+        "shared": "Share over several events",
+        "sharedHint": "The amount is split equally between this event and the following ones, up to the number of events or the date given (whichever comes first).",
+        "sharedOverEvents": "Number of events",
+        "sharedUntil": "Until"
     },
     "expenses": {
         "empty": "No expenses recorded.",
@@ -85,7 +89,11 @@
         "actions": "Actions",
         "edit": "Edit {label}",
         "remove": "Delete {label}",
-        "total": "Total"
+        "total": "Total",
+        "sharedFrom": "Expense of",
+        "sharedBy": "shared by {count} event | shared by {count} events",
+        "inAll": "in all",
+        "sharedLater": "Will be shared with the next events"
     },
     "recap": {
         "showItems": "Show item details",

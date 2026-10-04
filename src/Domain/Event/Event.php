@@ -6,6 +6,7 @@ namespace App\Domain\Event;
 
 use App\Domain\Event\Exception\EmptyEventLocation;
 use App\Domain\Event\Exception\EmptyEventName;
+use App\Domain\Event\Exception\SharingEndsBeforeEvent;
 use App\Domain\Event\Exception\UnknownExpense;
 use App\Domain\Identity\Workspace;
 use App\Domain\Shared\DateRange;
@@ -77,17 +78,26 @@ class Event
         $this->period = $period;
     }
 
-    public function addExpense(string $label, Money $amount): Expense
+    public function addExpense(string $label, Money $amount, ?ExpenseSpread $spread = null): Expense
     {
-        $expense = new Expense($this, $label, $amount);
+        $expense = new Expense($this, $label, $amount, $this->fitting($spread ?? ExpenseSpread::none()));
         $this->expenses->add($expense);
 
         return $expense;
     }
 
-    public function reviseExpense(Ulid $expenseId, string $label, Money $amount): void
+    public function reviseExpense(Ulid $expenseId, string $label, Money $amount, ?ExpenseSpread $spread = null): void
     {
-        $this->expense($expenseId)->revise($label, $amount);
+        $this->expense($expenseId)->revise($label, $amount, $this->fitting($spread ?? ExpenseSpread::none()));
+    }
+
+    private function fitting(ExpenseSpread $spread): ExpenseSpread
+    {
+        if ($spread->endsBefore($this->period->start())) {
+            throw new SharingEndsBeforeEvent();
+        }
+
+        return $spread;
     }
 
     public function removeExpense(Ulid $expenseId): void
@@ -113,11 +123,6 @@ class Event
             $this->period->isBefore($today) => EventTiming::Past,
             default => EventTiming::Ongoing,
         };
-    }
-
-    public function totalExpenses(): Money
-    {
-        return Money::sum($this->expenses->map(static fn (Expense $expense): Money => $expense->amount()));
     }
 
     public function id(): Ulid

@@ -10,6 +10,8 @@ final readonly class AddExpense
         public string $eventId,
         public string $label,
         public int $amountCents,
+        public ?int $sharedOverEvents = null,
+        public ?\DateTimeImmutable $sharedUntil = null,
     ) {
     }
 }

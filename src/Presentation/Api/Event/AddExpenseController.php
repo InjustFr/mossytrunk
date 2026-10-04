@@ -18,7 +18,7 @@ final class AddExpenseController extends AbstractController
 {
     public function __invoke(string $id, #[MapRequestPayload] ExpensePayload $payload, AddExpenseHandler $addExpense): JsonResponse
     {
-        $expenseId = $addExpense(new AddExpense($id, $payload->label, $payload->amount));
+        $expenseId = $addExpense(new AddExpense($id, $payload->label, $payload->amount, $payload->sharedOverEvents, $payload->until()));
 
         return $this->json(['id' => (string) $expenseId], Response::HTTP_CREATED);
     }

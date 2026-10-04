@@ -42,6 +42,30 @@ test('schedule an event and track its expenses', async ({ page }) => {
     await expect(page.getByRole('row', { name: /Total/ })).toContainText('320,00');
 });
 
+test('share an expense with the next event', async ({ page, request }) => {
+    const { createEvent } = await import('./support/api.js');
+    const first = await createEvent(request, { startDate: uniqueDay() });
+    const second = await createEvent(request, { startDate: uniqueDay(3) });
+
+    await page.goto(`/events/${first.id}`);
+    await page.getByRole('button', { name: 'Ajouter une dépense' }).click();
+    const expense = page.getByRole('dialog', { name: 'Nouvelle dépense' });
+    await expense.getByLabel('Libellé').fill('Nappe');
+    await expense.getByLabel('Montant').fill('100');
+    await expense.getByRole('switch', { name: 'Répartir sur plusieurs événements' }).click();
+    await expense.getByRole('spinbutton', { name: "Nombre d'événements" }).fill('10');
+    await expense.getByRole('button', { name: 'Ajouter la dépense' }).click();
+    await expect(expense).toHaveCount(0);
+    await expect(page.getByRole('row', { name: /Nappe/ })).toContainText('partagée sur 2 événements');
+    await expect(page.getByRole('row', { name: /Total/ })).toContainText('50,00');
+
+    await page.goto(`/events/${second.id}`);
+    const shared = page.getByRole('row', { name: /Nappe/ });
+    await expect(shared).toContainText(`Dépense de ${first.name}`);
+    await expect(shared).toContainText('50,00');
+    await expect(shared.getByRole('button', { name: 'Modifier Nappe' })).toHaveCount(0);
+});
+
 test('refuses overlapping events', async ({ page }) => {
     const day = uniqueDay();
     await page.goto('/events');

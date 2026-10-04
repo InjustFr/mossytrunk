@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Event\GetEventReport;
 
 use App\Domain\Event\Event;
-use App\Domain\Event\Expense;
+use App\Domain\Event\ExpenseShare;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Product\Product;
 use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\SalesFigures;
@@ -15,7 +16,7 @@ final readonly class EventReportView
 {
     /**
      * @param array{count: int, grossSales: int, discounts: int, turnover: int, costOfGoods: int, groups: list<array{type: string|null, products: list<array{name: string, variants: list<array{variant: string, quantity: int, sales: int, cost: int, unknownCost: bool}>, quantity: int, sales: int, cost: int, unknownCost: bool}>, quantity: int, sales: int, cost: int, unknownCost: bool}>} $orders
-     * @param array{items: list<array{label: string, amount: int}>, total: int}                                                                                                                                                                                                                                                                                                                   $expenses
+     * @param array{items: list<array{label: string, amount: int, sharedBy: int}>, total: int}                                                                                                                                                                                                                                                                                                    $expenses
      * @param array{rate: int|float, base: int, amount: int}                                                                                                                                                                                                                                                                                                                                      $urssaf
      * @param array{turnover: int, costOfGoods: int, supplies: int, consumedSupplies: int, channelCosts: int, expenses: int, urssaf: int, result: int}                                                                                                                                                                                                                                            $total
      */
@@ -31,7 +32,7 @@ final readonly class EventReportView
      * @param list<ProductSales>     $productSales
      * @param array<string, Product> $products
      */
-    public static function of(Event $event, SalesFigures $result, array $productSales, array $products = []): self
+    public static function of(Event $event, SalesFigures $result, ExpenseShares $shares, array $productSales, array $products = []): self
     {
         return new self(
             orders: [
@@ -43,7 +44,7 @@ final readonly class EventReportView
                 'groups' => OrderRecap::group($productSales, $products),
             ],
             expenses: [
-                'items' => array_map(static fn (Expense $expense): array => ['label' => $expense->label(), 'amount' => $expense->amount()->amount()], $event->expenses()),
+                'items' => array_map(static fn (ExpenseShare $share): array => ['label' => $share->expense->label(), 'amount' => $share->amount->amount(), 'sharedBy' => $share->sharedBy], $shares->of($event)),
                 'total' => $result->expenses->amount(),
             ],
             urssaf: [

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Reporting;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Reporting\MonthlyResults;
 use App\Domain\Reporting\SalesTotals;
 use App\Domain\Shared\DateRange;
@@ -24,7 +25,7 @@ final class MonthlyResultsTest extends TestCase
             '2026-04' => self::sales(1, 2_000, 400),
             '2026-05' => self::sales(1, 1_000, 200),
             '2025-12' => self::sales(1, 1_000, 200),
-        ], [$event, $december]);
+        ], [$event, $december], ExpenseShares::among([$event, $december]));
 
         $april = $results->month(2026, 4);
         self::assertSame(1, $april->orderCount);

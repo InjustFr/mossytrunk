@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Reporting;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\Money;
 
@@ -22,13 +23,13 @@ final readonly class MonthlyResults
      * @param list<Event>                $events
      * @param array<string, Money>       $consumedSuppliesByEvent
      */
-    public static function of(array $salesByMonth, array $events, array $consumedSuppliesByEvent = []): self
+    public static function of(array $salesByMonth, array $events, ExpenseShares $shares, array $consumedSuppliesByEvent = []): self
     {
         $expensesByMonth = [];
         $consumedByMonth = [];
         foreach ($events as $event) {
             $month = BusinessTime::month($event->period()->start());
-            $expensesByMonth[$month] = ($expensesByMonth[$month] ?? Money::zero())->add($event->totalExpenses());
+            $expensesByMonth[$month] = ($expensesByMonth[$month] ?? Money::zero())->add($shares->totalOf($event));
             $consumedByMonth[$month] = ($consumedByMonth[$month] ?? Money::zero())->add($consumedSuppliesByEvent[(string) $event->id()] ?? Money::zero());
         }
 

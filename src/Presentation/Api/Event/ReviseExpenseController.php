@@ -17,7 +17,7 @@ final class ReviseExpenseController extends AbstractController
 {
     public function __invoke(string $id, string $expenseId, #[MapRequestPayload] ExpensePayload $payload, ReviseExpenseHandler $reviseExpense): Response
     {
-        $reviseExpense(new ReviseExpense($id, $expenseId, $payload->label, $payload->amount));
+        $reviseExpense(new ReviseExpense($id, $expenseId, $payload->label, $payload->amount, $payload->sharedOverEvents, $payload->until()));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

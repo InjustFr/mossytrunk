@@ -10,6 +10,7 @@ use App\Application\Stock\ConsumedSupplies;
 use App\Application\Stock\ProductStock;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Reporting\MonthlyResults;
@@ -41,7 +42,8 @@ final readonly class GetDashboardHandler
     {
         $events = $this->events->all();
         $consumed = $this->consumedSupplies->byEvent();
-        $results = MonthlyResults::of($this->sales->totalsByMonth(), $events, $consumed);
+        $shares = ExpenseShares::among($events);
+        $results = MonthlyResults::of($this->sales->totalsByMonth(), $events, $shares, $consumed);
         $year ??= DateRange::yearOf($this->clock->now());
 
         $months = [];
@@ -60,7 +62,7 @@ final readonly class GetDashboardHandler
             $months,
             $results->year($year)->toArray(),
             array_map(static fn (int $y): array => ['year' => $y] + $results->year($y)->toArray(), $results->years()),
-            $this->eventsOf($year, $events, $consumed),
+            $this->eventsOf($year, $events, $shares, $consumed),
             array_map(static fn (ProductSales $product): array => [
                 'id' => (string) $product->productId,
                 'name' => $product->productName,
@@ -93,7 +95,7 @@ final readonly class GetDashboardHandler
      *
      * @return list<array{id: string, name: string, startDate: string, turnover: int, result: int}>
      */
-    private function eventsOf(int $year, array $events, array $consumed): array
+    private function eventsOf(int $year, array $events, ExpenseShares $shares, array $consumed): array
     {
         $sales = $this->sales->totalsByEvent();
 
@@ -102,7 +104,7 @@ final readonly class GetDashboardHandler
             if (!$event->startsIn($year)) {
                 continue;
             }
-            $result = SalesFigures::of($sales[(string) $event->id()] ?? SalesTotals::zero(), $event->totalExpenses(), $consumed[(string) $event->id()] ?? null);
+            $result = SalesFigures::of($sales[(string) $event->id()] ?? SalesTotals::zero(), $shares->totalOf($event), $consumed[(string) $event->id()] ?? null);
             $rows[] = [
                 'id' => (string) $event->id(),
                 'name' => $event->name(),

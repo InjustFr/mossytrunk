@@ -36,6 +36,8 @@ event:
     orders_outside_period: '{count, plural, one {# order of this event would fall} other {# orders of this event would fall}} outside the new dates.'
     overlapping: 'These dates overlap the event “{name}”. Two events cannot take place at the same time.'
     unknown_expense: 'Expense not found ({id}).'
+    sharing_ends_before_event: 'The sharing cannot end before the event starts.'
+    too_few_sharing_events: 'A shared expense counts for at least 2 events.'
 identity:
     email_already_used: 'A user already exists with the address “{email}”.'
     empty_secret: 'The key cannot be empty.'

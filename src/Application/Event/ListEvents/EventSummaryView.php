@@ -37,7 +37,7 @@ final readonly class EventSummaryView
             $event->period()->start()->format('Y-m-d'),
             $event->period()->end()->format('Y-m-d'),
             $event->period()->days(),
-            $event->totalExpenses()->amount(),
+            $result->expenses->amount(),
             $result->orderCount,
             $result->turnover->amount(),
             $result->costOfGoods->amount(),

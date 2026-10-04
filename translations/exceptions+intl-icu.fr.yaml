@@ -36,6 +36,8 @@ event:
     orders_outside_period: '{count, plural, one {# commande de cet événement tomberait} other {# commandes de cet événement tomberaient}} en dehors des nouvelles dates.'
     overlapping: 'Ces dates chevauchent l''événement « {name} ». Deux événements ne peuvent pas avoir lieu en même temps.'
     unknown_expense: 'Dépense introuvable ({id}).'
+    sharing_ends_before_event: 'La répartition ne peut pas se terminer avant le début de l''événement.'
+    too_few_sharing_events: 'Une dépense répartie compte pour au moins 2 événements.'
 identity:
     email_already_used: 'Un utilisateur existe déjà avec l''adresse « {email} ».'
     empty_secret: 'La clé ne peut pas être vide.'

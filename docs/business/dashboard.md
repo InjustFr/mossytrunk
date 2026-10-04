@@ -11,7 +11,7 @@ Model: `src/Domain/Reporting/SalesFigures.php` (the formula, shared with the [ev
 |---|---|---|---|
 | B1 | Same formula as an event: turnover = Σ order totals (Etsy orders included, with their shipping); URSSAF = 12.8 % × turnover; result = turnover − cost of goods − expenses − URSSAF | `SalesFigures::of()` | `MonthlyResultsTest`, `EventResultTest` |
 | B2 | An order counts in the **month of its date** (Europe/Paris) | `MonthlyResults::of()` | `MonthlyResultsTest` (UTC/Paris boundary) |
-| B3 | An event's expenses count in the **month the event starts** (even when it spans two months) | `MonthlyResults::of()` | `MonthlyResultsTest` |
+| B3 | An event's expenses (its shares of shared expenses, [events.md](events.md) E8) count in the **month the event starts** (even when it spans two months) | `MonthlyResults::of()` | `MonthlyResultsTest` |
 | B4 | A year is the **sum of its months** (URSSAF rounded per month, then summed) | `MonthlyResults::year()`, `SalesFigures::add()` | `MonthlyResultsTest` |
 | B5 | Selectable years = years with orders or expenses, plus the current year | `GetDashboardHandler` | `GetDashboardTest` |
 | B6 | The year's events = events **starting** in the year (as for expenses, B3), ranked by result, best first | `Event::startsIn()`, `GetDashboardHandler` | `GetDashboardTest` |

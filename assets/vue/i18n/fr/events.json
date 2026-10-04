@@ -76,7 +76,11 @@
         "amount": "Montant",
         "cancel": "Annuler",
         "save": "Enregistrer",
-        "add": "Ajouter la dépense"
+        "add": "Ajouter la dépense",
+        "shared": "Répartir sur plusieurs événements",
+        "sharedHint": "Le montant est partagé à parts égales entre cet événement et les suivants, jusqu'au nombre d'événements ou à la date indiqués (le premier atteint).",
+        "sharedOverEvents": "Nombre d'événements",
+        "sharedUntil": "Jusqu'au"
     },
     "expenses": {
         "empty": "Aucune dépense enregistrée.",
@@ -85,7 +89,11 @@
         "actions": "Actions",
         "edit": "Modifier {label}",
         "remove": "Supprimer {label}",
-        "total": "Total"
+        "total": "Total",
+        "sharedFrom": "Dépense de",
+        "sharedBy": "partagée sur {count} événement | partagée sur {count} événements",
+        "inAll": "au total",
+        "sharedLater": "Sera partagée avec les prochains événements"
     },
     "recap": {
         "showItems": "Afficher le détail des articles",

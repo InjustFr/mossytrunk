@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Sales;
 
 use App\Domain\Event\Event;
+use App\Domain\Event\ExpenseShares;
 use App\Domain\Order\Exception\NegativePostage;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
@@ -67,7 +68,7 @@ final class ChannelCostTest extends TestCase
         $order = $this->order($etsy, 1);
         $order->stamp(Money::cents(200));
 
-        $result = SalesFigures::of(RecordedSales::totals([$order]), ($order->event() ?? self::fail('no event'))->totalExpenses());
+        $result = SalesFigures::of(RecordedSales::totals([$order]), ExpenseShares::among([$event = $order->event() ?? self::fail('no event')])->totalOf($event));
 
         self::assertSame([318, 1_500 - 318 - 192], [$result->channelCosts->amount(), $result->result->amount()]);
     }

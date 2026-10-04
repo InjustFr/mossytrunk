@@ -27,11 +27,20 @@ const { t } = useI18n();
         </template>
         <template #default="{ rows }">
             <tr v-for="expense in rows" :key="expense.id">
-                <td>{{ expense.label }}</td>
+                <td>
+                    {{ expense.label }}
+                    <span v-if="expense.sharedBy > 1 || !expense.own" class="expense-list__share">
+                        <template v-if="!expense.own">{{ t('events.expenses.sharedFrom') }} <a :href="`/events/${expense.originId}`">{{ expense.originName }}</a> · </template>
+                        {{ t('events.expenses.sharedBy', { count: expense.sharedBy }) }} · <MoneyAmount :cents="expense.fullAmount" /> {{ t('events.expenses.inAll') }}
+                    </span>
+                    <span v-else-if="expense.sharedOverEvents !== null || expense.sharedUntil !== null" class="expense-list__share">{{ t('events.expenses.sharedLater') }}</span>
+                </td>
                 <td class="data-table__cell--number"><MoneyAmount :cents="expense.amount" /></td>
                 <td class="data-table__cell--actions">
-                    <IconButton :icon="Pencil" :label="t('events.expenses.edit', { label: expense.label })" @click="emit('edit', expense)" />
-                    <IconButton :icon="Trash2" :label="t('events.expenses.remove', { label: expense.label })" variant="danger" @click="emit('remove', expense)" />
+                    <template v-if="expense.own">
+                        <IconButton :icon="Pencil" :label="t('events.expenses.edit', { label: expense.label })" @click="emit('edit', expense)" />
+                        <IconButton :icon="Trash2" :label="t('events.expenses.remove', { label: expense.label })" variant="danger" @click="emit('remove', expense)" />
+                    </template>
                 </td>
             </tr>
         </template>
@@ -46,4 +55,5 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
+.expense-list__share { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
 </style>

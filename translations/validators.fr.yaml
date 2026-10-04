@@ -28,6 +28,7 @@ discount.condition.targets.atLeastOne: 'Choisissez au moins un produit ou un typ
 event.location.required: 'Le lieu est obligatoire.'
 expense.amount.positive: 'Le montant doit être supérieur à zéro.'
 expense.label.required: 'Le libellé est obligatoire.'
+expense.shared_over_events.min: 'Au moins 2 événements.'
 field.invalid: 'Valeur invalide.'
 field.required: 'Ce champ est obligatoire.'
 language.invalid: 'Langue inconnue.'

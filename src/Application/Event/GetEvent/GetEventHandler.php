@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Event\GetEvent;
 
 use App\Domain\Event\EventRepository;
+use App\Domain\Event\ExpenseShares;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -20,6 +21,6 @@ final readonly class GetEventHandler
     {
         $event = $this->events->get(Ulid::fromString($eventId));
 
-        return EventView::fromEvent($event, $event->timingOn($this->clock->now()));
+        return EventView::fromEvent($event, $event->timingOn($this->clock->now()), ExpenseShares::among($this->events->all()));
     }
 }
