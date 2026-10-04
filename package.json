@@ -16,12 +16,14 @@
         "vue": "^3.0",
         "vue-loader": "^17.4.2",
         "webpack": "^5.82",
-        "webpack-cli": "^7.0.0"
+        "webpack-cli": "^7.0.0",
+        "webpack-dev-server": "^6.0.0"
     },
     "license": "MIT",
     "private": true,
     "scripts": {
         "dev-server": "encore dev-server",
+        "hot": "encore dev-server --hot --host 0.0.0.0 --port 8081 --public http://localhost:${DEV_SERVER_PORT:-8081}",
         "dev": "encore dev",
         "watch": "encore dev --watch",
         "build": "encore production --progress"

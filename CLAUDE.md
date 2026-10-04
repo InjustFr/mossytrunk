@@ -26,7 +26,7 @@ Generic Symfony conventions: see `AGENTS.md` (this file wins when they disagree 
 ## Running things (always in Docker)
 
 ```bash
-make up              # php + database + node (encore watch) → http://localhost:8080
+make up              # php + database + node (encore dev-server with HMR on :8081, serves /build) → http://localhost:8080
 make db              # create + migrate dev DB
 make fixtures        # reset dev DB with mock data (Foundry story fixtures/Story/ConventionSeasonStory.php)
 make migration       # doctrine:migrations:diff after mapping changes
@@ -38,7 +38,7 @@ make e2e             # builds assets into public/build-e2e (ASSETS_DIR, so the d
 docker compose exec php php bin/console …
 make deploy          # run the current commit's image (published by CI) on the server (defaults: debian@duprat.cloud:/mnt/mossytrunk, sudo docker; override DEPLOY_HOST/DEPLOY_DIR/REMOTE_DOCKER); make push = manual push after `make qa`; `make deploy` refuses a commit whose image CI did not publish
 ```
-Host port overridable with `HTTP_PORT`. Postgres exposed on `5433` (compose.override.yaml).
+Host ports overridable with `HTTP_PORT` and `DEV_SERVER_PORT` (HMR dev-server; while it runs, `public/build/entrypoints.json` points to it, so pages need the `node` container up). Postgres exposed on `5433` (compose.override.yaml).
 
 Production: `Dockerfile` stages `base` → `vendor`/`assets` → `prod` (the last stage `dev` is what `compose.yaml` builds). `docker/php/docker-entrypoint.sh` waits for the DB, migrates, warms the cache. The `prod` image serves Symfony in **FrankenPHP worker mode** (`docker/frankenphp/Caddyfile`: one booted kernel handles many requests, versioned `/build` assets cached as immutable), so services must keep no per-request state in properties (build per-call objects like `ImportedCatalogue` with `new`, or implement `ResetInterface`); `app` cache is APCu in prod. GitHub Actions (`.github/workflows/ci.yml`) runs the full suite on every push and pull request in parallel jobs sharing `.github/actions/dev-stack`: `make ci-checks` (cs, PHPStan, deptrac, assets → PHPUnit, run with `-j4`) and `make ci-e2e` three times (`chromium` in two shards, `workspace-wide` alone; `E2E_OWN_DATABASE=1` drops its dependency on `chromium` since each job has its own database) — `make ci` runs the same locally in one go — and only when it passes on `main` pushes the `prod` image to Docker Hub (`docker.io/injust/mossytrunk:<short sha>` + `:latest`, public) using the `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repository secrets. Server files live in `deploy/` (see `deploy/README.md`); the port is `APP_PORT`, reverse-proxy trust via `SYMFONY_TRUSTED_PROXIES`/`SYMFONY_TRUSTED_HEADERS` env. A new env var must be added to `deploy/.env.dist`.
 

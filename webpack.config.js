@@ -47,6 +47,10 @@ Encore
     })
 
     .enableVueLoader(() => {}, { runtimeCompilerBuild: false })
+    .configureDevServerOptions((options) => {
+        options.allowedHosts = 'all';
+        options.client = { webSocketURL: { hostname: 'localhost', port: Number(process.env.DEV_SERVER_PORT ?? 8081) } };
+    })
     .configureMiniCssExtractPlugin(() => {}, (options) => {
         options.ignoreOrder = true;
     })
