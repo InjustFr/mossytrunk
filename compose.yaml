@@ -15,6 +15,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/${POSTGRES_DB:-app}?serverVersion=18&charset=utf8
       MAILER_DSN: smtp://mailpit:1025
+      CADDY_SERVER_EXTRA_DIRECTIVES: 'header /build/* Cache-Control "no-cache"'
     volumes:
       - ./:/app
     ports:
