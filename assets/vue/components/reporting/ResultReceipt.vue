@@ -30,23 +30,16 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
 
         <div class="receipt__ledger">
             <template v-for="line in lines" :key="line.key">
-                <CollapsibleRoot v-if="hasDetail(line.key)" class="receipt__entry" :default-open="line.open ?? false">
-                    <CollapsibleTrigger class="receipt__line receipt__line--toggle">
-                        <ChevronRight class="receipt__chevron" size="1rem" aria-hidden="true" />
+                <component :is="hasDetail(line.key) ? CollapsibleRoot : 'div'" class="receipt__entry" v-bind="hasDetail(line.key) ? { defaultOpen: line.open ?? false } : {}">
+                    <component :is="hasDetail(line.key) ? CollapsibleTrigger : 'div'" :class="['receipt__line', { 'receipt__line--toggle': hasDetail(line.key) }]">
+                        <ChevronRight v-if="hasDetail(line.key)" class="receipt__chevron" size="1rem" aria-hidden="true" />
+                        <span v-else class="receipt__chevron" aria-hidden="true" />
                         <span class="receipt__label">{{ line.label }}<span v-if="line.hint" class="receipt__hint">{{ line.hint }}</span></span>
                         <span class="receipt__sign">{{ line.sign ?? '' }}</span>
                         <span class="receipt__amount">{{ formatCents(line.amount) }}</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent class="receipt__detail"><slot :name="`detail-${line.key}`" /></CollapsibleContent>
-                </CollapsibleRoot>
-                <div v-else class="receipt__entry">
-                    <div class="receipt__line">
-                        <span class="receipt__chevron" aria-hidden="true" />
-                        <span class="receipt__label">{{ line.label }}<span v-if="line.hint" class="receipt__hint">{{ line.hint }}</span></span>
-                        <span class="receipt__sign">{{ line.sign ?? '' }}</span>
-                        <span class="receipt__amount">{{ formatCents(line.amount) }}</span>
-                    </div>
-                </div>
+                    </component>
+                    <CollapsibleContent v-if="hasDetail(line.key)" class="receipt__detail"><slot :name="`detail-${line.key}`" /></CollapsibleContent>
+                </component>
             </template>
             <div class="receipt__line receipt__line--result">
                 <span class="receipt__chevron" aria-hidden="true" />

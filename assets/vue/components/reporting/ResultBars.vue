@@ -1,5 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
+import KeptShareTrack from './KeptShareTrack.vue';
 import { formatCents, formatRatio } from '../../composables/useMoney.js';
 
 defineProps({
@@ -9,7 +10,6 @@ defineProps({
 
 const { t } = useI18n();
 
-const keptShare = (item) => (item.turnover > 0 ? Math.max(0, Math.min(1, item.value / item.turnover)) * 100 : 0);
 const isLoss = (item) => item.value < 0;
 </script>
 
@@ -27,9 +27,7 @@ const isLoss = (item) => item.value < 0;
                     <template v-else>{{ item.label }}</template>
                     <span v-if="item.meta" class="result-bars__meta">{{ item.meta }}</span>
                 </span>
-                <span :class="['track result-bars__track', { 'track--loss': isLoss(item) }]" aria-hidden="true">
-                    <span class="result-bars__kept" :style="{ width: `${keptShare(item)}%` }" />
-                </span>
+                <KeptShareTrack :result="item.value" :turnover="item.turnover" class="result-bars__track" />
                 <span class="result-bars__figures">
                     <span :class="['result-bars__value', { 'result-bars__value--loss': isLoss(item) }]">{{ formatCents(item.value) }}</span>
                     <span class="result-bars__ratio">{{ t('reporting.bars.ratio', { ratio: formatRatio(item.value, item.turnover), turnover: formatCents(item.turnover) }) }}</span>
@@ -73,7 +71,6 @@ const isLoss = (item) => item.value < 0;
 .result-bars__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
 
 .result-bars__track { height: 0.5rem; }
-.result-bars__kept { background: var(--color-accent); }
 
 .result-bars__figures { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .result-bars__value { font-weight: 600; }

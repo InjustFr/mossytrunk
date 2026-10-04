@@ -3,9 +3,9 @@ import { computed, ref } from 'vue';
 import { ToggleGroupItem } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import ChoiceGroup from '../ui/ChoiceGroup.vue';
+import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
-import { formatShare } from '../../composables/useProductReports.js';
-import { formatCents } from '../../composables/useMoney.js';
+import { formatCents, formatRatio } from '../../composables/useMoney.js';
 import { normalize } from '../../composables/useSearch.js';
 
 const props = defineProps({
@@ -66,7 +66,7 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
                     <span class="palmares__rank">{{ rankOf.get(product.id) }}</span>
                     <span class="palmares__name">
                         {{ product.name }}
-                        <span class="palmares__meta">{{ t('reports.palmares.units', { count: product.units }, product.units) }}<template v-if="product.discount > 0">, {{ t('reports.palmares.discountShare', { share: formatShare(product.discount, product.gross) }) }}</template></span>
+                        <span class="palmares__meta">{{ t('reports.palmares.units', { count: product.units }, product.units) }}<template v-if="product.discount > 0">, {{ t('reports.palmares.discountShare', { share: formatRatio(product.discount, product.gross, 1) }) }}</template></span>
                     </span>
                     <span class="palmares__track" aria-hidden="true">
                         <span v-if="sort === 'revenue'" class="palmares__bar" :style="{ width: width(product) }">
@@ -85,14 +85,14 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
                 <div v-if="hovered === product.id" class="palmares__tooltip" role="tooltip">
                     <strong>{{ product.name }}</strong>
                     <span>{{ t('reports.palmares.tooltip.gross') }} <MoneyAmount :cents="product.gross" /></span>
-                    <span>{{ t('reports.palmares.tooltip.discount') }} −<MoneyAmount :cents="product.discount" /> ({{ formatShare(product.discount, product.gross) }})</span>
+                    <span>{{ t('reports.palmares.tooltip.discount') }} −<MoneyAmount :cents="product.discount" /> ({{ formatRatio(product.discount, product.gross, 1) }})</span>
                     <span>{{ t('reports.palmares.tooltip.revenue') }} <MoneyAmount :cents="product.revenue" /></span>
                     <span>{{ t('reports.palmares.tooltip.margin') }} <MoneyAmount :cents="product.margin" /><template v-if="product.unknownCost"> ({{ t('reports.palmares.tooltip.unknownCost') }})</template></span>
                     <span>{{ t('reports.palmares.tooltip.onHand') }} {{ product.onHand }}</span>
                 </div>
             </li>
         </ol>
-        <p v-if="shown.length === 0" class="palmares__none">{{ t('reports.palmares.noMatch') }}</p>
+        <EmptyState v-if="shown.length === 0" inline>{{ t('reports.palmares.noMatch') }}</EmptyState>
         <button v-if="products.length > FIRST && search.trim() === ''" type="button" class="palmares__more" @click="showAll = !showAll">
             {{ showAll ? t('reports.palmares.showLess') : t('reports.palmares.showAll', { count: products.length }) }}
         </button>
@@ -122,7 +122,6 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
 
 .palmares__search { width: 100%; max-width: 20rem; }
 
-.palmares__none { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .palmares__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 .palmares__swatch { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 0.125rem; }
 .palmares__swatch + .palmares__swatch { margin-left: var(--space-2); }

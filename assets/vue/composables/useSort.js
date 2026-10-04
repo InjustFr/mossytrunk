@@ -10,10 +10,11 @@ export function useSort(items, columns, initialKey, initialDirection = 'descendi
     const sorted = computed(() => {
         const value = toValue(columns)[key.value];
         const factor = direction.value === 'ascending' ? 1 : -1;
+        const { compare } = collator();
         return [...items.value].sort((a, b) => {
             const left = value(a);
             const right = value(b);
-            const order = typeof left === 'string' ? collator().compare(left, right) : (left ?? -Infinity) - (right ?? -Infinity);
+            const order = typeof left === 'string' ? compare(left, right) : (left ?? -Infinity) - (right ?? -Infinity);
             return order * factor;
         });
     });

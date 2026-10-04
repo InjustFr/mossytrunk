@@ -15,7 +15,7 @@ const { t } = useI18n();
         <div v-if="count > 0" class="selection-bar" role="region" :aria-label="t('ui.selection.label')">
             <span class="selection-bar__count">{{ summary }}</span>
             <slot />
-            <BaseButton variant="ghost" @click="emit('clear')">{{ t('ui.selection.clear') }}</BaseButton>
+            <BaseButton variant="inverse" @click="emit('clear')">{{ t('ui.selection.clear') }}</BaseButton>
         </div>
     </Transition>
 </template>
@@ -38,7 +38,6 @@ const { t } = useI18n();
 }
 
 .selection-bar__count { font-weight: 600; }
-.selection-bar :deep(.button--ghost) { color: color-mix(in oklch, var(--color-surface) 85%, var(--color-ink)); }
 
 .selection-bar-enter-active,
 .selection-bar-leave-active { transition: opacity var(--transition), transform var(--transition); }

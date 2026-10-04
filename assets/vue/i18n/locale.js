@@ -10,8 +10,13 @@ export function currentLanguage() {
     return LANGUAGES.some((known) => known.value === language) ? language : DEFAULT_LANGUAGE;
 }
 
+let resolved = { body: undefined, locale: null };
+
 export function intlLocale() {
-    return LANGUAGES.find((known) => known.value === currentLanguage()).intl;
+    if (resolved.body !== document.body) {
+        resolved = { body: document.body, locale: LANGUAGES.find((known) => known.value === currentLanguage()).intl };
+    }
+    return resolved.locale;
 }
 
 export function perLocale(build) {

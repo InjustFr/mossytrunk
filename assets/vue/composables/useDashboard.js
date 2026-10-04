@@ -1,11 +1,9 @@
 import { ref } from 'vue';
 import { useApi } from './useApi.js';
-import { perLocale } from '../i18n/locale.js';
-
-const monthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }));
+import { formatMonth } from './useDate.js';
 
 export function monthName(month) {
-    return monthFormatter().format(new Date(Date.UTC(2000, month - 1, 1)));
+    return formatMonth(`2000-${String(month).padStart(2, '0')}`);
 }
 
 export function useDashboard() {

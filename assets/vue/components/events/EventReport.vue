@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import ResultReceipt from '../reporting/ResultReceipt.vue';
 import OrderRecap from './OrderRecap.vue';
-import { perLocale } from '../../i18n/locale.js';
+import { formatPercent } from '../../composables/useMoney.js';
 import { resultLines } from '../../composables/useResultLines.js';
 
 const props = defineProps({
@@ -16,12 +16,9 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-const numberFormatter = perLocale((locale) => new Intl.NumberFormat(locale));
-const rate = (value) => t('events.report.rate', { rate: numberFormatter().format(value) });
-
 const lines = computed(() => resultLines(props.report.total, {
     label: (key) => t(`events.report.${key}`),
-    urssafHint: rate(props.report.urssaf.rate),
+    urssafHint: formatPercent(props.report.urssaf.rate / 100, 2),
     turnoverOpen: props.report.orders.count > 0,
 }));
 </script>

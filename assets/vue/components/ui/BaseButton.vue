@@ -1,6 +1,6 @@
 <script setup>
 defineProps({
-    variant: { type: String, default: 'primary' }, // primary | secondary | danger | ghost
+    variant: { type: String, default: 'primary' },
     type: { type: String, default: 'button' },
     loading: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
@@ -52,6 +52,9 @@ defineProps({
 
 .button--ghost { min-height: auto; background: none; color: var(--color-muted); padding: var(--space-1) var(--space-2); font-weight: 500; }
 .button--ghost:hover:not(:disabled) { color: var(--color-ink); text-decoration: underline; text-underline-offset: 0.1875rem; }
+
+.button--inverse { min-height: auto; background: none; color: color-mix(in oklch, var(--color-surface) 85%, var(--color-ink)); padding: var(--space-1) var(--space-2); font-weight: 500; }
+.button--inverse:hover:not(:disabled) { color: var(--color-surface); text-decoration: underline; text-underline-offset: 0.1875rem; }
 
 .button__spinner {
     width: 0.85rem;

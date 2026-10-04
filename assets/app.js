@@ -7,11 +7,8 @@ import '@fontsource/patua-one/400.css';
 import '@fontsource-variable/inter/wght.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/modal.css';
 
-// Only pages are mounted from Twig (`vue_component('OrdersPage', …)`).
-const pages = import.meta.webpackContext('./vue/pages', { recursive: true, regExp: /\.vue$/, mode: 'lazy' });
+const pages = import.meta.webpackContext('./vue/pages', { recursive: true, regExp: /\.vue$/, mode: 'lazy', prefetch: true });
 registerVueControllerComponents(pages);
-
-const whenIdle = window.requestIdleCallback ?? ((callback) => setTimeout(callback, 1000));
-window.addEventListener('load', () => whenIdle(() => pages.keys().forEach((page) => pages(page).catch(() => {}))), { once: true });
 

@@ -39,7 +39,7 @@
         "box": "Sales of goods (BIC)",
         "boxHint": "Turnover to declare",
         "orders": "Orders",
-        "contribution": "Estimated contributions ({rate}%)",
+        "contribution": "Estimated contributions ({rate})",
         "deadline": "Declare before",
         "changed": "Declared {amount} on {date}; the period's orders have changed since. Correct the declaration on urssaf.fr, then mark it again.",
         "declaredOn": "Declared on {date}",

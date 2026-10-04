@@ -6,6 +6,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormError from '../ui/FormError.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import QuantityGap from '../ui/QuantityGap.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
@@ -145,8 +146,7 @@ async function validate() {
                         <td class="compact-table__number">{{ line.orderedQuantity }}</td>
                         <td class="compact-table__number">
                             {{ counts[line.id] }}
-                            <StatusBadge v-if="delta(line) > 0" tone="warning">+{{ delta(line) }}</StatusBadge>
-                            <StatusBadge v-else-if="delta(line) < 0" tone="danger">{{ delta(line) }}</StatusBadge>
+                            <QuantityGap :gap="delta(line)" />
                         </td>
                         <td class="compact-table__number">
                             <MoneyAmount v-if="realUnitCost(line) !== null" :cents="realUnitCost(line)" />

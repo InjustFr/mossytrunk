@@ -55,8 +55,6 @@ const { t } = useI18n();
     transition: border-color var(--transition), background var(--transition);
 }
 
-.period-ledger li:first-child .period-ledger__cell { border-radius: var(--radius) 0 0 var(--radius); }
-.period-ledger li:last-child .period-ledger__cell { border-radius: 0 var(--radius) var(--radius) 0; }
 .period-ledger__cell:hover { background: var(--color-bg); }
 .period-ledger__cell--selected { border-color: var(--color-ink); background: var(--color-bg); }
 
@@ -76,9 +74,13 @@ const { t } = useI18n();
 .period-ledger__cell--due .period-ledger__status,
 .period-ledger__cell--changed .period-ledger__status { color: var(--color-warning); }
 
+@media (width > 60rem) {
+    .period-ledger li:first-child .period-ledger__cell { border-radius: var(--radius) 0 0 var(--radius); }
+    .period-ledger li:last-child .period-ledger__cell { border-radius: 0 var(--radius) var(--radius) 0; }
+}
+
 @media (max-width: 60rem) {
     .period-ledger--12 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-    .period-ledger__cell { border-radius: 0 !important; }
 }
 
 @media (max-width: 36rem) {

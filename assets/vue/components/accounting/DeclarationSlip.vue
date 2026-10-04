@@ -8,7 +8,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 import Notice from '../ui/Notice.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { formatDate, formatDateTime, fromToday } from '../../composables/useDate.js';
-import { intlLocale } from '../../i18n/locale.js';
+import { formatPercent } from '../../composables/useMoney.js';
 import { PERIOD_STATUSES, periodLabel, periodStatusLabel } from '../../composables/useAccounting.js';
 
 const props = defineProps({
@@ -44,7 +44,7 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
 
         <dl class="declaration-slip__facts">
             <div><dt>{{ t('accounting.slip.orders') }}</dt><dd>{{ period.orderCount }}</dd></div>
-            <div><dt>{{ t('accounting.slip.contribution', { rate: rate.toLocaleString(intlLocale()) }) }}</dt><dd><MoneyAmount :cents="period.contribution" /></dd></div>
+            <div><dt>{{ t('accounting.slip.contribution', { rate: formatPercent(rate / 100, 2) }) }}</dt><dd><MoneyAmount :cents="period.contribution" /></dd></div>
             <div>
                 <dt>{{ t('accounting.slip.deadline') }}</dt>
                 <dd>{{ formatDate(period.deadline) }} <span class="declaration-slip__relative">({{ fromToday(period.deadline) }})</span></dd>

@@ -1,10 +1,7 @@
 import { ref } from 'vue';
 import { useApi } from './useApi.js';
 import { t } from '../i18n/index.js';
-import { perLocale } from '../i18n/locale.js';
-
-const monthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }));
-const shortMonthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }));
+import { capitalize, formatLongMonth, formatMonth } from './useDate.js';
 
 export const PERIOD_STATUSES = {
     declared: { tone: 'success' },
@@ -22,14 +19,13 @@ export function periodStatusLabel(status) {
 
 export function periodLabel(period) {
     if (period.periodicity === 'monthly') {
-        const label = monthFormatter().format(new Date(`${period.start}T00:00:00Z`));
-        return label.charAt(0).toUpperCase() + label.slice(1);
+        return capitalize(formatLongMonth(period.start));
     }
     return t(period.index === 1 ? 'accounting.period.firstQuarter' : 'accounting.period.quarter', { index: period.index, year: period.year });
 }
 
 export function periodShortLabel(period) {
-    return period.periodicity === 'monthly' ? shortMonthFormatter().format(new Date(`${period.start}T00:00:00Z`)) : t('accounting.period.shortQuarter', { index: period.index });
+    return period.periodicity === 'monthly' ? formatMonth(period.start) : t('accounting.period.shortQuarter', { index: period.index });
 }
 
 export function useAccounting() {

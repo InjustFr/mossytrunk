@@ -5,6 +5,7 @@ import { PackageSearch } from '@lucide/vue';
 import DataTable from '../ui/DataTable.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import SortableHeader from '../ui/SortableHeader.vue';
+import KeptShareTrack from '../reporting/KeptShareTrack.vue';
 import { formatDate } from '../../composables/useDate.js';
 import { formatRatio } from '../../composables/useMoney.js';
 import { useSort } from '../../composables/useSort.js';
@@ -17,7 +18,6 @@ const { t } = useI18n();
 
 const margin = (event) => (event.turnover ? event.result / event.turnover : null);
 const perDay = (event) => Math.round(event.result / event.days);
-const keptShare = (event) => (event.turnover > 0 ? Math.max(0, Math.min(1, event.result / event.turnover)) * 100 : 0);
 
 const columns = {
     name: (event) => event.name,
@@ -74,9 +74,7 @@ const headers = [
                 <td class="data-table__cell--number event-comparison__result"><MoneyAmount :cents="event.result" signed :data-test="`event-result-${event.id}`" /></td>
                 <td class="data-table__cell--number">
                     <span class="event-comparison__margin">
-                        <span :class="['track event-comparison__track', { 'track--loss': event.result < 0 }]" aria-hidden="true">
-                            <span class="event-comparison__kept" :style="{ width: `${keptShare(event)}%` }" />
-                        </span>
+                        <KeptShareTrack :result="event.result" :turnover="event.turnover" class="event-comparison__track" />
                         {{ formatRatio(event.result, event.turnover) }}
                     </span>
                 </td>
@@ -92,6 +90,5 @@ const headers = [
 .event-comparison__result { font-weight: 600; }
 .event-comparison__margin { display: inline-flex; align-items: center; gap: var(--space-2); }
 .event-comparison__track { width: 5rem; height: 0.375rem; }
-.event-comparison__kept { background: var(--color-accent); }
 .event-comparison__missing { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

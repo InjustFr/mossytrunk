@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { longMonthLabel, monthLabel } from '../../composables/useProductReports.js';
+import { formatLongMonth, formatMonth } from '../../composables/useDate.js';
 
 const props = defineProps({
     months: { type: Array, required: true },
@@ -38,7 +38,7 @@ const zero = computed(() => 100 - ((0 - bottom.value) / (top.value - bottom.valu
                 :key="month.month"
                 class="stock-flow__slot"
                 tabindex="0"
-                :aria-label="`${longMonthLabel(month.month)} : ${t('reports.flow.tooltipIn', { count: month.received })}, ${t('reports.flow.tooltipOut', { sold: month.sold, lost: month.lost, used: month.used })}, ${t('reports.flow.tooltipStock', { month: longMonthLabel(month.month), count: month.onHand })}`"
+                :aria-label="`${formatLongMonth(month.month)} : ${t('reports.flow.tooltipIn', { count: month.received })}, ${t('reports.flow.tooltipOut', { sold: month.sold, lost: month.lost, used: month.used })}, ${t('reports.flow.tooltipStock', { month: formatLongMonth(month.month), count: month.onHand })}`"
                 @mouseenter="hovered = month.month"
                 @mouseleave="hovered = null"
                 @focus="hovered = month.month"
@@ -51,10 +51,10 @@ const zero = computed(() => 100 - ((0 - bottom.value) / (top.value - bottom.valu
                     <span v-if="out(month) > 0" class="stock-flow__bar stock-flow__bar--out" :style="{ height: `max(0.1875rem, ${(out(month) / widest) * 100}%)` }" />
                 </span>
                 <span v-if="hovered === month.month" class="stock-flow__tooltip" role="tooltip">
-                    <strong>{{ longMonthLabel(month.month) }}</strong>
+                    <strong>{{ formatLongMonth(month.month) }}</strong>
                     <span>{{ t('reports.flow.tooltipIn', { count: month.received }) }}</span>
                     <span>{{ t('reports.flow.tooltipOut', { sold: month.sold, lost: month.lost, used: month.used }) }}</span>
-                    <span>{{ t('reports.flow.tooltipStock', { month: longMonthLabel(month.month), count: month.onHand }) }}</span>
+                    <span>{{ t('reports.flow.tooltipStock', { month: formatLongMonth(month.month), count: month.onHand }) }}</span>
                 </span>
             </div>
         </div>
@@ -68,7 +68,7 @@ const zero = computed(() => 100 - ((0 - bottom.value) / (top.value - bottom.valu
             <span v-for="(month, index) in months" :key="month.month" :class="{ 'stock-flow__level-value--hovered': hovered === month.month }">{{ hovered === month.month || index === months.length - 1 ? month.onHand : '' }}</span>
         </div>
         <div class="stock-flow__axis" :style="columns" aria-hidden="true">
-            <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? monthLabel(month.month) : '' }}</span>
+            <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? formatMonth(month.month) : '' }}</span>
         </div>
     </figure>
 </template>

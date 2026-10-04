@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import DataTable from '../ui/DataTable.vue';
 import EmptyState from '../ui/EmptyState.vue';
+import QuantityGap from '../ui/QuantityGap.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 
 defineProps({
@@ -37,9 +38,8 @@ const difference = (line, count) => (count === null || count === undefined ? nul
                 </td>
                 <td class="data-table__cell--number">
                     <template v-if="difference(line, counts[keyOf(line)]) === null">—</template>
-                    <StatusBadge v-else-if="difference(line, counts[keyOf(line)]) < 0" tone="danger">{{ difference(line, counts[keyOf(line)]) }}</StatusBadge>
-                    <StatusBadge v-else-if="difference(line, counts[keyOf(line)]) > 0" tone="warning">+{{ difference(line, counts[keyOf(line)]) }}</StatusBadge>
-                    <StatusBadge v-else tone="success">{{ t('stock.count.ok') }}</StatusBadge>
+                    <StatusBadge v-else-if="difference(line, counts[keyOf(line)]) === 0" tone="success">{{ t('stock.count.ok') }}</StatusBadge>
+                    <QuantityGap v-else :gap="difference(line, counts[keyOf(line)])" />
                 </td>
             </tr>
         </template>

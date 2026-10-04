@@ -1,7 +1,6 @@
 import { t } from '../i18n/index.js';
-import { formatCents } from './useMoney.js';
+import { formatCents, formatPercent, formatSignedCents } from './useMoney.js';
 import { formatDate, localDay } from './useDate.js';
-import { intlLocale } from '../i18n/locale.js';
 import { sameVariant } from './useVariantStock.js';
 
 const offers = (product, variant) => !variant || product.variants.some((candidate) => sameVariant(candidate, variant));
@@ -75,7 +74,7 @@ export function describeAction(action) {
         return t('discounts.action.fixedPrice', { price: formatCents(action.value) });
     }
     if (action.kind === 'amountOff') {
-        return `−${formatCents(action.value).replace('−', '')}`;
+        return formatSignedCents(-action.value);
     }
-    return t('discounts.action.percentOff', { percent: (action.value / 100).toLocaleString(intlLocale()) });
+    return formatPercent(-action.value / 10_000, 2);
 }

@@ -1,15 +1,12 @@
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useApi } from './useApi.js';
+import { useDebouncedQuery } from './useDebouncedQuery.js';
 import { nowForInput } from './useDate.js';
 
 export function useOrderDraft() {
     const api = useApi();
     const placedAt = ref(nowForInput());
     const lines = reactive([]);
-    const preview = ref(null);
-    const previewError = ref(null);
-    let timer = null;
-    let requestId = 0;
 
     const sameTuple = (a, b) => a.productId === b.productId && (a.variant ?? null) === (b.variant ?? null);
 
@@ -40,7 +37,7 @@ export function useOrderDraft() {
     function reset() {
         lines.splice(0, lines.length);
         preview.value = null;
-        previewError.value = null;
+        error.value = null;
     }
 
     const payload = () => ({
@@ -48,31 +45,12 @@ export function useOrderDraft() {
         lines: lines.map(({ productId, variant, quantity }) => ({ productId, variant, quantity })),
     });
 
-    async function refreshPreview() {
-        if (lines.length === 0 || !placedAt.value) {
-            preview.value = null;
-            previewError.value = null;
-            return;
-        }
-        const current = ++requestId;
-        try {
-            const result = await api.query('/api/orders/preview', payload());
-            if (current === requestId) {
-                preview.value = result;
-                previewError.value = null;
-            }
-        } catch (error) {
-            if (current === requestId) {
-                preview.value = null;
-                previewError.value = error.message;
-            }
-        }
-    }
-
-    watch([placedAt, lines], () => {
-        clearTimeout(timer);
-        timer = setTimeout(refreshPreview, 200);
-    }, { deep: true });
+    const { result: preview, error } = useDebouncedQuery(
+        [placedAt, lines],
+        () => (lines.length === 0 || !placedAt.value ? null : api.query('/api/orders/preview', payload())),
+        { delay: 200, deep: true },
+    );
+    const previewError = computed(() => error.value?.message ?? null);
 
     return { placedAt, lines, preview, previewError, add, setQuantity, remove, reset, payload };
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { RotateCcw, TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -9,6 +9,7 @@ import FormField from '../ui/FormField.vue';
 import Notice from '../ui/Notice.vue';
 import ReferenceTokens from './ReferenceTokens.vue';
 import ServiceOptions from './ServiceOptions.vue';
+import { useDebouncedQuery } from '../../composables/useDebouncedQuery.js';
 import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const PREVIEW_DELAY = 250;
@@ -24,7 +25,6 @@ const emit = defineEmits(['saved', 'cancel']);
 
 const template = ref(props.format.template);
 const scope = ref('future');
-const example = ref(props.format.example);
 const { saving, errors, run } = useFormSubmit('template');
 const input = ref(null);
 
@@ -39,27 +39,13 @@ const scopes = computed(() => [
     },
 ]);
 
-let timer = null;
-let latest = 0;
-
-watch(template, (value) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => refreshExample(value), PREVIEW_DELAY);
+const { result: example } = useDebouncedQuery(template, () => props.preview(props.format.kind, template.value), {
+    delay: PREVIEW_DELAY,
+    initial: props.format.example,
+    onSettled: ({ error }) => {
+        errors.value = error ? { template: error.message } : {};
+    },
 });
-
-async function refreshExample(value) {
-    const call = ++latest;
-    try {
-        const shown = await props.preview(props.format.kind, value);
-        if (call !== latest) return;
-        example.value = shown;
-        errors.value = {};
-    } catch (failure) {
-        if (call !== latest) return;
-        example.value = null;
-        errors.value = { template: failure.message };
-    }
-}
 
 async function insert(placeholder) {
     const field = input.value;

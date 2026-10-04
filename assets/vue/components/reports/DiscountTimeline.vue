@@ -1,9 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatDate } from '../../composables/useDate.js';
-import { formatCents } from '../../composables/useMoney.js';
-import { formatShare, longMonthLabel, monthLabel } from '../../composables/useProductReports.js';
+import { formatDate, formatLongMonth, formatMonth } from '../../composables/useDate.js';
+import { formatCents, formatRatio } from '../../composables/useMoney.js';
 
 const props = defineProps({
     months: { type: Array, required: true },
@@ -53,20 +52,20 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
                     class="discount-timeline__cell"
                     tabindex="0"
                     :style="{ '--depth': share(month) / deepest }"
-                    :aria-label="t('reports.discounts.shareTooltip', { month: longMonthLabel(month.month), share: formatShare(month.gross - month.revenue, month.gross) })"
+                    :aria-label="t('reports.discounts.shareTooltip', { month: formatLongMonth(month.month), share: formatRatio(month.gross - month.revenue, month.gross, 1) })"
                     @mouseenter="hovered = month.month"
                     @mouseleave="hovered = null"
                     @focus="hovered = month.month"
                     @blur="hovered = null"
                 >
-                    <span v-if="hovered === month.month" class="discount-timeline__tooltip" role="tooltip">{{ t('reports.discounts.shareTooltip', { month: longMonthLabel(month.month), share: formatShare(month.gross - month.revenue, month.gross) }) }}</span>
+                    <span v-if="hovered === month.month" class="discount-timeline__tooltip" role="tooltip">{{ t('reports.discounts.shareTooltip', { month: formatLongMonth(month.month), share: formatRatio(month.gross - month.revenue, month.gross, 1) }) }}</span>
                 </span>
             </div>
         </div>
         <div class="discount-timeline__axis">
             <span />
             <div class="discount-timeline__months" :style="columns" aria-hidden="true">
-                <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? monthLabel(month.month) : '' }}</span>
+                <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? formatMonth(month.month) : '' }}</span>
             </div>
         </div>
     </div>

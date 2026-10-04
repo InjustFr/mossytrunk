@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import { formatCents } from '../../composables/useMoney.js';
-import { longMonthLabel, monthLabel } from '../../composables/useProductReports.js';
+import { formatLongMonth, formatMonth } from '../../composables/useDate.js';
 
 const props = defineProps({
     months: { type: Array, required: true },
@@ -26,7 +26,7 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
                 :key="month.month"
                 class="sales-chart__slot"
                 tabindex="0"
-                :aria-label="`${longMonthLabel(month.month)} : ${t('reports.sales.tooltip', { units: month.units, revenue: formatCents(month.revenue) })}`"
+                :aria-label="`${formatLongMonth(month.month)} : ${t('reports.sales.tooltip', { units: month.units, revenue: formatCents(month.revenue) })}`"
                 @mouseenter="hovered = month.month"
                 @mouseleave="hovered = null"
                 @focus="hovered = month.month"
@@ -36,13 +36,13 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
                     <span v-if="month === best" class="sales-chart__value" aria-hidden="true">{{ month.units }}</span>
                 </span>
                 <span v-if="hovered === month.month" class="sales-chart__tooltip" role="tooltip">
-                    <strong>{{ longMonthLabel(month.month) }}</strong>
+                    <strong>{{ formatLongMonth(month.month) }}</strong>
                     {{ t('reports.sales.tooltip', { units: month.units, revenue: formatCents(month.revenue) }) }}
                 </span>
             </div>
         </div>
         <div class="sales-chart__axis" :style="columns" aria-hidden="true">
-            <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? monthLabel(month.month) : '' }}</span>
+            <span v-for="(month, index) in months" :key="month.month" :class="{ 'month-label--odd': index % 2 === 1 }">{{ labelled(index) ? formatMonth(month.month) : '' }}</span>
         </div>
     </figure>
 </template>

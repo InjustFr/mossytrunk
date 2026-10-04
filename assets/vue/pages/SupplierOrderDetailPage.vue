@@ -7,6 +7,7 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
+import QuantityGap from '../components/ui/QuantityGap.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
 import BackLink from '../components/ui/BackLink.vue';
 import MergeSupplierOrderForm from '../components/purchasing/MergeSupplierOrderForm.vue';
@@ -122,8 +123,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                                 <template v-if="line.receivedQuantity === null">—</template>
                                 <template v-else>
                                     {{ line.receivedQuantity }}
-                                    <StatusBadge v-if="line.receivedQuantity > line.orderedQuantity" tone="warning" class="supplier-order-page__gap">+{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
-                                    <StatusBadge v-else-if="line.receivedQuantity < line.orderedQuantity" tone="danger" class="supplier-order-page__gap">{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
+                                    <QuantityGap :gap="line.receivedQuantity - line.orderedQuantity" class="supplier-order-page__gap" />
                                 </template>
                             </td>
                             <td class="compact-table__number"><MoneyAmount :cents="line.totalPrice" :currency="order.currency" /></td>

@@ -10,9 +10,12 @@ export function formatDate(iso) {
 const dayFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }));
 const timeFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { timeStyle: 'short', timeZone: 'Europe/Paris' }));
 
+export function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 export function formatDay(iso) {
-    const day = dayFormatter().format(new Date(iso));
-    return day.charAt(0).toUpperCase() + day.slice(1);
+    return capitalize(dayFormatter().format(new Date(iso)));
 }
 
 export function formatTime(iso) {
@@ -23,6 +26,22 @@ const numericDayFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale
 
 export function formatNumericDay(iso) {
     return numericDayFormatter().format(new Date(iso));
+}
+
+export function formatDateSpan(from, to) {
+    return to && to !== from ? `${formatDate(from)} → ${formatDate(to)}` : formatDate(from);
+}
+
+const monthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }));
+const longMonthFormatter = perLocale((locale) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }));
+const monthStart = (month) => new Date(`${month.slice(0, 7)}-01T00:00:00Z`);
+
+export function formatMonth(month) {
+    return monthFormatter().format(monthStart(month));
+}
+
+export function formatLongMonth(month) {
+    return longMonthFormatter().format(monthStart(month));
 }
 
 export function formatDateTime(iso) {

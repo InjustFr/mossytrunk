@@ -1,28 +1,32 @@
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
+import { useDebouncedQuery } from './useDebouncedQuery.js';
 
 const DELAY = 250;
 
 export function useSuggestion(target, source, fetchSuggestion, { follow = true } = {}) {
     const following = ref(follow);
-    let timer = null;
-    let latest = 0;
 
-    async function refresh() {
-        const call = ++latest;
+    async function suggest() {
         const before = target.value;
         const suggestion = await fetchSuggestion(source()).catch(() => null);
-        if (call === latest && following.value && suggestion !== null && target.value === before) {
+        return { before, suggestion };
+    }
+
+    function apply({ result: { before, suggestion } }) {
+        if (following.value && suggestion !== null && target.value === before) {
             target.value = suggestion;
         }
     }
 
-    watch(source, () => {
-        clearTimeout(timer);
-        if (following.value) timer = setTimeout(refresh, DELAY);
-    }, { immediate: follow });
+    const { refresh, invalidate } = useDebouncedQuery(source, suggest, {
+        delay: DELAY,
+        immediate: follow,
+        enabled: () => following.value,
+        onSettled: apply,
+    });
 
     function edited(value = target.value) {
-        latest++;
+        invalidate();
         following.value = value.trim() === '';
     }
 

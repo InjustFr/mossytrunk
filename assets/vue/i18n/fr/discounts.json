@@ -74,7 +74,6 @@
         "pricedOn": "prix du {date}"
     },
     "action": {
-        "fixedPrice": "pour {price}",
-        "percentOff": "−{percent} %"
+        "fixedPrice": "pour {price}"
     }
 }

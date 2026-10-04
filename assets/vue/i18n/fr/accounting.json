@@ -39,7 +39,7 @@
         "box": "Ventes de marchandises (BIC)",
         "boxHint": "Chiffre d'affaires à déclarer",
         "orders": "Commandes",
-        "contribution": "Cotisations estimées ({rate} %)",
+        "contribution": "Cotisations estimées ({rate})",
         "deadline": "À déclarer avant le",
         "changed": "Déclaré {amount} le {date} ; les commandes de la période ont changé depuis. Corrigez la déclaration sur urssaf.fr puis marquez-la à nouveau.",
         "declaredOn": "Déclarée le {date}",

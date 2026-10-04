@@ -1,6 +1,6 @@
 <script setup>
 import { CalendarDays, MapPin } from '@lucide/vue';
-import { formatDate } from '../../composables/useDate.js';
+import { formatDateSpan } from '../../composables/useDate.js';
 
 defineProps({
     event: { type: Object, required: true },
@@ -11,8 +11,7 @@ defineProps({
     <p class="event-header">
         <span class="event-header__item"><MapPin size="1rem" aria-hidden="true" /> {{ event.location }}</span>
         <span class="event-header__item">
-            <CalendarDays size="1rem" aria-hidden="true" /> {{ formatDate(event.startDate) }}
-            <template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>
+            <CalendarDays size="1rem" aria-hidden="true" /> {{ formatDateSpan(event.startDate, event.endDate) }}
         </span>
     </p>
 </template>

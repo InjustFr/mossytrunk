@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
-import { formatDate, fromToday } from '../../composables/useDate.js';
+import { formatDateSpan, fromToday } from '../../composables/useDate.js';
 
 defineProps({
     events: { type: Array, required: true },
@@ -22,7 +22,7 @@ const { t } = useI18n();
             <a class="event-list__link" :href="`/events/${event.id}`">
                 <span class="event-list__name">{{ event.name }}</span>
                 <span class="event-list__meta">
-                    {{ event.location }}, {{ formatDate(event.startDate) }}<template v-if="event.endDate !== event.startDate"> → {{ formatDate(event.endDate) }}</template>
+                    {{ event.location }}, {{ formatDateSpan(event.startDate, event.endDate) }}
                 </span>
             </a>
             <dl class="event-list__figures">
