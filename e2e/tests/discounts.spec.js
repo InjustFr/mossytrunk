@@ -46,7 +46,7 @@ test('create "2 prints and 1 sticker for 15 €", start it today and delete it',
     await expect(item).toContainText('En cours');
     expect((await preview(`${event.startDate}T12:00`)).total).toBe(1_500);
 
-    await item.getByRole('switch').uncheck();
+    await item.getByRole('switch').click();
     await expect(page.getByTestId('toast').last()).toContainText('commence aujourd\'hui');
     await expect(item).toContainText('En cours');
 
@@ -95,7 +95,7 @@ test('stopping a running discount ends it yesterday; an expired discount has no 
     await page.goto('/discounts');
     const item = page.getByTestId(`discount-rule-${name}`);
     await expect(item).toContainText('En cours');
-    await item.getByRole('switch').uncheck();
+    await item.getByRole('switch').click();
 
     const past = page.getByRole('region', { name: 'Passées' }).getByTestId(`discount-rule-${name}`);
     await expect(past).toContainText('Expirée');
