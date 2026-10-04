@@ -113,6 +113,7 @@ ci-bundle: ## Pack what ci-build produced for the CI test jobs (CI_BUNDLE)
 ci-unbundle: ## Unpack the ci-build output (CI_BUNDLE) and start the stack
 	tar -xzf $(CI_BUNDLE)
 	$(MAKE) ci-up
+	$(CONSOLE) cache:warmup
 
 ci-e2e: ## Playwright on the production build (PLAYWRIGHT_ARGS to pick projects or a shard)
 	$(MAKE) e2e-run E2E_ASSETS_DIR=build
