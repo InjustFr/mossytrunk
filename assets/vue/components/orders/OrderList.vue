@@ -123,7 +123,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                     <td class="order-list__payment"><PaymentMethod :method="order.paymentMethod" /></td>
                     <td class="order-list__source">
                         <StatusBadge v-if="order.refundedAt" tone="warning">{{ t('orders.list.refunded') }}</StatusBadge>
-                        <span v-if="order.source !== 'manual'" class="order-list__badge">{{ order.sourceLabel }}</span>
+                        <StatusBadge v-if="order.source !== 'manual'" tone="outline">{{ order.sourceLabel }}</StatusBadge>
                         <span v-if="order.externalReferences.length" class="order-list__external">{{ order.externalReferences.join(', ') }}</span>
                     </td>
                 </tr>
@@ -162,14 +162,6 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 .order-list__reference { font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .order-list__source { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .order-list__external { margin-left: var(--space-2); color: var(--color-subtle); font-size: 0.75rem; }
-
-.order-list__badge {
-    padding: 0.0625rem var(--space-2);
-    border-radius: 62.4375rem;
-    border: 0.0625rem solid var(--color-border);
-    color: var(--color-muted);
-    font-size: 0.75rem;
-}
 
 .order-list__row--new { animation: order-list-highlight 2.4s ease-out; }
 

@@ -6,6 +6,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
+import FieldError from '../ui/FieldError.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
@@ -56,7 +57,7 @@ async function onSubmit() {
         <ol class="price-history__list">
             <li v-for="(change, index) in history" :key="change.id" :class="['price-history__change', { 'price-history__change--current': index === 0 }]">
                 <form v-if="editing === change.id" class="price-history__form" novalidate @submit.prevent="onSubmit">
-                    <p v-if="errors.form" class="price-history__error" role="alert">{{ errors.form }}</p>
+                    <FieldError v-if="errors.form">{{ errors.form }}</FieldError>
                     <FormSection>
                         <FormField :label="t('products.prices.price')" :error="errors.price">
                             <BaseMoneyField v-model="form.price" class="price-history__amount" />
@@ -92,7 +93,7 @@ async function onSubmit() {
         </ol>
 
         <form v-if="editing === NEW" class="price-history__form price-history__form--new" novalidate @submit.prevent="onSubmit">
-            <p v-if="errors.form" class="price-history__error" role="alert">{{ errors.form }}</p>
+            <FieldError v-if="errors.form">{{ errors.form }}</FieldError>
             <FormSection>
                 <FormField :label="t('products.prices.price')" :error="errors.price">
                     <BaseMoneyField v-model="form.price" class="price-history__amount" />
@@ -130,6 +131,5 @@ async function onSubmit() {
 .price-history__form { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; padding: var(--space-2) 0; color: var(--color-text); }
 .price-history__form--new { padding: var(--space-4); border-radius: var(--radius); background: var(--color-bg); }
 .price-history__amount { max-width: 11rem; }
-.price-history__error { margin: 0; color: var(--color-danger); font-size: 0.85rem; }
 .price-history__add { align-self: flex-start; }
 </style>

@@ -90,7 +90,6 @@ const pick = (name) => save(themeNamed(name));
 
 .appearance__theme:hover { border-color: var(--color-border-strong); }
 .appearance__theme[data-state='checked'] { border-color: var(--color-accent); background: var(--color-accent-soft); }
-.appearance__theme:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .appearance__sample {
     display: flex;

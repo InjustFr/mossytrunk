@@ -5,6 +5,7 @@ import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import FieldError from '../ui/FieldError.vue';
 import { formatCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
@@ -58,7 +59,7 @@ async function add() {
             <BaseNumberField v-model="quantity" class="order-line-picker__quantity" :min="1" :label="t('orders.picker.quantity')" @keydown.enter.prevent="add" />
             <BaseButton variant="secondary" @click="add">{{ t('orders.picker.add') }}</BaseButton>
         </div>
-        <Transition name="order-line-picker__slide">
+        <Transition name="fade">
             <ToggleGroupRoot
                 v-if="needsVariant"
                 :model-value="variant"
@@ -67,10 +68,10 @@ async function add() {
                 :aria-label="t('orders.picker.variant')"
                 @update:model-value="chooseVariant"
             >
-                <ToggleGroupItem v-for="option in product.activeVariants" :key="option" :value="option" class="order-line-picker__variant">{{ option }}</ToggleGroupItem>
+                <ToggleGroupItem v-for="option in product.activeVariants" :key="option" :value="option" class="chip">{{ option }}</ToggleGroupItem>
             </ToggleGroupRoot>
         </Transition>
-        <p v-if="error" class="order-line-picker__error" role="alert">{{ error }}</p>
+        <FieldError v-if="error">{{ error }}</FieldError>
     </div>
 </template>
 
@@ -79,30 +80,11 @@ async function add() {
 .order-line-picker__row { display: flex; align-items: center; gap: var(--space-2); }
 .order-line-picker__row > :first-child { flex: 1; min-width: 0; }
 .order-line-picker__quantity { flex: 0 0 6.5rem; }
-.order-line-picker__error { margin: 0; color: var(--color-danger); font-size: 0.85rem; }
 
 .order-line-picker__variants { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.order-line-picker__variant {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 0.85rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background var(--transition), border-color var(--transition), color var(--transition);
-}
-.order-line-picker__variant:hover { border-color: var(--color-ink); }
-.order-line-picker__variant[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 
 @container form (max-width: 24rem) {
     .order-line-picker__row { flex-wrap: wrap; }
     .order-line-picker__row > :first-child { flex-basis: 100%; }
 }
-
-.order-line-picker__slide-enter-active,
-.order-line-picker__slide-leave-active { transition: opacity var(--transition); }
-.order-line-picker__slide-enter-from,
-.order-line-picker__slide-leave-to { opacity: 0; }
 </style>

@@ -26,25 +26,10 @@ const offeredIds = computed(() => props.offered.map((supply) => supply.id));
         :aria-label="t('channels.supplies.title')"
         @update:model-value="(ids) => emit('change', ids)"
     >
-        <ToggleGroupItem v-for="supply in supplies" :key="supply.id" :value="supply.id" class="channel-supplies__chip">{{ supply.displayName }}</ToggleGroupItem>
+        <ToggleGroupItem v-for="supply in supplies" :key="supply.id" :value="supply.id" class="chip">{{ supply.displayName }}</ToggleGroupItem>
     </ToggleGroupRoot>
 </template>
 
 <style scoped>
 .channel-supplies { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-
-.channel-supplies__chip {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    font: inherit;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.channel-supplies__chip:hover { border-color: var(--color-ink); }
-.channel-supplies__chip:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.channel-supplies__chip[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 </style>

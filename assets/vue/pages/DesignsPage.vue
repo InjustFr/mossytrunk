@@ -262,7 +262,6 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 }
 
 .designs-page__status:hover { color: var(--color-ink); }
-.designs-page__status:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .designs-page__status[data-state="on"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 .designs-page__status-count { font-size: 0.8125rem; font-variant-numeric: tabular-nums; font-weight: 400; }
 

@@ -7,6 +7,7 @@ import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import BatchChannelPrice from './BatchChannelPrice.vue';
@@ -71,7 +72,7 @@ async function onSubmit() {
 <template>
     <form class="product-batch-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="product-batch-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection :description="t('products.batch.intro', count)">
                 <FormField v-if="priced" :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
@@ -111,5 +112,4 @@ async function onSubmit() {
 .product-batch-form__threshold { max-width: 11rem; }
 .product-batch-form :deep(.product-batch-form__type) { max-width: 16rem; }
 .product-batch-form :deep(.product-batch-form__type--unchanged) { color: var(--color-muted); }
-.product-batch-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

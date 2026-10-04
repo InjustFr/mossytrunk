@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FieldError from '../ui/FieldError.vue';
 
 const props = defineProps({
     item: { type: Object, required: true },
@@ -62,7 +63,7 @@ const itemName = computed(() => (props.item.variation ? `${props.item.label} —
             <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" :placeholder="t('import.row.variantPlaceholder')" :aria-label="t('import.row.variantFor', { item: itemName })" />
             <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? t('import.row.edit') : t('import.row.link') }}</BaseButton>
         </div>
-        <p v-if="error" class="external-item__error" role="alert">{{ error }}</p>
+        <FieldError v-if="error">{{ error }}</FieldError>
     </li>
 </template>
 
@@ -74,5 +75,4 @@ const itemName = computed(() => (props.item.variation ? `${props.item.label} —
 .external-item__target { display: flex; align-items: center; gap: var(--space-2); }
 .external-item__target > :first-child { flex: 1; min-width: 0; }
 .external-item--linked .external-item__title { font-weight: 400; color: var(--color-muted); }
-.external-item__error { margin: 0; color: var(--color-danger); font-size: 0.85rem; }
 </style>

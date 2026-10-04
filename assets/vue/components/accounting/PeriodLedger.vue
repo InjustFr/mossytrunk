@@ -58,7 +58,6 @@ const { t } = useI18n();
 .period-ledger li:first-child .period-ledger__cell { border-radius: var(--radius) 0 0 var(--radius); }
 .period-ledger li:last-child .period-ledger__cell { border-radius: 0 var(--radius) var(--radius) 0; }
 .period-ledger__cell:hover { background: var(--color-bg); }
-.period-ledger__cell:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .period-ledger__cell--selected { border-color: var(--color-ink); background: var(--color-bg); }
 
 .period-ledger__cell--declared { border-top-color: var(--color-accent); }

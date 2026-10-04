@@ -40,7 +40,7 @@ const { t } = useI18n();
 
 .variants-input:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .variants-input__chip {
@@ -48,7 +48,7 @@ const { t } = useI18n();
     align-items: center;
     gap: var(--space-1);
     padding: 0.125rem var(--space-2);
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
     font-size: 0.85rem;

@@ -1,13 +1,15 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue';
-import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from 'reka-ui';
+import { RadioGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import RadioCard from '../ui/RadioCard.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
@@ -93,7 +95,7 @@ async function onSubmit() {
 <template>
     <form class="move-variant-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="move-variant-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection>
                 <FormField v-if="hasVariants" as="group" :label="t('products.move.variant')">
@@ -101,13 +103,12 @@ async function onSubmit() {
                 </FormField>
                 <FormField as="group" :label="t('products.move.destination')">
                     <RadioGroupRoot v-model="form.mode" class="move-variant-form__modes" :aria-label="t('products.move.destination')">
-                        <RadioGroupItem v-for="mode in modes" :key="mode" :value="mode" class="move-variant-form__mode">
-                            <span class="move-variant-form__radio"><RadioGroupIndicator class="move-variant-form__dot" /></span>
+                        <RadioCard v-for="mode in modes" :key="mode" :value="mode">
                             <span class="move-variant-form__choice">
                                 <span class="move-variant-form__name">{{ t(`products.move.modes.${mode}.label`) }}</span>
                                 <span class="move-variant-form__description">{{ t(`products.move.modes.${mode}.description`) }}</span>
                             </span>
-                        </RadioGroupItem>
+                        </RadioCard>
                     </RadioGroupRoot>
                 </FormField>
                 <FormField v-if="form.mode === 'new'" :label="t('products.move.newProductName')" :error="errors.newProductName">
@@ -142,49 +143,7 @@ async function onSubmit() {
 
 .move-variant-form__modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); }
 
-.move-variant-form__mode {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: border-color var(--transition), background var(--transition);
-}
-
-.move-variant-form__mode:hover { border-color: var(--color-ink); }
-.move-variant-form__mode[data-state='checked'] { border-color: var(--color-accent); background: var(--color-accent-soft); }
-.move-variant-form__mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-
-.move-variant-form__radio {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    width: 1rem;
-    height: 1rem;
-    margin-top: 0.125rem;
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 50%;
-    background: var(--color-surface);
-}
-
-.move-variant-form__mode[data-state='checked'] .move-variant-form__radio { border-color: var(--color-accent); }
-.move-variant-form__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--color-accent); }
 .move-variant-form__choice { display: flex; flex-direction: column; gap: 0.125rem; }
 .move-variant-form__name { font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
 .move-variant-form__description { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.35; }
-
-.move-variant-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
 </style>

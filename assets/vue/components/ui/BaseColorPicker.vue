@@ -45,7 +45,6 @@ function onOpen(open) {
 
 .color-picker:hover,
 .color-picker[data-state='open'] { border-color: var(--color-ink); }
-.color-picker:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .color-picker__swatch { width: 1.75rem; height: 1.75rem; border: 0.0625rem solid var(--color-border); border-radius: calc(var(--radius) - 0.125rem); }
 .color-picker__value { font-variant-numeric: tabular-nums; }

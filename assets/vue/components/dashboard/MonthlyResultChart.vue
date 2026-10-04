@@ -91,10 +91,9 @@ const barStyle = (result) => {
 
 .monthly-chart__zero { position: absolute; left: 0; right: 0; border-top: 0.0625rem solid var(--color-border-strong); }
 
-.monthly-chart__slot { position: relative; outline: none; border-radius: var(--radius); }
+.monthly-chart__slot { position: relative; border-radius: var(--radius); }
 .monthly-chart__slot:hover,
 .monthly-chart__slot:focus-visible { background: var(--color-bg); }
-.monthly-chart__slot:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .monthly-chart__bar { position: absolute; left: 50%; width: min(56%, 3.5rem); transform: translateX(-50%); }
 .monthly-chart__bar--gain { background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }

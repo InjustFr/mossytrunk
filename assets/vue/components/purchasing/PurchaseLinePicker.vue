@@ -8,6 +8,7 @@ import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FieldError from '../ui/FieldError.vue';
 import VariantPicker from '../products/VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
@@ -150,8 +151,8 @@ function addType() {
             :aria-label="t('purchasing.picker.mode')"
             @update:model-value="(value) => value && (mode = value)"
         >
-            <ToggleGroupItem :value="PRODUCT" class="purchase-line-picker__mode">{{ t('purchasing.picker.oneProduct') }}</ToggleGroupItem>
-            <ToggleGroupItem :value="TYPE" class="purchase-line-picker__mode">{{ t('purchasing.picker.wholeType') }}</ToggleGroupItem>
+            <ToggleGroupItem :value="PRODUCT" class="chip">{{ t('purchasing.picker.oneProduct') }}</ToggleGroupItem>
+            <ToggleGroupItem :value="TYPE" class="chip">{{ t('purchasing.picker.wholeType') }}</ToggleGroupItem>
         </ToggleGroupRoot>
         <BaseButton variant="ghost" class="purchase-line-picker__create" @click="emit('create')"><Plus size="1rem" aria-hidden="true" /> {{ t('purchasing.form.newProduct') }}</BaseButton>
 
@@ -213,7 +214,7 @@ function addType() {
                 {{ t('purchasing.picker.addLines', { count: typeItems.length }, typeItems.length) }}
             </BaseButton>
         </template>
-        <p v-if="error" class="purchase-line-picker__error" role="alert">{{ error }}</p>
+        <FieldError v-if="error" class="purchase-line-picker__error">{{ error }}</FieldError>
     </div>
 </template>
 
@@ -231,37 +232,12 @@ function addType() {
 .purchase-line-picker__modes { display: flex; flex: 1 1 auto; gap: var(--space-2); }
 .purchase-line-picker__create { margin-left: auto; }
 
-.purchase-line-picker__mode {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 0.8125rem;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.purchase-line-picker__mode:hover { border-color: var(--color-ink); }
-.purchase-line-picker__mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.purchase-line-picker__mode[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
-
 .purchase-line-picker__field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .purchase-line-picker__label { color: var(--color-muted); font-size: 0.8125rem; }
 .purchase-line-picker__product { flex: 1 1 100%; }
 .purchase-line-picker__variant { flex: 1 1 7rem; }
 .purchase-line-picker__quantity { flex: 0 0 7rem; }
 .purchase-line-picker__price { flex: 0 0 7.5rem; }
-.purchase-line-picker__price :deep(.money-field__input) {
-    width: 100%;
-    min-height: 2.375rem;
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.purchase-line-picker__price :deep(.money-field__input:focus) { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 0.1875rem var(--color-accent-soft); }
 
 .purchase-line-picker__pricing { flex: 0 0 auto; }
 .purchase-line-picker__pricing-modes { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
@@ -282,5 +258,5 @@ function addType() {
 .purchase-line-picker__pricing-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
 .purchase-line-picker__pricing-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 .purchase-line-picker__add { margin-left: auto; }
-.purchase-line-picker__error { flex: 1 1 100%; margin: 0; color: var(--color-danger); font-size: 0.8125rem; }
+.purchase-line-picker__error { flex: 1 1 100%; }
 </style>

@@ -212,7 +212,6 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
 .channel-page__facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-4) var(--space-5); margin: 0; }
 .channel-page__facts dt { color: var(--color-muted); font-size: 0.8rem; }
 .channel-page__facts dd { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin: 0; font-weight: 600; }
-.channel-page__subtitle { margin: 0 0 var(--space-2); font-family: var(--font-body); font-size: 0.9375rem; font-weight: 600; }
 .channel-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
 
 .channel-page__search {

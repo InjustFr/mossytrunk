@@ -5,6 +5,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseSwitch from '../ui/BaseSwitch.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import { ownPriceOn, priceOn } from '../../composables/useChannelPrices.js';
@@ -41,7 +42,7 @@ async function onSubmit() {
 <template>
     <form class="channel-price-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="channel-price-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <FormSection>
                 <label v-if="!channel.main" class="channel-price-form__follow">
                     <BaseSwitch v-model="follow" />
@@ -68,5 +69,4 @@ async function onSubmit() {
 .channel-price-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .channel-price-form__follow { display: flex; align-items: center; gap: var(--space-2); font-size: 0.875rem; cursor: pointer; }
 .channel-price-form__amount { max-width: 11rem; }
-.channel-price-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

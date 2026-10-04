@@ -1,11 +1,13 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { RadioGroupIndicator, RadioGroupItem, RadioGroupRoot } from 'reka-ui';
+import { RadioGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import RadioCard from '../ui/RadioCard.vue';
 import PaymentMethod from './PaymentMethod.vue';
 import { formatDateTime } from '../../composables/useDate.js';
 
@@ -47,11 +49,10 @@ async function onSubmit() {
 <template>
     <form class="merge-order-form" novalidate @submit.prevent="onSubmit">
         <p class="merge-order-form__intro">{{ t('orders.merge.intro', { reference: order.reference }) }}</p>
-        <p v-if="error" class="merge-order-form__error" role="alert">{{ error }}</p>
+        <FormError v-if="error">{{ error }}</FormError>
         <EmptyState v-if="orders && orders.length === 0">{{ t('orders.merge.none') }}</EmptyState>
         <RadioGroupRoot v-else-if="orders" v-model="chosen" class="merge-order-form__orders" :aria-label="t('orders.merge.choose')">
-            <RadioGroupItem v-for="other in sorted" :key="other.id" :value="other.id" class="merge-order-form__order">
-                <span class="merge-order-form__radio"><RadioGroupIndicator class="merge-order-form__dot" /></span>
+            <RadioCard v-for="other in sorted" :key="other.id" :value="other.id" class="merge-order-form__order">
                 <span class="merge-order-form__summary">
                     <span class="merge-order-form__when">{{ formatDateTime(other.placedAt) }}</span>
                     <span class="merge-order-form__meta">
@@ -60,7 +61,7 @@ async function onSubmit() {
                     </span>
                 </span>
                 <MoneyAmount class="merge-order-form__total" :cents="other.total" />
-            </RadioGroupItem>
+            </RadioCard>
         </RadioGroupRoot>
         <FormActions>
             <BaseButton variant="ghost" @click="emit('cancel')">{{ t('orders.merge.cancel') }}</BaseButton>
@@ -72,39 +73,10 @@ async function onSubmit() {
 <style scoped>
 .merge-order-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .merge-order-form__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.merge-order-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 .merge-order-form__orders { display: flex; flex-direction: column; gap: var(--space-2); max-height: 40vh; overflow-y: auto; }
 
-.merge-order-form__order {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: border-color var(--transition), background var(--transition);
-}
+.merge-order-form__order { align-items: center; }
 
-.merge-order-form__order:hover { border-color: var(--color-border-strong); }
-.merge-order-form__order[data-state="checked"] { border-color: var(--color-accent); background: var(--color-accent-soft); }
-
-.merge-order-form__radio {
-    display: inline-flex;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    width: 1rem;
-    height: 1rem;
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 50%;
-}
-
-.merge-order-form__dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--color-accent); }
 .merge-order-form__summary { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .merge-order-form__when { color: var(--color-ink); font-weight: 500; }
 .merge-order-form__meta { color: var(--color-muted); font-size: 0.8125rem; }

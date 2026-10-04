@@ -34,7 +34,7 @@ defineProps({
 
 .number-field:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .number-field .number-field__input {

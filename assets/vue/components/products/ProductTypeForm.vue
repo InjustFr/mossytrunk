@@ -5,6 +5,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseSwitch from '../ui/BaseSwitch.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormDisclosure from '../ui/FormDisclosure.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
@@ -84,7 +85,7 @@ async function onSubmit() {
 <template>
     <form class="product-type-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="product-type-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection>
                 <FormField :label="t('products.types.name')" :error="errors.name">
@@ -117,7 +118,6 @@ async function onSubmit() {
 
 <style scoped>
 .product-type-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.product-type-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 .product-type-form .product-type-form__code { max-width: 11rem; text-transform: uppercase; }
 .product-type-form__switch { display: flex; align-items: center; gap: var(--space-2); min-height: 2.375rem; font-size: 0.875rem; cursor: pointer; }
 </style>

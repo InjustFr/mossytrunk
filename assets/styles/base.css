@@ -31,6 +31,35 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .back-link { display: inline-flex; align-items: center; gap: var(--space-1); }
 
+.chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border: 0.0625rem solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.chip:hover { border-color: var(--color-ink); }
+.chip[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
+
+.chip--quiet { color: var(--color-muted); }
+.chip--quiet:hover { color: var(--color-ink); }
+
+.chip--accent { color: var(--color-muted); }
+.chip--accent:hover { color: var(--color-ink); }
+.chip--accent[data-state="on"] { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent-strong); font-weight: 500; }
+
+.chip--warning, .chip--warning:hover { border-color: var(--color-warning); color: var(--color-warning); }
+.chip--warning[data-state="on"] { background: var(--color-warning); border-color: var(--color-warning); color: var(--color-surface); }
+
 /* Top loading bar during page changes and API calls (assets/progress-bar.js). */
 .progress-bar {
     position: fixed;
@@ -50,3 +79,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .progress-bar--visible { opacity: 1; }
 
 .turbo-progress-bar { display: none; }
+
+.fade-enter-active, .fade-leave-active,
+.drop-enter-active, .drop-leave-active,
+.step-enter-active, .step-leave-active { transition: opacity var(--transition), transform var(--transition); }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+.drop-enter-from, .drop-leave-to { opacity: 0; transform: translateY(-0.25rem); }
+.step-enter-from { opacity: 0; transform: translateX(0.5rem); }
+.step-leave-to { opacity: 0; transform: translateX(-0.5rem); }
+
+@media (prefers-reduced-motion: reduce) {
+    .fade-enter-active, .fade-leave-active,
+    .drop-enter-active, .drop-leave-active,
+    .step-enter-active, .step-leave-active { transition: none; }
+}
+
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes drop-in { from { opacity: 0; transform: translateY(-0.25rem); } }
+@keyframes rise-in { from { transform: translateY(0.5rem) scale(0.98); } }

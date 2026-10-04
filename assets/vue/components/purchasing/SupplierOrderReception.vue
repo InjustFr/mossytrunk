@@ -4,6 +4,7 @@ import { Check } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import FormError from '../ui/FormError.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 
@@ -121,9 +122,9 @@ async function validate() {
                     <span>{{ t('purchasing.reception.receivedQuantity') }}</span>
                     <BaseNumberField :key="current.id" v-model="counts[current.id]" :min="0" :label="t('purchasing.reception.receivedQuantity')" @keydown.enter.prevent="next" />
                 </label>
-                <StatusBadge v-if="delta(current) > 0" tone="warning">{{ t('purchasing.reception.more', { count: delta(current) }) }}</StatusBadge>
-                <StatusBadge v-else-if="delta(current) < 0" tone="danger">{{ t('purchasing.reception.less', { count: -delta(current) }) }}</StatusBadge>
-                <StatusBadge v-else-if="delta(current) === 0" tone="success">{{ t('purchasing.reception.conform') }}</StatusBadge>
+                <StatusBadge v-if="delta(current) > 0" tone="warning" class="reception__verdict">{{ t('purchasing.reception.more', { count: delta(current) }) }}</StatusBadge>
+                <StatusBadge v-else-if="delta(current) < 0" tone="danger" class="reception__verdict">{{ t('purchasing.reception.less', { count: -delta(current) }) }}</StatusBadge>
+                <StatusBadge v-else-if="delta(current) === 0" tone="success" class="reception__verdict">{{ t('purchasing.reception.conform') }}</StatusBadge>
             </div>
             <p v-if="counted(current) && counts[current.id] === 0" class="reception__hint">{{ t('purchasing.reception.nothingHint') }}</p>
 
@@ -161,7 +162,7 @@ async function validate() {
                 </tbody>
             </table>
             <p class="reception__hint">{{ t('purchasing.reception.reviewHint') }}</p>
-            <p v-if="error" class="reception__error" role="alert">{{ error }}</p>
+            <FormError v-if="error">{{ error }}</FormError>
             <div class="reception__nav">
                 <BaseButton variant="ghost" @click="step--">{{ t('purchasing.reception.previous') }}</BaseButton>
                 <BaseButton :loading="saving" @click="validate">{{ t('purchasing.reception.validate') }}</BaseButton>
@@ -230,11 +231,10 @@ async function validate() {
 .reception__count { display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap; padding: var(--space-4); border-radius: var(--radius); background: var(--color-bg); }
 .reception__or { padding-bottom: var(--space-2); color: var(--color-muted); }
 .reception__received { display: flex; flex-direction: column; gap: var(--space-1); width: 9rem; font-size: 0.85rem; }
-.reception__count .status-badge { margin-bottom: var(--space-2); }
+.reception__verdict { margin-bottom: var(--space-2); }
 
 .reception__nav { display: flex; justify-content: flex-end; gap: var(--space-2); }
 .reception__hint { margin: 0; color: var(--color-muted); font-size: 0.85rem; }
-.reception__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 .reception__muted { color: var(--color-subtle); }
 
 .reception__summary { width: 100%; border-collapse: collapse; font-size: 0.9rem; }

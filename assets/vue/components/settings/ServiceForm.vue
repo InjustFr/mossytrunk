@@ -4,6 +4,7 @@ import { Copy } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
@@ -62,7 +63,7 @@ async function onSubmit() {
 <template>
     <form class="service-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="service-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection :title="t('settings.form.access')" :description="service.authorizes ? t(service.instructions) : null">
                 <FormField v-if="service.authorizes" as="group" :label="t('settings.form.callbackUrl')">
@@ -114,13 +115,5 @@ async function onSubmit() {
     font-size: 0.8125rem;
     overflow-wrap: anywhere;
     user-select: all;
-}
-
-.service-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
 }
 </style>

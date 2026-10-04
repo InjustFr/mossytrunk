@@ -6,6 +6,7 @@ import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -49,7 +50,7 @@ async function onSubmit() {
 <template>
     <form class="restock-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="restock-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection>
                 <FormField v-if="product.variants.length" as="group" :label="t('products.restock.variant')" :error="errors.variant">
@@ -81,5 +82,4 @@ async function onSubmit() {
 .restock-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .restock-form :deep(.restock-form__narrow) { max-width: 11rem; }
 .restock-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: var(--color-text); }
-.restock-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

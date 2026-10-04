@@ -50,10 +50,9 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
 <style scoped>
 .sales-chart { margin: 0; padding-top: var(--space-4); }
 .sales-chart__plot { position: relative; display: grid; gap: 0.125rem; height: 7.5rem; border-bottom: 0.0625rem solid var(--color-border-strong); }
-.sales-chart__slot { position: relative; display: flex; align-items: flex-end; justify-content: center; border-radius: var(--radius) var(--radius) 0 0; outline: none; }
+.sales-chart__slot { position: relative; display: flex; align-items: flex-end; justify-content: center; border-radius: var(--radius) var(--radius) 0 0; }
 .sales-chart__slot:hover,
 .sales-chart__slot:focus-visible { background: var(--color-bg); }
-.sales-chart__slot:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .sales-chart__bar { position: relative; width: min(70%, 1.75rem); background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }
 .sales-chart__value { position: absolute; bottom: calc(100% + 0.125rem); left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 

@@ -11,6 +11,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormDisclosure from '../ui/FormDisclosure.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
@@ -159,7 +160,7 @@ async function onSubmit() {
 <template>
     <form class="discount-rule-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="discount-rule-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection>
                 <FormField :label="t('discounts.form.name')" :error="errors.name">
@@ -183,8 +184,8 @@ async function onSubmit() {
                                         :aria-label="t('discounts.form.conditionTarget', { number: targetNumber(index, position) })"
                                         @update:model-value="(kind) => setKind(target, kind)"
                                     >
-                                        <ToggleGroupItem value="type" class="discount-rule-form__kind">{{ t('discounts.form.type') }}</ToggleGroupItem>
-                                        <ToggleGroupItem value="product" class="discount-rule-form__kind">{{ t('discounts.form.product') }}</ToggleGroupItem>
+                                        <ToggleGroupItem value="type" class="chip">{{ t('discounts.form.type') }}</ToggleGroupItem>
+                                        <ToggleGroupItem value="product" class="chip">{{ t('discounts.form.product') }}</ToggleGroupItem>
                                     </ToggleGroupRoot>
                                     <IconButton
                                         v-if="condition.targets.length > 1"
@@ -239,7 +240,7 @@ async function onSubmit() {
                     :aria-label="t('discounts.form.actionKind')"
                     @update:model-value="(kind) => kind && (form.actionKind = kind)"
                 >
-                    <ToggleGroupItem v-for="option in ACTIONS" :key="option.value" :value="option.value" class="discount-rule-form__kind">{{ t(option.label) }}</ToggleGroupItem>
+                    <ToggleGroupItem v-for="option in ACTIONS" :key="option.value" :value="option.value" class="chip">{{ t(option.label) }}</ToggleGroupItem>
                 </ToggleGroupRoot>
                 <FormField v-if="form.actionKind === 'percentOff'" as="group" :label="valueLabel" :error="errors['action.value'] ?? errors['action.kind']">
                     <span class="discount-rule-form__value">
@@ -323,27 +324,6 @@ async function onSubmit() {
 .discount-rule-form__fact strong { color: var(--color-ink); font-weight: 600; }
 
 .discount-rule-form__kinds { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.discount-rule-form__kind {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 0.85rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background var(--transition), border-color var(--transition), color var(--transition);
-}
-.discount-rule-form__kind:hover { border-color: var(--color-ink); }
-.discount-rule-form__kind[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
-
-.discount-rule-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
 
 @container form (max-width: 28rem) {
     .discount-rule-form__condition { grid-template-areas: "quantity times . remove" "group group group group"; }

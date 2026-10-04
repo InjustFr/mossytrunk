@@ -48,14 +48,13 @@ const remaining = computed(() => props.design.adaptationsTotal - props.design.ad
 }
 
 .workbench-card:hover { border-color: var(--color-ink); }
-.workbench-card:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .workbench-card__collection { color: var(--color-muted); font-size: 0.8rem; }
 .workbench-card__name { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.15; color: var(--color-ink); }
 .workbench-card__gabarits { display: flex; flex-wrap: wrap; gap: var(--space-1); }
-.workbench-card__gabarit { padding: 0.0625rem var(--space-2); border: 0.0625rem dashed var(--color-border-strong); border-radius: 62.4375rem; font-size: 0.75rem; color: var(--color-muted); }
+.workbench-card__gabarit { padding: 0.0625rem var(--space-2); border: 0.0625rem dashed var(--color-border-strong); border-radius: var(--radius-pill); font-size: 0.75rem; color: var(--color-muted); }
 .workbench-card__gabarit--ready { border-style: solid; border-color: var(--color-accent); color: var(--color-accent-strong); }
 .workbench-card__empty { color: var(--color-subtle); font-size: 0.8rem; }
-.workbench-card__rail { display: block; height: 0.25rem; margin-top: auto; border-radius: 62.4375rem; background: var(--color-bg); overflow: hidden; }
+.workbench-card__rail { display: block; height: 0.25rem; margin-top: auto; border-radius: var(--radius-pill); background: var(--color-bg); overflow: hidden; }
 .workbench-card__fill { display: block; height: 100%; background: var(--color-accent); transition: width var(--transition); }
 .workbench-card__status { color: var(--color-muted); font-size: 0.8rem; }
 </style>

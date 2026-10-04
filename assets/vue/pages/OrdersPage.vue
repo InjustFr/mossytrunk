@@ -143,7 +143,7 @@ onMounted(async () => {
         </template>
 
         <template v-for="importer in importers" :key="importer.service.key">
-            <Transition name="orders-page__problem">
+            <Transition name="drop">
                 <ImportProblem v-if="importer.problem.value" class="orders-page__problem" :problem="importer.problem.value" @dismiss="importer.dismiss" />
             </Transition>
             <ExternalItemsNotice
@@ -205,9 +205,4 @@ onMounted(async () => {
 
 <style scoped>
 .orders-page__problem { margin-bottom: var(--space-4); }
-
-.orders-page__problem-enter-active,
-.orders-page__problem-leave-active { transition: opacity var(--transition), transform var(--transition); }
-.orders-page__problem-enter-from,
-.orders-page__problem-leave-to { opacity: 0; transform: translateY(-0.375rem); }
 </style>

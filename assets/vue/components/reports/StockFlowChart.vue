@@ -81,10 +81,9 @@ const zero = computed(() => 100 - ((0 - bottom.value) / (top.value - bottom.valu
 .stock-flow__swatch--in { background: var(--color-accent); }
 .stock-flow__swatch--out { background: var(--color-chart-out); }
 .stock-flow__plot { display: grid; gap: 0.125rem; height: 8rem; }
-.stock-flow__slot { position: relative; display: flex; flex-direction: column; border-radius: var(--radius); outline: none; }
+.stock-flow__slot { position: relative; display: flex; flex-direction: column; border-radius: var(--radius); }
 .stock-flow__slot:hover,
 .stock-flow__slot:focus-visible { background: var(--color-bg); }
-.stock-flow__slot:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .stock-flow__half { display: flex; flex: 1 1 50%; justify-content: center; }
 .stock-flow__half--in { align-items: flex-end; border-bottom: 0.0625rem solid var(--color-border-strong); padding-bottom: 0.0625rem; }
 .stock-flow__half--out { align-items: flex-start; padding-top: 0.0625rem; }

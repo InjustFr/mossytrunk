@@ -42,7 +42,6 @@ defineProps({
 }
 
 .icon-button:hover { color: var(--color-ink); background: var(--color-bg); border-color: var(--color-border); }
-.icon-button:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .icon-button--danger:hover { color: var(--color-danger); background: var(--color-danger-soft); border-color: transparent; }
 </style>
 
@@ -54,10 +53,8 @@ defineProps({
     background: var(--color-ink);
     color: var(--color-surface);
     font-size: 0.8rem;
-    animation: icon-button-tooltip-in var(--transition);
+    animation: fade-in var(--transition);
 }
 
 .icon-button__arrow { fill: var(--color-ink); }
-
-@keyframes icon-button-tooltip-in { from { opacity: 0; } }
 </style>

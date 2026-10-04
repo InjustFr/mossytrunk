@@ -14,6 +14,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import { formatCents } from '../../composables/useMoney.js';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
@@ -180,7 +181,7 @@ async function onSubmit() {
 <template>
     <form class="supplier-order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="supplier-order-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <p v-if="draftRestored" class="supplier-order-form__draft" role="status">
                 {{ t('purchasing.form.draftRestored') }}
                 <BaseButton variant="ghost" @click="discardDraft">{{ t('purchasing.form.draftDiscard') }}</BaseButton>
@@ -317,17 +318,6 @@ async function onSubmit() {
 .supplier-order-form__line td { padding: 0; }
 .supplier-order-form__label { grid-column: 1 / -1; color: var(--color-ink); font-weight: 500; }
 
-.supplier-order-form__price :deep(.money-field__input) {
-    width: 100%;
-    min-height: 2.375rem;
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.supplier-order-form__price :deep(.money-field__input:focus) { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 0.1875rem var(--color-accent-soft); }
 .supplier-order-form__unit-cost { color: var(--color-muted); text-align: right; font-variant-numeric: tabular-nums; }
 .supplier-order-form__unit-cost :deep(.money) { margin-left: var(--space-1); color: var(--color-ink); }
 
@@ -375,5 +365,4 @@ async function onSubmit() {
 .supplier-order-form__adjust-mode + .supplier-order-form__adjust-mode { border-left: 0.0625rem solid var(--color-border-strong); }
 .supplier-order-form__adjust-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
 .supplier-order-form__adjust-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
-.supplier-order-form__error { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
 </style>

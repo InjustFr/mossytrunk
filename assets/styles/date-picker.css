@@ -14,7 +14,7 @@
 
 .date-picker__field:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .date-picker__field[data-invalid] { border-color: var(--color-danger); }
@@ -54,7 +54,7 @@
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    animation: date-picker-in var(--transition);
+    animation: drop-in var(--transition);
 }
 
 .date-picker__header {
@@ -126,5 +126,3 @@
     color: var(--color-on-accent);
     border-radius: calc(var(--radius) - 0.125rem);
 }
-
-@keyframes date-picker-in { from { opacity: 0; transform: translateY(-0.25rem); } }

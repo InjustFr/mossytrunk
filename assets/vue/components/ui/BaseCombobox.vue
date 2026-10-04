@@ -72,7 +72,7 @@ const labelOf = (value) => props.options.find((option) => option.value === value
 
 .combobox:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .combobox .combobox__input {
@@ -112,7 +112,7 @@ const labelOf = (value) => props.options.find((option) => option.value === value
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    animation: combobox-in var(--transition);
+    animation: drop-in var(--transition);
 }
 
 .combobox__viewport { max-height: inherit; padding: var(--space-1); overflow-y: auto; }
@@ -135,6 +135,4 @@ const labelOf = (value) => props.options.find((option) => option.value === value
 .combobox__item[data-disabled] { color: var(--color-subtle); cursor: default; }
 .combobox__indicator { display: inline-flex; color: var(--color-accent); }
 .combobox__empty { padding: var(--space-2) var(--space-3); color: var(--color-muted); font-size: 0.9rem; }
-
-@keyframes combobox-in { from { opacity: 0; transform: translateY(-0.25rem); } }
 </style>

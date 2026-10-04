@@ -101,10 +101,7 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
     height: 1.25rem;
     border-radius: 0.1875rem;
     background: color-mix(in srgb, var(--color-accent) calc(var(--depth) * 85%), var(--color-bg));
-    outline: none;
 }
-
-.discount-timeline__cell:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .discount-timeline__tooltip {
     position: absolute;

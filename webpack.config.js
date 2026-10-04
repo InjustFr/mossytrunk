@@ -25,6 +25,26 @@ Encore
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
+    .configureSplitChunks((splitChunks) => {
+        splitChunks.cacheGroups = {
+            ...splitChunks.cacheGroups,
+            ui: {
+                test: /[\\/]assets[\\/]vue[\\/](components[\\/]ui|layouts)[\\/]/,
+                name: 'ui',
+                chunks: 'all',
+                enforce: true,
+                priority: 20,
+            },
+            sharedComponents: {
+                test: /[\\/]assets[\\/]vue[\\/](components|composables)[\\/]/,
+                name: 'shared-components',
+                chunks: 'async',
+                minChunks: 2,
+                enforce: true,
+                priority: 10,
+            },
+        };
+    })
 
     .enableVueLoader(() => {}, { runtimeCompilerBuild: false })
     .configureMiniCssExtractPlugin(() => {}, (options) => {

@@ -128,8 +128,8 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                                 <template v-if="line.receivedQuantity === null">—</template>
                                 <template v-else>
                                     {{ line.receivedQuantity }}
-                                    <StatusBadge v-if="line.receivedQuantity > line.orderedQuantity" tone="warning">+{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
-                                    <StatusBadge v-else-if="line.receivedQuantity < line.orderedQuantity" tone="danger">{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
+                                    <StatusBadge v-if="line.receivedQuantity > line.orderedQuantity" tone="warning" class="supplier-order-page__gap">+{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
+                                    <StatusBadge v-else-if="line.receivedQuantity < line.orderedQuantity" tone="danger" class="supplier-order-page__gap">{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
                                 </template>
                             </td>
                             <td class="supplier-order-page__number"><MoneyAmount :cents="line.totalPrice" :currency="order.currency" /></td>
@@ -181,7 +181,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
 .supplier-order-page__lines td { padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
 .supplier-order-page__number { text-align: right; font-variant-numeric: tabular-nums; }
 .supplier-order-page__lines th.supplier-order-page__number { text-align: right; }
-.supplier-order-page__lines .status-badge { margin-left: var(--space-1); }
+.supplier-order-page__gap { margin-left: var(--space-1); }
 .supplier-order-page__planned { display: block; color: var(--color-muted); font-size: 0.75rem; }
 .supplier-order-page__shares { color: var(--color-muted); font-size: 0.85rem; }
 .supplier-order-page__shares span { display: flex; justify-content: flex-end; white-space: nowrap; }

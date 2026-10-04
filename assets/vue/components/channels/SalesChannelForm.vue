@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import ServiceOptions from '../settings/ServiceOptions.vue';
@@ -44,7 +45,7 @@ async function onSubmit() {
 <template>
     <form class="sales-channel-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="sales-channel-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <FormSection>
                 <FormField :label="t('channels.name')" :error="errors.name">
                     <input v-model="form.name" type="text" required maxlength="100" :placeholder="t('channels.namePlaceholder')">
@@ -66,5 +67,4 @@ async function onSubmit() {
 
 <style scoped>
 .sales-channel-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.sales-channel-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

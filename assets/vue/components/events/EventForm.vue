@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 
@@ -47,7 +48,7 @@ async function onSubmit() {
 <template>
     <form class="event-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="event-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <FormSection>
                 <FormField :label="t('events.form.name')" :error="errors.name">
@@ -71,11 +72,4 @@ async function onSubmit() {
 
 <style scoped>
 .event-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.event-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
 </style>

@@ -69,7 +69,7 @@ test('warns when no event exists at the order date', async ({ page, request }) =
 
     await expect(form.getByText('Aucun événement à cette date.')).toBeVisible();
     await form.getByRole('button', { name: 'Enregistrer la commande' }).click();
-    await expect(form.locator('.order-form__error')).toContainText('Créez d\'abord l\'événement');
+    await expect(form.getByRole('alert').filter({ hasText: 'Créez d\'abord' })).toBeVisible();
 });
 
 test('search orders by number, date and time', async ({ page, request }) => {

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import OrderDraftLines from './OrderDraftLines.vue';
@@ -48,7 +49,7 @@ async function onSubmit() {
                 <FormField as="group" :label="t('orders.form.date')">
                     <BaseDatePicker v-model="draft.placedAt.value" with-time />
                 </FormField>
-                <Transition name="order-form__fade">
+                <Transition name="fade">
                     <FormField v-if="draft.preview.value" as="group" :label="t('orders.form.event')">
                         <p v-if="draft.preview.value.event" class="order-form__fact">{{ draft.preview.value.event.name }}</p>
                         <p v-else class="order-form__fact order-form__fact--missing" role="alert">
@@ -68,7 +69,7 @@ async function onSubmit() {
                 />
             </FormSection>
 
-            <p v-if="error || draft.previewError.value" class="order-form__error" role="alert">{{ error ?? draft.previewError.value }}</p>
+            <FormError v-if="error || draft.previewError.value">{{ error ?? draft.previewError.value }}</FormError>
 
             <div class="order-form__checkout">
                 <OrderTotals
@@ -92,17 +93,4 @@ async function onSubmit() {
 .order-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
 .order-form__fact--missing { font-weight: 400; color: var(--color-danger); }
 .order-form__fact--missing a { color: inherit; }
-
-.order-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
-
-.order-form__fade-enter-active,
-.order-form__fade-leave-active { transition: opacity var(--transition); }
-.order-form__fade-enter-from,
-.order-form__fade-leave-to { opacity: 0; }
 </style>

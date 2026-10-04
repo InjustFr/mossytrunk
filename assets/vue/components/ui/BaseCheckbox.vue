@@ -29,7 +29,6 @@ import { CheckboxIndicator, CheckboxRoot } from 'reka-ui';
 }
 
 .checkbox:hover:not([data-disabled]) { border-color: var(--color-ink); }
-.checkbox:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .checkbox[data-state="checked"] { background: var(--color-accent); border-color: var(--color-accent); }
 .checkbox[data-disabled] { opacity: 0.6; cursor: not-allowed; }
 .checkbox__indicator { display: inline-flex; }

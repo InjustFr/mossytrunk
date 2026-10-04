@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FieldError from '../ui/FieldError.vue';
 
 const { t } = useI18n();
 
@@ -79,7 +80,7 @@ function cancel() {
                 <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('purchasing.supplierSelect.create') }}</BaseButton>
             </div>
         </div>
-        <span v-if="error" class="supplier-select__error" role="alert">{{ error }}</span>
+        <FieldError v-if="error">{{ error }}</FieldError>
     </div>
 </template>
 
@@ -87,5 +88,4 @@ function cancel() {
 .supplier-select { display: flex; flex-direction: column; gap: var(--space-1); }
 .supplier-select__create { display: flex; flex-direction: column; gap: var(--space-2); }
 .supplier-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
-.supplier-select__error { color: var(--color-danger); font-size: 0.8125rem; }
 </style>

@@ -60,7 +60,7 @@ async function onSubmit() {
                 </FormField>
                 <FormField v-if="!design && gabarits.length" as="group" :label="t('designs.form.declineOn')" optional>
                     <ToggleGroupRoot v-model="form.gabaritIds" type="multiple" class="design-form__gabarits" :aria-label="t('designs.form.gabarits')">
-                        <ToggleGroupItem v-for="gabarit in gabarits" :key="gabarit.id" :value="gabarit.id" class="design-form__gabarit">{{ gabarit.name }}</ToggleGroupItem>
+                        <ToggleGroupItem v-for="gabarit in gabarits" :key="gabarit.id" :value="gabarit.id" class="chip chip--accent">{{ gabarit.name }}</ToggleGroupItem>
                     </ToggleGroupRoot>
                 </FormField>
                 <FormField :label="t('designs.form.notes')" :error="errors.notes" optional>
@@ -78,19 +78,4 @@ async function onSubmit() {
 <style scoped>
 .design-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .design-form__gabarits { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-top: 0.125rem; }
-
-.design-form__gabarit {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    color: var(--color-muted);
-    cursor: pointer;
-    font-size: 0.875rem;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.design-form__gabarit:hover { border-color: var(--color-ink); color: var(--color-ink); }
-.design-form__gabarit:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.design-form__gabarit[data-state="on"] { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent-strong); font-weight: 500; }
 </style>

@@ -1,6 +1,7 @@
 <script setup>
 import { X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import Callout from '../ui/Callout.vue';
 defineProps({
     problem: { type: Object, required: true },
 });
@@ -9,7 +10,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <div class="import-problem" role="alert" data-test="import-problem">
+    <Callout tone="danger" role="alert" data-test="import-problem">
         <div class="import-problem__content">
             <p class="import-problem__message">{{ problem.message }}</p>
             <p v-if="problem.dates.length" class="import-problem__detail">
@@ -18,20 +19,10 @@ const { t } = useI18n();
             </p>
         </div>
         <button type="button" class="import-problem__close" :aria-label="t('import.problem.close')" @click="emit('dismiss')"><X size="1rem" aria-hidden="true" /></button>
-    </div>
+    </Callout>
 </template>
 
 <style scoped>
-.import-problem {
-    display: flex;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-danger);
-    border-left-width: 0.25rem;
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-}
-
 .import-problem__content { flex: 1; }
 .import-problem__message { margin: 0; font-weight: 600; color: var(--color-danger); }
 .import-problem__detail { margin: var(--space-1) 0 0; }

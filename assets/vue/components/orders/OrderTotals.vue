@@ -19,7 +19,7 @@ const { t } = useI18n();
             <dt>{{ t('orders.totals.subtotal') }}</dt>
             <dd><MoneyAmount :cents="subtotal" /></dd>
         </div>
-        <TransitionGroup name="order-totals__discount">
+        <TransitionGroup name="drop">
             <div v-for="discount in discounts" :key="discount.label" class="order-totals__row order-totals__row--discount">
                 <dt>
                     <a v-if="linkRules && discount.ruleId" :href="`/discounts?rule=${discount.ruleId}`" class="order-totals__rule">{{ discount.label }}</a>
@@ -53,9 +53,4 @@ const { t } = useI18n();
     font-size: 1.1rem;
     font-weight: 700;
 }
-
-.order-totals__discount-enter-active,
-.order-totals__discount-leave-active { transition: opacity var(--transition), transform var(--transition); }
-.order-totals__discount-enter-from,
-.order-totals__discount-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 </style>

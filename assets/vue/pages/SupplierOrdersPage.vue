@@ -76,7 +76,7 @@ onMounted(async () => {
                 :aria-label="t('purchasing.page.filterLabel')"
                 @update:model-value="(value) => value && (status = value)"
             >
-                <ToggleGroupItem v-for="filter in filters" :key="filter.value" :value="filter.value" class="supplier-orders-page__filter">{{ filter.label }}</ToggleGroupItem>
+                <ToggleGroupItem v-for="filter in filters" :key="filter.value" :value="filter.value" class="chip">{{ filter.label }}</ToggleGroupItem>
             </ToggleGroupRoot>
             <SupplierOrderList :orders="visible" />
         </BaseCard>
@@ -92,18 +92,4 @@ onMounted(async () => {
 
 <style scoped>
 .supplier-orders-page__filters { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
-
-.supplier-orders-page__filter {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.supplier-orders-page__filter:hover { border-color: var(--color-ink); }
-.supplier-orders-page__filter:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.supplier-orders-page__filter[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 </style>

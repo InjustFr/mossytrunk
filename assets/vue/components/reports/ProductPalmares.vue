@@ -124,7 +124,6 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
 }
 
 .palmares__sort:hover { color: var(--color-ink); }
-.palmares__sort:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .palmares__sort[data-state='on'] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 
 .palmares__search {
@@ -202,7 +201,6 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
 }
 
 .palmares__more { align-self: flex-start; padding: 0; border: none; border-bottom: 0.0625rem dotted currentColor; background: none; color: var(--color-muted); font: inherit; font-size: 0.875rem; cursor: pointer; }
-.palmares__more:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 @media (max-width: 40rem) {
     .palmares__row { grid-template-columns: 1.5rem minmax(0, 1fr) 5.5rem; }

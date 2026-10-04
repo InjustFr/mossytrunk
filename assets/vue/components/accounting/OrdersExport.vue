@@ -34,7 +34,7 @@ const ready = computed(() => Boolean(range.value.from && range.value.to));
 <template>
     <div class="orders-export">
         <ToggleGroupRoot :model-value="choice" type="single" class="orders-export__presets" :aria-label="t('accounting.export.label')" @update:model-value="(value) => value && (choice = value)">
-            <ToggleGroupItem v-for="(preset, key) in presets" :key="key" :value="key" class="orders-export__preset">{{ t(preset.label) }}</ToggleGroupItem>
+            <ToggleGroupItem v-for="(preset, key) in presets" :key="key" :value="key" class="chip">{{ t(preset.label) }}</ToggleGroupItem>
         </ToggleGroupRoot>
         <div v-if="choice === 'custom'" class="orders-export__custom">
             <BaseDateRangePicker v-model:start="customFrom" v-model:end="customTo" :aria-label="t('accounting.export.custom')" />
@@ -55,19 +55,6 @@ const ready = computed(() => Boolean(range.value.from && range.value.to));
 .orders-export { display: flex; flex-direction: column; gap: var(--space-4); }
 .orders-export__presets { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
-.orders-export__preset {
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.orders-export__preset:hover { border-color: var(--color-ink); }
-.orders-export__preset:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.orders-export__preset[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 .orders-export__custom { max-width: 24rem; }
 .orders-export__footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .orders-export__summary { margin: 0; color: var(--color-muted); font-size: 0.9rem; }

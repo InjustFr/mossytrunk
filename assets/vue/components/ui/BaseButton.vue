@@ -40,7 +40,6 @@ defineProps({
 }
 
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
-.button:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 
 .button--primary { background: var(--color-accent); color: var(--color-on-accent); }
 .button--primary:hover:not(:disabled) { background: var(--color-accent-strong); }

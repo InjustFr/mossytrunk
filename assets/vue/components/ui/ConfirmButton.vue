@@ -59,7 +59,7 @@ const emit = defineEmits(['confirm']);
     background: var(--color-backdrop);
 }
 
-.confirm-dialog[data-state="open"] { animation: confirm-dialog-fade var(--transition); }
+.confirm-dialog[data-state="open"] { animation: fade-in var(--transition); }
 
 .confirm-dialog__panel {
     display: flex;
@@ -74,12 +74,9 @@ const emit = defineEmits(['confirm']);
 }
 
 .confirm-dialog__panel:focus { outline: none; }
-.confirm-dialog__panel[data-state="open"] { animation: confirm-dialog-rise var(--transition); }
+.confirm-dialog__panel[data-state="open"] { animation: rise-in var(--transition); }
 
 .confirm-dialog__title { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 1.25rem; }
 .confirm-dialog__message { margin: 0; color: var(--color-muted); }
 .confirm-dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
-
-@keyframes confirm-dialog-fade { from { opacity: 0; } }
-@keyframes confirm-dialog-rise { from { transform: translateY(0.5rem) scale(0.98); } }
 </style>

@@ -95,7 +95,7 @@ const selected = computed({
 .select[data-state="open"] {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .select__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -115,7 +115,7 @@ const selected = computed({
     border: 0.0625rem solid var(--color-border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
-    animation: select-in var(--transition);
+    animation: drop-in var(--transition);
 }
 
 .select__viewport { padding: var(--space-1); }
@@ -138,8 +138,4 @@ const selected = computed({
 .select__item[data-state="checked"] { color: var(--color-accent-strong); font-weight: 600; }
 .select__item[data-disabled] { color: var(--color-subtle); cursor: default; }
 .select__indicator { display: inline-flex; color: var(--color-accent); }
-
-@keyframes select-in {
-    from { opacity: 0; transform: translateY(-0.25rem); }
-}
 </style>

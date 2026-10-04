@@ -7,6 +7,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormDisclosure from '../ui/FormDisclosure.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import ProductTag from './ProductTag.vue';
@@ -115,7 +116,7 @@ async function onSubmit() {
 <template>
     <form class="product-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="product-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
 
             <ProductTag :name="displayName" :reference="form.reference" :price="supply ? null : form.sellingPrice" :variants="form.variants" :color="type?.color" />
 
@@ -179,11 +180,4 @@ async function onSubmit() {
 .product-form__price,
 .product-form__threshold { max-width: 11rem; }
 .product-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; color: var(--color-text); }
-.product-form__error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
 </style>

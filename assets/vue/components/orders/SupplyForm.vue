@@ -5,6 +5,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 
@@ -45,7 +46,7 @@ async function onSubmit() {
 <template>
     <form class="supply-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="supply-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <FormSection :description="intro">
                 <FormField as="group" :label="t('orders.supplies.supply')" :error="errors.supplyId">
                     <BaseSelect v-model="form.supplyId" :options="supplyOptions" :aria-label="t('orders.supplies.supply')" class="supply-form__select" />
@@ -69,5 +70,4 @@ async function onSubmit() {
 .supply-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .supply-form__select { max-width: 18rem; }
 .supply-form__quantity { max-width: 8rem; }
-.supply-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

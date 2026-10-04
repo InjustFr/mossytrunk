@@ -3,6 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import FieldError from '../ui/FieldError.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { nextTypeColor } from '../../composables/useTypeColor.js';
@@ -91,7 +92,7 @@ function cancel() {
                 <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('products.types.createShort') }}</BaseButton>
             </div>
         </div>
-        <span v-if="error" class="type-select__error" role="alert">{{ error }}</span>
+        <FieldError v-if="error">{{ error }}</FieldError>
     </div>
 </template>
 
@@ -99,5 +100,4 @@ function cancel() {
 .type-select { display: flex; flex-direction: column; gap: var(--space-1); }
 .type-select__create { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
 .type-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
-.type-select__error { color: var(--color-danger); font-size: 0.85rem; }
 </style>

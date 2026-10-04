@@ -1,6 +1,7 @@
 <script setup>
 import { Label } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
+import FieldError from './FieldError.vue';
 
 defineProps({
     label: { type: String, required: true },
@@ -19,7 +20,7 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
         <span class="form-field__label">{{ label }}<span v-if="optional" class="form-field__optional">{{ t('ui.form.optional') }}</span></span>
         <span class="form-field__control">
             <slot />
-            <span v-if="error" class="form-field__error" role="alert">{{ error }}</span>
+            <FieldError v-if="error">{{ error }}</FieldError>
             <span v-else-if="hint" class="form-field__hint">{{ hint }}</span>
         </span>
     </Label>
@@ -27,7 +28,7 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
         <span :id="id" class="form-field__label">{{ label }}<span v-if="optional" class="form-field__optional">{{ t('ui.form.optional') }}</span></span>
         <div class="form-field__control">
             <slot />
-            <span v-if="error" class="form-field__error" role="alert">{{ error }}</span>
+            <FieldError v-if="error">{{ error }}</FieldError>
             <span v-else-if="hint" class="form-field__hint">{{ hint }}</span>
         </div>
     </div>
@@ -69,12 +70,11 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
 .form-field :deep(textarea:focus) {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 0.1875rem var(--color-accent-soft);
+    box-shadow: var(--focus-ring);
 }
 
 .form-field--invalid :deep(input),
 .form-field--invalid :deep(select) { border-color: var(--color-danger); }
 
-.form-field__error { color: var(--color-danger); font-size: 0.85rem; }
 .form-field__hint { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
 </style>

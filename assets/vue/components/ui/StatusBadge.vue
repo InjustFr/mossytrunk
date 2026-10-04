@@ -14,7 +14,7 @@ defineProps({
     align-items: center;
     gap: var(--space-1);
     padding: 0.0625rem var(--space-2);
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-bg);
     color: var(--color-muted);
     font-size: 0.72rem;
@@ -26,4 +26,5 @@ defineProps({
 .status-badge--warning { background: var(--color-warning-soft); color: var(--color-warning); }
 .status-badge--danger { background: var(--color-danger-soft); color: var(--color-danger); }
 .status-badge--success { background: var(--color-success-soft); color: var(--color-success); }
+.status-badge--outline { background: none; box-shadow: inset 0 0 0 0.0625rem var(--color-border); }
 </style>

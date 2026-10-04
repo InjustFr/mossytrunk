@@ -2,6 +2,7 @@
 import { nextTick, ref } from 'vue';
 import { Archive, ArchiveRestore, Check, ChevronDown, ChevronUp, Pencil, Plus, Trash2, X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import FieldError from '../ui/FieldError.vue';
 import IconButton from '../ui/IconButton.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 
@@ -134,7 +135,7 @@ async function confirmRenaming() {
             >
             <IconButton :icon="Plus" :label="t('products.types.variants.add')" @click="add" />
         </div>
-        <span v-if="error" class="type-variants__error" role="alert">{{ error }}</span>
+        <FieldError v-if="error">{{ error }}</FieldError>
     </div>
 </template>
 
@@ -158,5 +159,4 @@ async function confirmRenaming() {
 .type-variants__row :deep(.icon-button:disabled) { opacity: 0.35; cursor: default; pointer-events: none; }
 .type-variants__new { display: flex; align-items: center; gap: var(--space-2); }
 .type-variants__new input { flex: 1; }
-.type-variants__error { color: var(--color-danger); font-size: 0.85rem; }
 </style>

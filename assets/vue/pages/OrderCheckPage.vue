@@ -96,7 +96,7 @@ onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));
 .order-check-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .order-check-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); }
 .order-check-page__progress { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
-.order-check-page__bar { flex: 1 1 12rem; height: 0.5rem; overflow: hidden; border-radius: 62.4375rem; background: var(--color-bg); }
+.order-check-page__bar { flex: 1 1 12rem; height: 0.5rem; overflow: hidden; border-radius: var(--radius-pill); background: var(--color-bg); }
 .order-check-page__fill { display: block; height: 100%; background: var(--color-accent); transition: width var(--transition); }
 .order-check-page__count { color: var(--color-ink); font-weight: 600; font-size: 0.9rem; }
 .order-check-page__filter { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; }

@@ -46,6 +46,5 @@ const placeholder = (token) => `{${token}}`;
 }
 
 .reference-tokens__token:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
-.reference-tokens__token:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .reference-tokens__code { color: var(--color-muted); font-size: 0.75rem; }
 </style>

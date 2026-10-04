@@ -63,7 +63,7 @@ function saving(rule) {
 
 <template>
     <EmptyState v-if="rules.length === 0">{{ t('discounts.list.empty') }}</EmptyState>
-    <TransitionGroup v-else name="discount-rule-list__item" tag="ul" class="discount-rule-list">
+    <TransitionGroup v-else name="drop" tag="ul" class="discount-rule-list">
         <li
             v-for="rule in rules"
             :key="rule.id"
@@ -155,14 +155,14 @@ function saving(rule) {
     gap: var(--space-2);
     padding: 0.125rem var(--space-3) 0.125rem var(--space-2);
     border: 0.0625rem solid var(--color-border);
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-bg);
 }
 
 .discount-rule-list__quantity { font-weight: 600; font-variant-numeric: tabular-nums; }
 .discount-rule-list__variant {
     padding: 0 var(--space-2);
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-surface);
     color: var(--color-muted);
     font-size: 0.8rem;
@@ -173,7 +173,7 @@ function saving(rule) {
 .discount-rule-list__arrow { color: var(--color-subtle); }
 .discount-rule-list__action {
     padding: 0.125rem var(--space-3);
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
     font-weight: 600;
@@ -191,11 +191,6 @@ function saving(rule) {
 .discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
 .discount-rule-list__toggle--expired { color: var(--color-muted); cursor: default; }
 .discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
-
-.discount-rule-list__item-enter-active,
-.discount-rule-list__item-leave-active { transition: opacity var(--transition), transform var(--transition); }
-.discount-rule-list__item-enter-from,
-.discount-rule-list__item-leave-to { opacity: 0; transform: translateY(-0.25rem); }
 
 @media (max-width: 50rem) {
     .discount-rule-list__item { grid-template-columns: minmax(0, 1fr) auto; }

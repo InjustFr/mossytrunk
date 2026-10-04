@@ -44,19 +44,19 @@ const selectedChip = computed({
         </ToggleGroupRoot>
         <input v-model="search" class="product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
         <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" :aria-label="t('products.filters.byType')">
-            <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="product-filters__chip">
+            <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="chip product-filters__chip">
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
             </ToggleGroupItem>
         </ToggleGroupRoot>
-        <Toggle v-if="lowStockCount > 0 || lowStock" v-model="lowStock" class="product-filters__missing product-filters__low-stock">
+        <Toggle v-if="lowStockCount > 0 || lowStock" v-model="lowStock" class="chip chip--warning product-filters__missing product-filters__low-stock">
             <PackageMinus size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.lowStock', lowStockCount) }}
         </Toggle>
-        <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="product-filters__missing">
+        <Toggle v-if="missingCostCount > 0 || missingCost" v-model="missingCost" class="chip chip--warning product-filters__missing">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.missingCost', missingCostCount) }}
         </Toggle>
-        <Toggle v-if="archivedCount > 0 || archived" v-model="archived" class="product-filters__archived">
+        <Toggle v-if="archivedCount > 0 || archived" v-model="archived" class="chip chip--quiet">
             <Archive size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.archived', archivedCount) }}
         </Toggle>
@@ -67,7 +67,7 @@ const selectedChip = computed({
             class="product-filters__chips product-filters__variants"
             :aria-label="t('products.filters.byVariant')"
         >
-            <ToggleGroupItem v-for="variant in variantOptions" :key="variant" :value="variant" class="product-filters__chip product-filters__chip--variant">{{ variant }}</ToggleGroupItem>
+            <ToggleGroupItem v-for="variant in variantOptions" :key="variant" :value="variant" class="chip chip--accent product-filters__variant">{{ variant }}</ToggleGroupItem>
         </ToggleGroupRoot>
     </div>
 </template>
@@ -90,63 +90,16 @@ const selectedChip = computed({
 }
 
 .product-filters__kind:hover { color: var(--color-ink); }
-.product-filters__kind:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .product-filters__kind[data-state="on"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 .product-filters__chips { display: flex; flex: 1 1 auto; gap: var(--space-2); flex-wrap: wrap; }
 
-.product-filters__chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background var(--transition), color var(--transition), border-color var(--transition);
-}
-
-.product-filters__chip:hover { border-color: var(--color-ink); }
-.product-filters__chip:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.product-filters__chip[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
+.product-filters__chip { gap: var(--space-2); }
 .product-filters__variants { flex-basis: 100%; }
-.product-filters__chip--variant { padding: 0.125rem var(--space-3); font-size: 0.8rem; }
-.product-filters__chip--variant[data-state="on"] { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-accent-strong); }
+.product-filters__variant { padding: 0.125rem var(--space-3); font-size: 0.8rem; }
 
-.product-filters__missing {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    margin-left: auto;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-warning);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    color: var(--color-warning);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition);
-}
+.product-filters__missing { margin-left: auto; }
 
 .product-filters__low-stock + .product-filters__missing { margin-left: 0; }
-.product-filters__missing[data-state="on"] { background: var(--color-warning); color: var(--color-surface); }
-
-.product-filters__archived {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 62.4375rem;
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition);
-}
-
-.product-filters__archived[data-state="on"] { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-surface); }
 
 .product-filters__search {
     min-height: 2.125rem;

@@ -18,13 +18,12 @@ import { SwitchRoot, SwitchThumb } from 'reka-ui';
     height: 1.25rem;
     padding: 0.125rem;
     border: none;
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-border-strong);
     cursor: pointer;
     transition: background var(--transition);
 }
 
-.switch:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
 .switch[data-state="checked"] { background: var(--color-accent); }
 
 .switch__thumb {

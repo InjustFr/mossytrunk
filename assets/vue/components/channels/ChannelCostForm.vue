@@ -6,6 +6,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormActions from '../ui/FormActions.vue';
+import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import { COST_KINDS } from '../../composables/useChannelCosts.js';
@@ -47,7 +48,7 @@ async function onSubmit() {
 <template>
     <form class="channel-cost-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
-            <p v-if="errors.form" class="channel-cost-form__error" role="alert">{{ errors.form }}</p>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <FormSection>
                 <FormField :label="t('channels.costs.label')" :error="errors.label">
                     <input v-model="form.label" type="text" required maxlength="100" :placeholder="t('channels.costs.labelPlaceholder')">
@@ -105,5 +106,4 @@ async function onSubmit() {
 .channel-cost-form__kind + .channel-cost-form__kind { border-left: 0.0625rem solid var(--color-border-strong); }
 .channel-cost-form__kind[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
 .channel-cost-form__kind:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
-.channel-cost-form__error { margin: 0; padding: var(--space-2) var(--space-3); background: var(--color-danger-soft); color: var(--color-danger); border-radius: var(--radius); }
 </style>

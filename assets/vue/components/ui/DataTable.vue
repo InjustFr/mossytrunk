@@ -65,7 +65,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 .data-table__thumb {
     position: relative;
     flex: 1;
-    border-radius: 62.4375rem;
+    border-radius: var(--radius-pill);
     background: var(--color-border-strong);
 }
 

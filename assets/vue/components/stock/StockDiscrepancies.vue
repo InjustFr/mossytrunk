@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { PackageSearch } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import Callout from '../ui/Callout.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatDateTime } from '../../composables/useDate.js';
@@ -20,7 +21,7 @@ const missedSales = computed(() => open.value.reduce((sum, line) => sum + line.m
 </script>
 
 <template>
-    <section v-if="open.length" class="stock-discrepancies" role="alert" aria-labelledby="stock-discrepancies-title">
+    <Callout v-if="open.length" as="section" role="alert" aria-labelledby="stock-discrepancies-title">
         <PackageSearch class="stock-discrepancies__icon" size="1.25rem" aria-hidden="true" />
         <div class="stock-discrepancies__content">
             <i18n-t id="stock-discrepancies-title" keypath="stock.discrepancies.title" :plural="units" tag="h3" class="stock-discrepancies__title" scope="global">
@@ -47,20 +48,10 @@ const missedSales = computed(() => open.value.reduce((sum, line) => sum + line.m
                 </li>
             </ul>
         </div>
-    </section>
+    </Callout>
 </template>
 
 <style scoped>
-.stock-discrepancies {
-    display: flex;
-    gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    border: 0.0625rem solid var(--color-warning);
-    border-left-width: 0.25rem;
-    border-radius: var(--radius);
-    background: var(--color-warning-soft);
-}
-
 .stock-discrepancies__icon { flex: none; color: var(--color-warning); }
 .stock-discrepancies__content { flex: 1; }
 .stock-discrepancies__title { margin: 0; color: var(--color-warning); font-size: 1rem; }

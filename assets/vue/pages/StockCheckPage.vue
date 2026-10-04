@@ -11,6 +11,7 @@ import { useEvent } from '../composables/useEvents.js';
 import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { visit } from '../composables/useNavigation.js';
+import FormError from '../components/ui/FormError.vue';
 
 const props = defineProps({
     eventId: { type: String, required: true },
@@ -67,7 +68,7 @@ onMounted(async () => {
             <p class="stock-check-page__intro">
                 {{ t('stock.check.intro') }}
             </p>
-            <p v-if="error" class="stock-check-page__error" role="alert">{{ error }}</p>
+            <FormError v-if="error" class="stock-check-page__error">{{ error }}</FormError>
             <div class="stock-check-page__filters">
                 <input v-model="search" class="stock-check-page__search" type="search" :placeholder="t('stock.check.searchPlaceholder')" :aria-label="t('stock.check.searchLabel')">
                 <label class="stock-check-page__sold-only"><BaseSwitch v-model="soldOnly" /> {{ t('stock.check.soldOnly') }}</label>
@@ -84,5 +85,5 @@ onMounted(async () => {
 .stock-check-page__search { min-height: 2.125rem; min-width: 13.75rem; padding: var(--space-1) var(--space-3); border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); }
 .stock-check-page__sold-only { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; }
 .stock-check-page__count { margin-left: auto; color: var(--color-muted); font-size: 0.85rem; }
-.stock-check-page__error { margin: 0 0 var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-danger-soft); color: var(--color-danger); }
+.stock-check-page__error { margin-bottom: var(--space-3); }
 </style>

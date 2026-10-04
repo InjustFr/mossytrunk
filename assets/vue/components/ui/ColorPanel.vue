@@ -54,8 +54,6 @@ const { t } = useI18n();
     box-shadow: 0 0 0 0.0625rem rgb(0 0 0 / 0.35);
 }
 
-.color-panel__thumb:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-
 .color-panel__row { display: flex; align-items: center; gap: var(--space-2); }
 .color-panel__preview { flex: none; width: 2.375rem; height: 2.375rem; border-radius: var(--radius); border: 0.0625rem solid var(--color-border); }
 .color-panel__field { flex: 1; }

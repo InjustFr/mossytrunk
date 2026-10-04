@@ -39,7 +39,7 @@ watch(visible, (value) => {
             {{ t('events.recap.showItems') }}
         </label>
 
-        <Transition name="order-recap__list">
+        <Transition name="fade">
             <div v-if="visible && groups.length" class="order-recap__list" data-test="order-recap">
                 <CollapsibleRoot v-for="group in groups" :key="group.type ?? ''" class="order-recap__group">
                     <CollapsibleTrigger class="order-recap__row order-recap__row--group">
@@ -124,9 +124,4 @@ button.order-recap__row:focus-visible { outline: 0.125rem solid var(--color-acce
 .order-recap__quantity,
 .order-recap__amount { text-align: right; font-variant-numeric: tabular-nums; }
 .order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
-
-.order-recap__list-enter-active,
-.order-recap__list-leave-active { transition: opacity var(--transition); }
-.order-recap__list-enter-from,
-.order-recap__list-leave-to { opacity: 0; }
 </style>

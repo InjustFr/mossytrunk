@@ -98,16 +98,14 @@ function focusFirstField(event) {
 
 .modal__body { padding: var(--space-5); overflow-y: auto; }
 
-.modal[data-state="open"] { animation: modal-fade-in var(--transition); }
+.modal[data-state="open"] { animation: fade-in var(--transition); }
 .modal[data-state="closed"] { animation: modal-fade-out var(--transition); }
-.modal--dialog .modal__panel[data-state="open"] { animation: modal-rise-in var(--transition); }
+.modal--dialog .modal__panel[data-state="open"] { animation: rise-in var(--transition); }
 .modal--dialog .modal__panel[data-state="closed"] { animation: modal-rise-out var(--transition); }
 .modal--drawer .modal__panel[data-state="open"] { animation: modal-slide-in var(--transition); }
 .modal--drawer .modal__panel[data-state="closed"] { animation: modal-slide-out var(--transition); }
 
-@keyframes modal-fade-in { from { opacity: 0; } }
 @keyframes modal-fade-out { to { opacity: 0; } }
-@keyframes modal-rise-in { from { transform: translateY(0.5rem) scale(0.98); } }
 @keyframes modal-rise-out { to { transform: translateY(0.5rem) scale(0.98); } }
 @keyframes modal-slide-in { from { transform: translateX(1.5rem); } }
 @keyframes modal-slide-out { to { transform: translateX(1.5rem); } }

@@ -112,8 +112,8 @@ function setChecked(id, checked) {
                 </td>
                 <td class="data-table__cell--number product-list__stock" :title="product.variants.length ? stockDetail(product) : null">
                     <button type="button" class="product-list__on-hand" :aria-label="t('products.list.stockHistory', { name: product.displayName })" @click="emit('history', product)">{{ stockOf(product).onHand }}</button>
-                    <StatusBadge v-if="stockOf(product).negative" tone="danger">{{ t('products.negative') }}</StatusBadge>
-                    <StatusBadge v-else-if="stockOf(product).low" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
+                    <StatusBadge v-if="stockOf(product).negative" tone="danger" class="product-list__flag">{{ t('products.negative') }}</StatusBadge>
+                    <StatusBadge v-else-if="stockOf(product).low" tone="warning" class="product-list__flag">{{ t('products.lowStock') }}</StatusBadge>
                 </td>
                 <td class="data-table__cell--number">
                     <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" :aria-label="t('products.list.unknownCost')" role="img" />
@@ -187,7 +187,6 @@ function setChecked(id, checked) {
     transition: border-color var(--transition);
 }
 .product-list__on-hand:hover { border-bottom-color: var(--color-ink); }
-.product-list__on-hand:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; }
-.product-list__stock .status-badge { margin-left: var(--space-1); }
+.product-list__flag { margin-left: var(--space-1); }
 .product-list__warning { margin-right: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>
