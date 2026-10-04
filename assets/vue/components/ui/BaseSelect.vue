@@ -43,22 +43,22 @@ const selected = computed({
 
 <template>
     <SelectRoot v-model="selected">
-        <SelectTrigger :class="['select', `select--${size}`]" v-bind="$attrs">
+        <SelectTrigger :class="['control', 'select', `select--${size}`]" v-bind="$attrs">
             <SelectValue class="select__value" :placeholder="placeholder ?? t('ui.select.placeholder')" />
             <ChevronDown class="select__chevron" size="1rem" aria-hidden="true" />
         </SelectTrigger>
         <SelectPortal>
-            <SelectContent class="select__content" position="popper" :side-offset="4">
+            <SelectContent class="popover select__content" position="popper" :side-offset="4">
                 <SelectViewport class="select__viewport">
                     <SelectItem
                         v-for="item in items"
                         :key="item.itemValue"
                         :value="item.itemValue"
                         :disabled="item.disabled"
-                        class="select__item"
+                        class="popover__item"
                     >
                         <SelectItemText>{{ item.label }}</SelectItemText>
-                        <SelectItemIndicator class="select__indicator">
+                        <SelectItemIndicator class="popover__indicator">
                             <Check size="0.875rem" aria-hidden="true" />
                         </SelectItemIndicator>
                     </SelectItem>
@@ -74,29 +74,14 @@ const selected = computed({
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    width: 100%;
-    min-height: 2.375rem;
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
     color: var(--color-text);
-    font: inherit;
     text-align: left;
     cursor: pointer;
-    transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .select--small { width: auto; min-height: 2rem; padding: var(--space-1) var(--space-2); }
 
 .select:hover { border-color: var(--color-ink); }
-
-.select:focus-visible,
-.select[data-state="open"] {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: var(--focus-ring);
-}
 
 .select__value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .select[data-placeholder] .select__value { color: var(--color-subtle); }
@@ -107,35 +92,12 @@ const selected = computed({
 <style>
 
 .select__content {
-    z-index: 60;
     min-width: var(--reka-select-trigger-width);
     max-height: var(--reka-select-content-available-height);
     overflow: hidden;
-    background: var(--color-surface);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    animation: drop-in var(--transition);
 }
 
 .select__viewport { padding: var(--space-1); }
 
-.select__item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-2) var(--space-3);
-    border-radius: calc(var(--radius) - 0.125rem);
-    color: var(--color-text);
-    cursor: pointer;
-    user-select: none;
-    outline: none;
-}
 
-.select__item[data-highlighted] { background: var(--color-bg); }
-.select__item[data-state="checked"] { color: var(--color-accent-strong); font-weight: 600; }
-.select__item[data-disabled] { color: var(--color-subtle); cursor: default; }
-.select__indicator { display: inline-flex; color: var(--color-accent); }
 </style>

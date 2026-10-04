@@ -81,5 +81,5 @@ async function onSubmit() {
 <style scoped>
 .restock-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .restock-form :deep(.restock-form__narrow) { max-width: 11rem; }
-.restock-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: var(--color-text); }
+.restock-form__fact { margin: 0; padding-top: 0.5625rem; font-size: var(--font-size-md); font-variant-numeric: tabular-nums; color: var(--color-text); }
 </style>

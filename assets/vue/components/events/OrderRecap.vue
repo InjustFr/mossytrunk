@@ -85,7 +85,7 @@ watch(visible, (value) => {
 <style scoped>
 .order-recap { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); }
 
-.order-recap__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; color: var(--color-muted); cursor: pointer; }
+.order-recap__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); color: var(--color-muted); cursor: pointer; }
 
 .order-recap__list { border-top: 0.0625rem solid var(--color-border); }
 
@@ -110,7 +110,7 @@ button.order-recap__row {
 }
 
 button.order-recap__row:hover { background: var(--color-hover); }
-button.order-recap__row:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
+button.order-recap__row:focus-visible { outline-offset: -0.125rem; }
 
 .order-recap__row--group { font-weight: 600; }
 .order-recap__label--type { display: inline-flex; align-items: center; gap: var(--space-2); }
@@ -122,6 +122,6 @@ button.order-recap__row:focus-visible { outline: 0.125rem solid var(--color-acce
 .order-recap__row[data-state="open"] > .order-recap__chevron { transform: rotate(90deg); }
 
 .order-recap__quantity,
-.order-recap__amount { text-align: right; font-variant-numeric: tabular-nums; }
+.order-recap__amount { text-align: right; }
 .order-recap__warning { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

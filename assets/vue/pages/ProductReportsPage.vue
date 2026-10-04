@@ -59,7 +59,7 @@ onMounted(() => Promise.all([loadReport(), loadStory()]));
 .product-reports__summary { max-width: 46rem; margin: 0; font-family: var(--font-display); font-size: 1.5rem; line-height: 1.3; color: var(--color-ink); }
 .product-reports__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); gap: var(--space-6); align-items: start; }
 .product-reports__story { position: sticky; top: var(--space-4); max-height: calc(100vh - var(--space-6)); overflow-y: auto; }
-.product-reports__hint { margin: var(--space-6) 0 0; padding: var(--space-5); border: 0.0625rem dashed var(--color-border-strong); border-radius: var(--radius); color: var(--color-muted); font-size: 0.9375rem; }
+.product-reports__hint { margin: var(--space-6) 0 0; padding: var(--space-5); border: 0.0625rem dashed var(--color-border-strong); border-radius: var(--radius); color: var(--color-muted); font-size: var(--font-size); }
 
 @media (max-width: 64rem) {
     .product-reports__grid { grid-template-columns: 1fr; }

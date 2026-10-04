@@ -55,8 +55,8 @@ const missedSales = computed(() => open.value.reduce((sum, line) => sum + line.m
 .stock-discrepancies__icon { flex: none; color: var(--color-warning); }
 .stock-discrepancies__content { flex: 1; }
 .stock-discrepancies__title { margin: 0; color: var(--color-warning); font-size: 1rem; }
-.stock-discrepancies__hint { margin: var(--space-1) 0 var(--space-2); color: var(--color-text); font-size: 0.9rem; }
+.stock-discrepancies__hint { margin: var(--space-1) 0 var(--space-2); color: var(--color-text); font-size: var(--font-size-md); }
 .stock-discrepancies__lines { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 .stock-discrepancies__line { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
-.stock-discrepancies__date { color: var(--color-muted); font-size: 0.8rem; }
+.stock-discrepancies__date { color: var(--color-muted); font-size: var(--font-size-sm); }
 </style>

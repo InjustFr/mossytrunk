@@ -111,25 +111,25 @@ onMounted(() => Promise.all([load(), loadPotential()]));
 .accounting-page { display: flex; flex-direction: column; gap: var(--space-6); }
 .accounting-page__urssaf { display: flex; flex-direction: column; gap: var(--space-4); }
 .accounting-page__heading { margin: 0; font-size: 1.35rem; }
-.accounting-page__pending { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0; color: var(--color-warning); font-size: 0.9rem; }
+.accounting-page__pending { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin: 0; color: var(--color-warning); font-size: var(--font-size-md); }
 .accounting-page__pending-link { padding: 0; border: none; border-bottom: 0.0625rem dotted currentColor; background: none; color: inherit; font: inherit; cursor: pointer; }
 .accounting-page__year { display: flex; flex-direction: column; gap: var(--space-2); }
-.accounting-page__year-total { margin: 0; color: var(--color-muted); font-size: 0.85rem; }
+.accounting-page__year-total { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 
 .accounting-page__periodicity { display: inline-flex; padding: 0.125rem; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); background: var(--color-surface); }
 
 .accounting-page__periodicity-item {
     padding: var(--space-1) var(--space-3);
     border: none;
-    border-radius: calc(var(--radius) - 0.125rem);
+    border-radius: var(--radius-inner);
     background: none;
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: var(--font-size-md);
     cursor: pointer;
     transition: background var(--transition), color var(--transition);
 }
 
-.accounting-page__periodicity-item:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.0625rem; }
+.accounting-page__periodicity-item:focus-visible { outline-offset: 0.0625rem; }
 .accounting-page__periodicity-item[data-state="on"] { background: var(--color-ink); color: var(--color-surface); }
 </style>

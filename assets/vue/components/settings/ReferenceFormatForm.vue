@@ -6,6 +6,7 @@ import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
+import Notice from '../ui/Notice.vue';
 import ReferenceTokens from './ReferenceTokens.vue';
 import ServiceOptions from './ServiceOptions.vue';
 
@@ -104,9 +105,9 @@ async function onSubmit() {
             <FormField v-if="format.existing > 0" as="group" :label="t('settings.references.form.scope')">
                 <ServiceOptions v-model="scope" :label="t('settings.references.form.scope')" :options="scopes" />
             </FormField>
-            <p v-if="renumbering && format.kind === 'product'" class="reference-format-form__warning">
+            <Notice v-if="renumbering && format.kind === 'product'" class="reference-format-form__warning">
                 <TriangleAlert size="1rem" aria-hidden="true" /> {{ t('settings.references.form.skuWarning') }}
-            </p>
+            </Notice>
 
             <FormActions>
                 <BaseButton variant="ghost" @click="emit('cancel')">{{ t('ui.cancel') }}</BaseButton>
@@ -127,7 +128,7 @@ async function onSubmit() {
 <style scoped>
 .reference-format-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .reference-format-form__input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.reference-format-form__example { margin: calc(-1 * var(--space-2)) 0 0; color: var(--color-muted); font-size: 0.875rem; }
+.reference-format-form__example { margin: calc(-1 * var(--space-2)) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .reference-format-form__example strong { color: var(--color-ink); font-weight: 500; overflow-wrap: anywhere; }
 
 .reference-format-form__restore {
@@ -140,7 +141,7 @@ async function onSubmit() {
     background: none;
     color: var(--color-accent);
     font: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     cursor: pointer;
 }
 
@@ -151,12 +152,8 @@ async function onSubmit() {
     display: flex;
     align-items: flex-start;
     gap: var(--space-2);
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-warning-soft);
     color: var(--color-ink);
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     line-height: 1.4;
 }
 </style>

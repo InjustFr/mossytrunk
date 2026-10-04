@@ -74,7 +74,7 @@ const headers = [
                 <td class="data-table__cell--number event-comparison__result"><MoneyAmount :cents="event.result" signed :data-test="`event-result-${event.id}`" /></td>
                 <td class="data-table__cell--number">
                     <span class="event-comparison__margin">
-                        <span :class="['event-comparison__track', { 'event-comparison__track--loss': event.result < 0 }]" aria-hidden="true">
+                        <span :class="['track event-comparison__track', { 'track--loss': event.result < 0 }]" aria-hidden="true">
                             <span class="event-comparison__kept" :style="{ width: `${keptShare(event)}%` }" />
                         </span>
                         {{ formatRatio(event.result, event.turnover) }}
@@ -87,12 +87,11 @@ const headers = [
 </template>
 
 <style scoped>
-.event-comparison__location { display: block; color: var(--color-muted); font-size: 0.8rem; }
+.event-comparison__location { display: block; color: var(--color-muted); font-size: var(--font-size-sm); }
 .event-comparison__date { white-space: nowrap; }
 .event-comparison__result { font-weight: 600; }
 .event-comparison__margin { display: inline-flex; align-items: center; gap: var(--space-2); }
-.event-comparison__track { display: flex; width: 5rem; height: 0.375rem; overflow: hidden; border-radius: 0.1875rem; background: var(--color-border); }
-.event-comparison__track--loss { background: var(--color-danger-soft); box-shadow: inset 0 0 0 0.0625rem var(--color-danger); }
+.event-comparison__track { width: 5rem; height: 0.375rem; }
 .event-comparison__kept { background: var(--color-accent); }
 .event-comparison__missing { margin-left: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

@@ -62,11 +62,11 @@ function onSaved(name) {
                 <p class="product-types-modal__intro">{{ t('products.types.intro') }}</p>
                 <ProductTypeList v-if="activeTypes.length" :types="activeTypes" @edit="editing = $event" @archive="onArchive" @remove="onRemove" />
                 <EmptyState v-else>{{ t('products.types.empty') }}</EmptyState>
-                <div class="product-types-modal__actions">
+                <div class="actions-row">
                     <BaseButton variant="secondary" @click="editing = NEW"><Plus size="1rem" aria-hidden="true" /> {{ t('products.types.add') }}</BaseButton>
                 </div>
                 <section v-if="archivedTypes.length" class="product-types-modal__archived" aria-labelledby="archived-types-title">
-                    <h3 id="archived-types-title" class="product-types-modal__archived-title">{{ t('products.types.archivedTitle') }}</h3>
+                    <h3 id="archived-types-title" class="eyebrow">{{ t('products.types.archivedTitle') }}</h3>
                     <p class="product-types-modal__intro">{{ t('products.types.archivedHint') }}</p>
                     <ProductTypeList :types="archivedTypes" @restore="onRestore" @remove="onRemove" />
                 </section>
@@ -88,9 +88,7 @@ function onSaved(name) {
 
 <style scoped>
 .product-types-modal__step { display: flex; flex-direction: column; gap: var(--space-4); }
-.product-types-modal__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.product-types-modal__actions { display: flex; justify-content: flex-end; }
+.product-types-modal__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .product-types-modal__archived { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-4); border-top: 0.0625rem solid var(--color-border); }
-.product-types-modal__archived-title { margin: 0; color: var(--color-muted); font-family: var(--font-body); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 
 </style>

@@ -1,13 +1,7 @@
-<template>
-    <p class="form-error" role="alert"><slot /></p>
-</template>
+<script setup>
+import Notice from './Notice.vue';
+</script>
 
-<style scoped>
-.form-error {
-    margin: 0;
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius);
-    background: var(--color-danger-soft);
-    color: var(--color-danger);
-}
-</style>
+<template>
+    <Notice tone="danger" role="alert"><slot /></Notice>
+</template>

@@ -74,5 +74,5 @@ onMounted(() => Promise.all([salesChannels.load(), services.load()]));
 </template>
 
 <style scoped>
-.channels-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
+.channels-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

@@ -34,7 +34,7 @@ defineProps({
     border-radius: var(--radius);
     cursor: pointer;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
     letter-spacing: 0.009rem;
     transition: background var(--transition), border-color var(--transition), color var(--transition), opacity var(--transition);
 }

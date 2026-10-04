@@ -34,13 +34,13 @@ const open = defineModel('open', { type: Boolean, default: false });
     border: none;
     background: none;
     color: var(--color-text);
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     font-weight: 500;
     text-align: left;
     cursor: pointer;
 }
 
-.form-disclosure__trigger:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; border-radius: var(--radius); }
+.form-disclosure__trigger:focus-visible { border-radius: var(--radius); }
 .form-disclosure__chevron { align-self: center; flex-shrink: 0; color: var(--color-muted); transition: transform var(--transition); }
 .form-disclosure__trigger[data-state="open"] .form-disclosure__chevron { transform: rotate(90deg); }
 .form-disclosure__summary { overflow: hidden; color: var(--color-muted); font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }

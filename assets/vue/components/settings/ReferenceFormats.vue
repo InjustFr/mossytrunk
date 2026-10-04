@@ -37,8 +37,8 @@ const emit = defineEmits(['edit']);
 }
 
 .reference-formats__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.reference-formats__title { margin: 0; font-size: 0.9375rem; }
-.reference-formats__template { font-size: 0.875rem; color: var(--color-ink); overflow-wrap: anywhere; }
-.reference-formats__example { margin: 0; color: var(--color-muted); font-size: 0.8125rem; }
+.reference-formats__title { margin: 0; font-size: var(--font-size); }
+.reference-formats__template { font-size: var(--font-size-md); color: var(--color-ink); overflow-wrap: anywhere; }
+.reference-formats__example { margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 .reference-formats__example strong { color: var(--color-ink); font-weight: 500; }
 </style>

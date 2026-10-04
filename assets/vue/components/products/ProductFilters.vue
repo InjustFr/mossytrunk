@@ -42,7 +42,7 @@ const selectedChip = computed({
         <ToggleGroupRoot v-model="selectedKind" type="single" class="product-filters__kinds" :aria-label="t('products.filters.byKind')">
             <ToggleGroupItem v-for="option in KIND_OPTIONS" :key="option" :value="option" class="product-filters__kind">{{ t(`products.filters.kinds.${option}`) }}</ToggleGroupItem>
         </ToggleGroupRoot>
-        <input v-model="search" class="product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
+        <input v-model="search" class="control control--compact product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
         <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" :aria-label="t('products.filters.byType')">
             <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="chip product-filters__chip">
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
@@ -84,7 +84,7 @@ const selectedChip = computed({
     background: none;
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     cursor: pointer;
     transition: color var(--transition), border-color var(--transition);
 }
@@ -95,17 +95,11 @@ const selectedChip = computed({
 
 .product-filters__chip { gap: var(--space-2); }
 .product-filters__variants { flex-basis: 100%; }
-.product-filters__variant { padding: 0.125rem var(--space-3); font-size: 0.8rem; }
+.product-filters__variant { padding: 0.125rem var(--space-3); font-size: var(--font-size-sm); }
 
 .product-filters__missing { margin-left: auto; }
 
 .product-filters__low-stock + .product-filters__missing { margin-left: 0; }
 
-.product-filters__search {
-    min-height: 2.125rem;
-    min-width: 13.75rem;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-}
+.product-filters__search { min-width: 13.75rem; }
 </style>

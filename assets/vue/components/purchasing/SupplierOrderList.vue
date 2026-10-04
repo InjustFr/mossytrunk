@@ -50,7 +50,7 @@ defineProps({
 </template>
 
 <style scoped>
-.supplier-order-list__supplier-reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
-.supplier-order-list__planned { display: block; color: var(--color-muted); font-size: 0.75rem; }
-.supplier-order-list__lines { margin-left: var(--space-2); color: var(--color-muted); font-size: 0.8rem; }
+.supplier-order-list__supplier-reference { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
+.supplier-order-list__planned { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
+.supplier-order-list__lines { margin-left: var(--space-2); color: var(--color-muted); font-size: var(--font-size-sm); }
 </style>

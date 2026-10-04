@@ -112,7 +112,7 @@ async function onSubmit() {
     border-radius: var(--radius);
     background: var(--color-bg);
     color: var(--color-ink);
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     overflow-wrap: anywhere;
     user-select: all;
 }

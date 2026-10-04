@@ -33,7 +33,7 @@ const difference = (line, count) => (count === null || count === undefined ? nul
                 <td class="data-table__cell--number">{{ line.soldAtEvent || '—' }}</td>
                 <td class="data-table__cell--number">{{ line.onHand }}</td>
                 <td class="stock-count-table__count">
-                    <BaseNumberField v-model="counts[keyOf(line)]" :min="0" :label="t('stock.count.countedOf', { label: line.label })" />
+                    <BaseNumberField v-model="counts[keyOf(line)]" :min="0" class="stock-count-table__input" :label="t('stock.count.countedOf', { label: line.label })" />
                 </td>
                 <td class="data-table__cell--number">
                     <template v-if="difference(line, counts[keyOf(line)]) === null">—</template>
@@ -48,5 +48,5 @@ const difference = (line, count) => (count === null || count === undefined ? nul
 
 <style scoped>
 .stock-count-table__count { width: 10rem; }
-.stock-count-table__count :deep(.number-field) { max-width: 10rem; }
+.stock-count-table__input { max-width: 10rem; }
 </style>

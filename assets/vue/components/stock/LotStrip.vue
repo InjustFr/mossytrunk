@@ -53,6 +53,6 @@ const describe = (lot) => t('stock.lots.describe', { remaining: lot.remaining, c
 .lot-strip__lot:only-child { border-radius: var(--radius); }
 .lot-strip__lot--next { border-color: var(--color-accent); background: var(--color-accent-soft); }
 .lot-strip__quantity { font-weight: 600; }
-.lot-strip__cost { color: var(--color-muted); font-size: 0.75rem; }
-.lot-strip__legend { display: flex; justify-content: space-between; margin: var(--space-1) 0 0; color: var(--color-subtle); font-size: 0.72rem; }
+.lot-strip__cost { color: var(--color-muted); font-size: var(--font-size-xs); }
+.lot-strip__legend { display: flex; justify-content: space-between; margin: var(--space-1) 0 0; color: var(--color-subtle); font-size: var(--font-size-2xs); }
 </style>

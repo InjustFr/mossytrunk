@@ -15,12 +15,12 @@ function onOpen(open) {
 
 <template>
     <PopoverRoot @update:open="onOpen">
-        <PopoverTrigger class="color-picker" :aria-label="label">
+        <PopoverTrigger class="control color-picker" :aria-label="label">
             <span class="color-picker__swatch" :style="{ background: color }" aria-hidden="true" />
             <span class="color-picker__value">{{ color.toUpperCase() }}</span>
         </PopoverTrigger>
         <PopoverPortal>
-            <PopoverContent class="color-picker__content" side="bottom" align="start" :side-offset="8" :aria-label="label">
+            <PopoverContent class="popover color-picker__content" side="bottom" align="start" :side-offset="8" :aria-label="label">
                 <ColorPanel v-model="color" />
             </PopoverContent>
         </PopoverPortal>
@@ -30,34 +30,24 @@ function onOpen(open) {
 <style scoped>
 .color-picker {
     display: inline-flex;
+    width: auto;
     align-items: center;
     gap: var(--space-2);
-    min-height: 2.375rem;
     padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
     color: var(--color-ink);
-    font: inherit;
     cursor: pointer;
-    transition: border-color var(--transition);
 }
 
 .color-picker:hover,
 .color-picker[data-state='open'] { border-color: var(--color-ink); }
 
-.color-picker__swatch { width: 1.75rem; height: 1.75rem; border: 0.0625rem solid var(--color-border); border-radius: calc(var(--radius) - 0.125rem); }
+.color-picker__swatch { width: 1.75rem; height: 1.75rem; border: 0.0625rem solid var(--color-border); border-radius: var(--radius-inner); }
 .color-picker__value { font-variant-numeric: tabular-nums; }
 </style>
 
 <style>
 .color-picker__content {
-    z-index: 60;
     width: 15rem;
     padding: var(--space-3);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    box-shadow: var(--shadow);
 }
 </style>

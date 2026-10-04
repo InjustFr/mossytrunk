@@ -41,16 +41,16 @@ const { t } = useI18n();
 <style scoped>
 .stock-potential { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin: 0; }
 .stock-potential__figure { display: flex; flex-direction: column; gap: 0.125rem; }
-.stock-potential__figure dt { color: var(--color-muted); font-size: 0.8rem; }
+.stock-potential__figure dt { color: var(--color-muted); font-size: var(--font-size-sm); }
 .stock-potential__figure dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stock-potential__figure--result dd { color: var(--color-accent-strong); }
 
 .stock-potential--detailed { flex-direction: column; flex-wrap: nowrap; gap: var(--space-1); max-width: 24rem; }
 .stock-potential--detailed .stock-potential__figure { flex-direction: row; justify-content: space-between; }
-.stock-potential--detailed .stock-potential__figure dt { color: var(--color-text); font-size: 0.9375rem; }
+.stock-potential--detailed .stock-potential__figure dt { color: var(--color-text); font-size: var(--font-size); }
 .stock-potential--detailed .stock-potential__figure dd { font-weight: 400; }
 .stock-potential--detailed .stock-potential__figure--result { padding-top: var(--space-2); border-top: 0.0625rem solid var(--color-border); }
 .stock-potential--detailed .stock-potential__figure--result dt,
 .stock-potential--detailed .stock-potential__figure--result dd { font-weight: 700; }
-.stock-potential__note { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 0.8125rem; }
+.stock-potential__note { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 </style>

@@ -90,8 +90,8 @@ async function onSubmit() {
 .product-design__link:hover { border-color: var(--color-ink); }
 .product-design__link svg { flex: none; color: var(--color-accent); }
 .product-design__link strong { display: block; font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; }
-.product-design__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.product-design__hint { display: block; color: var(--color-muted); font-size: 0.8rem; }
+.product-design__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
+.product-design__hint { display: block; color: var(--color-muted); font-size: var(--font-size-sm); }
 .product-design__choices { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .product-design__form { display: flex; flex-direction: column; gap: var(--space-4); }
 </style>

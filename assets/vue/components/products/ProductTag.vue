@@ -41,7 +41,7 @@ const { t } = useI18n();
     padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + 1.25rem);
     border: 0.0625rem solid var(--color-border-strong);
     border-left: 0.3125rem solid var(--tag-color);
-    border-radius: 0.25rem var(--radius) var(--radius) 0.25rem;
+    border-radius: var(--radius-sm) var(--radius) var(--radius) var(--radius-sm);
     background: var(--color-surface);
     transition: border-color var(--transition);
 }
@@ -77,7 +77,7 @@ const { t } = useI18n();
     flex-wrap: wrap;
     gap: var(--space-1) var(--space-3);
     color: var(--color-muted);
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     font-variant-numeric: tabular-nums;
 }
 

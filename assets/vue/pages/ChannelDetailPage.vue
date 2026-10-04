@@ -163,7 +163,7 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                     <BaseButton variant="secondary" :disabled="shownProducts.length === 0" @click="batchOpen = true">{{ t('channels.prices.batch') }}</BaseButton>
                 </template>
                 <p class="channel-page__intro">{{ channel.main ? t('channels.prices.mainIntro') : t('channels.prices.intro', { main: main.name }) }}</p>
-                <input v-model="search" class="channel-page__search" type="search" :placeholder="t('channels.prices.search')" :aria-label="t('channels.prices.search')">
+                <input v-model="search" class="control control--compact channel-page__search" type="search" :placeholder="t('channels.prices.search')" :aria-label="t('channels.prices.search')">
                 <ChannelPrices :channel="channel" :main="main" :products="shownProducts" @edit="openPrice" />
             </BaseCard>
         </div>
@@ -210,17 +210,9 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
 <style scoped>
 .channel-page { display: flex; flex-direction: column; gap: var(--space-5); }
 .channel-page__facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-4) var(--space-5); margin: 0; }
-.channel-page__facts dt { color: var(--color-muted); font-size: 0.8rem; }
+.channel-page__facts dt { color: var(--color-muted); font-size: var(--font-size-sm); }
 .channel-page__facts dd { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin: 0; font-weight: 600; }
-.channel-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
+.channel-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: var(--font-size-md); }
 
-.channel-page__search {
-    width: 100%;
-    max-width: 20rem;
-    min-height: 2.125rem;
-    margin-bottom: var(--space-4);
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-}
+.channel-page__search { width: 100%; max-width: 20rem; margin-bottom: var(--space-4); }
 </style>

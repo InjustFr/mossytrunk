@@ -48,7 +48,7 @@ const pick = (name) => save(themeNamed(name));
         </RadioGroupRoot>
         <div class="appearance__colors">
             <div class="appearance__color">
-                <span class="appearance__label" aria-hidden="true">{{ t('settings.appearance.background') }}</span>
+                <span class="eyebrow" aria-hidden="true">{{ t('settings.appearance.background') }}</span>
                 <BaseColorPicker
                     :model-value="theme.background"
                     :label="t('settings.appearance.background')"
@@ -57,7 +57,7 @@ const pick = (name) => save(themeNamed(name));
                 />
             </div>
             <div class="appearance__color">
-                <span class="appearance__label" aria-hidden="true">{{ t('settings.appearance.accent') }}</span>
+                <span class="eyebrow" aria-hidden="true">{{ t('settings.appearance.accent') }}</span>
                 <BaseColorPicker
                     :model-value="theme.accent"
                     :label="t('settings.appearance.accent')"
@@ -97,13 +97,12 @@ const pick = (name) => save(themeNamed(name));
     height: 3rem;
     padding: var(--space-2);
     border: 0.0625rem solid var(--color-border);
-    border-radius: calc(var(--radius) - 0.125rem);
+    border-radius: var(--radius-inner);
 }
 
-.appearance__sample-accent { width: 40%; height: 0.5rem; border-radius: 0.25rem; }
-.appearance__name { font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
+.appearance__sample-accent { width: 40%; height: 0.5rem; border-radius: var(--radius-sm); }
+.appearance__name { font-size: var(--font-size-md); font-weight: 500; color: var(--color-ink); }
 
 .appearance__colors { display: flex; flex-wrap: wrap; gap: var(--space-5); }
 .appearance__color { display: flex; flex-direction: column; gap: var(--space-2); }
-.appearance__label { color: var(--color-muted); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 </style>

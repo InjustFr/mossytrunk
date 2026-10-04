@@ -5,6 +5,7 @@ import { CircleCheck } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import ConfirmButton from '../ui/ConfirmButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
+import Notice from '../ui/Notice.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import { formatDate, formatDateTime, fromToday } from '../../composables/useDate.js';
 import { intlLocale } from '../../i18n/locale.js';
@@ -50,10 +51,12 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
             </div>
         </dl>
 
-        <I18nT v-if="period.status === 'changed'" keypath="accounting.slip.changed" tag="p" class="declaration-slip__notice" role="status">
-            <template #amount><MoneyAmount :cents="period.declaredTurnover" /></template>
-            <template #date>{{ formatDateTime(period.declaredAt) }}</template>
-        </I18nT>
+        <Notice v-if="period.status === 'changed'" role="status" class="declaration-slip__notice">
+            <I18nT keypath="accounting.slip.changed">
+                <template #amount><MoneyAmount :cents="period.declaredTurnover" /></template>
+                <template #date>{{ formatDateTime(period.declaredAt) }}</template>
+            </I18nT>
+        </Notice>
         <p v-else-if="period.status === 'declared'" class="declaration-slip__done">
             <CircleCheck size="1rem" aria-hidden="true" /> {{ t('accounting.slip.declaredOn', { date: formatDateTime(period.declaredAt) }) }}
         </p>
@@ -61,7 +64,7 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
         <p v-else-if="!over" class="declaration-slip__hint">{{ t('accounting.slip.current') }}</p>
         <p v-else-if="period.turnover === 0" class="declaration-slip__hint">{{ t('accounting.slip.noSales') }}</p>
 
-        <footer class="declaration-slip__actions">
+        <footer class="actions-row">
             <ConfirmButton
                 v-if="period.status === 'declared' || period.status === 'changed'"
                 variant="ghost"
@@ -91,7 +94,7 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
 
 .declaration-slip__header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .declaration-slip__period { margin: 0; font-size: 1.5rem; }
-.declaration-slip__dates { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.85rem; }
+.declaration-slip__dates { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
 
 .declaration-slip__line {
     display: flex;
@@ -106,18 +109,17 @@ const over = computed(() => !['current', 'upcoming', 'inactive'].includes(props.
 
 .declaration-slip__box { display: flex; flex-direction: column; }
 .declaration-slip__box-label { font-weight: 600; }
-.declaration-slip__box-hint { color: var(--color-muted); font-size: 0.85rem; }
+.declaration-slip__box-hint { color: var(--color-muted); font-size: var(--font-size-md); }
 .declaration-slip__amount { font-family: var(--font-display); font-size: 2.5rem; line-height: 1; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 
 .declaration-slip__facts { display: flex; gap: var(--space-6); flex-wrap: wrap; margin: 0; }
-.declaration-slip__facts dt { color: var(--color-muted); font-size: 0.8rem; }
+.declaration-slip__facts dt { color: var(--color-muted); font-size: var(--font-size-sm); }
 .declaration-slip__facts dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .declaration-slip__relative { color: var(--color-muted); font-weight: 400; }
 
-.declaration-slip__notice { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-warning-soft); color: var(--color-warning); font-size: 0.9rem; }
+.declaration-slip__notice { font-size: var(--font-size-md); }
 .declaration-slip__done { display: flex; align-items: center; gap: var(--space-2); margin: 0; color: var(--color-accent-strong); }
-.declaration-slip__hint { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.declaration-slip__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
+.declaration-slip__hint { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 
 @media (max-width: 40rem) {
     .declaration-slip__line { flex-direction: column; align-items: flex-start; }

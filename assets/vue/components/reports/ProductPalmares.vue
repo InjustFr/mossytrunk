@@ -50,7 +50,7 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
                 <ToggleGroupItem v-for="key in SORTS" :key="key" :value="key" class="palmares__sort">{{ t(`reports.palmares.sorts.${key}`) }}</ToggleGroupItem>
             </ToggleGroupRoot>
         </header>
-        <input v-model="search" class="palmares__search" type="search" :placeholder="t('reports.palmares.search')" :aria-label="t('reports.palmares.search')">
+        <input v-model="search" class="control control--compact palmares__search" type="search" :placeholder="t('reports.palmares.search')" :aria-label="t('reports.palmares.search')">
         <p v-if="sort === 'revenue'" class="palmares__legend">
             <span class="palmares__swatch palmares__swatch--revenue" aria-hidden="true" />{{ t('reports.palmares.legendRevenue') }}
             <span class="palmares__swatch palmares__swatch--discount" aria-hidden="true" />{{ t('reports.palmares.legendDiscount') }}
@@ -118,7 +118,7 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
     background: none;
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     cursor: pointer;
     transition: color var(--transition), border-color var(--transition);
 }
@@ -126,18 +126,10 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
 .palmares__sort:hover { color: var(--color-ink); }
 .palmares__sort[data-state='on'] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
 
-.palmares__search {
-    width: 100%;
-    max-width: 20rem;
-    min-height: 2.125rem;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-}
+.palmares__search { width: 100%; max-width: 20rem; }
 
-.palmares__none { margin: 0; color: var(--color-muted); font-size: 0.875rem; }
-.palmares__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0; color: var(--color-muted); font-size: 0.8125rem; }
+.palmares__none { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
+.palmares__legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 .palmares__swatch { display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 0.125rem; }
 .palmares__swatch + .palmares__swatch { margin-left: var(--space-2); }
 .palmares__swatch--revenue { background: var(--color-accent); }
@@ -169,18 +161,18 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
 }
 
 .palmares__row:hover { background: var(--color-surface); }
-.palmares__row:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
+.palmares__row:focus-visible { outline-offset: -0.125rem; }
 .palmares__row--selected { border-left-color: var(--color-accent); background: var(--color-surface); }
 .palmares__rank { color: var(--color-subtle); font-family: var(--font-display); font-size: 1.1rem; font-variant-numeric: tabular-nums; text-align: right; }
-.palmares__name { display: flex; flex-direction: column; min-width: 0; overflow: hidden; font-size: 0.9375rem; text-overflow: ellipsis; white-space: nowrap; }
-.palmares__meta { overflow: hidden; color: var(--color-muted); font-size: 0.75rem; text-overflow: ellipsis; }
+.palmares__name { display: flex; flex-direction: column; min-width: 0; overflow: hidden; font-size: var(--font-size); text-overflow: ellipsis; white-space: nowrap; }
+.palmares__meta { overflow: hidden; color: var(--color-muted); font-size: var(--font-size-xs); text-overflow: ellipsis; }
 .palmares__track { display: block; height: 0.875rem; }
 .palmares__bar { display: flex; height: 100%; min-width: 0.25rem; gap: 0.125rem; }
 .palmares__revenue { flex: none; height: 100%; background: var(--color-accent); border-radius: 0.125rem 0 0 0.125rem; }
-.palmares__discount { flex: 1 1 auto; height: 100%; border-radius: 0 0.25rem 0.25rem 0; }
+.palmares__discount { flex: 1 1 auto; height: 100%; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
 .palmares__revenue:only-child,
-.palmares__revenue--alone { flex: 1 1 auto; border-radius: 0.125rem 0.25rem 0.25rem 0.125rem; }
-.palmares__discount--alone { border-radius: 0.125rem 0.25rem 0.25rem 0.125rem; box-shadow: inset 0 0 0 0.0625rem var(--color-accent); }
+.palmares__revenue--alone { flex: 1 1 auto; border-radius: 0.125rem var(--radius-sm) var(--radius-sm) 0.125rem; }
+.palmares__discount--alone { border-radius: 0.125rem var(--radius-sm) var(--radius-sm) 0.125rem; box-shadow: inset 0 0 0 0.0625rem var(--color-accent); }
 .palmares__figure { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; white-space: nowrap; }
 
 .palmares__tooltip {
@@ -195,12 +187,12 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
     border-radius: var(--radius);
     background: var(--color-ink);
     color: var(--color-surface);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     white-space: nowrap;
     pointer-events: none;
 }
 
-.palmares__more { align-self: flex-start; padding: 0; border: none; border-bottom: 0.0625rem dotted currentColor; background: none; color: var(--color-muted); font: inherit; font-size: 0.875rem; cursor: pointer; }
+.palmares__more { align-self: flex-start; padding: 0; border: none; border-bottom: 0.0625rem dotted currentColor; background: none; color: var(--color-muted); font: inherit; font-size: var(--font-size-md); cursor: pointer; }
 
 @media (max-width: 40rem) {
     .palmares__row { grid-template-columns: 1.5rem minmax(0, 1fr) 5.5rem; }

@@ -13,7 +13,7 @@ const { t } = useI18n();
 
 <template>
     <div class="order-filters">
-        <input v-model="search" class="order-filters__search" type="search" :placeholder="t('orders.filters.searchPlaceholder')" :aria-label="t('orders.filters.searchLabel')">
+        <input v-model="search" class="control control--compact order-filters__search" type="search" :placeholder="t('orders.filters.searchPlaceholder')" :aria-label="t('orders.filters.searchLabel')">
         <Toggle v-if="unassignedCount > 0 || unassigned" v-model="unassigned" class="chip chip--warning">
             <TriangleAlert size="0.875rem" aria-hidden="true" />
             {{ t('orders.filters.unassigned', unassignedCount) }}
@@ -24,11 +24,5 @@ const { t } = useI18n();
 <style scoped>
 .order-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
 
-.order-filters__search {
-    min-height: 2.125rem;
-    min-width: 16rem;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-}
+.order-filters__search { min-width: 16rem; }
 </style>

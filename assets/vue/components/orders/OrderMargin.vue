@@ -44,5 +44,5 @@ const { t } = useI18n();
 .order-margin__row dd { margin: 0; }
 .order-margin__postage { display: flex; align-items: center; gap: var(--space-1); }
 .order-margin__row--result { padding-top: var(--space-2); border-top: 0.0625rem solid var(--color-border); font-weight: 700; }
-.order-margin__note { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 0.85rem; }
+.order-margin__note { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

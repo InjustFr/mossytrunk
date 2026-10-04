@@ -198,12 +198,12 @@ function addType() {
                 <ToggleGroupRoot
                     :model-value="pricing"
                     type="single"
-                    class="purchase-line-picker__pricing-modes"
+                    class="segmented"
                     :aria-label="t('purchasing.picker.priceFor')"
                     @update:model-value="(value) => value && (pricing = value)"
                 >
-                    <ToggleGroupItem :value="PER_UNIT" class="purchase-line-picker__pricing-mode">{{ t('purchasing.picker.perUnit') }}</ToggleGroupItem>
-                    <ToggleGroupItem :value="FOR_ALL" class="purchase-line-picker__pricing-mode">{{ t('purchasing.picker.forAll') }}</ToggleGroupItem>
+                    <ToggleGroupItem :value="PER_UNIT" class="segmented__item">{{ t('purchasing.picker.perUnit') }}</ToggleGroupItem>
+                    <ToggleGroupItem :value="FOR_ALL" class="segmented__item">{{ t('purchasing.picker.forAll') }}</ToggleGroupItem>
                 </ToggleGroupRoot>
             </div>
             <label class="purchase-line-picker__field purchase-line-picker__price">
@@ -233,30 +233,15 @@ function addType() {
 .purchase-line-picker__create { margin-left: auto; }
 
 .purchase-line-picker__field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.purchase-line-picker__label { color: var(--color-muted); font-size: 0.8125rem; }
+.purchase-line-picker__label { color: var(--color-muted); font-size: var(--font-size-sm); }
 .purchase-line-picker__product { flex: 1 1 100%; }
 .purchase-line-picker__variant { flex: 1 1 7rem; }
 .purchase-line-picker__quantity { flex: 0 0 7rem; }
 .purchase-line-picker__price { flex: 0 0 7.5rem; }
 
 .purchase-line-picker__pricing { flex: 0 0 auto; }
-.purchase-line-picker__pricing-modes { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 
-.purchase-line-picker__pricing-mode {
-    min-height: 2.375rem;
-    padding: 0 var(--space-3);
-    border: none;
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font: inherit;
-    font-size: 0.8125rem;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition);
-}
 
-.purchase-line-picker__pricing-mode + .purchase-line-picker__pricing-mode { border-left: 0.0625rem solid var(--color-border-strong); }
-.purchase-line-picker__pricing-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
-.purchase-line-picker__pricing-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 .purchase-line-picker__add { margin-left: auto; }
 .purchase-line-picker__error { flex: 1 1 100%; }
 </style>

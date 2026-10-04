@@ -3,5 +3,5 @@
 </template>
 
 <style scoped>
-.field-error { display: block; color: var(--color-danger); font-size: 0.85rem; }
+.field-error { display: block; color: var(--color-danger); font-size: var(--font-size-md); }
 </style>

@@ -43,16 +43,17 @@ defineProps({
 
 .icon-button:hover { color: var(--color-ink); background: var(--color-bg); border-color: var(--color-border); }
 .icon-button--danger:hover { color: var(--color-danger); background: var(--color-danger-soft); border-color: transparent; }
+.icon-button:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 </style>
 
 <style>
 .icon-button__tooltip {
     z-index: 70;
     padding: var(--space-1) var(--space-2);
-    border-radius: calc(var(--radius) - 0.125rem);
+    border-radius: var(--radius-inner);
     background: var(--color-ink);
     color: var(--color-surface);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     animation: fade-in var(--transition);
 }
 

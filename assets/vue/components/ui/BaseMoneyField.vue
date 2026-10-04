@@ -19,22 +19,11 @@ const euros = computed({
 
 <template>
     <NumberFieldRoot v-model="euros" :min="0" :step="0.01" :format-options="format" :locale="intlLocale()" class="money-field">
-        <NumberFieldInput class="money-field__input" :placeholder="placeholder" />
+        <NumberFieldInput class="control money-field__input" :placeholder="placeholder" />
     </NumberFieldRoot>
 </template>
 
 <style scoped>
 .money-field { width: 100%; }
-.money-field__input {
-    width: 100%;
-    min-height: 2.375rem;
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    font-variant-numeric: tabular-nums;
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.money-field__input:focus { outline: none; border-color: var(--color-accent); box-shadow: var(--focus-ring); }
+.money-field__input { font-variant-numeric: tabular-nums; }
 </style>

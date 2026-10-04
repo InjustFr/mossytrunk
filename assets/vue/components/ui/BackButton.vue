@@ -18,7 +18,7 @@ import { ChevronLeft } from '@lucide/vue';
     border: none;
     background: none;
     color: var(--color-muted);
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     cursor: pointer;
 }
 

@@ -44,7 +44,7 @@ const range = computed({
 
 <template>
     <DateRangePickerRoot v-model="range" :week-starts-on="1" fixed-weeks>
-        <DateRangePickerField v-slot="{ segments }" class="date-picker__field" :data-invalid="invalid || undefined">
+        <DateRangePickerField v-slot="{ segments }" class="control date-picker__field" :data-invalid="invalid || undefined">
             <template v-for="item in segments.start" :key="`start-${item.part}`">
                 <DateRangePickerInput v-if="item.part === 'literal'" :part="item.part" type="start" class="date-picker__literal">{{ item.value }}</DateRangePickerInput>
                 <DateRangePickerInput v-else :part="item.part" type="start" class="date-picker__segment">{{ item.value }}</DateRangePickerInput>
@@ -59,7 +59,7 @@ const range = computed({
             </DateRangePickerTrigger>
         </DateRangePickerField>
 
-        <DateRangePickerContent class="date-picker__content" :side-offset="4" align="start">
+        <DateRangePickerContent class="popover date-picker__content" :side-offset="4" align="start">
             <DateRangePickerCalendar v-slot="{ weekDays, grid }">
                 <DateRangePickerHeader class="date-picker__header">
                     <DateRangePickerPrev class="date-picker__nav" :aria-label="t('ui.datePicker.previousMonth')"><ChevronLeft size="1rem" aria-hidden="true" /></DateRangePickerPrev>

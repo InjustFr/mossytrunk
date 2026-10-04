@@ -90,7 +90,7 @@ async function onSubmit() {
 .order-form { flex: 1; display: flex; flex-direction: column; gap: var(--space-5); }
 .order-form__checkout { display: flex; flex-direction: column; gap: var(--space-4); margin-top: auto; }
 
-.order-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
+.order-form__fact { margin: 0; padding-top: 0.5625rem; font-size: var(--font-size-md); font-weight: 500; color: var(--color-ink); }
 .order-form__fact--missing { font-weight: 400; color: var(--color-danger); }
 .order-form__fact--missing a { color: inherit; }
 </style>

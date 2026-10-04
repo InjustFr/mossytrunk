@@ -74,21 +74,21 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
 
 <style scoped>
 .discount-timeline { display: flex; flex-direction: column; gap: var(--space-2); }
-.discount-timeline__summary { margin: 0 0 var(--space-2); font-size: 0.9375rem; }
+.discount-timeline__summary { margin: 0 0 var(--space-2); font-size: var(--font-size); }
 .discount-timeline__rules { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
 
 .discount-timeline__rule,
 .discount-timeline__shares,
 .discount-timeline__axis { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); align-items: center; gap: var(--space-3); }
 
-.discount-timeline__name { overflow: hidden; color: var(--color-muted); font-size: 0.8125rem; text-overflow: ellipsis; white-space: nowrap; }
-.discount-timeline__lane { position: relative; height: 0.75rem; border-radius: 0.25rem; background: var(--color-bg); }
+.discount-timeline__name { overflow: hidden; color: var(--color-muted); font-size: var(--font-size-sm); text-overflow: ellipsis; white-space: nowrap; }
+.discount-timeline__lane { position: relative; height: 0.75rem; border-radius: var(--radius-sm); background: var(--color-bg); }
 
 .discount-timeline__span {
     position: absolute;
     top: 0;
     bottom: 0;
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
     background: repeating-linear-gradient(135deg, var(--color-accent) 0 0.125rem, var(--color-accent-soft) 0.125rem 0.3125rem);
     box-shadow: inset 0 0 0 0.0625rem var(--color-accent);
 }
@@ -113,12 +113,12 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
     border-radius: var(--radius);
     background: var(--color-ink);
     color: var(--color-surface);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     white-space: nowrap;
     pointer-events: none;
 }
 
-.discount-timeline__months { color: var(--color-muted); font-size: 0.6875rem; text-align: center; }
+.discount-timeline__months { color: var(--color-muted); font-size: var(--font-size-2xs); text-align: center; }
 
 @media (max-width: 40rem) {
     .month-label--odd { visibility: hidden; }

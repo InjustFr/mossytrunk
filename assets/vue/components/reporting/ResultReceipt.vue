@@ -111,7 +111,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
 .receipt__chevron { align-self: center; color: var(--color-muted); transition: transform var(--transition); }
 .receipt__line--toggle[data-state="open"] .receipt__chevron { transform: rotate(90deg); }
 
-.receipt__hint { margin-left: var(--space-2); color: var(--color-muted); font-size: 0.85rem; }
+.receipt__hint { margin-left: var(--space-2); color: var(--color-muted); font-size: var(--font-size-md); }
 .receipt__sign { color: var(--color-muted); text-align: center; }
 .receipt__amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .receipt__amount--loss { color: var(--color-danger); }

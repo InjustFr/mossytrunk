@@ -53,8 +53,8 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
 .sales-chart__slot { position: relative; display: flex; align-items: flex-end; justify-content: center; border-radius: var(--radius) var(--radius) 0 0; }
 .sales-chart__slot:hover,
 .sales-chart__slot:focus-visible { background: var(--color-bg); }
-.sales-chart__bar { position: relative; width: min(70%, 1.75rem); background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }
-.sales-chart__value { position: absolute; bottom: calc(100% + 0.125rem); left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sales-chart__bar { position: relative; width: min(70%, 1.75rem); background: var(--color-accent); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.sales-chart__value { position: absolute; bottom: calc(100% + 0.125rem); left: 50%; transform: translateX(-50%); font-size: var(--font-size-xs); font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .sales-chart__tooltip {
     position: absolute;
@@ -68,12 +68,12 @@ const labelled = (index) => props.months.length <= 12 || index % 3 === 0;
     border-radius: var(--radius);
     background: var(--color-ink);
     color: var(--color-surface);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     white-space: nowrap;
     pointer-events: none;
 }
 
-.sales-chart__axis { display: grid; gap: 0.125rem; padding-top: var(--space-1); color: var(--color-muted); font-size: 0.6875rem; text-align: center; }
+.sales-chart__axis { display: grid; gap: 0.125rem; padding-top: var(--space-1); color: var(--color-muted); font-size: var(--font-size-2xs); text-align: center; }
 
 @media (max-width: 40rem) {
     .month-label--odd { visibility: hidden; }

@@ -106,8 +106,8 @@ async function onSubmit() {
 .declination__checklist { display: flex; flex-direction: column; gap: var(--space-1); padding: var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
 .declination__adaptation { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; }
 .declination__adaptation--done { color: var(--color-muted); text-decoration: line-through; }
-.declination__product-link { font-size: 0.875rem; white-space: nowrap; }
-.declination__none { margin: 0; color: var(--color-subtle); font-size: 0.875rem; }
+.declination__product-link { font-size: var(--font-size-md); white-space: nowrap; }
+.declination__none { margin: 0; color: var(--color-subtle); font-size: var(--font-size-md); }
 .declination__form { display: flex; flex-direction: column; gap: var(--space-4); }
 .declination__price { max-width: 11rem; }
 </style>

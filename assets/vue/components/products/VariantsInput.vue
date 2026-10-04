@@ -13,7 +13,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <TagsInputRoot v-model="variants" add-on-blur add-on-paste class="variants-input">
+    <TagsInputRoot v-model="variants" add-on-blur add-on-paste class="control variants-input">
         <TagsInputItem v-for="variant in variants" :key="variant" :value="variant" class="variants-input__chip">
             <TagsInputItemText />
             <TagsInputItemDelete class="variants-input__remove" :aria-label="t('products.variantsInput.remove', { item: itemLabel ?? t('products.variantsInput.itemLabel'), variant })">
@@ -30,17 +30,7 @@ const { t } = useI18n();
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-1);
-    min-height: 2.375rem;
     padding: var(--space-1) var(--space-2);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
-
-.variants-input:focus-within {
-    border-color: var(--color-accent);
-    box-shadow: var(--focus-ring);
 }
 
 .variants-input__chip {
@@ -51,7 +41,7 @@ const { t } = useI18n();
     border-radius: var(--radius-pill);
     background: var(--color-accent-soft);
     color: var(--color-accent-strong);
-    font-size: 0.85rem;
+    font-size: var(--font-size-md);
     animation: variants-input-chip-in var(--transition);
 }
 

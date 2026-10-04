@@ -50,5 +50,5 @@ async function onSubmit() {
 
 <style scoped>
 .channel-batch-price-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.channel-batch-price-form__intro { margin: 0; color: var(--color-muted); font-size: 0.8125rem; }
+.channel-batch-price-form__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 </style>

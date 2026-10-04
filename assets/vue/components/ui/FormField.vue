@@ -38,7 +38,7 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
 .form-field { display: flex; flex-direction: column; gap: var(--space-1); }
 .form-field__control { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 
-.form-field__label { font-weight: 500; font-size: 0.875rem; color: var(--color-text); }
+.form-field__label { font-weight: 500; font-size: var(--font-size-md); color: var(--color-text); }
 .form-field__optional { margin-left: var(--space-2); font-weight: 400; color: var(--color-subtle); }
 
 @container form (min-width: 28rem) {
@@ -50,31 +50,10 @@ const id = `form-field-${Math.random().toString(36).slice(2, 9)}`;
     }
 
     .form-field__label { padding-top: 0.5625rem; line-height: 1.25; }
-    .form-field__optional { display: block; margin: 0.125rem 0 0; font-size: 0.8rem; }
+    .form-field__optional { display: block; margin: 0.125rem 0 0; font-size: var(--font-size-sm); }
 }
 
-.form-field :deep(input),
-.form-field :deep(select),
-.form-field :deep(textarea) {
-    width: 100%;
-    padding: var(--space-2) var(--space-3);
-    min-height: 2.375rem;
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
+.form-field--invalid :deep(:is(.control, .form-field__control > input)) { border-color: var(--color-danger); }
 
-.form-field :deep(input:focus),
-.form-field :deep(select:focus),
-.form-field :deep(textarea:focus) {
-    outline: none;
-    border-color: var(--color-accent);
-    box-shadow: var(--focus-ring);
-}
-
-.form-field--invalid :deep(input),
-.form-field--invalid :deep(select) { border-color: var(--color-danger); }
-
-.form-field__hint { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
+.form-field__hint { color: var(--color-muted); font-size: var(--font-size-sm); line-height: 1.4; }
 </style>

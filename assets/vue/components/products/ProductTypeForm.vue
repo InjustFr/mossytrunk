@@ -119,5 +119,5 @@ async function onSubmit() {
 <style scoped>
 .product-type-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .product-type-form .product-type-form__code { max-width: 11rem; text-transform: uppercase; }
-.product-type-form__switch { display: flex; align-items: center; gap: var(--space-2); min-height: 2.375rem; font-size: 0.875rem; cursor: pointer; }
+.product-type-form__switch { display: flex; align-items: center; gap: var(--space-2); min-height: 2.375rem; font-size: var(--font-size-md); cursor: pointer; }
 </style>

@@ -59,15 +59,15 @@ const activeVariants = (type) => type.variants.filter((variant) => !type.archive
 
 .product-type-list__code {
     color: var(--color-muted);
-    font-size: 0.75rem;
-    letter-spacing: 0.06rem;
+    font-size: var(--font-size-xs);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
 .product-type-list__variants {
     overflow: hidden;
     color: var(--color-muted);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     text-overflow: ellipsis;
     white-space: nowrap;
 }

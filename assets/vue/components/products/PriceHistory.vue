@@ -121,13 +121,13 @@ async function onSubmit() {
 .price-history__change--current::before { background: var(--color-accent); }
 .price-history__change--current .price-history__price { font-family: var(--font-display); font-size: 1.6rem; }
 .price-history__price { font-variant-numeric: tabular-nums; }
-.price-history__delta { font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.price-history__delta { font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; }
 .price-history__delta--up { color: var(--color-accent-strong); }
 .price-history__delta--down { color: var(--color-danger); }
 .price-history__tools { display: inline-flex; margin-left: auto; opacity: 0.5; transition: opacity var(--transition); }
 .price-history__change:hover .price-history__tools,
 .price-history__change:focus-within .price-history__tools { opacity: 1; }
-.price-history__since { width: 100%; font-size: 0.8rem; }
+.price-history__since { width: 100%; font-size: var(--font-size-sm); }
 .price-history__form { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; padding: var(--space-2) 0; color: var(--color-text); }
 .price-history__form--new { padding: var(--space-4); border-radius: var(--radius); background: var(--color-bg); }
 .price-history__amount { max-width: 11rem; }

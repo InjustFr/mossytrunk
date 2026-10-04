@@ -46,6 +46,6 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
-.set-password__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
+.set-password__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .set-password__form { display: flex; flex-direction: column; gap: var(--space-4); }
 </style>

@@ -30,7 +30,7 @@ const { t } = useI18n();
 .design-rows__row { display: grid; grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 0.0625rem solid var(--color-border); }
 .design-rows__row:last-child { border-bottom: none; }
 .design-rows__name { font-weight: 600; }
-.design-rows__gabarits { overflow: hidden; color: var(--color-muted); font-size: 0.85rem; text-overflow: ellipsis; white-space: nowrap; }
+.design-rows__gabarits { overflow: hidden; color: var(--color-muted); font-size: var(--font-size-md); text-overflow: ellipsis; white-space: nowrap; }
 
 @media (max-width: 40rem) {
     .design-rows__row { grid-template-columns: minmax(0, 1fr) auto; }

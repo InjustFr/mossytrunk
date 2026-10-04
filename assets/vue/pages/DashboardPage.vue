@@ -149,5 +149,5 @@ onMounted(() => Promise.all([load(), loadTypes()]));
 .dashboard-page__welcome-title { margin: 0 0 var(--space-2); }
 .dashboard-page__welcome-text { margin: 0 0 var(--space-5); color: var(--color-muted); }
 .dashboard-page__welcome-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.dashboard-page__note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: 0.85rem; }
+.dashboard-page__note { margin: var(--space-3) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

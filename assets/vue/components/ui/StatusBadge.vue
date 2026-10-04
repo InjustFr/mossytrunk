@@ -17,7 +17,7 @@ defineProps({
     border-radius: var(--radius-pill);
     background: var(--color-bg);
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: var(--font-size-2xs);
     font-weight: 600;
     letter-spacing: 0.02rem;
     white-space: nowrap;

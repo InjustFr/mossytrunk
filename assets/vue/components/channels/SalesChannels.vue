@@ -59,9 +59,9 @@ const emit = defineEmits(['edit', 'remove']);
 }
 
 .sales-channels__text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.sales-channels__name { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0; font-size: 0.9375rem; }
+.sales-channels__name { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin: 0; font-size: var(--font-size); }
 .sales-channels__link { color: inherit; text-decoration: none; }
 .sales-channels__link:hover { text-decoration: underline; text-underline-offset: 0.1875rem; }
-.sales-channels__service { margin: 0; color: var(--color-muted); font-size: 0.8125rem; }
+.sales-channels__service { margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); }
 .sales-channels__actions { display: flex; gap: var(--space-1); }
 </style>

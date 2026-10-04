@@ -1,5 +1,11 @@
+<script setup>
+defineProps({
+    inline: { type: Boolean, default: false },
+});
+</script>
+
 <template>
-    <p class="empty-state"><slot /></p>
+    <p :class="['empty-state', { 'empty-state--inline': inline }]"><slot /></p>
 </template>
 
 <style scoped>
@@ -11,4 +17,6 @@
     border: 0.0625rem dashed var(--color-border);
     border-radius: var(--radius);
 }
+
+.empty-state--inline { padding: 0; border: none; text-align: left; font-size: var(--font-size-md); }
 </style>

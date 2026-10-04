@@ -100,7 +100,7 @@ async function confirmRenaming() {
                         v-model="newLabel"
                         type="text"
                         maxlength="100"
-                        class="type-variants__rename"
+                        class="control type-variants__rename"
                         :aria-label="t('products.types.variants.newLabel', { variant })"
                         :disabled="renaming"
                         @keydown.enter.prevent="confirmRenaming"
@@ -127,6 +127,7 @@ async function confirmRenaming() {
         <div class="type-variants__new">
             <input
                 v-model="draft"
+                class="control"
                 type="text"
                 maxlength="100"
                 :placeholder="t('products.types.variants.placeholder')"
@@ -156,7 +157,6 @@ async function confirmRenaming() {
 .type-variants__label { display: flex; flex: 1; align-items: center; gap: var(--space-2); color: var(--color-ink); }
 .type-variants__row--archived .type-variants__label { color: var(--color-muted); }
 .type-variants .type-variants__rename { flex: 1; min-height: 2rem; padding: var(--space-1) var(--space-2); }
-.type-variants__row :deep(.icon-button:disabled) { opacity: 0.35; cursor: default; pointer-events: none; }
 .type-variants__new { display: flex; align-items: center; gap: var(--space-2); }
 .type-variants__new input { flex: 1; }
 </style>

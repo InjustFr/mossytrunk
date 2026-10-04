@@ -108,23 +108,23 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
             <SupplierOrderReception v-if="receiving" :order="order" :submit="(lines) => receive(orderId, lines)" @received="onReceived" @cancel="receiving = false" />
 
             <BaseCard v-else>
-                <table class="supplier-order-page__lines">
+                <table class="compact-table">
                     <thead>
                         <tr>
                             <th>{{ t('purchasing.detail.product') }}</th>
-                            <th class="supplier-order-page__number">{{ t('purchasing.detail.ordered') }}</th>
-                            <th class="supplier-order-page__number">{{ t('purchasing.detail.receivedQuantity') }}</th>
-                            <th class="supplier-order-page__number">{{ t('purchasing.detail.price') }}</th>
-                            <th v-if="order.discount || order.deliveryFees" class="supplier-order-page__number">{{ t('purchasing.detail.shares') }}</th>
-                            <th class="supplier-order-page__number">{{ t('purchasing.detail.totalCost') }}</th>
-                            <th class="supplier-order-page__number">{{ t('purchasing.detail.unitCost') }}</th>
+                            <th class="compact-table__number">{{ t('purchasing.detail.ordered') }}</th>
+                            <th class="compact-table__number">{{ t('purchasing.detail.receivedQuantity') }}</th>
+                            <th class="compact-table__number">{{ t('purchasing.detail.price') }}</th>
+                            <th v-if="order.discount || order.deliveryFees" class="compact-table__number">{{ t('purchasing.detail.shares') }}</th>
+                            <th class="compact-table__number">{{ t('purchasing.detail.totalCost') }}</th>
+                            <th class="compact-table__number">{{ t('purchasing.detail.unitCost') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="line in order.lines" :key="line.id">
                             <td>{{ line.label }}</td>
-                            <td class="supplier-order-page__number">{{ line.orderedQuantity }}</td>
-                            <td class="supplier-order-page__number">
+                            <td class="compact-table__number">{{ line.orderedQuantity }}</td>
+                            <td class="compact-table__number">
                                 <template v-if="line.receivedQuantity === null">—</template>
                                 <template v-else>
                                     {{ line.receivedQuantity }}
@@ -132,13 +132,13 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
                                     <StatusBadge v-else-if="line.receivedQuantity < line.orderedQuantity" tone="danger" class="supplier-order-page__gap">{{ line.receivedQuantity - line.orderedQuantity }}</StatusBadge>
                                 </template>
                             </td>
-                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.totalPrice" :currency="order.currency" /></td>
-                            <td v-if="order.discount || order.deliveryFees" class="supplier-order-page__number supplier-order-page__shares">
+                            <td class="compact-table__number"><MoneyAmount :cents="line.totalPrice" :currency="order.currency" /></td>
+                            <td v-if="order.discount || order.deliveryFees" class="compact-table__number supplier-order-page__shares">
                                 <span v-if="line.discountShare">−<MoneyAmount :cents="line.discountShare" :currency="order.currency" /></span>
                                 <span v-if="line.feesShare">+<MoneyAmount :cents="line.feesShare" :currency="order.currency" /></span>
                             </td>
-                            <td class="supplier-order-page__number"><MoneyAmount :cents="line.landedCost" :currency="order.currency" /></td>
-                            <td class="supplier-order-page__number">
+                            <td class="compact-table__number"><MoneyAmount :cents="line.landedCost" :currency="order.currency" /></td>
+                            <td class="compact-table__number">
                                 <template v-if="line.unitCost !== null">
                                     <MoneyAmount :cents="line.unitCost" />
                                     <span v-if="line.unitCost !== line.plannedUnitCost" class="supplier-order-page__planned">{{ t('purchasing.detail.planned') }} <MoneyAmount :cents="line.plannedUnitCost" /></span>
@@ -174,16 +174,11 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
 <style scoped>
 .supplier-order-page { display: flex; flex-direction: column; gap: var(--space-5); }
 .supplier-order-page__facts { display: flex; gap: var(--space-6); flex-wrap: wrap; margin: 0; }
-.supplier-order-page__facts dt { color: var(--color-muted); font-size: 0.8rem; }
+.supplier-order-page__facts dt { color: var(--color-muted); font-size: var(--font-size-sm); }
 .supplier-order-page__facts dd { margin: 0; font-weight: 600; }
-.supplier-order-page__lines { width: 100%; border-collapse: collapse; }
-.supplier-order-page__lines th { padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); color: var(--color-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04rem; text-align: left; text-transform: uppercase; }
-.supplier-order-page__lines td { padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
-.supplier-order-page__number { text-align: right; font-variant-numeric: tabular-nums; }
-.supplier-order-page__lines th.supplier-order-page__number { text-align: right; }
 .supplier-order-page__gap { margin-left: var(--space-1); }
-.supplier-order-page__planned { display: block; color: var(--color-muted); font-size: 0.75rem; }
-.supplier-order-page__shares { color: var(--color-muted); font-size: 0.85rem; }
+.supplier-order-page__planned { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
+.supplier-order-page__shares { color: var(--color-muted); font-size: var(--font-size-md); }
 .supplier-order-page__shares span { display: flex; justify-content: flex-end; white-space: nowrap; }
 .supplier-order-page__muted { color: var(--color-subtle); }
 </style>

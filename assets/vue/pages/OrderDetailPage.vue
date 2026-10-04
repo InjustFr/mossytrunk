@@ -169,7 +169,7 @@ onMounted(() => Promise.all([load(), loadProducts(), loadChannels()]));
 .order-detail-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .order-detail-page__meta { margin: 0; color: var(--color-muted); }
 .order-detail-page__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(17.5rem, 1fr); gap: var(--space-4); align-items: start; }
-.order-detail-page__hint { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: 0.85rem; }
+.order-detail-page__hint { margin: var(--space-2) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .order-detail-page__side { display: flex; flex-direction: column; gap: var(--space-4); }
 
 @media (max-width: 56.25rem) {

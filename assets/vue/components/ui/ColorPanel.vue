@@ -20,7 +20,7 @@ const { t } = useI18n();
         <div class="color-panel__row">
             <span class="color-panel__preview" :style="{ background: color }" aria-hidden="true" />
             <ColorFieldRoot v-model="color" class="color-panel__field">
-                <ColorFieldInput class="color-panel__input" :aria-label="t('ui.color.hex')" />
+                <ColorFieldInput class="control color-panel__input" :aria-label="t('ui.color.hex')" />
             </ColorFieldRoot>
         </div>
     </div>
@@ -58,14 +58,5 @@ const { t } = useI18n();
 .color-panel__preview { flex: none; width: 2.375rem; height: 2.375rem; border-radius: var(--radius); border: 0.0625rem solid var(--color-border); }
 .color-panel__field { flex: 1; }
 
-.color-panel__input {
-    width: 100%;
-    min-height: 2.375rem;
-    padding: var(--space-2) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    font: inherit;
-    text-transform: uppercase;
-}
+.color-panel__input { text-transform: uppercase; }
 </style>

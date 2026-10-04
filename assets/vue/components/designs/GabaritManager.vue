@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { Pencil, Trash2 } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
+import EditableList from '../ui/EditableList.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
@@ -72,8 +73,8 @@ async function onSubmit() {
 <template>
     <div class="gabarit-manager">
         <EmptyState v-if="gabarits.length === 0">{{ t('designs.gabarits.empty') }}</EmptyState>
-        <ul v-else class="gabarit-manager__list">
-            <li v-for="gabarit in gabarits" :key="gabarit.id" :class="['gabarit-manager__item', { 'gabarit-manager__item--editing': gabarit.id === editingId }]">
+        <EditableList v-else :items="gabarits" :editing-id="editingId">
+            <template #default="{ item: gabarit }">
                 <div class="gabarit-manager__summary">
                     <strong>{{ gabarit.name }}</strong>
                     <span class="gabarit-manager__meta">
@@ -86,8 +87,8 @@ async function onSubmit() {
                     <IconButton :icon="Pencil" :label="t('designs.gabarits.edit', { name: gabarit.name })" @click="edit(gabarit)" />
                     <ConfirmButton :icon="Trash2" :label="t('designs.gabarits.remove', { name: gabarit.name })" :message="t('designs.gabarits.removeMessage')" @confirm="onRemove(gabarit)" />
                 </span>
-            </li>
-        </ul>
+            </template>
+        </EditableList>
 
         <form class="gabarit-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
@@ -119,24 +120,9 @@ async function onSubmit() {
 
 <style scoped>
 .gabarit-manager { display: flex; flex-direction: column; gap: var(--space-5); }
-.gabarit-manager__list {
-    display: flex;
-    flex-direction: column;
-    max-height: 30vh;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    list-style: none;
-    overscroll-behavior: contain;
-}
-.gabarit-manager__item:last-child { border-bottom: none; }
-.gabarit-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
-.gabarit-manager__item--editing { background: var(--color-accent-soft); }
 .gabarit-manager__actions { display: flex; flex-shrink: 0; gap: var(--space-1); }
 .gabarit-manager__summary { display: flex; flex-direction: column; }
-.gabarit-manager__meta { color: var(--color-muted); font-size: 0.8125rem; }
+.gabarit-manager__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
 .gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }
 .gabarit-manager__price { max-width: 11rem; }
 </style>

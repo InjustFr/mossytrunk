@@ -79,6 +79,7 @@ function cancel() {
         <div v-else class="type-select__create">
             <input
                 ref="input"
+                class="control"
                 v-model="newName"
                 type="text"
                 :placeholder="t('products.types.nameExample')"
@@ -87,7 +88,7 @@ function cancel() {
                 @keydown.esc.prevent.stop="cancel"
             >
             <TypeColorPicker v-model="newColor" />
-            <div class="type-select__actions">
+            <div class="actions-row">
                 <BaseButton variant="ghost" @click="cancel">{{ t('products.cancel') }}</BaseButton>
                 <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('products.types.createShort') }}</BaseButton>
             </div>
@@ -99,5 +100,4 @@ function cancel() {
 <style scoped>
 .type-select { display: flex; flex-direction: column; gap: var(--space-1); }
 .type-select__create { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius); background: var(--color-bg); }
-.type-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

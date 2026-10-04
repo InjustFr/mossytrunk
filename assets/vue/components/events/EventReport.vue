@@ -79,8 +79,8 @@ const lines = computed(() => [
 .event-report__committed { margin: var(--space-1) 0; font-family: var(--font-display); font-size: 2.5rem; line-height: 1.1; }
 
 .event-report__figures { display: flex; flex-direction: column; gap: var(--space-1); margin: 0 0 var(--space-2); padding: 0; }
-.event-report__line { display: flex; justify-content: space-between; gap: var(--space-3); font-size: 0.9rem; }
+.event-report__line { display: flex; justify-content: space-between; gap: var(--space-3); font-size: var(--font-size-md); }
 .event-report__line dd { margin: 0; font-variant-numeric: tabular-nums; }
 
-.event-report__more { margin: var(--space-2) 0 0; font-size: 0.9rem; }
+.event-report__more { margin: var(--space-2) 0 0; font-size: var(--font-size-md); }
 </style>

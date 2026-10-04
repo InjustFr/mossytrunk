@@ -67,13 +67,13 @@ async function onSubmit() {
 
 <style scoped>
 .merge-supplier-order-form { display: flex; flex-direction: column; gap: var(--space-4); }
-.merge-supplier-order-form__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
+.merge-supplier-order-form__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .merge-supplier-order-form__orders { display: flex; flex-direction: column; gap: var(--space-2); max-height: 40vh; overflow-y: auto; }
 
 .merge-supplier-order-form__order { align-items: center; }
 
 .merge-supplier-order-form__summary { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .merge-supplier-order-form__reference { color: var(--color-ink); font-weight: 500; }
-.merge-supplier-order-form__meta { color: var(--color-muted); font-size: 0.8125rem; }
-.merge-supplier-order-form__total { font-variant-numeric: tabular-nums; font-weight: 600; }
+.merge-supplier-order-form__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
+.merge-supplier-order-form__total { font-weight: 600; }
 </style>

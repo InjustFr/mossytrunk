@@ -168,7 +168,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                         <EmptyState v-if="filters.groups.value.length === 0">{{ emptyShelf }}</EmptyState>
                     </template>
 
-                    <footer v-if="selected" class="designs-page__actions">
+                    <footer v-if="selected" class="actions-row">
                         <template v-if="selected.collection">
                             <ConfirmButton
                                 :icon="Trash2"
@@ -208,7 +208,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 .designs-page { display: flex; flex-direction: column; gap: var(--space-6); }
 
 .designs-page__bench-title { display: flex; align-items: baseline; gap: var(--space-2); margin: 0 0 var(--space-3); font-size: 1.35rem; }
-.designs-page__bench-count { color: var(--color-muted); font-family: var(--font-body); font-size: 0.9375rem; font-weight: 400; }
+.designs-page__bench-count { color: var(--color-muted); font-family: var(--font-body); font-size: var(--font-size); font-weight: 400; }
 
 .designs-page__strip {
     display: grid;
@@ -240,8 +240,8 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 .designs-page__shelf-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); }
 .designs-page__shelf-heading { min-width: 0; }
 .designs-page__shelf-title { margin: 0; font-size: 1.5rem; line-height: 1.2; }
-.designs-page__description { max-width: 40rem; margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.9rem; }
-.designs-page__bench-switch { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.85rem; white-space: nowrap; }
+.designs-page__description { max-width: 40rem; margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--font-size-md); }
+.designs-page__bench-switch { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); white-space: nowrap; }
 
 .designs-page__statuses { display: flex; gap: var(--space-4); border-bottom: 0.0625rem solid var(--color-border); }
 
@@ -256,14 +256,14 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
     background: none;
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     cursor: pointer;
     transition: color var(--transition), border-color var(--transition);
 }
 
 .designs-page__status:hover { color: var(--color-ink); }
 .designs-page__status[data-state="on"] { border-bottom-color: var(--color-ink); color: var(--color-ink); font-weight: 600; }
-.designs-page__status-count { font-size: 0.8125rem; font-variant-numeric: tabular-nums; font-weight: 400; }
+.designs-page__status-count { font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; font-weight: 400; }
 
 .designs-page__group + .designs-page__group { margin-top: var(--space-3); }
 .designs-page__group-title { margin: 0 0 var(--space-1); font-size: 1rem; }
@@ -278,8 +278,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
 }
 
 .designs-page__group-link:hover { text-decoration: underline; text-underline-offset: 0.1875rem; }
-.designs-page__group-link:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.125rem; border-radius: var(--radius); }
-.designs-page__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2); }
+.designs-page__group-link:focus-visible { border-radius: var(--radius); }
 
 @media (max-width: 56rem) {
     .designs-page__atelier { grid-template-columns: 1fr; }

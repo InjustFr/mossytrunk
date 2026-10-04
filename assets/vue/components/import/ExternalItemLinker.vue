@@ -41,7 +41,7 @@ const linked = computed(() => props.items.filter((item) => item.linkedTo));
             </ul>
         </details>
 
-        <div v-if="canImport" class="item-linker__actions">
+        <div v-if="canImport" class="actions-row">
             <BaseButton :loading="importing" @click="emit('reimport')">{{ t('import.linker.reimport', { service: label }) }}</BaseButton>
         </div>
     </div>
@@ -49,9 +49,8 @@ const linked = computed(() => props.items.filter((item) => item.linkedTo));
 
 <style scoped>
 .item-linker { display: flex; flex-direction: column; gap: var(--space-4); }
-.item-linker__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
-.item-linker__intro code { padding: 0 var(--space-1); border-radius: 0.25rem; background: var(--color-bg); color: var(--color-ink); }
+.item-linker__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
+.item-linker__intro code { padding: 0 var(--space-1); border-radius: var(--radius-sm); background: var(--color-bg); color: var(--color-ink); }
 .item-linker__list { margin: 0; padding: 0; list-style: none; }
 .item-linker__linked summary { color: var(--color-muted); cursor: pointer; }
-.item-linker__actions { display: flex; justify-content: flex-end; }
 </style>

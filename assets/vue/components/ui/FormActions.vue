@@ -30,6 +30,6 @@ defineProps({
     background: var(--color-surface);
 }
 
-.form-actions__note { flex: 1 1 14rem; margin: 0; color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
+.form-actions__note { flex: 1 1 14rem; margin: 0; color: var(--color-muted); font-size: var(--font-size-sm); line-height: 1.4; }
 .form-actions__buttons { display: flex; gap: var(--space-2); margin-left: auto; }
 </style>

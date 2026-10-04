@@ -86,7 +86,7 @@ const current = computed({
     gap: var(--space-3);
     flex-wrap: wrap;
     padding-top: var(--space-3);
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
     color: var(--color-muted);
 }
 

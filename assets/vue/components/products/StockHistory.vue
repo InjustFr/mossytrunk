@@ -32,14 +32,14 @@ onMounted(async () => {
             </header>
             <EmptyState v-if="item.lots.length === 0">{{ t('products.stockHistory.empty') }}</EmptyState>
             <LotStrip v-else :lots="item.lots" />
-            <table v-if="item.lots.length" class="stock-history__lots">
+            <table v-if="item.lots.length" class="compact-table stock-history__lots">
                 <thead>
                     <tr>
                         <th>{{ t('products.stockHistory.date') }}</th>
                         <th>{{ t('products.stockHistory.origin') }}</th>
-                        <th class="stock-history__number">{{ t('products.stockHistory.received') }}</th>
-                        <th class="stock-history__number">{{ t('products.stockHistory.remaining') }}</th>
-                        <th class="stock-history__number">{{ t('products.stockHistory.unitCost') }}</th>
+                        <th class="compact-table__number">{{ t('products.stockHistory.received') }}</th>
+                        <th class="compact-table__number">{{ t('products.stockHistory.remaining') }}</th>
+                        <th class="compact-table__number">{{ t('products.stockHistory.unitCost') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -50,9 +50,9 @@ onMounted(async () => {
                             <a v-else-if="lot.origin === 'return' && lot.sourceId" :href="`/orders/${lot.sourceId}`">{{ lotOriginLabel(lot.origin) }}</a>
                             <template v-else>{{ lotOriginLabel(lot.origin) }}</template>
                         </td>
-                        <td class="stock-history__number">{{ lot.quantity }}</td>
-                        <td class="stock-history__number">{{ lot.remaining }}</td>
-                        <td class="stock-history__number"><MoneyAmount :cents="lot.unitCost" /></td>
+                        <td class="compact-table__number">{{ lot.quantity }}</td>
+                        <td class="compact-table__number">{{ lot.remaining }}</td>
+                        <td class="compact-table__number"><MoneyAmount :cents="lot.unitCost" /></td>
                     </tr>
                 </tbody>
             </table>
@@ -63,12 +63,8 @@ onMounted(async () => {
 <style scoped>
 .stock-history { display: flex; flex-direction: column; gap: var(--space-4); }
 .stock-history__header { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
-.stock-history__title { margin: 0; font-size: 0.95rem; }
-.stock-history__on-hand { margin-left: auto; color: var(--color-muted); font-size: 0.85rem; }
-.stock-history__lots { width: 100%; margin-top: var(--space-3); border-collapse: collapse; font-size: 0.85rem; }
-.stock-history__lots th { padding: var(--space-1) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); color: var(--color-muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04rem; text-align: left; text-transform: uppercase; }
-.stock-history__lots td { padding: var(--space-1) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
-.stock-history__number { text-align: right; font-variant-numeric: tabular-nums; }
-.stock-history__lots th.stock-history__number { text-align: right; }
+.stock-history__title { margin: 0; font-size: var(--font-size); }
+.stock-history__on-hand { margin-left: auto; color: var(--color-muted); font-size: var(--font-size-md); }
+.stock-history__lots { margin-top: var(--space-3); }
 .stock-history__lot--exhausted { color: var(--color-subtle); }
 </style>

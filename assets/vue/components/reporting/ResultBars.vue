@@ -27,7 +27,7 @@ const isLoss = (item) => item.value < 0;
                     <template v-else>{{ item.label }}</template>
                     <span v-if="item.meta" class="result-bars__meta">{{ item.meta }}</span>
                 </span>
-                <span :class="['result-bars__track', { 'result-bars__track--loss': isLoss(item) }]" aria-hidden="true">
+                <span :class="['track result-bars__track', { 'track--loss': isLoss(item) }]" aria-hidden="true">
                     <span class="result-bars__kept" :style="{ width: `${keptShare(item)}%` }" />
                 </span>
                 <span class="result-bars__figures">
@@ -47,7 +47,7 @@ const isLoss = (item) => item.value < 0;
     gap: var(--space-1) var(--space-3);
     margin: 0 0 var(--space-2);
     color: var(--color-muted);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
 }
 
 .result-bars__key { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-text); }
@@ -70,16 +70,15 @@ const isLoss = (item) => item.value < 0;
 
 .result-bars__name { display: flex; flex-direction: column; min-width: 0; }
 .result-bars__name a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.result-bars__meta { color: var(--color-muted); font-size: 0.8rem; }
+.result-bars__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
 
-.result-bars__track { display: flex; height: 0.5rem; overflow: hidden; border-radius: 0.25rem; background: var(--color-border); }
-.result-bars__track--loss { background: var(--color-danger-soft); box-shadow: inset 0 0 0 0.0625rem var(--color-danger); }
+.result-bars__track { height: 0.5rem; }
 .result-bars__kept { background: var(--color-accent); }
 
 .result-bars__figures { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .result-bars__value { font-weight: 600; }
 .result-bars__value--loss { color: var(--color-danger); }
-.result-bars__ratio { color: var(--color-muted); font-size: 0.8rem; }
+.result-bars__ratio { color: var(--color-muted); font-size: var(--font-size-sm); }
 
 @media (max-width: 40rem) {
     .result-bars__row { grid-template-columns: minmax(0, 1fr) auto; }

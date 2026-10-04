@@ -14,7 +14,7 @@ const { t } = useI18n();
 
 <template>
     <EmptyState v-if="movements.length === 0">{{ t('products.movements.empty') }}</EmptyState>
-    <DataTable v-else :items="movements" class="product-movements">
+    <DataTable v-else dense fit :items="movements" class="product-movements">
         <template #head>
             <tr>
                 <th>{{ t('products.movements.date') }}</th>
@@ -43,11 +43,8 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
-.product-movements :deep(.data-table__table) { min-width: 0; }
-.product-movements :deep(th),
-.product-movements :deep(td) { padding-inline: var(--space-2); }
 .product-movements__date { white-space: nowrap; color: var(--color-muted); }
-.product-movements__label { display: block; color: var(--color-muted); font-size: 0.8rem; }
+.product-movements__label { display: block; color: var(--color-muted); font-size: var(--font-size-sm); }
 .product-movements__in { color: var(--color-accent-strong); font-weight: 600; }
 .product-movements__out { color: var(--color-text); }
 </style>

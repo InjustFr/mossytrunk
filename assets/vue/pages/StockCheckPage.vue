@@ -70,7 +70,7 @@ onMounted(async () => {
             </p>
             <FormError v-if="error" class="stock-check-page__error">{{ error }}</FormError>
             <div class="stock-check-page__filters">
-                <input v-model="search" class="stock-check-page__search" type="search" :placeholder="t('stock.check.searchPlaceholder')" :aria-label="t('stock.check.searchLabel')">
+                <input v-model="search" class="control control--compact stock-check-page__search" type="search" :placeholder="t('stock.check.searchPlaceholder')" :aria-label="t('stock.check.searchLabel')">
                 <label class="stock-check-page__sold-only"><BaseSwitch v-model="soldOnly" /> {{ t('stock.check.soldOnly') }}</label>
                 <span class="stock-check-page__count">{{ t('stock.check.counted', counted.length) }}</span>
             </div>
@@ -82,8 +82,8 @@ onMounted(async () => {
 <style scoped>
 .stock-check-page__intro { margin: 0 0 var(--space-3); color: var(--color-muted); }
 .stock-check-page__filters { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-3); }
-.stock-check-page__search { min-height: 2.125rem; min-width: 13.75rem; padding: var(--space-1) var(--space-3); border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); }
-.stock-check-page__sold-only { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; }
-.stock-check-page__count { margin-left: auto; color: var(--color-muted); font-size: 0.85rem; }
+.stock-check-page__search { min-width: 13.75rem; }
+.stock-check-page__sold-only { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); }
+.stock-check-page__count { margin-left: auto; color: var(--color-muted); font-size: var(--font-size-md); }
 .stock-check-page__error { margin-bottom: var(--space-3); }
 </style>

@@ -68,9 +68,9 @@ const { t } = useI18n();
 .period-ledger__cell--upcoming,
 .period-ledger__cell--inactive { color: var(--color-subtle); }
 
-.period-ledger__label { font-size: 0.8rem; color: var(--color-muted); text-transform: capitalize; }
+.period-ledger__label { font-size: var(--font-size-sm); color: var(--color-muted); text-transform: capitalize; }
 .period-ledger__amount { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.period-ledger__status { display: inline-flex; align-items: center; gap: 0.125rem; font-size: 0.72rem; color: var(--color-muted); }
+.period-ledger__status { display: inline-flex; align-items: center; gap: 0.125rem; font-size: var(--font-size-2xs); color: var(--color-muted); }
 .period-ledger__cell--declared .period-ledger__status { color: var(--color-accent-strong); }
 .period-ledger__cell--late .period-ledger__status { color: var(--color-danger); }
 .period-ledger__cell--due .period-ledger__status,

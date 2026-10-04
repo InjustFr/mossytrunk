@@ -57,5 +57,5 @@ defineProps({
 
 .auth-layout__language { display: flex; justify-content: center; margin-top: var(--space-4); }
 
-.auth-layout__footer { margin: var(--space-4) 0 0; text-align: center; font-size: 0.9rem; }
+.auth-layout__footer { margin: var(--space-4) 0 0; text-align: center; font-size: var(--font-size-md); }
 </style>

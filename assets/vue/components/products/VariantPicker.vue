@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
+import EmptyState from '../ui/EmptyState.vue';
 
 const props = defineProps({
     options: { type: Array, required: true },
@@ -39,7 +40,7 @@ watch(() => [props.required, props.options], () => {
     <ToggleGroupRoot v-if="choices.length" v-model="ordered" type="multiple" class="variant-picker" :aria-label="t('products.variantPicker.label')">
         <ToggleGroupItem v-for="choice in choices" :key="choice" :value="choice" class="chip chip--accent variant-picker__chip">{{ choice }}</ToggleGroupItem>
     </ToggleGroupRoot>
-    <p v-else class="variant-picker__empty">{{ empty ?? t('products.variantPicker.empty') }}</p>
+    <EmptyState v-else inline class="variant-picker__empty">{{ empty ?? t('products.variantPicker.empty') }}</EmptyState>
 </template>
 
 <style scoped>
@@ -47,5 +48,5 @@ watch(() => [props.required, props.options], () => {
 
 .variant-picker__chip { min-width: 2.75rem; }
 
-.variant-picker__empty { margin: 0; padding-top: 0.5625rem; color: var(--color-muted); font-size: 0.875rem; }
+.variant-picker__empty { padding-top: 0.5625rem; }
 </style>

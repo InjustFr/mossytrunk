@@ -40,11 +40,11 @@ const placeholder = (token) => `{${token}}`;
     background: var(--color-surface);
     color: var(--color-ink);
     font: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     cursor: pointer;
     transition: border-color var(--transition), background var(--transition);
 }
 
 .reference-tokens__token:hover { border-color: var(--color-accent); background: var(--color-accent-soft); }
-.reference-tokens__code { color: var(--color-muted); font-size: 0.75rem; }
+.reference-tokens__code { color: var(--color-muted); font-size: var(--font-size-xs); }
 </style>

@@ -49,9 +49,9 @@ const payment = (method) => (method && te(`orders.payment.${method}`) ? t(`order
 .order-to-check__body { flex: 1; min-width: 0; }
 .order-to-check__header { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
 .order-to-check__reference { color: var(--color-ink); font-weight: 600; }
-.order-to-check__meta { color: var(--color-muted); font-size: 0.85rem; }
+.order-to-check__meta { color: var(--color-muted); font-size: var(--font-size-md); }
 .order-to-check__total { margin-left: auto; font-weight: 600; }
-.order-to-check__lines { display: flex; flex-direction: column; gap: 0.125rem; margin: var(--space-2) 0 0; padding: 0; list-style: none; font-size: 0.9rem; }
+.order-to-check__lines { display: flex; flex-direction: column; gap: 0.125rem; margin: var(--space-2) 0 0; padding: 0; list-style: none; font-size: var(--font-size-md); }
 .order-to-check__line { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .order-to-check--checked .order-to-check__lines { color: var(--color-muted); }
 </style>

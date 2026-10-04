@@ -144,6 +144,6 @@ async function onSubmit() {
 .move-variant-form__modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); }
 
 .move-variant-form__choice { display: flex; flex-direction: column; gap: 0.125rem; }
-.move-variant-form__name { font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
-.move-variant-form__description { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.35; }
+.move-variant-form__name { font-size: var(--font-size-md); font-weight: 500; color: var(--color-ink); }
+.move-variant-form__description { color: var(--color-muted); font-size: var(--font-size-sm); line-height: 1.35; }
 </style>

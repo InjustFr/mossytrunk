@@ -21,7 +21,7 @@ import { CheckboxIndicator, CheckboxRoot } from 'reka-ui';
     height: 1.125rem;
     padding: 0;
     border: 0.0625rem solid var(--color-border-strong);
-    border-radius: 0.25rem;
+    border-radius: var(--radius-sm);
     background: var(--color-surface);
     color: var(--color-on-accent);
     cursor: pointer;

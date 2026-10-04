@@ -51,6 +51,6 @@ const follows = (product) => !props.channel.main && ownPriceOn(product, props.ch
 <style scoped>
 .channel-prices__product { color: inherit; text-decoration: none; font-weight: 500; }
 .channel-prices__product:hover { text-decoration: underline; text-underline-offset: 0.1875rem; }
-.channel-prices__reference { display: block; color: var(--color-muted); font-size: 0.8125rem; }
+.channel-prices__reference { display: block; color: var(--color-muted); font-size: var(--font-size-sm); }
 .channel-prices__follows { color: var(--color-muted); }
 </style>

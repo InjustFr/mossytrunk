@@ -182,5 +182,5 @@ onMounted(async () => {
 <style scoped>
 .settings-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .settings-page__workspace { margin: 0; color: var(--color-muted); }
-.settings-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: 0.9rem; }
+.settings-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

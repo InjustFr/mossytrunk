@@ -68,6 +68,7 @@ function cancel() {
         <div v-else class="supplier-select__create">
             <input
                 ref="input"
+                class="control"
                 v-model="newName"
                 type="text"
                 :placeholder="t('purchasing.supplierSelect.namePlaceholder')"
@@ -75,7 +76,7 @@ function cancel() {
                 @keydown.enter.prevent="confirm"
                 @keydown.esc.prevent.stop="cancel"
             >
-            <div class="supplier-select__actions">
+            <div class="actions-row">
                 <BaseButton variant="ghost" @click="cancel">{{ t('purchasing.supplierSelect.cancel') }}</BaseButton>
                 <BaseButton variant="secondary" :loading="saving" @click="confirm">{{ t('purchasing.supplierSelect.create') }}</BaseButton>
             </div>
@@ -87,5 +88,4 @@ function cancel() {
 <style scoped>
 .supplier-select { display: flex; flex-direction: column; gap: var(--space-1); }
 .supplier-select__create { display: flex; flex-direction: column; gap: var(--space-2); }
-.supplier-select__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

@@ -29,6 +29,6 @@ const describe = (option) => (option.count === undefined ? t(option.description)
 .service-options { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .service-options__text { display: flex; flex-direction: column; gap: 0.125rem; }
-.service-options__name { font-size: 0.875rem; font-weight: 500; color: var(--color-ink); }
-.service-options__description { color: var(--color-muted); font-size: 0.8125rem; line-height: 1.4; }
+.service-options__name { font-size: var(--font-size-md); font-weight: 500; color: var(--color-ink); }
+.service-options__description { color: var(--color-muted); font-size: var(--font-size-sm); line-height: 1.4; }
 </style>

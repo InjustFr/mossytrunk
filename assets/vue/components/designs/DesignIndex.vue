@@ -33,7 +33,7 @@ const selectedOption = computed({
 
 <template>
     <nav class="design-index" :aria-label="t('designs.index.label')">
-        <input v-model="search" class="design-index__search" type="search" :placeholder="t('designs.index.placeholder')" :aria-label="t('designs.index.search')">
+        <input v-model="search" class="control control--compact design-index__search" type="search" :placeholder="t('designs.index.placeholder')" :aria-label="t('designs.index.search')">
         <BaseSelect v-model="selectedOption" :options="options" :aria-label="t('designs.index.label')" class="design-index__select" />
         <ul class="design-index__list">
             <li>
@@ -66,14 +66,7 @@ const selectedOption = computed({
 <style scoped>
 .design-index { display: flex; flex-direction: column; gap: var(--space-3); }
 
-.design-index__search {
-    width: 100%;
-    min-height: 2.125rem;
-    padding: var(--space-1) var(--space-3);
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-}
+.design-index__search { width: 100%; }
 
 .design-index :deep(.design-index__select) { display: none; }
 .design-index__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
@@ -89,20 +82,20 @@ const selectedOption = computed({
     background: none;
     color: var(--color-text);
     font: inherit;
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     text-align: left;
     cursor: pointer;
     transition: background var(--transition), border-color var(--transition);
 }
 
 .design-index__entry:hover { background: var(--color-surface); }
-.design-index__entry:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
+.design-index__entry:focus-visible { outline-offset: -0.125rem; }
 .design-index__entry--selected { border-left-color: var(--color-ink); background: var(--color-surface); font-weight: 600; }
 .design-index__entry--done { color: var(--color-muted); }
 .design-index__bench { flex-shrink: 0; width: 0.4375rem; height: 0.4375rem; border-radius: 50%; background: var(--color-accent); }
 .design-index__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .design-index__name--loose { font-style: italic; }
-.design-index__tally { flex-shrink: 0; color: var(--color-muted); font-size: 0.8125rem; font-variant-numeric: tabular-nums; font-weight: 400; }
+.design-index__tally { flex-shrink: 0; color: var(--color-muted); font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; font-weight: 400; }
 
 @media (max-width: 56rem) {
     .design-index :deep(.design-index__select) { display: flex; }

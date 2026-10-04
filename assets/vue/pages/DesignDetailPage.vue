@@ -141,10 +141,10 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
 <style scoped>
 .design-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .design-page__meta { display: flex; align-items: center; gap: var(--space-4); color: var(--color-muted); }
-.design-page__bench { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-text); font-size: 0.9rem; }
+.design-page__bench { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--color-text); font-size: var(--font-size-md); }
 .design-page__notes { max-width: 45rem; margin: 0; white-space: pre-line; }
 .design-page__decline { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 .design-page__decline-label { font-weight: 600; }
-.design-page__hint { color: var(--color-muted); font-size: 0.85rem; }
+.design-page__hint { color: var(--color-muted); font-size: var(--font-size-md); }
 .design-page__declinations { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: var(--space-4); align-items: start; }
 </style>

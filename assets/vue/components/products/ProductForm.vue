@@ -179,5 +179,5 @@ async function onSubmit() {
 .product-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .product-form__price,
 .product-form__threshold { max-width: 11rem; }
-.product-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; color: var(--color-text); }
+.product-form__fact { margin: 0; padding-top: 0.5625rem; font-size: var(--font-size-md); color: var(--color-text); }
 </style>

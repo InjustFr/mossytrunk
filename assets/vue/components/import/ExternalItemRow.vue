@@ -71,7 +71,7 @@ const itemName = computed(() => (props.item.variation ? `${props.item.label} —
 .external-item { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3) 0; border-bottom: 0.0625rem solid var(--color-border); }
 .external-item__source { display: flex; flex-direction: column; min-width: 0; }
 .external-item__title { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
-.external-item__variation { color: var(--color-muted); font-size: 0.85rem; }
+.external-item__variation { color: var(--color-muted); font-size: var(--font-size-md); }
 .external-item__target { display: flex; align-items: center; gap: var(--space-2); }
 .external-item__target > :first-child { flex: 1; min-width: 0; }
 .external-item--linked .external-item__title { font-weight: 400; color: var(--color-muted); }

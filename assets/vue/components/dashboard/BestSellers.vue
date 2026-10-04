@@ -50,7 +50,7 @@ const share = (sales, rows) => `${(sales / Math.max(1, ...rows.map((row) => row.
 }
 
 .best-sellers__name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.best-sellers__quantity { color: var(--color-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.best-sellers__quantity { color: var(--color-muted); font-size: var(--font-size-md); font-variant-numeric: tabular-nums; }
 .best-sellers__sales { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .best-sellers__bar { grid-column: 1 / -1; height: 0.25rem; border-radius: 0.125rem; background: var(--color-border-strong); }
 </style>

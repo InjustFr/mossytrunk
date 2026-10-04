@@ -72,13 +72,13 @@ async function onSubmit() {
 
 <style scoped>
 .merge-order-form { display: flex; flex-direction: column; gap: var(--space-4); }
-.merge-order-form__intro { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
+.merge-order-form__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .merge-order-form__orders { display: flex; flex-direction: column; gap: var(--space-2); max-height: 40vh; overflow-y: auto; }
 
 .merge-order-form__order { align-items: center; }
 
 .merge-order-form__summary { display: flex; flex: 1; flex-direction: column; min-width: 0; }
 .merge-order-form__when { color: var(--color-ink); font-weight: 500; }
-.merge-order-form__meta { color: var(--color-muted); font-size: 0.8125rem; }
-.merge-order-form__total { font-variant-numeric: tabular-nums; font-weight: 600; }
+.merge-order-form__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
+.merge-order-form__total { font-weight: 600; }
 </style>

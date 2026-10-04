@@ -96,14 +96,14 @@ const barStyle = (result) => {
 .monthly-chart__slot:focus-visible { background: var(--color-bg); }
 
 .monthly-chart__bar { position: absolute; left: 50%; width: min(56%, 3.5rem); transform: translateX(-50%); }
-.monthly-chart__bar--gain { background: var(--color-accent); border-radius: 0.25rem 0.25rem 0 0; }
-.monthly-chart__bar--loss { background: var(--color-danger); border-radius: 0 0 0.25rem 0.25rem; }
+.monthly-chart__bar--gain { background: var(--color-accent); border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.monthly-chart__bar--loss { background: var(--color-danger); border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
 
 .monthly-chart__value {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     font-weight: 600;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
@@ -124,7 +124,7 @@ const barStyle = (result) => {
     white-space: nowrap;
     background: var(--color-ink);
     color: var(--color-surface);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     border-radius: var(--radius);
     pointer-events: none;
 }
@@ -133,7 +133,7 @@ const barStyle = (result) => {
     display: grid;
     gap: var(--space-2);
     text-align: center;
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--color-muted);
 }
 </style>

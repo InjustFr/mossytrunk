@@ -67,6 +67,6 @@ async function onSubmit() {
 
 <style scoped>
 .channel-price-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.channel-price-form__follow { display: flex; align-items: center; gap: var(--space-2); font-size: 0.875rem; cursor: pointer; }
+.channel-price-form__follow { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); cursor: pointer; }
 .channel-price-form__amount { max-width: 11rem; }
 </style>

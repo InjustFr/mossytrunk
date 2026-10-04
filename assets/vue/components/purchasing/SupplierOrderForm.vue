@@ -231,7 +231,7 @@ async function onSubmit() {
                             <td><BaseNumberField v-model="line.quantity" :min="1" :label="t('purchasing.form.quantityOf', { label: line.label })" /></td>
                             <td v-if="received"><BaseNumberField v-model="line.received" :min="0" :label="t('purchasing.form.receivedOf', { label: line.label })" /></td>
                             <td class="supplier-order-form__price"><BaseMoneyField v-model="line.totalPrice" :currency="form.currency" :aria-label="t('purchasing.form.totalPriceOf', { label: line.label })" /></td>
-                            <td class="supplier-order-form__unit-cost"><span aria-hidden="true">{{ t('purchasing.form.unitCost') }}</span> <MoneyAmount :cents="unitCost(line, index)" /></td>
+                            <td class="supplier-order-form__unit-cost"><span aria-hidden="true">{{ t('purchasing.form.unitCost') }}</span> <MoneyAmount class="supplier-order-form__unit-amount" :cents="unitCost(line, index)" /></td>
                             <td><IconButton :icon="X" :label="t('purchasing.form.remove', { label: line.label })" @click="form.lines.splice(index, 1)" /></td>
                         </tr>
                     </tbody>
@@ -294,7 +294,7 @@ async function onSubmit() {
 .supplier-order-form__lines,
 .supplier-order-form__lines tbody,
 .supplier-order-form__lines tfoot { display: block; }
-.supplier-order-form__lines { font-size: 0.875rem; }
+.supplier-order-form__lines { font-size: var(--font-size-md); }
 
 .supplier-order-form__head {
     position: absolute;
@@ -319,7 +319,7 @@ async function onSubmit() {
 .supplier-order-form__label { grid-column: 1 / -1; color: var(--color-ink); font-weight: 500; }
 
 .supplier-order-form__unit-cost { color: var(--color-muted); text-align: right; font-variant-numeric: tabular-nums; }
-.supplier-order-form__unit-cost :deep(.money) { margin-left: var(--space-1); color: var(--color-ink); }
+.supplier-order-form__unit-amount { margin-left: var(--space-1); color: var(--color-ink); }
 
 .supplier-order-form__subtotal {
     display: flex;
@@ -330,7 +330,7 @@ async function onSubmit() {
 }
 
 .supplier-order-form__subtotal td { padding: 0; }
-.supplier-order-form__line-error { display: block; margin: 0; color: var(--color-danger); font-size: 0.8125rem; }
+.supplier-order-form__line-error { display: block; margin: 0; color: var(--color-danger); font-size: var(--font-size-sm); }
 
 .supplier-order-form__total {
     display: flex;
@@ -339,15 +339,15 @@ async function onSubmit() {
     margin: 0;
     padding-top: var(--space-3);
     border-top: 0.0625rem solid var(--color-border);
-    font-size: 0.875rem;
+    font-size: var(--font-size-md);
     font-weight: 500;
 }
 
 .supplier-order-form__total strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--color-ink); font-variant-numeric: tabular-nums; }
-.supplier-order-form__draft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-accent-soft); font-size: 0.875rem; }
+.supplier-order-form__draft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-accent-soft); font-size: var(--font-size-md); }
 .supplier-order-form :deep(.supplier-order-form__currency) { max-width: 11rem; }
-.supplier-order-form__in-euros { color: var(--color-muted); font-size: 0.8125rem; }
-.supplier-order-form__deduced { margin: 0; color: var(--color-muted); font-size: 0.875rem; }
+.supplier-order-form__in-euros { color: var(--color-muted); font-size: var(--font-size-sm); }
+.supplier-order-form__deduced { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .supplier-order-form__adjust { display: inline-flex; align-self: flex-start; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 
 .supplier-order-form__adjust-mode {
@@ -357,12 +357,12 @@ async function onSubmit() {
     background: var(--color-surface);
     color: var(--color-muted);
     font: inherit;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     cursor: pointer;
     transition: background var(--transition), color var(--transition);
 }
 
 .supplier-order-form__adjust-mode + .supplier-order-form__adjust-mode { border-left: 0.0625rem solid var(--color-border-strong); }
 .supplier-order-form__adjust-mode[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
-.supplier-order-form__adjust-mode:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
+.supplier-order-form__adjust-mode:focus-visible { outline-offset: -0.125rem; }
 </style>

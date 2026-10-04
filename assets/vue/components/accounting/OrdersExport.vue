@@ -57,5 +57,5 @@ const ready = computed(() => Boolean(range.value.from && range.value.to));
 
 .orders-export__custom { max-width: 24rem; }
 .orders-export__footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
-.orders-export__summary { margin: 0; color: var(--color-muted); font-size: 0.9rem; }
+.orders-export__summary { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

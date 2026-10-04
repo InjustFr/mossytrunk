@@ -12,7 +12,7 @@ defineProps({
 </script>
 
 <template>
-    <NumberFieldRoot :locale="intlLocale()" class="number-field">
+    <NumberFieldRoot :locale="intlLocale()" class="control number-field">
         <NumberFieldInput class="number-field__input" :aria-label="label" />
         <NumberFieldDecrement class="number-field__step number-field__step--decrement" :aria-label="t('ui.number.decrement')"><Minus size="0.875rem" aria-hidden="true" /></NumberFieldDecrement>
         <NumberFieldIncrement class="number-field__step" :aria-label="t('ui.number.increment')"><Plus size="0.875rem" aria-hidden="true" /></NumberFieldIncrement>
@@ -20,36 +20,19 @@ defineProps({
 </template>
 
 <style scoped>
-.number-field {
-    display: flex;
-    align-items: stretch;
-    width: 100%;
-    min-height: 2.375rem;
-    border: 0.0625rem solid var(--color-border-strong);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    overflow: hidden;
-    transition: border-color var(--transition), box-shadow var(--transition);
-}
+.number-field { display: flex; align-items: stretch; padding: 0; overflow: hidden; }
 
-.number-field:focus-within {
-    border-color: var(--color-accent);
-    box-shadow: var(--focus-ring);
-}
-
-.number-field .number-field__input {
+.number-field__input {
     flex: 1;
     min-width: 0;
-    min-height: auto;
     padding: var(--space-2) var(--space-1);
     border: none;
     background: none;
-    box-shadow: none;
     text-align: center;
     font-variant-numeric: tabular-nums;
 }
 
-.number-field .number-field__input:focus { outline: none; border: none; box-shadow: none; }
+.number-field__input:focus { outline: none; }
 
 .number-field__step {
     display: inline-flex;

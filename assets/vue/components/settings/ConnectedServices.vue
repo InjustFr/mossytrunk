@@ -53,7 +53,7 @@ function status(service) {
                     <a href="/orders">{{ t('settings.connected.itemsToLink', service.connection.itemsToLink) }}</a>
                 </p>
             </div>
-            <div class="connected-services__actions">
+            <div class="actions-row connected-services__actions">
                 <CatalogueImportButton
                     v-if="service.importsCatalogue"
                     :label="t('settings.connected.importCatalogue')"
@@ -134,15 +134,14 @@ function status(service) {
 .connected-services__name { font-family: var(--font-display); font-size: 1.125rem; color: var(--color-ink); }
 .connected-services__account { color: var(--color-muted); }
 
-.connected-services__options { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-5); margin: 0; font-size: 0.875rem; }
+.connected-services__options { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-5); margin: 0; font-size: var(--font-size-md); }
 .connected-services__options div { display: flex; gap: var(--space-2); }
 .connected-services__options dt { color: var(--color-muted); }
 .connected-services__options dd { margin: 0; color: var(--color-text); }
 
-.connected-services__waiting { margin: 0; font-size: 0.875rem; }
+.connected-services__waiting { margin: 0; font-size: var(--font-size-md); }
 .connected-services__waiting a { color: var(--color-warning); }
 
-.connected-services__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: var(--space-2); }
 
 @media (max-width: 40rem) {
     .connected-services__row { grid-template-columns: auto 1fr; }

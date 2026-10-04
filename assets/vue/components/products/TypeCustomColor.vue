@@ -31,9 +31,9 @@ function add() {
             <Plus size="1rem" aria-hidden="true" />
         </PopoverTrigger>
         <PopoverPortal>
-            <PopoverContent class="type-custom-color" side="bottom" align="start" :side-offset="8" :aria-label="t('products.colors.custom')">
+            <PopoverContent class="popover type-custom-color" side="bottom" align="start" :side-offset="8" :aria-label="t('products.colors.custom')">
                 <ColorPanel v-model="draft" />
-                <div class="type-custom-color__actions">
+                <div class="actions-row">
                     <PopoverClose as-child><BaseButton variant="ghost">{{ t('products.cancel') }}</BaseButton></PopoverClose>
                     <BaseButton variant="secondary" @click="add">{{ t('products.colors.add') }}</BaseButton>
                 </div>
@@ -60,22 +60,15 @@ function add() {
 
 .type-custom-color__trigger:hover,
 .type-custom-color__trigger[data-state='open'] { border-color: var(--color-ink); color: var(--color-ink); }
-.type-custom-color__trigger:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: 0.25rem; }
+.type-custom-color__trigger:focus-visible { outline-offset: 0.25rem; }
 </style>
 
 <style>
 .type-custom-color {
-    z-index: 60;
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
     width: 15rem;
     padding: var(--space-3);
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    background: var(--color-surface);
-    box-shadow: var(--shadow);
 }
-
-.type-custom-color__actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 </style>

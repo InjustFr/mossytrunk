@@ -2,6 +2,7 @@
 import { X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 
 const props = defineProps({
@@ -17,7 +18,7 @@ const label = (line) => (line.variant ? `${nameOf(line)} — ${line.variant}` : 
 </script>
 
 <template>
-    <p v-if="lines.length === 0" class="order-draft-lines__empty">{{ t('orders.draft.empty') }}</p>
+    <EmptyState v-if="lines.length === 0" inline>{{ t('orders.draft.empty') }}</EmptyState>
     <TransitionGroup name="order-draft-lines__line" tag="ul" class="order-draft-lines">
         <li v-for="line in lines" :key="line.key" class="order-draft-lines__line">
             <span class="order-draft-lines__label">
@@ -42,7 +43,6 @@ const label = (line) => (line.variant ? `${nameOf(line)} — ${line.variant}` : 
 <style scoped>
 .order-draft-lines { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .order-draft-lines:empty { display: none; }
-.order-draft-lines__empty { margin: 0; color: var(--color-subtle); font-size: 0.875rem; }
 
 .order-draft-lines__line {
     display: grid;
@@ -55,9 +55,9 @@ const label = (line) => (line.variant ? `${nameOf(line)} — ${line.variant}` : 
 
 .order-draft-lines__line:first-child { border-top: 0.0625rem solid var(--color-border); }
 .order-draft-lines__label { display: flex; flex-direction: column; min-width: 0; }
-.order-draft-lines__name { color: var(--color-ink); font-size: 0.9rem; }
-.order-draft-lines__detail { color: var(--color-muted); font-size: 0.8125rem; }
-.order-draft-lines__total { text-align: right; font-variant-numeric: tabular-nums; }
+.order-draft-lines__name { color: var(--color-ink); font-size: var(--font-size-md); }
+.order-draft-lines__detail { color: var(--color-muted); font-size: var(--font-size-sm); }
+.order-draft-lines__total { text-align: right; }
 
 .order-draft-lines__remove {
     display: inline-flex;

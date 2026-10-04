@@ -78,12 +78,12 @@ watch(() => change.value.target, (targetId) => {
                         <ToggleGroupRoot
                             :model-value="change.unit"
                             type="single"
-                            class="batch-channel-price__units"
+                            class="segmented"
                             :aria-label="t('products.channelPrice.unit')"
                             @update:model-value="(unit) => unit && (change.unit = unit)"
                         >
-                            <ToggleGroupItem :value="ADJUSTMENT_UNITS.percent" class="batch-channel-price__unit">%</ToggleGroupItem>
-                            <ToggleGroupItem :value="ADJUSTMENT_UNITS.cents" class="batch-channel-price__unit">€</ToggleGroupItem>
+                            <ToggleGroupItem :value="ADJUSTMENT_UNITS.percent" class="segmented__item">%</ToggleGroupItem>
+                            <ToggleGroupItem :value="ADJUSTMENT_UNITS.cents" class="segmented__item">€</ToggleGroupItem>
                         </ToggleGroupRoot>
                     </div>
                 </FormField>
@@ -105,24 +105,9 @@ watch(() => change.value.target, (targetId) => {
 .batch-channel-price__select { max-width: 16rem; }
 .batch-channel-price__amount { max-width: 11rem; }
 .batch-channel-price__adjustment { display: flex; align-items: center; gap: var(--space-2); }
-.batch-channel-price__units { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 
-.batch-channel-price__unit {
-    min-width: 2.375rem;
-    min-height: 2.375rem;
-    padding: 0 var(--space-2);
-    border: none;
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font: inherit;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition);
-}
 
-.batch-channel-price__unit + .batch-channel-price__unit { border-left: 0.0625rem solid var(--color-border-strong); }
-.batch-channel-price__unit[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
-.batch-channel-price__unit:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
-.batch-channel-price__previews { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: var(--space-2) var(--space-3); list-style: none; border-radius: var(--radius); background: var(--color-bg); font-size: 0.8125rem; }
+.batch-channel-price__previews { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: var(--space-2) var(--space-3); list-style: none; border-radius: var(--radius); background: var(--color-bg); font-size: var(--font-size-sm); }
 .batch-channel-price__preview { display: flex; align-items: center; gap: var(--space-2); font-variant-numeric: tabular-nums; }
 .batch-channel-price__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-muted); }
 </style>

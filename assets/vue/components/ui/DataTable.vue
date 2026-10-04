@@ -9,6 +9,9 @@ const props = defineProps({
     items: { type: Array, default: null },
     pageSize: { type: Number, default: 20 },
     rememberPage: { type: Boolean, default: false },
+    dense: { type: Boolean, default: false },
+    fit: { type: Boolean, default: false },
+    fixed: { type: Boolean, default: false },
 });
 
 const pagination = usePagination(
@@ -21,7 +24,7 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 </script>
 
 <template>
-    <div class="data-table">
+    <div :class="['data-table', { 'data-table--dense': dense, 'data-table--fit': fit, 'data-table--fixed': fixed }]">
         <ScrollAreaRoot class="data-table__scroll" type="hover">
             <ScrollAreaViewport class="data-table__viewport">
                 <table class="data-table__table">
@@ -70,6 +73,8 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 }
 
 .data-table__table { width: 100%; min-width: 40rem; border-collapse: collapse; }
+.data-table--fit .data-table__table { min-width: 0; }
+.data-table--fixed .data-table__table { table-layout: fixed; }
 
 .data-table :deep(th),
 .data-table :deep(td) {
@@ -80,12 +85,15 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
 }
 
 .data-table :deep(th) {
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--color-muted);
     white-space: nowrap;
     border-bottom-color: var(--color-border-strong);
 }
+
+.data-table--dense :deep(th),
+.data-table--dense :deep(td) { padding-inline: var(--space-2); }
 
 .data-table__body :deep(tr) { transition: background var(--transition); }
 .data-table__body :deep(tr:hover) { background: var(--color-hover); }

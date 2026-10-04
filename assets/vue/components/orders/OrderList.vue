@@ -54,19 +54,19 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 
 <template>
     <EmptyState v-if="orders.length === 0">{{ filtered ? t('orders.list.noMatch') : t('orders.list.empty') }}</EmptyState>
-    <DataTable remember-page v-else :items="grouped" class="order-list">
+    <DataTable remember-page fixed v-else :items="grouped" class="order-list">
         <template #head>
             <tr>
                 <th class="order-list__check">
                     <BaseCheckbox :model-value="allChecked" :aria-label="t('orders.list.selectAll')" @update:model-value="checkAll" />
                 </th>
-                <th>{{ t('orders.list.reference') }}</th>
-                <th>{{ t('orders.list.time') }}</th>
-                <th class="data-table__cell--number">{{ t('orders.list.items') }}</th>
-                <th class="data-table__cell--number">{{ t('orders.list.discounts') }}</th>
-                <th class="data-table__cell--number">{{ t('orders.list.total') }}</th>
-                <th class="data-table__cell--number" :title="t('orders.list.profitHint')">{{ t('orders.list.profit') }}</th>
-                <th>{{ t('orders.list.payment') }}</th>
+                <th class="order-list__col-reference">{{ t('orders.list.reference') }}</th>
+                <th class="order-list__col-time">{{ t('orders.list.time') }}</th>
+                <th class="data-table__cell--number order-list__col-figure">{{ t('orders.list.items') }}</th>
+                <th class="data-table__cell--number order-list__col-figure">{{ t('orders.list.discounts') }}</th>
+                <th class="data-table__cell--number order-list__col-figure">{{ t('orders.list.total') }}</th>
+                <th class="data-table__cell--number order-list__col-figure" :title="t('orders.list.profitHint')">{{ t('orders.list.profit') }}</th>
+                <th class="order-list__col-payment">{{ t('orders.list.payment') }}</th>
                 <th>{{ t('orders.list.source') }}</th>
             </tr>
         </template>
@@ -133,35 +133,31 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
 </template>
 
 <style scoped>
-.order-list :deep(.data-table__table) { table-layout: fixed; }
-.order-list :deep(th.order-list__check) { width: 2.5rem; }
-.order-list :deep(th:nth-child(2)) { width: 17%; }
-.order-list :deep(th:nth-child(3)) { width: 9%; }
-.order-list :deep(th:nth-child(8)) { width: 12%; }
-.order-list :deep(th:nth-child(4)),
-.order-list :deep(th:nth-child(5)),
-.order-list :deep(th:nth-child(6)),
-.order-list :deep(th:nth-child(7)) { width: 10%; }
+.order-list__check { width: 2.5rem; }
+.order-list__col-reference { width: 17%; }
+.order-list__col-time { width: 9%; }
+.order-list__col-figure { width: 10%; }
+.order-list__col-payment { width: 12%; }
 
 .order-list__day > * { padding-top: var(--space-4); background: var(--color-bg); border-bottom-color: var(--color-border-strong); }
 .order-list__day th { text-align: left; font-size: inherit; color: inherit; white-space: normal; }
 .order-list__date { font-weight: 600; color: var(--color-ink); }
 .order-list__event { margin-left: var(--space-3); color: var(--color-muted); font-weight: 400; }
 .order-list__day-total { font-weight: 700; }
-.order-list__day-count { color: var(--color-muted); font-size: 0.875rem; }
+.order-list__day-count { color: var(--color-muted); font-size: var(--font-size-md); }
 
 .order-list__time { font-variant-numeric: tabular-nums; }
 .order-list__row--unassigned > td:first-child { box-shadow: inset 0.1875rem 0 0 var(--color-warning); }
 .order-list__row--unassigned { background: var(--color-warning-soft); }
 .order-list__unassigned { margin-right: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
-.order-list__payment { color: var(--color-muted); font-size: 0.875rem; }
+.order-list__payment { color: var(--color-muted); font-size: var(--font-size-md); }
 .order-list__total { font-weight: 600; }
 .order-list__total--refunded { color: var(--color-subtle); text-decoration: line-through; }
 .order-list__none { color: var(--color-subtle); }
 
-.order-list__reference { font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.order-list__source { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.order-list__external { margin-left: var(--space-2); color: var(--color-subtle); font-size: 0.75rem; }
+.order-list__reference { font-size: var(--font-size-sm); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order-list__source { font-size: var(--font-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.order-list__external { margin-left: var(--space-2); color: var(--color-subtle); font-size: var(--font-size-xs); }
 
 .order-list__row--new { animation: order-list-highlight 2.4s ease-out; }
 

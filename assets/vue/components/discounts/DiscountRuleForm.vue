@@ -176,7 +176,7 @@ async function onSubmit() {
                         <div class="discount-rule-form__group">
                             <ol class="discount-rule-form__targets">
                                 <li v-for="(target, position) in condition.targets" :key="position" :class="['discount-rule-form__target-row', { 'discount-rule-form__target-row--alternative': position > 0 }]">
-                                    <span v-if="position > 0" class="discount-rule-form__or">{{ t('discounts.form.or') }}</span>
+                                    <span v-if="position > 0" class="eyebrow discount-rule-form__or">{{ t('discounts.form.or') }}</span>
                                     <ToggleGroupRoot
                                         :model-value="target.kind"
                                         type="single"
@@ -309,18 +309,18 @@ async function onSubmit() {
         "kinds remove-target"
         "target target";
 }
-.discount-rule-form__or { grid-area: or; color: var(--color-muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.discount-rule-form__or { grid-area: or; }
 .discount-rule-form__condition-kinds { grid-area: kinds; }
 .discount-rule-form__target-row :deep(.discount-rule-form__remove-target) { grid-area: remove-target; }
 .discount-rule-form__condition :deep(.discount-rule-form__remove) { grid-area: remove; }
 .discount-rule-form__target { grid-area: target; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
 .discount-rule-form__target--with-variant { grid-template-columns: minmax(0, 1fr) auto; }
-.discount-rule-form__condition-error { grid-column: 1 / -1; margin: 0; color: var(--color-danger); font-size: 0.85rem; }
+.discount-rule-form__condition-error { grid-column: 1 / -1; margin: 0; color: var(--color-danger); font-size: var(--font-size-md); }
 .discount-rule-form__add { align-self: flex-start; }
 
 .discount-rule-form__value { display: flex; align-items: center; gap: var(--space-2); max-width: 11rem; }
 .discount-rule-form__unit { color: var(--color-muted); }
-.discount-rule-form__fact { margin: 0; padding-top: 0.5625rem; font-size: 0.875rem; color: var(--color-muted); }
+.discount-rule-form__fact { margin: 0; padding-top: 0.5625rem; font-size: var(--font-size-md); color: var(--color-muted); }
 .discount-rule-form__fact strong { color: var(--color-ink); font-weight: 600; }
 
 .discount-rule-form__kinds { display: flex; flex-wrap: wrap; gap: var(--space-1); }
@@ -329,5 +329,5 @@ async function onSubmit() {
     .discount-rule-form__condition { grid-template-areas: "quantity times . remove" "group group group group"; }
     .discount-rule-form__target--with-variant { grid-template-columns: minmax(0, 1fr); }
 }
-.discount-rule-form__priced-on { display: block; color: var(--color-muted); font-size: 0.75rem; }
+.discount-rule-form__priced-on { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
 </style>

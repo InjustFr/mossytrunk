@@ -44,5 +44,5 @@ const { t } = useI18n();
 
 <style scoped>
 .login-form { display: flex; flex-direction: column; gap: var(--space-4); }
-.login-form__remember { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; color: var(--color-muted); }
+.login-form__remember { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); color: var(--color-muted); }
 </style>

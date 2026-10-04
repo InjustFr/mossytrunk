@@ -21,5 +21,5 @@ const options = computed(() => [{ value: '', label: t('orders.eventFilter.all') 
 
 <style scoped>
 .event-filter { display: inline-flex; align-items: center; gap: var(--space-2); }
-.event-filter__label { color: var(--color-muted); font-size: 0.9rem; }
+.event-filter__label { color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

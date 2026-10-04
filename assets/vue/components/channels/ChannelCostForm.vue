@@ -68,11 +68,11 @@ async function onSubmit() {
                         <ToggleGroupRoot
                             :model-value="form.kind"
                             type="single"
-                            class="channel-cost-form__kinds"
+                            class="segmented"
                             :aria-label="t('channels.costs.kind')"
                             @update:model-value="(kind) => kind && (form.kind = kind)"
                         >
-                            <ToggleGroupItem v-for="kind in Object.values(COST_KINDS)" :key="kind" :value="kind" class="channel-cost-form__kind">{{ t(`channels.costs.kinds.${kind}`) }}</ToggleGroupItem>
+                            <ToggleGroupItem v-for="kind in Object.values(COST_KINDS)" :key="kind" :value="kind" class="segmented__item">{{ t(`channels.costs.kinds.${kind}`) }}</ToggleGroupItem>
                         </ToggleGroupRoot>
                     </div>
                 </FormField>
@@ -89,21 +89,6 @@ async function onSubmit() {
 .channel-cost-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .channel-cost-form__amount { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
 .channel-cost-form__field { max-width: 9rem; }
-.channel-cost-form__kinds { display: inline-flex; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }
 
-.channel-cost-form__kind {
-    min-height: 2.375rem;
-    padding: 0 var(--space-3);
-    border: none;
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font: inherit;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background var(--transition), color var(--transition);
-}
 
-.channel-cost-form__kind + .channel-cost-form__kind { border-left: 0.0625rem solid var(--color-border-strong); }
-.channel-cost-form__kind[data-state='on'] { background: var(--color-ink); color: var(--color-surface); }
-.channel-cost-form__kind:focus-visible { outline: 0.125rem solid var(--color-accent); outline-offset: -0.125rem; }
 </style>

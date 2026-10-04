@@ -94,14 +94,14 @@ function saving(rule) {
             </div>
             <dl v-if="saving(rule)" class="discount-rule-list__figures">
                 <div class="discount-rule-list__figure">
-                    <dt>{{ t('discounts.list.regularPrice') }}</dt>
+                    <dt class="eyebrow">{{ t('discounts.list.regularPrice') }}</dt>
                     <dd>
                         {{ saving(rule).regular }}
                         <span v-if="saving(rule).day" class="discount-rule-list__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(saving(rule).day) }) }}</span>
                     </dd>
                 </div>
                 <div class="discount-rule-list__figure">
-                    <dt>{{ t('discounts.list.customerSaving') }}</dt>
+                    <dt class="eyebrow">{{ t('discounts.list.customerSaving') }}</dt>
                     <dd class="discount-rule-list__saved">{{ saving(rule).saved }}</dd>
                 </div>
             </dl>
@@ -146,7 +146,7 @@ function saving(rule) {
     align-items: center;
     gap: var(--space-2);
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
 }
 
 .discount-rule-list__condition {
@@ -165,7 +165,7 @@ function saving(rule) {
     border-radius: var(--radius-pill);
     background: var(--color-surface);
     color: var(--color-muted);
-    font-size: 0.8rem;
+    font-size: var(--font-size-sm);
 }
 
 .discount-rule-list__plus,
@@ -180,15 +180,14 @@ function saving(rule) {
     white-space: nowrap;
 }
 
-.discount-rule-list__period { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: 0.85rem; }
+.discount-rule-list__period { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-muted); font-size: var(--font-size-md); }
 
 .discount-rule-list__figures { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; }
 .discount-rule-list__figure { display: flex; flex-direction: column; align-items: flex-end; }
-.discount-rule-list__figure dt { color: var(--color-muted); font-size: 0.75rem; letter-spacing: 0.05em; text-transform: uppercase; }
 .discount-rule-list__figure dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .discount-rule-list__saved { color: var(--color-success); }
 
-.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; cursor: pointer; }
+.discount-rule-list__toggle { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); cursor: pointer; }
 .discount-rule-list__toggle--expired { color: var(--color-muted); cursor: default; }
 .discount-rule-list__actions { display: flex; align-items: center; gap: var(--space-1); }
 
@@ -196,5 +195,5 @@ function saving(rule) {
     .discount-rule-list__item { grid-template-columns: minmax(0, 1fr) auto; }
     .discount-rule-list__main { grid-column: 1 / -1; }
 }
-.discount-rule-list__priced-on { display: block; color: var(--color-muted); font-size: 0.75rem; font-weight: 400; }
+.discount-rule-list__priced-on { display: block; color: var(--color-muted); font-size: var(--font-size-xs); font-weight: 400; }
 </style>

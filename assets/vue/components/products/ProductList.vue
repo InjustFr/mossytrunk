@@ -62,7 +62,7 @@ function setChecked(id, checked) {
 
 <template>
     <EmptyState v-if="products.length === 0">{{ t('products.list.empty') }}</EmptyState>
-    <DataTable remember-page v-else :items="sorted" class="product-list">
+    <DataTable remember-page dense v-else :items="sorted">
         <template #head>
             <tr>
                 <th class="product-list__check">
@@ -164,16 +164,14 @@ function setChecked(id, checked) {
 .product-list__row { transition: background var(--transition); }
 .product-list__row--selected { background: var(--color-accent-soft); }
 .product-list__check { width: 2rem; }
-.data-table.product-list :deep(th),
-.data-table.product-list :deep(td) { padding-left: var(--space-2); padding-right: var(--space-2); }
 .product-list__name { min-width: 11rem; }
 .product-list__variants { display: block; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.product-list__reference { display: block; color: var(--color-muted); font-size: 0.75rem; }
+.product-list__reference { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
 .product-list__type { display: inline-flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
 .product-list__collection { white-space: nowrap; }
 .product-list__follows { color: var(--color-subtle); }
 .product-list__muted { color: var(--color-subtle); }
-.product-list__ratio { display: block; color: var(--color-muted); font-size: 0.75rem; }
+.product-list__ratio { display: block; color: var(--color-muted); font-size: var(--font-size-xs); }
 .product-list__stock { white-space: nowrap; }
 .product-list__on-hand {
     padding: 0;

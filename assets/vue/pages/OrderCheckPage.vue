@@ -7,6 +7,7 @@ import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSwitch from '../components/ui/BaseSwitch.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
+import ProgressBar from '../components/ui/ProgressBar.vue';
 import OrderToCheck from '../components/orders/OrderToCheck.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useOrderCheck } from '../composables/useOrderCheck.js';
@@ -70,9 +71,7 @@ onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));
             <BaseCard>
                 <p class="order-check-page__intro">{{ t('check.intro') }}</p>
                 <div class="order-check-page__progress">
-                    <div class="order-check-page__bar" role="progressbar" :aria-valuenow="checkedCount" aria-valuemin="0" :aria-valuemax="orders.length" :aria-label="t('check.progressLabel')">
-                        <span class="order-check-page__fill" :style="{ width: `${percent}%` }" />
-                    </div>
+                    <ProgressBar :percent="percent" :label="t('check.progressLabel')" class="order-check-page__bar" />
                     <span class="order-check-page__count">{{ t('check.progress', { checked: checkedCount, total: orders.length }, orders.length) }}</span>
                     <label class="order-check-page__filter"><BaseSwitch v-model="toCheckOnly" /> {{ t('check.toCheckOnly') }}</label>
                 </div>
@@ -83,7 +82,7 @@ onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));
                     <li v-for="order in visible" :key="order.id"><OrderToCheck :order="order" :saving="saving.has(order.id)" @toggle="onToggle" /></li>
                 </ol>
 
-                <div class="order-check-page__actions">
+                <div class="actions-row order-check-page__actions">
                     <BaseButton variant="ghost" :href="`/events/${eventId}`">{{ t('check.stop') }}</BaseButton>
                     <BaseButton :href="stockCheckUrl">{{ t('check.toStockCheck') }}</BaseButton>
                 </div>
@@ -96,12 +95,11 @@ onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));
 .order-check-page { display: flex; flex-direction: column; gap: var(--space-4); }
 .order-check-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); }
 .order-check-page__progress { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
-.order-check-page__bar { flex: 1 1 12rem; height: 0.5rem; overflow: hidden; border-radius: var(--radius-pill); background: var(--color-bg); }
-.order-check-page__fill { display: block; height: 100%; background: var(--color-accent); transition: width var(--transition); }
-.order-check-page__count { color: var(--color-ink); font-weight: 600; font-size: 0.9rem; }
-.order-check-page__filter { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; }
+.order-check-page__bar { flex: 1 1 12rem; }
+.order-check-page__count { color: var(--color-ink); font-weight: 600; font-size: var(--font-size-md); }
+.order-check-page__filter { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); }
 .order-check-page__orders { display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-.order-check-page__actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+.order-check-page__actions { margin-top: var(--space-4); }
 .order-check-page__done { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-3) var(--space-4); border: 0.0625rem solid var(--color-accent); border-left-width: 0.25rem; border-radius: var(--radius); background: var(--color-accent-soft); }
 .order-check-page__done-icon { flex: none; color: var(--color-accent-strong); }
 .order-check-page__done-text { flex: 1; margin: 0; color: var(--color-accent-strong); font-weight: 600; }

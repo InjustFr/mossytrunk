@@ -17,7 +17,7 @@ const { t } = useI18n();
 
 <template>
     <EmptyState v-if="expenses.length === 0">{{ t('events.expenses.empty') }}</EmptyState>
-    <DataTable v-else :items="expenses" class="expense-list">
+    <DataTable v-else fit :items="expenses">
         <template #head>
             <tr>
                 <th>{{ t('events.expenses.label') }}</th>
@@ -46,5 +46,4 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
-.expense-list :deep(.data-table__table) { min-width: 0; }
 </style>

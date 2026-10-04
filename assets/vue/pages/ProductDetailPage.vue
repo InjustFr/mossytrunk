@@ -213,7 +213,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
 <style scoped>
 .product-page { display: flex; flex-direction: column; gap: var(--space-5); }
 .product-page__facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: var(--space-4) var(--space-5); margin: 0; }
-.product-page__facts dt { color: var(--color-muted); font-size: 0.8rem; }
+.product-page__facts dt { color: var(--color-muted); font-size: var(--font-size-sm); }
 .product-page__facts dd { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-1); margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .product-page__muted { color: var(--color-muted); font-weight: 400; }
 .product-page__grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); gap: var(--space-5); align-items: start; }

@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import { Pencil } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
+import EditableList from '../ui/EditableList.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
@@ -49,16 +50,16 @@ async function onSubmit() {
 <template>
     <div class="supplier-manager">
         <EmptyState v-if="suppliers.length === 0">{{ t('purchasing.suppliers.empty') }}</EmptyState>
-        <ul v-else class="supplier-manager__list">
-            <li v-for="supplier in suppliers" :key="supplier.id" :class="['supplier-manager__item', { 'supplier-manager__item--editing': supplier.id === editingId }]">
+        <EditableList v-else :items="suppliers" :editing-id="editingId">
+            <template #default="{ item: supplier }">
                 <div>
                     <strong>{{ supplier.name }}</strong>
                     <span v-if="supplier.contact" class="supplier-manager__contact">{{ supplier.contact }}</span>
                     <p v-if="supplier.notes" class="supplier-manager__notes">{{ supplier.notes }}</p>
                 </div>
                 <IconButton :icon="Pencil" :label="t('purchasing.suppliers.edit', { name: supplier.name })" @click="edit(supplier)" />
-            </li>
-        </ul>
+            </template>
+        </EditableList>
 
         <form class="supplier-manager__form" novalidate @submit.prevent="onSubmit">
             <fieldset class="form-lock" :disabled="saving">
@@ -84,22 +85,7 @@ async function onSubmit() {
 
 <style scoped>
 .supplier-manager { display: flex; flex-direction: column; gap: var(--space-5); }
-.supplier-manager__list {
-    display: flex;
-    flex-direction: column;
-    max-height: 30vh;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    border: 0.0625rem solid var(--color-border);
-    border-radius: var(--radius);
-    list-style: none;
-    overscroll-behavior: contain;
-}
-.supplier-manager__item:last-child { border-bottom: none; }
-.supplier-manager__item { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-2); border-bottom: 0.0625rem solid var(--color-border); }
-.supplier-manager__item--editing { background: var(--color-accent-soft); }
-.supplier-manager__contact { display: block; color: var(--color-muted); font-size: 0.8125rem; }
-.supplier-manager__notes { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: 0.8125rem; white-space: pre-line; }
+.supplier-manager__contact { display: block; color: var(--color-muted); font-size: var(--font-size-sm); }
+.supplier-manager__notes { margin: var(--space-1) 0 0; color: var(--color-muted); font-size: var(--font-size-sm); white-space: pre-line; }
 .supplier-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }
 </style>
