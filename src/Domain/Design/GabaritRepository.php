@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Design;
 
+use App\Domain\Product\ProductType;
 use Symfony\Component\Uid\Ulid;
 
 interface GabaritRepository
@@ -15,6 +16,11 @@ interface GabaritRepository
     public function get(Ulid $id): Gabarit;
 
     public function findByName(string $name): ?Gabarit;
+
+    /**
+     * @return list<Gabarit>
+     */
+    public function ofType(ProductType $type): array;
 
     /**
      * @return list<Gabarit>

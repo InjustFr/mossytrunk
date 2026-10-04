@@ -18,7 +18,7 @@ final readonly class PeriodTurnover
     }
 
     /**
-     * @param array<string, SalesTotals> $salesByMonth keyed "YYYY-MM" (Europe/Paris)
+     * @param array<string, SalesTotals> $salesByMonth
      */
     public static function of(DeclarationPeriod $period, array $salesByMonth): self
     {

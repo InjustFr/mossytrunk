@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Presentation\Api\Order;
 
 use App\Application\Order\RequestedLine;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class OrderPayload
@@ -23,12 +23,9 @@ final readonly class OrderPayload
     ) {
     }
 
-    /**
-     * The UI sends a local date-time (no offset): it is Europe/Paris time.
-     */
     public function placedAt(): \DateTimeImmutable
     {
-        return new \DateTimeImmutable($this->placedAt, new \DateTimeZone(DateRange::TIMEZONE));
+        return BusinessTime::at($this->placedAt);
     }
 
     /**

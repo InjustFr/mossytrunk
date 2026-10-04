@@ -7,8 +7,6 @@ namespace App\Application\Integration;
 use App\Application\Integration\Exception\ServiceNotConfigured;
 use App\Application\Integration\Exception\ServiceNotConnected;
 use App\Application\Transaction;
-use App\Application\Workspace\WorkspaceSecrets;
-use App\Domain\Identity\SecretName;
 use App\Domain\Integration\ServiceConnection;
 use Psr\Clock\ClockInterface;
 
@@ -19,7 +17,7 @@ final readonly class ConnectionSession
 
     public function __construct(
         private Connectors $connectors,
-        private WorkspaceSecrets $secrets,
+        private ConnectionSecrets $secrets,
         private ClockInterface $clock,
         private Transaction $transaction,
     ) {
@@ -30,7 +28,7 @@ final readonly class ConnectionSession
         $description = $this->connectors->get($connection->service())->describe();
         $values = $connection->settings();
         foreach ($description->secretFields() as $field) {
-            $secret = $this->secrets->reveal($connection->workspace(), SecretName::of($connection->service(), $field->name));
+            $secret = $this->secrets->reveal($connection, $field->name);
             if (null !== $secret) {
                 $values[$field->name] = $secret;
             }
@@ -52,9 +50,8 @@ final readonly class ConnectionSession
             return $credentials;
         }
 
-        $workspace = $connection->workspace();
-        $access = $this->secrets->reveal($workspace, $this->secretName($connection, self::ACCESS_TOKEN));
-        $refresh = $this->secrets->reveal($workspace, $this->secretName($connection, self::REFRESH_TOKEN));
+        $access = $this->secrets->reveal($connection, self::ACCESS_TOKEN);
+        $refresh = $this->secrets->reveal($connection, self::REFRESH_TOKEN);
         $expiresAt = $connection->tokenExpiresAt();
         if (null === $access || null === $refresh || null === $expiresAt || !$connection->isAuthorized()) {
             throw new ServiceNotConnected($connector->describe()->label);
@@ -75,14 +72,14 @@ final readonly class ConnectionSession
 
     public function keepTokens(ServiceConnection $connection, Tokens $tokens): void
     {
-        $this->secrets->keep($connection->workspace(), $this->secretName($connection, self::ACCESS_TOKEN), $tokens->accessToken);
-        $this->secrets->keep($connection->workspace(), $this->secretName($connection, self::REFRESH_TOKEN), $tokens->refreshToken);
+        $this->secrets->keep($connection, self::ACCESS_TOKEN, $tokens->accessToken);
+        $this->secrets->keep($connection, self::REFRESH_TOKEN, $tokens->refreshToken);
     }
 
     public function disconnect(ServiceConnection $connection): void
     {
-        $this->secrets->forget($connection->workspace(), $this->secretName($connection, self::ACCESS_TOKEN));
-        $this->secrets->forget($connection->workspace(), $this->secretName($connection, self::REFRESH_TOKEN));
+        $this->secrets->forget($connection, self::ACCESS_TOKEN);
+        $this->secrets->forget($connection, self::REFRESH_TOKEN);
         $connection->revoke();
     }
 
@@ -90,12 +87,7 @@ final readonly class ConnectionSession
     {
         $this->disconnect($connection);
         foreach ($this->connectors->get($connection->service())->describe()->secretFields() as $field) {
-            $this->secrets->forget($connection->workspace(), SecretName::of($connection->service(), $field->name));
+            $this->secrets->forget($connection, $field->name);
         }
-    }
-
-    private function secretName(ServiceConnection $connection, string $token): SecretName
-    {
-        return SecretName::of($connection->service(), $token);
     }
 }

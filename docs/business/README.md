@@ -60,9 +60,9 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | Service connecté | `Domain\Integration\ServiceConnection` | An external service (SumUp, Etsy…) added to the workspace, with its access and import options |
 | Article à associer | `Domain\Integration\ExternalItem` | A service item not matched to a product, waiting to be linked |
 | Inventaire | `Domain\Stock\StockCheck` | Count after an event; missing units flag a probable missing order |
-| Chiffre d'affaires | `EventResult::$turnover` | Σ order totals of an event |
+| Chiffre d'affaires | `SalesFigures::$turnover` | Σ order totals of an event |
 | URSSAF | `Domain\Reporting\UrssafContribution` | 12.8 % of turnover |
-| Résultat | `EventResult::$result` | Turnover − cost of goods − expenses − URSSAF |
+| Résultat | `SalesFigures::$result` | Turnover − cost of goods − expenses − URSSAF |
 
 ## Cross-cutting conventions
 

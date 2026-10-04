@@ -15,11 +15,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Kind of product (Print, Sticker, T-shirt…). Used to name products ("Print Forêt"), build their
- * reference suggestions, filter the catalogue, edit products in batch and target discounts.
- * Name and code are unique (checked by the use cases).
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'product_type')]
 #[ORM\UniqueConstraint(name: 'product_type_workspace_name', columns: ['workspace_id', 'name'])]
@@ -39,7 +34,6 @@ class ProductType
     #[ORM\Column(length: 100)]
     private string $name;
 
-    /** Short uppercase code prefixing the suggested references of its products, e.g. PRI for Print. */
     #[ORM\Column(length: 8)]
     private string $code;
 
@@ -173,11 +167,6 @@ class ProductType
         return $current;
     }
 
-    public function offersVariant(string $variant): bool
-    {
-        return null !== VariantLabel::find($this->variants, $variant);
-    }
-
     public function prefixNames(bool $prefixes): void
     {
         $this->prefixesNames = $prefixes;
@@ -193,17 +182,19 @@ class ProductType
         return self::PALETTE[$index % \count(self::PALETTE)];
     }
 
-    /**
-     * Code suggestion from a name: first three letters/digits, uppercase, accents removed ("Tote bag" → TOT).
-     */
     public static function codeFor(string $name): string
     {
         return Abbreviation::of($name, 'TYP');
     }
 
+    public static function normalizedCode(string $code): string
+    {
+        return strtoupper(trim($code));
+    }
+
     public function recode(string $code): void
     {
-        $code = strtoupper(trim($code));
+        $code = self::normalizedCode($code);
         if (1 !== preg_match('/^[A-Z0-9]{1,8}$/', $code)) {
             throw new InvalidTypeCode($code);
         }

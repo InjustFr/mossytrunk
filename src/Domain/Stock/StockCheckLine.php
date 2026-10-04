@@ -100,7 +100,7 @@ class StockCheckLine
 
     private function lossOfFirst(int $units): Money
     {
-        return 0 === $this->missing() ? Money::zero() : Money::cents((int) round($this->lossCost->amount() * $units / $this->missing(), 0, \PHP_ROUND_HALF_UP));
+        return 0 === $this->missing() ? Money::zero() : $this->lossCost->prorate($units, $this->missing());
     }
 
     public function id(): Ulid

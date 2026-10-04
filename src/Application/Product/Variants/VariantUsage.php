@@ -26,7 +26,7 @@ final readonly class VariantUsage
     public function assertUnused(ProductType $type, string $variant): void
     {
         $used = array_any($this->products->ofType($type), static fn (Product $product): bool => $product->hasVariant($variant))
-            || array_any($this->gabarits->all(), static fn (Gabarit $gabarit): bool => $gabarit->type() === $type && $gabarit->usesVariant($variant))
+            || array_any($this->gabarits->ofType($type), static fn (Gabarit $gabarit): bool => $gabarit->usesVariant($variant))
             || array_any($this->designs->all(), static fn ($design): bool => $design->usesVariant($type, $variant))
             || array_any($this->discountRules->all(), static fn ($rule): bool => $rule->usesVariant($type, $variant));
 

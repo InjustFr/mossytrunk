@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockItem;
@@ -19,13 +18,8 @@ final readonly class DoctrineStockRepository implements StockRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
-    }
-
-    public function add(StockItem $item): void
-    {
-        $this->entityManager->persist($item);
     }
 
     public function remove(StockItem $item): void
@@ -38,7 +32,7 @@ final readonly class DoctrineStockRepository implements StockRepository
         $item = $this->find($product->id(), $variant);
         if (null === $item) {
             $item = StockItem::open($product, $variant);
-            $this->add($item);
+            $this->entityManager->persist($item);
         }
 
         return $item;
@@ -46,9 +40,9 @@ final readonly class DoctrineStockRepository implements StockRepository
 
     public function find(Ulid $productId, ?string $variant): ?StockItem
     {
-        foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $pending) {
-            if ($pending instanceof StockItem && $pending->isFor($productId, $variant)) {
-                return $pending;
+        foreach ($this->entityManager->getUnitOfWork()->getIdentityMap()[StockItem::class] ?? [] as $known) {
+            if ($known instanceof StockItem && $known->isFor($productId, $variant)) {
+                return $known;
             }
         }
 
@@ -90,14 +84,20 @@ final readonly class DoctrineStockRepository implements StockRepository
         return $this->items()->getQuery()->getResult();
     }
 
+    public function byProduct(): array
+    {
+        $byProduct = [];
+        foreach ($this->all() as $item) {
+            $byProduct[(string) $item->product()->id()][] = $item;
+        }
+
+        return $byProduct;
+    }
+
     private function items(): QueryBuilder
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('s', 'l', 'p')
-            ->from(StockItem::class, 's')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('s', 'l', 'p')->from(StockItem::class, 's'), 's')
             ->join('s.product', 'p')
-            ->leftJoin('s.lots', 'l')
-            ->where('s.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME);
+            ->leftJoin('s.lots', 'l');
     }
 }

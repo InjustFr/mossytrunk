@@ -55,7 +55,6 @@ final class OrderTest extends TestCase
         self::assertSame(1_140, $order->costOfGoods()->amount());
         self::assertSame(4, $order->itemCount());
         self::assertSame(Order::MANUAL, $order->source());
-        self::assertFalse($order->isImported());
         self::assertSame('CMD-1', $order->reference());
     }
 
@@ -101,7 +100,6 @@ final class OrderTest extends TestCase
         self::assertNull($order->event());
         self::assertSame('etsy', $order->source());
         self::assertSame([['310', 'ETSY-310']], array_map(static fn (ImportedSale $sale): array => [$sale->externalId(), $sale->reference()], $order->importedSales()));
-        self::assertTrue($order->isImported());
         self::assertSame('CMD-1', $order->reference());
         self::assertEquals([new AppliedDiscount('Remise Etsy', Money::cents(100))], $order->appliedDiscounts());
         self::assertSame([900, 100, 290, 1_090], [$order->subtotal()->amount(), $order->discountTotal()->amount(), $order->shipping()->amount(), $order->total()->amount()]);
@@ -292,15 +290,13 @@ final class OrderTest extends TestCase
     public function testAnOrderIsTickedOffOnceCheckedAndCanBeUnticked(): void
     {
         $order = Order::place('CMD-1', $this->event, self::at('2026-07-10 15:00'), [new OrderedItem($this->sticker->sellable(null), 1)], []);
-        self::assertFalse($order->isChecked());
+        self::assertNull($order->checkedAt());
 
         $order->check(self::at('2026-07-13 09:00'));
         $order->check(self::at('2026-07-14 09:00'));
-        self::assertTrue($order->isChecked());
         self::assertEquals(self::at('2026-07-13 09:00'), $order->checkedAt());
 
         $order->uncheck();
-        self::assertFalse($order->isChecked());
         self::assertNull($order->checkedAt());
     }
 

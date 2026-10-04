@@ -92,9 +92,6 @@ class SupplierOrderLine
         $this->receivedQuantity = $quantity;
     }
 
-    /**
-     * @internal the order absorbs another order buying the same item
-     */
     public function absorb(self $other): void
     {
         $this->orderedQuantity += $other->orderedQuantity;
@@ -102,9 +99,6 @@ class SupplierOrderLine
         $this->receivedQuantity = null === $this->receivedQuantity && null === $other->receivedQuantity ? null : (int) $this->receivedQuantity + (int) $other->receivedQuantity;
     }
 
-    /**
-     * @internal the order takes the lines of an order it absorbs
-     */
     public function copyInto(SupplierOrder $order, int $position): self
     {
         $copy = clone $this;
@@ -122,17 +116,12 @@ class SupplierOrderLine
 
     public function plannedUnitCost(): Money
     {
-        return self::divide($this->landedCost(), $this->orderedQuantity);
+        return $this->landedCost()->prorate(1, $this->orderedQuantity);
     }
 
     public function unitCost(): ?Money
     {
-        return null === $this->receivedQuantity || 0 === $this->receivedQuantity ? null : self::divide($this->landedCost(), $this->receivedQuantity);
-    }
-
-    private static function divide(Money $total, int $quantity): Money
-    {
-        return Money::cents((int) round($total->amount() / $quantity, 0, \PHP_ROUND_HALF_UP));
+        return null === $this->receivedQuantity || 0 === $this->receivedQuantity ? null : $this->landedCost()->prorate(1, $this->receivedQuantity);
     }
 
     public function id(): Ulid

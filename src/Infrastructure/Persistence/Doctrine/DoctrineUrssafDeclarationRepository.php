@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Accounting\UrssafDeclaration;
 use App\Domain\Accounting\UrssafDeclarationRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +12,7 @@ final readonly class DoctrineUrssafDeclarationRepository implements UrssafDeclar
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -29,11 +28,11 @@ final readonly class DoctrineUrssafDeclarationRepository implements UrssafDeclar
 
     public function find(string $period): ?UrssafDeclaration
     {
-        return $this->entityManager->getRepository(UrssafDeclaration::class)->findOneBy(['workspace' => $this->workspace->current(), 'period' => $period]);
+        return $this->scope->findOneBy(UrssafDeclaration::class, ['period' => $period]);
     }
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(UrssafDeclaration::class)->findBy(['workspace' => $this->workspace->current()]);
+        return $this->scope->findBy(UrssafDeclaration::class);
     }
 }

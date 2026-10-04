@@ -19,6 +19,6 @@ final readonly class SettingsPageController
 
     public function __invoke(): Response
     {
-        return $this->page->render('SettingsPage', 'settings', preload: ['/api/workspace/settings', '/api/services', '/api/references/formats']);
+        return $this->page->render('SettingsPage', 'settings', preload: ['/api/services', '/api/references/formats']);
     }
 }

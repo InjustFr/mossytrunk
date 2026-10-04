@@ -19,9 +19,4 @@ final readonly class StockCorrection
     {
         return max(0, $this->expected - $this->counted);
     }
-
-    public function surplus(): int
-    {
-        return max(0, $this->counted - $this->expected);
-    }
 }

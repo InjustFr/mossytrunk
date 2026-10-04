@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Security;
 
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Presentation\Api\ProblemResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,11 +24,7 @@ final readonly class AuthenticationEntryPoint implements AuthenticationEntryPoin
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         if (str_starts_with($request->getPathInfo(), '/api/')) {
-            return new JsonResponse(
-                ['title' => $this->translator->trans('problem.signed_out.title'), 'status' => Response::HTTP_UNAUTHORIZED, 'detail' => $this->translator->trans('problem.signed_out.detail')],
-                Response::HTTP_UNAUTHORIZED,
-                ['Content-Type' => 'application/problem+json'],
-            );
+            return new ProblemResponse($this->translator->trans('problem.signed_out.title'), Response::HTTP_UNAUTHORIZED, $this->translator->trans('problem.signed_out.detail'));
         }
 
         return new RedirectResponse($this->urls->generate('login'));

@@ -8,20 +8,22 @@ use App\Domain\Reporting\ProductSales;
 use App\Domain\Shared\DateRange;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Units sold per product by the orders still counting as sales (not refunded), after their recorded share of the discounts.
- */
 interface ProductSalesLedger
 {
     /**
-     * @return list<ProductSales> one per (product, variant), unidentified products included
+     * @return list<ProductSales>
      */
     public function ofEvent(Ulid $eventId): array;
 
     /**
-     * @return list<ProductSales> one per identified product, all variants together
+     * @return list<ProductSales>
      */
     public function within(DateRange $period): array;
 
     public function ofProduct(Ulid $productId, ?DateRange $period = null): ?ProductSales;
+
+    /**
+     * @return array<string, ProductSales>
+     */
+    public function monthlyOf(Ulid $productId): array;
 }

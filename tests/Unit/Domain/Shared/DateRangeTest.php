@@ -51,18 +51,8 @@ final class DateRangeTest extends TestCase
     {
         $range = DateRange::fromDates(new \DateTimeImmutable('2026-05-10'), new \DateTimeImmutable('2026-05-10'));
 
-        // 22:30 UTC on the 10th is already 00:30 on the 11th in Paris (UTC+2 in May).
         self::assertFalse($range->covers(new \DateTimeImmutable('2026-05-10T22:30:00+00:00')));
-        // 22:30 UTC on the 9th is 00:30 on the 10th in Paris.
         self::assertTrue($range->covers(new \DateTimeImmutable('2026-05-09T22:30:00+00:00')));
-    }
-
-    public function testOverlaps(): void
-    {
-        $may = DateRange::fromDates(new \DateTimeImmutable('2026-05-09'), new \DateTimeImmutable('2026-05-10'));
-
-        self::assertTrue($may->overlaps(DateRange::fromDates(new \DateTimeImmutable('2026-05-10'), new \DateTimeImmutable('2026-05-12'))));
-        self::assertFalse($may->overlaps(DateRange::fromDates(new \DateTimeImmutable('2026-05-11'), new \DateTimeImmutable('2026-05-12'))));
     }
 
     public function testCountsDaysInclusively(): void

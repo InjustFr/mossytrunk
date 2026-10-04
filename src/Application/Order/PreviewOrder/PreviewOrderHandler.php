@@ -11,9 +11,6 @@ use App\Domain\Event\EventRepository;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Shared\Money;
 
-/**
- * What the order would look like if placed now: matching event, automatic discounts and totals.
- */
 final readonly class PreviewOrderHandler
 {
     public function __construct(
@@ -32,7 +29,7 @@ final readonly class PreviewOrderHandler
         $discounts = $this->pricing->discounts($items, $placedAt);
 
         $subtotal = Money::sum(array_map(static fn (OrderedItem $ordered): Money => $ordered->item->sellingPrice->multiply($ordered->quantity), $items));
-        $discountTotal = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));
+        $discountTotal = AppliedDiscount::total($discounts);
 
         return new OrderPreview(
             null === $event ? null : ['id' => (string) $event->id(), 'name' => $event->name()],

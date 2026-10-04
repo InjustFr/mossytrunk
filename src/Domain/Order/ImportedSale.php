@@ -42,9 +42,6 @@ class ImportedSale
     #[ORM\Column(nullable: true)]
     private ?int $fee = null;
 
-    /**
-     * @internal built by Order
-     */
     public function __construct(Order $order, string $source, string $externalId, string $reference, ?PaymentMethod $paymentMethod)
     {
         $this->id = new Ulid();
@@ -56,17 +53,11 @@ class ImportedSale
         $this->paymentMethod = $paymentMethod;
     }
 
-    /**
-     * @internal the order absorbs another order
-     */
     public function joinOrder(Order $order): void
     {
         $this->order = $order;
     }
 
-    /**
-     * @internal settled through Order
-     */
     public function settleFee(Money $fee): void
     {
         $this->fee = $fee->amount();

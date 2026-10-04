@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Product\BatchUpdateProducts;
 
-/**
- * Same changes applied to several products. Null / empty means "leave as is".
- */
 final readonly class BatchUpdateProducts
 {
     /**
      * @param list<string> $productIds
-     * @param list<string> $addVariants    added when missing (existing ones are kept)
-     * @param list<string> $removeVariants removed when present
+     * @param list<string> $addVariants
+     * @param list<string> $removeVariants
      */
     public function __construct(
         public array $productIds,

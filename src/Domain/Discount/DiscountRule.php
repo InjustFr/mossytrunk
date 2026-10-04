@@ -83,10 +83,8 @@ class DiscountRule
         foreach ($conditions as $spec) {
             $condition = new DiscountCondition($this, $spec->quantity, $spec->targets);
             foreach ($condition->targets() as $target) {
-                foreach ($built as $other) {
-                    if ($other->has($target->subject(), $target->variant())) {
-                        throw new DuplicateConditionTarget($target->name());
-                    }
+                if (array_any($built, static fn (DiscountCondition $other): bool => $other->has($target->subject(), $target->variant()))) {
+                    throw new DuplicateConditionTarget($target->name());
                 }
             }
             $built[] = $condition;
@@ -169,13 +167,7 @@ class DiscountRule
 
     public function concerns(Product $product): bool
     {
-        foreach ($this->conditions() as $condition) {
-            if ($condition->concernsProduct($product)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->conditions->exists(static fn (int $key, DiscountCondition $condition): bool => $condition->concernsProduct($product));
     }
 
     public function appliesOn(\DateTimeImmutable $moment): bool

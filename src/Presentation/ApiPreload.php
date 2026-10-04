@@ -32,7 +32,7 @@ final readonly class ApiPreload
             $response = $this->kernel->handle($this->apiRequest($page, $url), HttpKernelInterface::SUB_REQUEST);
             $content = $response->getContent();
             if (Response::HTTP_OK === $response->getStatusCode() && \is_string($content) && json_validate($content)) {
-                $entries[] = json_encode($url, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES).':'.str_replace('<', '<', $content);
+                $entries[] = json_encode($url, \JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES).':'.str_replace('<', '\u003C', $content);
             }
         }
 

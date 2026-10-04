@@ -42,7 +42,7 @@ final class AccountUseCasesTest extends KernelTestCase
         self::assertInstanceOf(SalesChannel::class, $main);
         self::assertSame(ChannelKind::Market, $main->kind());
         self::assertCount(\count(ReferenceKind::cases()), self::getContainer()->get('doctrine')->getRepository(ReferenceFormat::class)->findBy(['workspace' => $user->workspace()]));
-        self::assertFalse($user->hasPassword());
+        self::assertNull($user->passwordHash());
         self::assertEmailCount(1);
         $email = self::getMailerMessage();
         self::assertNotNull($email);

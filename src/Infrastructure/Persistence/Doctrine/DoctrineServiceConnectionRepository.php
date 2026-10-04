@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\ServiceConnectionRepository;
 use App\Domain\Shared\Exception\NotFound;
@@ -14,7 +13,7 @@ final readonly class DoctrineServiceConnectionRepository implements ServiceConne
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -30,7 +29,7 @@ final readonly class DoctrineServiceConnectionRepository implements ServiceConne
 
     public function find(string $service): ?ServiceConnection
     {
-        return $this->entityManager->getRepository(ServiceConnection::class)->findOneBy(['workspace' => $this->workspace->current(), 'service' => $service]);
+        return $this->scope->findOneBy(ServiceConnection::class, ['service' => $service]);
     }
 
     public function get(string $service): ServiceConnection
@@ -40,6 +39,6 @@ final readonly class DoctrineServiceConnectionRepository implements ServiceConne
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(ServiceConnection::class)->findBy(['workspace' => $this->workspace->current()], ['createdAt' => 'ASC']);
+        return $this->scope->findBy(ServiceConnection::class, orderBy: ['createdAt' => 'ASC']);
     }
 }

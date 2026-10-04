@@ -27,18 +27,13 @@ final readonly class DeclarePeriodHandler
     public function __invoke(string $periodKey): void
     {
         $period = DeclarationPeriod::fromKey($periodKey);
+        $turnover = PeriodTurnover::of($period, $this->sales->totalsByMonth())->turnover;
         $previous = $this->declarations->find($period->key());
-        if (null !== $previous) {
-            $this->declarations->remove($previous);
-            $this->transaction->commit();
+        if (null === $previous) {
+            $this->declarations->add(UrssafDeclaration::record($this->workspace->current(), $period, $turnover, $this->clock->now()));
+        } else {
+            $previous->declare($turnover, $this->clock->now());
         }
-
-        $this->declarations->add(UrssafDeclaration::record(
-            $this->workspace->current(),
-            $period,
-            PeriodTurnover::of($period, $this->sales->totalsByMonth())->turnover,
-            $this->clock->now(),
-        ));
         $this->transaction->commit();
     }
 }

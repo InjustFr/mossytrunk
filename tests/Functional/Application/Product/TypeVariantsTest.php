@@ -6,12 +6,12 @@ namespace App\Tests\Functional\Application\Product;
 
 use App\Application\Design\AdjustDeclination\AdjustDeclination;
 use App\Application\Design\AdjustDeclination\AdjustDeclinationHandler;
+use App\Application\Design\CreateDesign\CreateDesign;
+use App\Application\Design\CreateDesign\CreateDesignHandler;
+use App\Application\Design\CreateGabarit\CreateGabarit;
+use App\Application\Design\CreateGabarit\CreateGabaritHandler;
 use App\Application\Design\GetDesign\GetDesignHandler;
 use App\Application\Design\ListGabarits\ListGabaritsHandler;
-use App\Application\Design\SaveDesign\SaveDesign;
-use App\Application\Design\SaveDesign\SaveDesignHandler;
-use App\Application\Design\SaveGabarit\SaveGabarit;
-use App\Application\Design\SaveGabarit\SaveGabaritHandler;
 use App\Application\Discount\CreateDiscountRule\CreateDiscountRuleHandler;
 use App\Application\Discount\ListDiscountRules\ListDiscountRulesHandler;
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
@@ -25,11 +25,11 @@ use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProductTypes\ListProductTypesHandler;
 use App\Application\Product\UpdateProductType\UpdateProductTypeHandler;
 use App\Application\Product\Variants\RenameTypeVariantHandler;
+use App\Application\Purchasing\CreateSupplier\CreateSupplier;
+use App\Application\Purchasing\CreateSupplier\CreateSupplierHandler;
 use App\Application\Purchasing\GetSupplierOrder\GetSupplierOrderHandler;
 use App\Application\Purchasing\PlaceSupplierOrder\PlaceSupplierOrderHandler;
 use App\Application\Purchasing\PurchaseLine;
-use App\Application\Purchasing\SaveSupplier\SaveSupplier;
-use App\Application\Purchasing\SaveSupplier\SaveSupplierHandler;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Stock\GetProductStock\GetProductStockHandler;
 use App\Application\Stock\Restock\Restock;
@@ -70,8 +70,8 @@ final class TypeVariantsTest extends KernelTestCase
     {
         $forest = self::createProduct('Forêt', 1_500, 300, ['A4', 'A3'], $this->print);
         $shirt = self::createProduct('T-shirt', 2_000, 800, ['A4'], (string) self::getContainer()->get(CreateProductTypeHandler::class)('T-shirt')->id());
-        $gabarit = (string) self::getContainer()->get(SaveGabaritHandler::class)(new SaveGabarit(null, 'Tirage', $this->print, 1_500, ['A4', 'A3']))->id();
-        $design = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Rivière', null, null, [$gabarit]));
+        $gabarit = (string) self::getContainer()->get(CreateGabaritHandler::class)(new CreateGabarit('Tirage', $this->print, 1_500, ['A4', 'A3']))->id();
+        $design = (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign('Rivière', null, null, [$gabarit]));
         self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice(
             'A4',
             2_500,
@@ -81,7 +81,7 @@ final class TypeVariantsTest extends KernelTestCase
         self::getContainer()->get(RestockHandler::class)(new Restock($forest, 'A4', 5, 1_500));
         self::getContainer()->get(RestockHandler::class)(new Restock($shirt, 'A4', 2, 1_600));
         $order = (string) self::getContainer()->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 12:00'), [new RequestedLine($forest, 'A4', 1)]))->id();
-        $supplier = (string) self::getContainer()->get(SaveSupplierHandler::class)(new SaveSupplier(null, 'Imprimerie du Lac'))->id();
+        $supplier = (string) self::getContainer()->get(CreateSupplierHandler::class)(new CreateSupplier('Imprimerie du Lac'))->id();
         $supplierOrder = (string) self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft($supplier, new \DateTimeImmutable('2030-03-01'), [new PurchaseLine($forest, 'A4', 10, 2_000)]));
 
         self::getContainer()->get(RenameTypeVariantHandler::class)($this->print, 'a4', ' Grand ');
@@ -144,8 +144,8 @@ final class TypeVariantsTest extends KernelTestCase
     public function testAVariantStillUsedCannotBeDropped(): void
     {
         $card = (string) self::getContainer()->get(CreateProductTypeHandler::class)('Carte', variants: ['A6', 'A5', 'Carré', 'Rond', 'A4'])->id();
-        $gabarit = (string) self::getContainer()->get(SaveGabaritHandler::class)(new SaveGabarit(null, 'Carte postale', $card, 250, ['A6']))->id();
-        $design = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Rivière', null, null, [$gabarit]));
+        $gabarit = (string) self::getContainer()->get(CreateGabaritHandler::class)(new CreateGabarit('Carte postale', $card, 250, ['A6']))->id();
+        $design = (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign('Rivière', null, null, [$gabarit]));
         $declination = self::getContainer()->get(GetDesignHandler::class)($design)->declinations[0]['id'];
         self::getContainer()->get(AdjustDeclinationHandler::class)(new AdjustDeclination($design, $declination, 'Rivière', 250, ['A5']));
         self::getContainer()->get(CreateDiscountRuleHandler::class)(DiscountRules::fixedPrice('Cartes carrées', 1_000, DiscountRules::type($card, 2, 'Carré')));

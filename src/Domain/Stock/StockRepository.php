@@ -9,8 +9,6 @@ use Symfony\Component\Uid\Ulid;
 
 interface StockRepository
 {
-    public function add(StockItem $item): void;
-
     public function remove(StockItem $item): void;
 
     public function for(Product $product, ?string $variant): StockItem;
@@ -23,7 +21,7 @@ interface StockRepository
     public function ofProduct(Ulid $productId): array;
 
     /**
-     * @return list<StockItem> the items holding a lot received from that supplier order
+     * @return list<StockItem>
      */
     public function receivedFrom(Ulid $supplierOrderId): array;
 
@@ -31,4 +29,9 @@ interface StockRepository
      * @return list<StockItem>
      */
     public function all(): array;
+
+    /**
+     * @return array<string, list<StockItem>>
+     */
+    public function byProduct(): array;
 }

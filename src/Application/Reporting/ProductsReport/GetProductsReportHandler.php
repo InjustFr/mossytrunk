@@ -8,6 +8,7 @@ use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Reporting\ReportPeriod;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Reporting\ProductSales;
 use App\Domain\Stock\StockRepository;
 
 final readonly class GetProductsReportHandler
@@ -26,7 +27,7 @@ final readonly class GetProductsReportHandler
 
         $sold = [];
         foreach ($this->sales->within($range) as $product) {
-            $sold[(string) $product->productId] = ['units' => $product->quantity, 'gross' => $product->gross->amount(), 'revenue' => $product->sales->amount(), 'cost' => $product->cost->amount(), 'unknownCost' => $product->unknownCost];
+            $sold[(string) $product->productId] = $product;
         }
 
         $onHand = [];
@@ -60,24 +61,22 @@ final readonly class GetProductsReportHandler
     }
 
     /**
-     * @param array{units: int, gross: int, revenue: int, cost: int, unknownCost: bool} $sold
-     *
      * @return array{id: string, name: string, typeId: string, typeName: string, units: int, gross: int, revenue: int, discount: int, cost: int, margin: int, unknownCost: bool, onHand: int}
      */
-    private static function row(Product $product, array $sold, int $onHand): array
+    private static function row(Product $product, ProductSales $sold, int $onHand): array
     {
         return [
             'id' => (string) $product->id(),
             'name' => $product->displayName(),
             'typeId' => (string) $product->type()->id(),
             'typeName' => $product->type()->name(),
-            'units' => $sold['units'],
-            'gross' => $sold['gross'],
-            'revenue' => $sold['revenue'],
-            'discount' => $sold['gross'] - $sold['revenue'],
-            'cost' => $sold['cost'],
-            'margin' => $sold['revenue'] - $sold['cost'],
-            'unknownCost' => $sold['unknownCost'],
+            'units' => $sold->quantity,
+            'gross' => $sold->gross->amount(),
+            'revenue' => $sold->sales->amount(),
+            'discount' => $sold->discount()->amount(),
+            'cost' => $sold->cost->amount(),
+            'margin' => $sold->margin()->amount(),
+            'unknownCost' => $sold->unknownCost,
             'onHand' => $onHand,
         ];
     }

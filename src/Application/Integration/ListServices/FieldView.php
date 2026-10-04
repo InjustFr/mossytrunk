@@ -11,8 +11,6 @@ final readonly class FieldView
         public string $label,
         public bool $secret,
         public bool $required,
-        public ?string $pattern,
-        public ?string $patternMessage,
         public ?string $hint,
         public int $maxLength,
     ) {

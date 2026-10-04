@@ -20,10 +20,8 @@ use App\Domain\Reporting\SalesTotals;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Domain\Stock\StockRepository;
+use Psr\Clock\ClockInterface;
 
-/**
- * Results per month of a year, and per year, with the year's events and best sellers. See docs/business/dashboard.md.
- */
 final readonly class GetDashboardHandler
 {
     private const int TOP_PRODUCTS = 5;
@@ -35,24 +33,16 @@ final readonly class GetDashboardHandler
         private ProductRepository $products,
         private StockRepository $stock,
         private ConsumedSupplies $consumedSupplies,
+        private ClockInterface $clock,
     ) {
     }
 
-    /**
-     * @param int|null $year defaults to the current year
-     */
     public function __invoke(?int $year = null): DashboardView
     {
         $events = $this->events->all();
         $consumed = $this->consumedSupplies->byEvent();
         $results = MonthlyResults::of($this->sales->totalsByMonth(), $events, $consumed);
-        $year ??= DateRange::yearOf(new \DateTimeImmutable('now'));
-
-        $years = $results->years();
-        if (!\in_array($year, $years, true)) {
-            $years[] = $year;
-            rsort($years);
-        }
+        $year ??= DateRange::yearOf($this->clock->now());
 
         $months = [];
         for ($month = 1; $month <= 12; ++$month) {
@@ -66,7 +56,7 @@ final readonly class GetDashboardHandler
 
         return new DashboardView(
             $year,
-            $years,
+            $results->years($year),
             $months,
             $results->year($year)->toArray(),
             array_map(static fn (int $y): array => ['year' => $y] + $results->year($y)->toArray(), $results->years()),
@@ -92,10 +82,7 @@ final readonly class GetDashboardHandler
      */
     private function stocksOf(array $products): array
     {
-        $byProduct = [];
-        foreach ($this->stock->all() as $item) {
-            $byProduct[(string) $item->product()->id()][] = $item;
-        }
+        $byProduct = $this->stock->byProduct();
 
         return array_map(static fn (Product $product): ProductStock => ProductStock::of($product, $byProduct[(string) $product->id()] ?? []), $products);
     }
@@ -132,7 +119,7 @@ final readonly class GetDashboardHandler
     /**
      * @param list<Product> $products
      *
-     * @return array<string, string|null> type name by product id
+     * @return array<string, string|null>
      */
     private function typeNamesOf(array $products): array
     {

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Event\Event;
 use App\Domain\Event\EventRepository;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
-use App\Domain\Shared\Exception\NotFound;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -18,7 +17,7 @@ final readonly class DoctrineEventRepository implements EventRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -29,22 +28,15 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function get(Ulid $id): Event
     {
-        return $this->entityManager->getRepository(Event::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('event', (string) $id);
+        return $this->scope->get(Event::class, $id, 'event');
     }
 
     public function findCovering(\DateTimeImmutable $moment): ?Event
     {
-        $day = $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d');
-
-        $result = $this->entityManager->createQueryBuilder()
-            ->select('e')
-            ->from(Event::class, 'e')
-            ->where('e.period.start <= :day')
+        $result = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('e')->from(Event::class, 'e'), 'e')
+            ->andWhere('e.period.start <= :day')
             ->andWhere('e.period.end >= :day')
-            ->andWhere('e.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->setParameter('day', $day)
+            ->setParameter('day', BusinessTime::day($moment))
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
@@ -54,13 +46,9 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function findOverlapping(DateRange $period, ?Ulid $except = null): ?Event
     {
-        $query = $this->entityManager->createQueryBuilder()
-            ->select('e')
-            ->from(Event::class, 'e')
-            ->where('e.period.start <= :end')
+        $query = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('e')->from(Event::class, 'e'), 'e')
+            ->andWhere('e.period.start <= :end')
             ->andWhere('e.period.end >= :start')
-            ->andWhere('e.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('start', $period->start(), Types::DATE_IMMUTABLE)
             ->setParameter('end', $period->end(), Types::DATE_IMMUTABLE)
             ->setMaxResults(1);
@@ -76,12 +64,8 @@ final readonly class DoctrineEventRepository implements EventRepository
 
     public function all(): array
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('e', 'x')
-            ->from(Event::class, 'e')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('e', 'x')->from(Event::class, 'e'), 'e')
             ->leftJoin('e.expenses', 'x')
-            ->where('e.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('e.period.start', 'DESC')
             ->addOrderBy('x.createdAt', 'ASC')
             ->getQuery()

@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Reporting;
 use App\Application\Reporting\SalesLedger;
 use App\Application\WorkspaceContext;
 use App\Domain\Reporting\SalesTotals;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Uid\Ulid;
@@ -37,7 +37,27 @@ final readonly class DoctrineSalesLedger implements SalesLedger
 
     public function totalsByMonth(): array
     {
-        return $this->totals("to_char(o.placed_at AT TIME ZONE :timezone, 'YYYY-MM')", 'TRUE', ['timezone' => DateRange::TIMEZONE]);
+        return $this->totals("to_char(o.placed_at AT TIME ZONE :timezone, 'YYYY-MM')", 'TRUE', ['timezone' => BusinessTime::ZONE]);
+    }
+
+    public function firstSaleAt(): ?\DateTimeImmutable
+    {
+        return $this->saleAt('MIN');
+    }
+
+    public function lastSaleAt(): ?\DateTimeImmutable
+    {
+        return $this->saleAt('MAX');
+    }
+
+    private function saleAt(string $aggregate): ?\DateTimeImmutable
+    {
+        $moment = $this->connection->fetchOne(
+            "SELECT {$aggregate}(placed_at) FROM \"order\" WHERE workspace_id = :workspace AND refunded_at IS NULL",
+            ['workspace' => $this->workspace->current()->id()->toRfc4122()],
+        );
+
+        return \is_string($moment) ? new \DateTimeImmutable($moment) : null;
     }
 
     /**

@@ -11,8 +11,6 @@ use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * Builds events through Event::schedule(). Pass `expenses` as [label => cents].
- *
  * @extends PersistentObjectFactory<Event>
  */
 final class EventFactory extends PersistentObjectFactory

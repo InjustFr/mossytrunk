@@ -23,7 +23,6 @@ use App\Domain\Sales\Exception\MarketOrderWithoutEvent;
 use App\Domain\Sales\OrderCharge;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\CostAllocation;
-use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
@@ -165,7 +164,7 @@ class Order implements Referenced
 
     /**
      * @param list<OrderedItem>     $items
-     * @param list<AppliedDiscount> $discounts computed by the DiscountCalculator
+     * @param list<AppliedDiscount> $discounts
      */
     public static function place(string $reference, Event $event, \DateTimeImmutable $placedAt, array $items, array $discounts, ?SalesChannel $channel = null): self
     {
@@ -216,9 +215,6 @@ class Order implements Referenced
         return $this->shipping;
     }
 
-    /**
-     * What the sold units cost the business (buying prices at the time of sale).
-     */
     public function costOfGoods(): Money
     {
         return $this->costOfGoods;
@@ -259,19 +255,9 @@ class Order implements Referenced
         return $this->placedAt;
     }
 
-    public function isPlacedIn(int $year): bool
-    {
-        return DateRange::yearOf($this->placedAt) === $year;
-    }
-
     public function source(): string
     {
         return $this->source;
-    }
-
-    public function isImported(): bool
-    {
-        return self::MANUAL !== $this->source;
     }
 
     /**
@@ -340,11 +326,6 @@ class Order implements Referenced
     public function uncheck(): void
     {
         $this->checkedAt = null;
-    }
-
-    public function isChecked(): bool
-    {
-        return null !== $this->checkedAt;
     }
 
     public function checkedAt(): ?\DateTimeImmutable
@@ -433,15 +414,14 @@ class Order implements Referenced
         return $this->channelCosts;
     }
 
+    public function profit(): Money
+    {
+        return $this->total->subtract($this->costOfGoods)->subtract($this->suppliesCost)->subtract($this->channelCosts);
+    }
+
     private function lineTwinOf(OrderLine $line): ?OrderLine
     {
-        foreach ($this->lines as $candidate) {
-            if ($candidate->sellsSameAs($line) && $candidate->sameUnitAmountsAs($line)) {
-                return $candidate;
-            }
-        }
-
-        return null;
+        return $this->lines->findFirst(static fn (int $key, OrderLine $candidate): bool => $candidate->sellsSameAs($line) && $candidate->sameUnitAmountsAs($line));
     }
 
     public function fillMissingCosts(Ulid $productId, ?string $variant, Money $unitCost): int
@@ -451,7 +431,7 @@ class Order implements Referenced
         }
         $filled = 0;
         foreach ($this->lines as $line) {
-            if ($line->hasUnknownCost() && ($line->productId()?->equals($productId) ?? false) && $line->variant() === $variant) {
+            if ($line->hasUnknownCost() && $line->isFor($productId, $variant)) {
                 $line->costAt($unitCost);
                 ++$filled;
             }
@@ -464,6 +444,11 @@ class Order implements Referenced
     public function unknownCostLines(): int
     {
         return \count(array_filter($this->lines(), static fn (OrderLine $line): bool => $line->hasUnknownCost()));
+    }
+
+    public function unidentifiedLines(): int
+    {
+        return \count(array_filter($this->lines(), static fn (OrderLine $line): bool => $line->sellsUnknownProduct()));
     }
 
     public function useSupply(SellableItem $supply, int $quantity, Money $cost): void
@@ -490,16 +475,12 @@ class Order implements Referenced
         if ($this->isRefunded()) {
             throw new RefundedOrderLocked($this->reference);
         }
-        foreach ($this->supplies as $supply) {
-            if ($supply->id()->equals($supplyLineId)) {
-                $this->supplies->removeElement($supply);
-                $this->recordSales();
+        $supply = $this->supplies->findFirst(static fn (int $key, OrderSupply $supply): bool => $supply->id()->equals($supplyLineId))
+            ?? throw new NotFound('order_supply', (string) $supplyLineId);
+        $this->supplies->removeElement($supply);
+        $this->recordSales();
 
-                return $supply;
-            }
-        }
-
-        throw new NotFound('order_supply', (string) $supplyLineId);
+        return $supply;
     }
 
     /**
@@ -517,13 +498,7 @@ class Order implements Referenced
 
     private function supplyUsing(Ulid $productId, ?string $variant): ?OrderSupply
     {
-        foreach ($this->supplies as $supply) {
-            if ($supply->uses($productId, $variant)) {
-                return $supply;
-            }
-        }
-
-        return null;
+        return $this->supplies->findFirst(static fn (int $key, OrderSupply $supply): bool => $supply->uses($productId, $variant));
     }
 
     public function paymentMethod(): ?PaymentMethod
@@ -539,14 +514,10 @@ class Order implements Referenced
         return array_values($this->lines->toArray());
     }
 
-    /**
-     * Sales of a (product, variant) now count for another sellable item, keeping their prices.
-     * A line merges into a line already selling that item at the same prices.
-     */
     public function moveSales(Ulid $productId, ?string $variant, SellableItem $to): void
     {
         foreach ($this->lines() as $line) {
-            if (!($line->productId()?->equals($productId) ?? false) || $line->variant() !== $variant) {
+            if (!$line->isFor($productId, $variant)) {
                 continue;
             }
 
@@ -563,13 +534,8 @@ class Order implements Referenced
 
     private function line(Ulid $lineId): OrderLine
     {
-        foreach ($this->lines as $line) {
-            if ($line->id()->equals($lineId)) {
-                return $line;
-            }
-        }
-
-        throw new NotFound('order_line', (string) $lineId);
+        return $this->lines->findFirst(static fn (int $key, OrderLine $line): bool => $line->id()->equals($lineId))
+            ?? throw new NotFound('order_line', (string) $lineId);
     }
 
     public function lineToIdentify(Ulid $lineId): OrderLine
@@ -589,13 +555,7 @@ class Order implements Referenced
 
     private function lineSelling(SellableItem $item, OrderLine $except): ?OrderLine
     {
-        foreach ($this->lines as $line) {
-            if ($line !== $except && $line->sells($item) && $line->sameUnitAmountsAs($except)) {
-                return $line;
-            }
-        }
-
-        return null;
+        return $this->lines->findFirst(static fn (int $key, OrderLine $line): bool => $line !== $except && $line->sells($item) && $line->sameUnitAmountsAs($except));
     }
 
     public function itemCount(): int
@@ -613,15 +573,14 @@ class Order implements Referenced
 
     private function addItem(OrderedItem $ordered): void
     {
-        foreach ($this->lines as $line) {
-            if ($line->sells($ordered->item)) {
-                $line->add($ordered->quantity, $ordered->cost());
+        $line = $this->lines->findFirst(static fn (int $key, OrderLine $line): bool => $line->sells($ordered->item));
+        if (null === $line) {
+            $this->lines->add(new OrderLine($this, $ordered->item, $ordered->quantity, $ordered->cost()));
 
-                return;
-            }
+            return;
         }
 
-        $this->lines->add(new OrderLine($this, $ordered->item, $ordered->quantity, $ordered->cost()));
+        $line->add($ordered->quantity, $ordered->cost());
     }
 
     /**
@@ -629,8 +588,7 @@ class Order implements Referenced
      */
     private function applyDiscounts(array $discounts): void
     {
-        $total = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $discounts));
-        if ($total->greaterThan($this->linesTotal())) {
+        if (AppliedDiscount::total($discounts)->greaterThan($this->linesTotal())) {
             throw new DiscountExceedsSubtotal();
         }
 
@@ -644,8 +602,7 @@ class Order implements Referenced
      */
     private static function importDiscounts(Money $gap, array $ruleDiscounts, string $label): array
     {
-        $ruleSaving = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $ruleDiscounts));
-        $rounding = abs($gap->subtract($ruleSaving)->amount());
+        $rounding = abs($gap->subtract(AppliedDiscount::total($ruleDiscounts))->amount());
 
         return [] !== $ruleDiscounts && $rounding <= self::IMPORT_ROUNDING_TOLERANCE_CENTS
             ? $ruleDiscounts
@@ -666,7 +623,7 @@ class Order implements Referenced
     {
         $lines = $this->lines();
         $this->subtotal = $this->linesTotal();
-        $this->discountTotal = Money::sum(array_map(static fn (AppliedDiscount $discount): Money => $discount->amount, $this->appliedDiscounts()));
+        $this->discountTotal = AppliedDiscount::total($this->appliedDiscounts());
         $this->total = $this->subtotal->subtract($this->discountTotal)->add($this->shipping);
         $shares = CostAllocation::proportionally($this->discountTotal, array_map(static fn (OrderLine $line): Money => $line->total(), $lines));
         foreach ($lines as $index => $line) {

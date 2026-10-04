@@ -13,10 +13,10 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\SuggestProductReference\SuggestProductReferenceHandler;
+use App\Application\Purchasing\CreateSupplier\CreateSupplier;
+use App\Application\Purchasing\CreateSupplier\CreateSupplierHandler;
 use App\Application\Purchasing\PlaceSupplierOrder\PlaceSupplierOrderHandler;
 use App\Application\Purchasing\PurchaseLine;
-use App\Application\Purchasing\SaveSupplier\SaveSupplier;
-use App\Application\Purchasing\SaveSupplier\SaveSupplierHandler;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Reference\ChangeReferenceFormat\ChangeReferenceFormat;
 use App\Application\Reference\ChangeReferenceFormat\ChangeReferenceFormatHandler;
@@ -95,7 +95,7 @@ final class ReferenceUseCasesTest extends KernelTestCase
 
     public function testSupplierOrdersAndProductsFollowTheirOwnFormat(): void
     {
-        $supplierId = (string) self::getContainer()->get(SaveSupplierHandler::class)(new SaveSupplier(null, 'Imprimerie du Lac'))->id();
+        $supplierId = (string) self::getContainer()->get(CreateSupplierHandler::class)(new CreateSupplier('Imprimerie du Lac'))->id();
         $this->change(ReferenceKind::SupplierOrder, 'ACHAT/{year:2}{month}/{number:2}', applyToExisting: false);
         $orderId = self::getContainer()->get(PlaceSupplierOrderHandler::class)(new SupplierOrderDraft($supplierId, new \DateTimeImmutable('2026-09-01'), [new PurchaseLine($this->sticker, null, 10, 1_000)], 0, 0));
         self::assertSame('ACHAT/2609/01', self::getContainer()->get(SupplierOrderRepository::class)->get($orderId)->reference());

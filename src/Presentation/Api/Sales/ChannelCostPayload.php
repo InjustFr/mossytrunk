@@ -25,7 +25,7 @@ final readonly class ChannelCostPayload
      */
     public static function kinds(): array
     {
-        return array_map(static fn (ChannelCostKind $kind): string => $kind->value, ChannelCostKind::cases());
+        return array_column(ChannelCostKind::cases(), 'value');
     }
 
     public function kind(): ChannelCostKind

@@ -4,19 +4,16 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Purchasing\SupplierOrderRepository;
-use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineSupplierOrderRepository implements SupplierOrderRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -32,19 +29,14 @@ final readonly class DoctrineSupplierOrderRepository implements SupplierOrderRep
 
     public function get(Ulid $id): SupplierOrder
     {
-        return $this->entityManager->getRepository(SupplierOrder::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('supplier_order', (string) $id);
+        return $this->scope->get(SupplierOrder::class, $id, 'supplier_order');
     }
 
     public function all(): array
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('o', 's', 'l')
-            ->from(SupplierOrder::class, 'o')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 's', 'l')->from(SupplierOrder::class, 'o'), 'o')
             ->join('o.supplier', 's')
             ->leftJoin('o.lines', 'l')
-            ->where('o.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('o.orderedOn', 'DESC')
             ->addOrderBy('o.reference', 'DESC')
             ->getQuery()

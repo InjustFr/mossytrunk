@@ -13,7 +13,9 @@ use App\Domain\Integration\UnknownItems;
 use App\Domain\Product\Exception\InvalidProduct;
 use App\Domain\Product\Product;
 use App\Domain\Product\SellableItem;
+use App\Domain\Product\Sku;
 use App\Domain\Sales\SalesChannel;
+use App\Domain\Shared\OptionalText;
 
 final class ExternalItemResolver
 {
@@ -44,7 +46,7 @@ final class ExternalItemResolver
             return SellableItem::unknown($this->unknownProduct, $line->unitPrice);
         }
 
-        $variant = null === $line->variant || '' === trim($line->variant) ? null : trim($line->variant);
+        $variant = OptionalText::of($line->variant);
         $remembered = $this->remembered[ExternalItem::keyOf($line->externalRef, $variant)] ?? null;
 
         $item = null !== $remembered && $remembered->isLinked() ? $this->linked($remembered, $line) : null;
@@ -55,15 +57,12 @@ final class ExternalItemResolver
         if (UnknownItems::CreateProduct === $this->connection->unknownItems()) {
             $item ??= $this->created($name, $variant, $line);
         }
+        $seen = $this->remember($remembered, $name, $variant, $line);
         if (null !== $item) {
-            $this->remember($remembered, $name, $variant, $line)->link($item);
-
-            return $item;
+            $seen->link($item);
         }
 
-        $this->remember($remembered, $name, $variant, $line);
-
-        return null;
+        return $item;
     }
 
     public function itemsToLink(): int
@@ -96,7 +95,7 @@ final class ExternalItemResolver
 
         foreach (self::splitVariant($name) as [$productName, $candidate]) {
             $named = $this->catalogue->named($productName, $line->category);
-            $known = null === $named ? null : self::matchingVariant($named, $candidate);
+            $known = $named?->variantNamed($candidate);
             if (null !== $named && null !== $known) {
                 return $this->sold($named, $known, $line);
             }
@@ -112,9 +111,9 @@ final class ExternalItemResolver
             return $this->withVariant($byReference, $variant, $line);
         }
 
-        for ($dash = mb_strrpos($sku, '-'); false !== $dash && $dash > 0; $dash = mb_strrpos(mb_substr($sku, 0, $dash), '-')) {
+        for ($dash = mb_strrpos($sku, Sku::SEPARATOR); false !== $dash && $dash > 0; $dash = mb_strrpos(mb_substr($sku, 0, $dash), Sku::SEPARATOR)) {
             $product = $this->catalogue->withReference(mb_substr($sku, 0, $dash));
-            $known = null === $product ? null : self::matchingVariant($product, mb_substr($sku, $dash + 1));
+            $known = $product?->variantNamed(mb_substr($sku, $dash + 1));
             if (null !== $product && null !== $known) {
                 return $this->sold($product, $known, $line);
             }
@@ -125,7 +124,7 @@ final class ExternalItemResolver
 
     private function matchedWithVariant(?Product $product, string $name, string $variant, ExternalLine $line): ?SellableItem
     {
-        $known = null === $product ? null : self::matchingVariant($product, $variant);
+        $known = $product?->variantNamed($variant);
         if (null !== $product && null !== $known) {
             return $this->sold($product, $known, $line);
         }
@@ -162,7 +161,7 @@ final class ExternalItemResolver
         if (!$product->hasVariants()) {
             return $this->sold($product, null, $line);
         }
-        $known = self::matchingVariant($product, $variant);
+        $known = $product->variantNamed($variant);
 
         return null === $known ? null : $this->sold($product, $known, $line);
     }
@@ -213,17 +212,6 @@ final class ExternalItemResolver
         $this->remembered[$item->itemKey()] = $item;
 
         return $item;
-    }
-
-    private static function matchingVariant(Product $product, string $label): ?string
-    {
-        foreach ($product->variants() as $variant) {
-            if (mb_strtolower($variant) === mb_strtolower(trim($label))) {
-                return $variant;
-            }
-        }
-
-        return null;
     }
 
     /**

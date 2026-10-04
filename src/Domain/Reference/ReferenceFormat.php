@@ -76,6 +76,11 @@ class ReferenceFormat
         return ReferenceTemplate::of($this->kind, $this->template);
     }
 
+    public function isFor(Workspace $workspace, ReferenceKind $kind): bool
+    {
+        return $kind === $this->kind && $workspace->id()->equals($this->workspace->id());
+    }
+
     public function kind(): ReferenceKind
     {
         return $this->kind;

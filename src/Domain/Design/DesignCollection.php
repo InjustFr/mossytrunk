@@ -6,6 +6,7 @@ namespace App\Domain\Design;
 
 use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Identity\Workspace;
+use App\Domain\Shared\OptionalText;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -52,7 +53,7 @@ class DesignCollection
         }
 
         $this->name = $name;
-        $this->description = null === $description || '' === trim($description) ? null : trim($description);
+        $this->description = OptionalText::of($description);
     }
 
     public function workOn(bool $current): void

@@ -40,7 +40,6 @@ final class EventTest extends TestCase
         self::assertSame(EventTiming::Ongoing, $event->timingOn(new \DateTimeImmutable('2026-07-09 00:00', $paris)));
         self::assertSame(EventTiming::Ongoing, $event->timingOn(new \DateTimeImmutable('2026-07-12 23:59', $paris)));
         self::assertSame(EventTiming::Past, $event->timingOn(new \DateTimeImmutable('2026-07-13 00:00', $paris)));
-        // 12 July 22:30 UTC is already the 13th in Paris.
         self::assertSame(EventTiming::Past, $event->timingOn(new \DateTimeImmutable('2026-07-12T22:30:00+00:00')));
     }
 

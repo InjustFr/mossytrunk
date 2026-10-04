@@ -93,7 +93,7 @@ class StockLot
 
     private function costOfFirst(int $units): Money
     {
-        return Money::cents((int) round($this->totalCost->amount() * $units / $this->quantity, 0, \PHP_ROUND_HALF_UP));
+        return $this->totalCost->prorate($units, $this->quantity);
     }
 
     public function id(): Ulid

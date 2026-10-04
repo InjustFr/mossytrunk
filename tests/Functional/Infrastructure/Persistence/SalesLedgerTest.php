@@ -15,6 +15,7 @@ use App\Domain\Order\OrderedItem;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\SellableItem;
 use App\Domain\Reporting\ProductSales;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use App\Tests\Support\ActsAsUser;
@@ -108,6 +109,6 @@ final class SalesLedgerTest extends KernelTestCase
 
     private static function paris(string $localTime): \DateTimeImmutable
     {
-        return new \DateTimeImmutable($localTime, new \DateTimeZone(DateRange::TIMEZONE));
+        return BusinessTime::at($localTime);
     }
 }

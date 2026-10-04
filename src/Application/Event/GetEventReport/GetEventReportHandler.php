@@ -9,8 +9,8 @@ use App\Application\Reporting\SalesLedger;
 use App\Application\Stock\ConsumedSupplies;
 use App\Domain\Event\EventRepository;
 use App\Domain\Product\ProductRepository;
-use App\Domain\Reporting\EventResult;
 use App\Domain\Reporting\ProductSales;
+use App\Domain\Reporting\SalesFigures;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class GetEventReportHandler
@@ -28,13 +28,13 @@ final readonly class GetEventReportHandler
     {
         $event = $this->events->get(Ulid::fromString($eventId));
 
-        $result = EventResult::of($event, $this->sales->totalsOfEvent($event->id()), $this->productSales->ofEvent($event->id()), $this->consumedSupplies->atEvent($event->id()));
+        $productSales = $this->productSales->ofEvent($event->id());
 
-        $products = [];
-        foreach ($this->products->findByIds(ProductSales::productIds($result->productSales)) as $product) {
-            $products[$product->id()->toRfc4122()] = $product;
-        }
-
-        return EventReportView::of($event, $result, $products);
+        return EventReportView::of(
+            $event,
+            SalesFigures::of($this->sales->totalsOfEvent($event->id()), $event->totalExpenses(), $this->consumedSupplies->atEvent($event->id())),
+            $productSales,
+            $this->products->findByIds(ProductSales::productIds($productSales)),
+        );
     }
 }

@@ -37,10 +37,8 @@ final readonly class RenameTypeVariantHandler
         foreach ($products as $product) {
             $product->renameVariant($current, $to);
         }
-        foreach ($this->gabarits->all() as $gabarit) {
-            if ($gabarit->type() === $type) {
-                $gabarit->renameVariant($current, $to);
-            }
+        foreach ($this->gabarits->ofType($type) as $gabarit) {
+            $gabarit->renameVariant($current, $to);
         }
         foreach ($this->designs->all() as $design) {
             $design->renameVariant($type, $current, $to);

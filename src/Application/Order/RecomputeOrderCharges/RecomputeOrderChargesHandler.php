@@ -23,12 +23,12 @@ final readonly class RecomputeOrderChargesHandler
      */
     public function __invoke(array $orderIds): int
     {
-        $ids = array_values(array_unique($orderIds));
-        foreach ($ids as $id) {
-            $this->charges->charge($this->orders->get(Ulid::fromString($id)));
+        $orders = $this->orders->getMany(array_map(Ulid::fromString(...), array_values(array_unique($orderIds))));
+        foreach ($orders as $order) {
+            $this->charges->charge($order);
         }
         $this->transaction->commit();
 
-        return \count($ids);
+        return \count($orders);
     }
 }

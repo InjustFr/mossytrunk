@@ -8,7 +8,7 @@ use App\Application\Integration\Connectors;
 use App\Application\Order\ListOrders\OrderSummaries;
 use App\Application\Order\ListOrders\OrderSummaryView;
 use App\Application\WorkspaceContext;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Uid\Ulid;
 
@@ -84,6 +84,6 @@ final readonly class DoctrineOrderSummaries implements OrderSummaries
 
     private static function moment(mixed $value): ?string
     {
-        return \is_string($value) ? new \DateTimeImmutable($value)->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM) : null;
+        return \is_string($value) ? BusinessTime::atom(new \DateTimeImmutable($value)) : null;
     }
 }

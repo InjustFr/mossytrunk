@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Design;
 
-use App\Application\Design\SaveDesign\SaveDesign;
+use App\Application\Design\CreateDesign\CreateDesign;
+use App\Application\Design\UpdateDesign\UpdateDesign;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class DesignPayload
@@ -24,8 +25,13 @@ final readonly class DesignPayload
     ) {
     }
 
-    public function toCommand(?string $designId = null): SaveDesign
+    public function toCreate(): CreateDesign
     {
-        return new SaveDesign($designId, $this->name, $this->collectionId, $this->notes, $this->gabaritIds);
+        return new CreateDesign($this->name, $this->collectionId, $this->notes, $this->gabaritIds);
+    }
+
+    public function toUpdate(string $designId): UpdateDesign
+    {
+        return new UpdateDesign($designId, $this->name, $this->collectionId, $this->notes);
     }
 }

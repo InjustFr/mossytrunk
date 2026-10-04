@@ -6,12 +6,6 @@ namespace App\Domain\Reporting;
 
 use App\Domain\Shared\Money;
 
-/**
- * Profitability figures of a set of orders and expenses (an event, a month, a year):
- *   turnover = gross sales − discounts + shipping charged
- *   URSSAF   = 12.8 % × turnover
- *   result   = turnover − cost of goods − supplies − supplies consumed − channel costs − expenses − URSSAF
- */
 final readonly class SalesFigures
 {
     private function __construct(
@@ -57,9 +51,6 @@ final readonly class SalesFigures
         return self::of(SalesTotals::zero(), Money::zero());
     }
 
-    /**
-     * Sum of two periods. URSSAF is summed (each period rounded to the cent), so a year equals the sum of its months.
-     */
     public function add(self $other): self
     {
         return new self(

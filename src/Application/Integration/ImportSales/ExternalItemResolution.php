@@ -7,7 +7,7 @@ namespace App\Application\Integration\ImportSales;
 use App\Application\Integration\LinePrices;
 use App\Application\Product\CreateProductType\MiscellaneousType;
 use App\Application\Product\CreateProductType\ProductTypeCreator;
-use App\Application\Product\ProductReferenceGenerator;
+use App\Application\Product\NewProducts;
 use App\Application\Translator;
 use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\ServiceConnection;
@@ -21,7 +21,7 @@ final readonly class ExternalItemResolution
     public function __construct(
         private ExternalItemRepository $items,
         private ProductRepository $products,
-        private ProductReferenceGenerator $references,
+        private NewProducts $newProducts,
         private ProductTypeRepository $types,
         private ProductTypeCreator $typeCreator,
         private MiscellaneousType $miscellaneous,
@@ -31,9 +31,9 @@ final readonly class ExternalItemResolution
     ) {
     }
 
-    public function catalogueOf(ServiceConnection $connection): ImportedCatalogue
+    public function catalogue(): ImportedCatalogue
     {
-        return new ImportedCatalogue($this->products, $this->references, $this->types, $this->typeCreator, $this->miscellaneous, $connection->workspace());
+        return new ImportedCatalogue($this->products, $this->newProducts, $this->types, $this->typeCreator, $this->miscellaneous);
     }
 
     public function resolver(ImportedCatalogue $catalogue, ServiceConnection $connection, LinePrices $linePrices): ExternalItemResolver

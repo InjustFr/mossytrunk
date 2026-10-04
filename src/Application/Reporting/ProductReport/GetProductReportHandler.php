@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Application\Reporting\ProductReport;
 
 use App\Application\Product\ProductMovements;
+use App\Application\Reporting\ProductSalesLedger;
 use App\Application\Reporting\ReportPeriod;
 use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountRuleRepository;
-use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
+use App\Domain\Stock\StockItem;
 use App\Domain\Stock\StockRepository;
 use Symfony\Component\Uid\Ulid;
 
@@ -19,7 +21,7 @@ final readonly class GetProductReportHandler
 {
     public function __construct(
         private ProductRepository $products,
-        private OrderRepository $orders,
+        private ProductSalesLedger $sales,
         private StockRepository $stock,
         private DiscountRuleRepository $rules,
         private ProductMovements $movements,
@@ -33,24 +35,19 @@ final readonly class GetProductReportHandler
         $range = $this->periods->resolve($period);
         $months = array_fill_keys(ReportPeriod::months($range), ['units' => 0, 'gross' => 0, 'revenue' => 0, 'received' => 0, 'sold' => 0, 'lost' => 0, 'used' => 0, 'onHand' => 0]);
 
-        foreach ($this->orders->selling($product->id()) as $order) {
-            $month = ReportPeriod::monthOf($order->placedAt());
-            if ($order->isRefunded() || !isset($months[$month])) {
-                continue;
-            }
-            foreach ($order->lines() as $line) {
-                if ($line->productId()?->equals($product->id()) ?? false) {
-                    $months[$month]['units'] += $line->quantity();
-                    $months[$month]['gross'] += $line->total()->amount();
-                    $months[$month]['revenue'] += $line->revenue()->amount();
-                }
+        foreach ($this->sales->monthlyOf($product->id()) as $month => $sold) {
+            if (isset($months[$month])) {
+                $months[$month]['units'] = $sold->quantity;
+                $months[$month]['gross'] = $sold->gross->amount();
+                $months[$month]['revenue'] = $sold->sales->amount();
             }
         }
 
-        $onHand = array_sum(array_map(static fn ($item): int => $item->onHand(), $this->stock->ofProduct($product->id())));
+        $stockItems = $this->stock->ofProduct($product->id());
+        $onHand = array_sum(array_map(static fn (StockItem $item): int => $item->onHand(), $stockItems));
         $flows = [];
-        foreach ($this->movements->of($product) as $movement) {
-            $month = ReportPeriod::monthOf(new \DateTimeImmutable($movement['date']));
+        foreach ($this->movements->of($product, $stockItems) as $movement) {
+            $month = BusinessTime::month(new \DateTimeImmutable($movement['date']));
             $flows[$month] ??= ['received' => 0, 'sold' => 0, 'lost' => 0, 'used' => 0, 'net' => 0];
             $flows[$month]['net'] += $movement['quantity'];
             $bucket = match ($movement['kind']) {
@@ -132,7 +129,7 @@ final readonly class GetProductReportHandler
     }
 
     /**
-     * @param list<array{id: string, name: string, from: string, to: string, days: int}> $discounts sorted by start
+     * @param list<array{id: string, name: string, from: string, to: string, days: int}> $discounts
      */
     private static function coveredDays(array $discounts): int
     {

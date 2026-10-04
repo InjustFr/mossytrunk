@@ -4,22 +4,21 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductKind;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Exception\NotFound;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineProductRepository implements ProductRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -35,27 +34,24 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     public function get(Ulid $id): Product
     {
-        $product = $this->entityManager->find(Product::class, $id);
-        if (null === $product || !$product->workspace()->id()->equals($this->workspace->current()->id())) {
-            throw new NotFound('product', (string) $id);
-        }
+        return $this->find($id) ?? throw new NotFound('product', (string) $id);
+    }
 
-        return $product;
+    public function find(Ulid $id): ?Product
+    {
+        $product = $this->entityManager->find(Product::class, $id);
+
+        return null !== $product && $product->workspace()->id()->equals($this->scope->workspace()->id()) ? $product : null;
     }
 
     public function findByReference(string $reference): ?Product
     {
-        return $this->entityManager->getRepository(Product::class)->findOneBy(['reference' => $reference, 'workspace' => $this->workspace->current()]);
-    }
-
-    public function findByName(string $name): ?Product
-    {
-        return $this->entityManager->getRepository(Product::class)->findOneBy(['name' => $name, 'workspace' => $this->workspace->current()]);
+        return $this->scope->findOneBy(Product::class, ['reference' => $reference]);
     }
 
     public function ofType(ProductType $type): array
     {
-        return $this->entityManager->getRepository(Product::class)->findBy(['type' => $type, 'workspace' => $this->workspace->current()]);
+        return $this->scope->findBy(Product::class, ['type' => $type]);
     }
 
     public function findByIds(array $ids): array
@@ -64,16 +60,19 @@ final readonly class DoctrineProductRepository implements ProductRepository
             return [];
         }
 
-        return $this->entityManager->createQueryBuilder()
-            ->select('p', 't')
-            ->from(Product::class, 'p')
+        $products = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('p', 't')->from(Product::class, 'p'), 'p')
             ->leftJoin('p.type', 't')
-            ->where('p.id IN (:ids)')
-            ->andWhere('p.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->setParameter('ids', array_map(static fn (Ulid $id): string => $id->toRfc4122(), $ids), \Doctrine\DBAL\ArrayParameterType::STRING)
+            ->andWhere('p.id IN (:ids)')
+            ->setParameter('ids', array_map(static fn (Ulid $id): string => $id->toRfc4122(), $ids), ArrayParameterType::STRING)
             ->getQuery()
             ->getResult();
+
+        $byId = [];
+        foreach ($products as $product) {
+            $byId[(string) $product->id()] = $product;
+        }
+
+        return $byId;
     }
 
     public function all(): array
@@ -109,14 +108,10 @@ final readonly class DoctrineProductRepository implements ProductRepository
 
     private function allQuery(): QueryBuilder
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('p', 't', 'cp', 'c')
-            ->from(Product::class, 'p')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('p', 't', 'cp', 'c')->from(Product::class, 'p'), 'p')
             ->leftJoin('p.type', 't')
             ->leftJoin('p.channelPrices', 'cp')
             ->leftJoin('cp.channel', 'c')
-            ->where('p.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('t.name', 'ASC')
             ->addOrderBy('p.name', 'ASC');
     }

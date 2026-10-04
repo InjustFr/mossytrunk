@@ -10,14 +10,14 @@ use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderSupply;
 use App\Domain\Sales\OrderCharge;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 
 final readonly class OrderView
 {
     /**
      * @param list<array{id: string, productId: ?string, label: string, quantity: int, unitPrice: int, total: int, unitCost: int, cost: int}> $lines
      * @param array{id: string, name: string}|null                                                                                            $event
-     * @param list<array{reference: string, paymentMethod: ?string}>                                                                          $importedSales
+     * @param list<array{reference: string}>                                                                                                  $importedSales
      * @param list<array{label: string, amount: int, ruleId: ?string}>                                                                        $discounts
      * @param list<array{id: string, productId: string, label: string, quantity: int, cost: int}>                                             $supplies
      * @param list<array{label: string, amount: int}>                                                                                         $charges
@@ -55,7 +55,7 @@ final readonly class OrderView
         return new self(
             (string) $order->id(),
             $order->reference(),
-            $order->placedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
+            BusinessTime::atom($order->placedAt()),
             null === $order->event() ? null : ['id' => (string) $order->event()->id(), 'name' => $order->event()->name()],
             $order->source(),
             $sourceLabel,
@@ -76,9 +76,9 @@ final readonly class OrderView
             $order->shipping()->amount(),
             $order->total()->amount(),
             $order->costOfGoods()->amount(),
-            $order->total()->subtract($order->costOfGoods())->subtract($order->suppliesCost())->subtract($order->channelCosts())->amount(),
-            array_map(static fn (ImportedSale $sale): array => ['reference' => $sale->reference(), 'paymentMethod' => $sale->paymentMethod()?->value], $order->importedSales()),
-            null === $order->refundedAt() ? null : $order->refundedAt()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
+            $order->profit()->amount(),
+            array_map(static fn (ImportedSale $sale): array => ['reference' => $sale->reference()], $order->importedSales()),
+            null === $order->refundedAt() ? null : BusinessTime::atom($order->refundedAt()),
             $order->channel()?->name(),
             null === $order->channel() ? null : (string) $order->channel()->id(),
             array_map(static fn (OrderSupply $supply): array => [

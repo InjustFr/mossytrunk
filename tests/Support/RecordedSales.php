@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Support;
 
 use App\Domain\Order\Order;
-use App\Domain\Reporting\ProductSales;
 use App\Domain\Reporting\SalesTotals;
 use App\Domain\Shared\Money;
 
@@ -25,10 +24,5 @@ final class RecordedSales
             Money::sum(array_map(static fn (Order $order): Money => $order->suppliesCost(), $orders)),
             Money::sum(array_map(static fn (Order $order): Money => $order->channelCosts(), $orders)),
         );
-    }
-
-    public static function product(string $label, int $quantity, int $sales, int $cost = 0): ProductSales
-    {
-        return new ProductSales($label, null, $label, null, $quantity, Money::cents($sales), Money::cents($sales), Money::cents($cost), 0 === $cost);
     }
 }

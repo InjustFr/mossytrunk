@@ -7,9 +7,6 @@ namespace App\Domain\Order;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
 
-/**
- * A validated (product, variant) tuple and how many units are bought.
- */
 final readonly class OrderedItem
 {
     public function __construct(

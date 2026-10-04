@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Reference;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Reference\Referenced;
 use App\Domain\Reference\ReferencedItems;
+use App\Infrastructure\Persistence\Doctrine\WorkspaceScope;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
-use Symfony\Bridge\Doctrine\Types\UlidType;
 
 abstract readonly class DoctrineReferencedItems implements ReferencedItems
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -51,10 +50,6 @@ abstract readonly class DoctrineReferencedItems implements ReferencedItems
 
     private function items(): QueryBuilder
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('i')
-            ->from($this->entity(), 'i')
-            ->where('i.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME);
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('i')->from($this->entity(), 'i'), 'i');
     }
 }

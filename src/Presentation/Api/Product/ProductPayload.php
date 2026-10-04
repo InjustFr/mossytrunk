@@ -8,10 +8,6 @@ use App\Domain\Product\Product;
 use App\Domain\Product\ProductKind;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * Request body for creating or updating a product. Prices are integer cents; a blank reference is suggested at creation
- * and kept on update.
- */
 final readonly class ProductPayload
 {
     /**
@@ -46,7 +42,7 @@ final readonly class ProductPayload
      */
     public static function kinds(): array
     {
-        return array_map(static fn (ProductKind $kind): string => $kind->value, ProductKind::cases());
+        return array_column(ProductKind::cases(), 'value');
     }
 
     public function kind(): ProductKind

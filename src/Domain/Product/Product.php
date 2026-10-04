@@ -24,24 +24,13 @@ use App\Domain\Sales\SalesChannel;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
+use App\Domain\Shared\OptionalText;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * A real-world product sold at events.
- *
- * Rules (see docs/business/products.md):
- * - reference and name are required; the reference is unique, suggested at creation
- *   from the workspace's reference format and can be changed later.
- * - prices are never negative; the buying price is the last purchase price, set by restocking only (0 = unknown).
- * - variants are free-text labels (colour, size, design…), unique per product.
- * - a product without variants is a unique product.
- * - a product always has a type; it is displayed as "{type} {name}" (e.g. "Print Forêt") unless the type does not prefix names.
- * - its variants are among its type's variants: a variant given to a product is added to its type.
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'product')]
 #[ORM\UniqueConstraint(name: 'product_workspace_reference', columns: ['workspace_id', 'reference'])]
@@ -269,13 +258,7 @@ class Product implements Referenced
 
     private function channelPriceOn(SalesChannel $channel): ?ChannelPrice
     {
-        foreach ($this->channelPrices as $price) {
-            if ($price->isOn($channel)) {
-                return $price;
-            }
-        }
-
-        return null;
+        return $this->channelPrices->findFirst(static fn (int $key, ChannelPrice $price): bool => $price->isOn($channel));
     }
 
     public function recordPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
@@ -315,13 +298,8 @@ class Product implements Referenced
 
     private function priceChange(Ulid $changeId): SellingPriceChange
     {
-        foreach ($this->priceHistory as $change) {
-            if ($change->id()->equals($changeId)) {
-                return $change;
-            }
-        }
-
-        throw new NotFound('price', (string) $changeId);
+        return $this->priceHistory->findFirst(static fn (int $key, SellingPriceChange $change): bool => $change->id()->equals($changeId))
+            ?? throw new NotFound('price', (string) $changeId);
     }
 
     private function assertPastPrice(Money $price, \DateTimeImmutable $since, \DateTimeImmutable $now): void
@@ -418,12 +396,10 @@ class Product implements Referenced
 
     public function renameVariant(string $from, string $to): void
     {
-        $this->variants = array_map(static fn (string $variant): string => VariantLabel::same($variant, $from) ? $to : $variant, $this->variants);
+        $this->variants = VariantLabel::renamed($this->variants, $from, $to);
     }
 
     /**
-     * Keeps the variant list in sync with the given one (order preserved).
-     *
      * @param list<string> $variants
      */
     public function replaceVariants(array $variants): void
@@ -442,13 +418,9 @@ class Product implements Referenced
         }
     }
 
-    /**
-     * Validates the (product, variant) tuple a customer is buying.
-     * A product with variants requires one of them; a unique product accepts none.
-     */
     public function sellable(?string $variant): SellableItem
     {
-        $variant = null === $variant || '' === trim($variant) ? null : trim($variant);
+        $variant = OptionalText::of($variant);
 
         if ($this->hasVariants()) {
             if (null === $variant) {
@@ -502,9 +474,6 @@ class Product implements Referenced
         return $this->name;
     }
 
-    /**
-     * How the product is shown everywhere (and snapshotted on orders): "{type} {name}", or the name alone when its type does not prefix names.
-     */
     public function displayName(): string
     {
         return $this->type->nameProduct($this->name);

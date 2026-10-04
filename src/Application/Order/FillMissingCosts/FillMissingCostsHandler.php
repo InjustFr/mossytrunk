@@ -19,10 +19,7 @@ final readonly class FillMissingCostsHandler
 
     public function __invoke(): int
     {
-        $filled = 0;
-        foreach ($this->stock->all() as $item) {
-            $filled += $this->missingCosts->fill($item);
-        }
+        $filled = $this->missingCosts->fill($this->stock->all());
         $this->transaction->commit();
 
         return $filled;

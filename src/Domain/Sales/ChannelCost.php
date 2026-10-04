@@ -32,9 +32,6 @@ class ChannelCost
     #[ORM\Column]
     private int $amount;
 
-    /**
-     * @internal built by SalesChannel
-     */
     public function __construct(SalesChannel $channel, string $label, ChannelCostKind $kind, int $amount)
     {
         $this->id = new Ulid();
@@ -42,9 +39,6 @@ class ChannelCost
         $this->revise($label, $kind, $amount);
     }
 
-    /**
-     * @internal revised through SalesChannel
-     */
     public function revise(string $label, ChannelCostKind $kind, int $amount): void
     {
         $label = trim($label);

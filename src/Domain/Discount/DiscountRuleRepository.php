@@ -12,13 +12,10 @@ interface DiscountRuleRepository
 
     public function remove(DiscountRule $rule): void;
 
-    /**
-     * @throws \App\Domain\Shared\Exception\NotFound
-     */
     public function get(Ulid $id): DiscountRule;
 
     /**
-     * @return list<DiscountRule> sorted by name
+     * @return list<DiscountRule>
      */
     public function all(): array;
 }

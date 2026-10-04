@@ -25,7 +25,7 @@ final readonly class AddOrderSuppliesHandler
 
     public function __invoke(AddOrderSupplies $command): int
     {
-        $orders = array_map(fn (string $id): Order => $this->orders->get(Ulid::fromString($id)), array_values(array_unique($command->orderIds)));
+        $orders = $this->orders->getMany(array_map(Ulid::fromString(...), array_values(array_unique($command->orderIds))));
         $this->assertOneChannel($orders);
         $supply = $this->products->get(Ulid::fromString($command->supplyId))->sellable($command->variant);
 

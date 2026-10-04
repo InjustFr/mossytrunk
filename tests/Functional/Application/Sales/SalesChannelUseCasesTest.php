@@ -18,10 +18,11 @@ use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\ListProducts\ListProductsHandler;
 use App\Application\Product\ListProducts\ProductView;
+use App\Application\Sales\CreateChannel\CreateChannelHandler;
 use App\Application\Sales\DeleteChannel\DeleteChannelHandler;
 use App\Application\Sales\ListChannels\ListChannelsHandler;
 use App\Application\Sales\SalesChannelView;
-use App\Application\Sales\SaveChannel\SaveChannelHandler;
+use App\Application\Sales\UpdateChannel\UpdateChannelHandler;
 use App\Domain\Integration\UnknownItems;
 use App\Domain\Sales\ChannelKind;
 use App\Domain\Sales\Exception\ChannelHasOrdersWithoutEvent;
@@ -52,7 +53,7 @@ final class SalesChannelUseCasesTest extends KernelTestCase
     {
         $etsy = $this->channel('Etsy', 'etsy');
         $this->channel('Marchés en ligne');
-        self::getContainer()->get(SaveChannelHandler::class)($etsy, 'Boutique Etsy', ChannelKind::Online, 'etsy');
+        self::getContainer()->get(UpdateChannelHandler::class)($etsy, 'Boutique Etsy', ChannelKind::Online, 'etsy');
 
         self::assertEquals([
             new SalesChannelView($etsy, 'Boutique Etsy', 'etsy', 'Etsy', 'online', false, [], []),
@@ -98,7 +99,7 @@ final class SalesChannelUseCasesTest extends KernelTestCase
         self::assertNotSame([], array_filter(self::getContainer()->get(ListOrdersHandler::class)(), static fn (OrderSummaryView $order): bool => 'Etsy' === $order->channelName));
 
         $this->expectException(ChannelHasOrdersWithoutEvent::class);
-        self::getContainer()->get(SaveChannelHandler::class)($etsy, 'Etsy', ChannelKind::Market, 'etsy');
+        self::getContainer()->get(UpdateChannelHandler::class)($etsy, 'Etsy', ChannelKind::Market, 'etsy');
     }
 
     public function testProductsGetTheirOwnPriceOnAChannelUntilItIsDeleted(): void
@@ -195,7 +196,7 @@ final class SalesChannelUseCasesTest extends KernelTestCase
 
     private function channel(string $name, ?string $service = null, ChannelKind $kind = ChannelKind::Online): string
     {
-        return (string) self::getContainer()->get(SaveChannelHandler::class)(null, $name, $kind, $service);
+        return (string) self::getContainer()->get(CreateChannelHandler::class)($name, $kind, $service);
     }
 
     /**

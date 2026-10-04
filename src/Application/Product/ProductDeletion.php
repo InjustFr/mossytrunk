@@ -16,11 +16,14 @@ final readonly class ProductDeletion
     ) {
     }
 
-    public function delete(Product $product): void
+    public function delete(Product ...$products): void
     {
-        foreach ($this->discountRules->all() as $rule) {
-            $rule->withdrawProduct($product);
+        $rules = $this->discountRules->all();
+        foreach ($products as $product) {
+            foreach ($rules as $rule) {
+                $rule->withdrawProduct($product);
+            }
+            $this->products->remove($product);
         }
-        $this->products->remove($product);
     }
 }

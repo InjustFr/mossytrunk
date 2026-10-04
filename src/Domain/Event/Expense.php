@@ -11,9 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Money spent for an event (stand fee, travel, lodging…). Created only through {@see Event::addExpense()}.
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'event_expense')]
 class Expense
@@ -35,9 +32,6 @@ class Expense
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    /**
-     * @internal use Event::addExpense()
-     */
     public function __construct(Event $event, string $label, Money $amount)
     {
         $this->id = new Ulid();
@@ -46,9 +40,6 @@ class Expense
         $this->revise($label, $amount);
     }
 
-    /**
-     * @internal use Event::reviseExpense()
-     */
     public function revise(string $label, Money $amount): void
     {
         $label = trim($label);

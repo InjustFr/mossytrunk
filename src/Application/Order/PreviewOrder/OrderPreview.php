@@ -7,7 +7,7 @@ namespace App\Application\Order\PreviewOrder;
 final readonly class OrderPreview
 {
     /**
-     * @param array{id: string, name: string}|null                     $event     null when no event covers the date
+     * @param array{id: string, name: string}|null                     $event
      * @param list<array{label: string, amount: int, ruleId: ?string}> $discounts
      */
     public function __construct(

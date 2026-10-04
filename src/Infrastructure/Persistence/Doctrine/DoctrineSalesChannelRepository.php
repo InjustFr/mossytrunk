@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Sales\SalesChannel;
 use App\Domain\Sales\SalesChannelRepository;
 use App\Domain\Shared\Exception\NotFound;
@@ -15,7 +14,7 @@ final readonly class DoctrineSalesChannelRepository implements SalesChannelRepos
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -31,23 +30,21 @@ final readonly class DoctrineSalesChannelRepository implements SalesChannelRepos
 
     public function get(Ulid $id): SalesChannel
     {
-        return $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('sales_channel', (string) $id);
+        return $this->scope->get(SalesChannel::class, $id, 'sales_channel');
     }
 
     public function linkedTo(string $service): ?SalesChannel
     {
-        return $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['service' => $service, 'workspace' => $this->workspace->current()]);
+        return $this->scope->findOneBy(SalesChannel::class, ['service' => $service]);
     }
 
     public function main(): SalesChannel
     {
-        return $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['main' => true, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('sales_channel', 'main');
+        return $this->scope->findOneBy(SalesChannel::class, ['main' => true]) ?? throw new NotFound('sales_channel', 'main');
     }
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(SalesChannel::class)->findBy(['workspace' => $this->workspace->current()], ['main' => 'DESC', 'name' => 'ASC']);
+        return $this->scope->findBy(SalesChannel::class, orderBy: ['main' => 'DESC', 'name' => 'ASC']);
     }
 }

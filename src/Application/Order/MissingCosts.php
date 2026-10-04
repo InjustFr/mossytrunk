@@ -13,16 +13,27 @@ final readonly class MissingCosts
     {
     }
 
-    public function fill(StockItem $item): int
+    /**
+     * @param list<StockItem> $items
+     */
+    public function fill(array $items): int
     {
-        $unitCost = $item->firstPurchaseUnitCost();
-        if (null === $unitCost) {
-            return 0;
+        $byProduct = [];
+        foreach ($items as $item) {
+            $unitCost = $item->firstPurchaseUnitCost();
+            if (null !== $unitCost) {
+                $byProduct[(string) $item->product()->id()][] = [$item, $unitCost];
+            }
         }
 
         $filled = 0;
-        foreach ($this->orders->selling($item->product()->id()) as $order) {
-            $filled += $order->fillMissingCosts($item->product()->id(), $item->variant(), $unitCost);
+        foreach ($byProduct as $costs) {
+            $productId = $costs[0][0]->product()->id();
+            foreach ($this->orders->selling($productId) as $order) {
+                foreach ($costs as [$item, $unitCost]) {
+                    $filled += $order->fillMissingCosts($productId, $item->variant(), $unitCost);
+                }
+            }
         }
 
         return $filled;

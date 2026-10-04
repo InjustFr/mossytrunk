@@ -15,6 +15,8 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ProductView;
+use App\Application\Purchasing\CreateSupplier\CreateSupplier;
+use App\Application\Purchasing\CreateSupplier\CreateSupplierHandler;
 use App\Application\Purchasing\DeleteSupplierOrder\DeleteSupplierOrderHandler;
 use App\Application\Purchasing\GetSupplierOrder\GetSupplierOrderHandler;
 use App\Application\Purchasing\ListSupplierOrders\ListSupplierOrdersHandler;
@@ -24,8 +26,6 @@ use App\Application\Purchasing\PlaceSupplierOrder\PlaceSupplierOrderHandler;
 use App\Application\Purchasing\PurchaseLine;
 use App\Application\Purchasing\ReceiveSupplierOrder\ReceiveSupplierOrderHandler;
 use App\Application\Purchasing\ReviseSupplierOrder\ReviseSupplierOrderHandler;
-use App\Application\Purchasing\SaveSupplier\SaveSupplier;
-use App\Application\Purchasing\SaveSupplier\SaveSupplierHandler;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Purchasing\SupplierOrderView;
 use App\Application\Stock\GetProductStock\GetProductStockHandler;
@@ -47,7 +47,7 @@ final class PurchasingUseCasesTest extends KernelTestCase
     protected function setUp(): void
     {
         self::actAsMemberOf();
-        $this->supplierId = (string) self::getContainer()->get(SaveSupplierHandler::class)(new SaveSupplier(null, 'Imprimerie du Lac'))->id();
+        $this->supplierId = (string) self::getContainer()->get(CreateSupplierHandler::class)(new CreateSupplier('Imprimerie du Lac'))->id();
         $this->sticker = (string) self::createProduct('Sticker', 400, 30);
         $this->tshirt = (string) self::createProduct('T-shirt', 2_000, 900, ['S', 'M']);
     }
@@ -230,7 +230,7 @@ final class PurchasingUseCasesTest extends KernelTestCase
     {
         $this->expectException(InvalidPurchase::class);
 
-        self::getContainer()->get(SaveSupplierHandler::class)(new SaveSupplier(null, 'imprimerie du lac'));
+        self::getContainer()->get(CreateSupplierHandler::class)(new CreateSupplier('imprimerie du lac'));
     }
 
     public function testSuppliersAndOrdersBelongToTheWorkspace(): void

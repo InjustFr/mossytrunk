@@ -138,8 +138,6 @@ final class ProductTypeTest extends TestCase
         self::assertSame('A3', $print->offerVariant('a3'));
         self::assertSame(['A3', 'A4'], $print->offerVariants(['a3', 'A4', ' ', 'a4']));
         self::assertSame(['A3', 'A4'], $print->variants());
-        self::assertTrue($print->offersVariant(' a4 '));
-        self::assertFalse($print->offersVariant('A5'));
     }
 
     public function testAnEmptyVariantIsNotOffered(): void

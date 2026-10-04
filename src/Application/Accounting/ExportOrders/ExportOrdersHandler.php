@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Accounting\ExportOrders;
 
+use App\Application\Csv;
 use App\Application\Integration\Connectors;
 use App\Application\Translator;
 use App\Domain\Accounting\Exception\DeclarationPeriodEndsBeforeStart;
@@ -11,6 +12,7 @@ use App\Domain\Order\ImportedSale;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Order\PaymentMethod;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 
@@ -27,9 +29,8 @@ final readonly class ExportOrdersHandler
 
     public function __invoke(string $from, string $to): OrdersCsv
     {
-        $timezone = new \DateTimeZone(DateRange::TIMEZONE);
-        $start = new \DateTimeImmutable($from, $timezone);
-        $end = new \DateTimeImmutable($to, $timezone);
+        $start = BusinessTime::at($from);
+        $end = BusinessTime::at($to);
         if ($end < $start) {
             throw new DeclarationPeriodEndsBeforeStart();
         }
@@ -38,7 +39,7 @@ final readonly class ExportOrdersHandler
 
         $rows = [array_map(fn (string $column): string => $this->translator->trans('export.orders.column.'.$column), self::COLUMNS)];
         foreach ($orders as $order) {
-            $placedAt = $order->placedAt()->setTimezone($timezone);
+            $placedAt = BusinessTime::local($order->placedAt());
             $rows[] = [
                 $order->reference(),
                 implode(', ', array_map(static fn (ImportedSale $sale): string => $sale->reference(), $order->importedSales())),
@@ -56,7 +57,7 @@ final readonly class ExportOrdersHandler
                 self::amount($order->costOfGoods()),
                 self::amount($order->suppliesCost()),
                 self::amount($order->channelCosts()),
-                self::amount($order->total()->subtract($order->costOfGoods())->subtract($order->suppliesCost())->subtract($order->channelCosts())),
+                self::amount($order->profit()),
             ];
         }
 
@@ -72,12 +73,12 @@ final readonly class ExportOrdersHandler
      */
     private static function line(array $cells): string
     {
-        return implode(';', array_map(static fn (string $cell): string => 1 === preg_match('/[;"\r\n]/', $cell) ? '"'.str_replace('"', '""', $cell).'"' : $cell, $cells));
+        return Csv::row($cells, ';');
     }
 
     private static function amount(Money $money): string
     {
-        return number_format($money->amount() / 100, 2, ',', '');
+        return Csv::amount($money, ',');
     }
 
     private function payment(?PaymentMethod $method): string

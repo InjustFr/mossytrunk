@@ -13,32 +13,34 @@ interface OrderRepository
 
     public function remove(Order $order): void;
 
-    /**
-     * @throws \App\Domain\Shared\Exception\NotFound
-     */
     public function get(Ulid $id): Order;
 
     /**
-     * @return list<Order> orders still counting as sales (not refunded) placed within the period, most recent first
+     * @param list<Ulid> $ids
+     *
+     * @return list<Order>
+     */
+    public function getMany(array $ids): array;
+
+    /**
+     * @return list<Order>
      */
     public function salesWithin(DateRange $period): array;
 
-    public function firstSaleAt(): ?\DateTimeImmutable;
-
-    public function lastSaleAt(): ?\DateTimeImmutable;
-
     /**
-     * @return list<Order> other unrefunded orders of the same event and source, most recent first
+     * @return list<Order>
      */
     public function mergeCandidatesOf(Order $order): array;
 
     /**
-     * @return list<Order> orders having at least one line of the product
+     * @return list<Order>
      */
     public function selling(Ulid $productId): array;
 
+    public function sells(Ulid $productId): bool;
+
     /**
-     * @return list<Order> the orders that used the supply
+     * @return list<Order>
      */
     public function using(Ulid $supplyId): array;
 
@@ -50,13 +52,10 @@ interface OrderRepository
     public function importedExternalIds(string $source, array $externalIds): array;
 
     /**
-     * @return list<Order> orders having a sale imported from the source whose fee the service has not reported yet
+     * @return list<Order>
      */
     public function awaitingSaleFees(string $source): array;
 
-    /**
-     * Number of orders of the event whose date falls outside the given period.
-     */
     public function countOutside(Ulid $eventId, DateRange $period): int;
 
     public function countWithoutEventOn(Ulid $channelId): int;

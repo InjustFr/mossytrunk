@@ -24,13 +24,11 @@ final readonly class StockItemView
 
     public static function of(?string $variant, ?StockItem $item, int $threshold): self
     {
-        $onHand = $item?->onHand() ?? 0;
-
         return new self(
             $variant,
-            $onHand,
-            $onHand <= $threshold,
-            $onHand < 0,
+            $item?->onHand() ?? 0,
+            null === $item ? 0 <= $threshold : $item->isLowAt($threshold),
+            $item?->isNegative() ?? false,
             $item?->remainingValue()->amount() ?? 0,
             array_map(static fn (StockLot $lot): array => [
                 'id' => (string) $lot->id(),

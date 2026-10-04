@@ -39,9 +39,6 @@ class OrderSupply
     #[ORM\Embedded(class: Money::class, columnPrefix: 'cost_')]
     private Money $cost;
 
-    /**
-     * @internal built by Order
-     */
     public function __construct(Order $order, Ulid $productId, SellableItem $item, int $quantity, Money $cost)
     {
         if ($quantity < 1) {
@@ -62,9 +59,6 @@ class OrderSupply
         return $this->productId->equals($productId) && $this->variant === $variant;
     }
 
-    /**
-     * @internal the order adds units of the same supply
-     */
     public function add(int $quantity, Money $cost): void
     {
         if ($quantity < 1) {
@@ -75,9 +69,6 @@ class OrderSupply
         $this->cost = $this->cost->add($cost);
     }
 
-    /**
-     * @internal the order takes the supplies of an order it absorbs
-     */
     public function copyInto(Order $order): self
     {
         $copy = clone $this;

@@ -7,9 +7,11 @@ namespace App\Domain\Sales;
 use App\Domain\Identity\Workspace;
 use App\Domain\Product\Product;
 use App\Domain\Sales\Exception\EmptyChannelName;
+use App\Domain\Sales\Exception\MainChannelKept;
 use App\Domain\Sales\Exception\NotASupply;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
+use App\Domain\Shared\OptionalText;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -155,13 +157,8 @@ class SalesChannel
 
     private function cost(Ulid $costId): ChannelCost
     {
-        foreach ($this->costs as $cost) {
-            if ($cost->id()->equals($costId)) {
-                return $cost;
-            }
-        }
-
-        throw new NotFound('channel_cost', (string) $costId);
+        return $this->costs->findFirst(static fn (int $key, ChannelCost $cost): bool => $cost->id()->equals($costId))
+            ?? throw new NotFound('channel_cost', (string) $costId);
     }
 
     public function acceptsOrderWithoutEvent(): bool
@@ -172,6 +169,13 @@ class SalesChannel
     public function isMain(): bool
     {
         return $this->main;
+    }
+
+    public function assertRemovable(): void
+    {
+        if ($this->main) {
+            throw new MainChannelKept($this->name);
+        }
     }
 
     public function kind(): ChannelKind
@@ -191,7 +195,7 @@ class SalesChannel
 
     public function linkTo(?string $service): void
     {
-        $this->service = null === $service || '' === trim($service) ? null : trim($service);
+        $this->service = OptionalText::of($service);
     }
 
     public function isNamed(string $name): bool

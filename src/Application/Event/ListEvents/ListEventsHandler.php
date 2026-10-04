@@ -12,10 +12,6 @@ use App\Domain\Reporting\SalesTotals;
 use App\Domain\Stock\StockCheckRepository;
 use Psr\Clock\ClockInterface;
 
-/**
- * Events with their headline figures (turnover and result, see docs/business/event-report.md)
- * and their timing relative to today (upcoming, ongoing, past).
- */
 final readonly class ListEventsHandler
 {
     public function __construct(

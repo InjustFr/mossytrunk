@@ -9,7 +9,7 @@ use Symfony\Component\Uid\Ulid;
 interface OrdersToCheck
 {
     /**
-     * @return list<OrderToCheckView> oldest first
+     * @return list<OrderToCheckView>
      */
     public function ofEvent(Ulid $eventId): array;
 }

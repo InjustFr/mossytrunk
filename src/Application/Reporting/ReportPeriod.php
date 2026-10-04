@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Reporting;
 
-use App\Domain\Order\OrderRepository;
+use App\Domain\Reporting\SalesYears;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use Psr\Clock\ClockInterface;
 
@@ -14,7 +15,6 @@ final readonly class ReportPeriod
     public const string SINCE_THE_START = 'all';
 
     public function __construct(
-        private OrderRepository $orders,
         private SalesLedger $sales,
         private ClockInterface $clock,
     ) {
@@ -22,28 +22,25 @@ final readonly class ReportPeriod
 
     public function resolve(string $choice): DateRange
     {
-        $today = $this->clock->now()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE));
+        $today = BusinessTime::local($this->clock->now());
 
         return match (true) {
             1 === preg_match('/^\d{4}$/', $choice) => DateRange::year((int) $choice),
-            self::SINCE_THE_START === $choice => DateRange::fromDates(min($this->orders->firstSaleAt() ?? $today, $today), max($this->orders->lastSaleAt() ?? $today, $today)),
+            self::SINCE_THE_START === $choice => DateRange::fromDates(min($this->sales->firstSaleAt() ?? $today, $today), max($this->sales->lastSaleAt() ?? $today, $today)),
             default => DateRange::fromDates($today->modify('first day of this month')->modify('-11 months'), $today),
         };
     }
 
     /**
-     * @return list<int> the current year and the years with sales, most recent first
+     * @return list<int>
      */
     public function years(): array
     {
-        $years = array_values(array_unique([DateRange::yearOf($this->clock->now()), ...array_map(static fn (string $month): int => (int) substr($month, 0, 4), array_keys($this->sales->totalsByMonth()))]));
-        rsort($years);
-
-        return $years;
+        return SalesYears::of(array_keys($this->sales->totalsByMonth()), DateRange::yearOf($this->clock->now()));
     }
 
     /**
-     * @return list<string> the months of the period, as YYYY-MM, oldest first
+     * @return list<string>
      */
     public static function months(DateRange $period): array
     {
@@ -55,10 +52,5 @@ final readonly class ReportPeriod
         }
 
         return $months;
-    }
-
-    public static function monthOf(\DateTimeImmutable $moment): string
-    {
-        return $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m');
     }
 }

@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignCollection;
 use App\Domain\Design\DesignCollectionRepository;
-use App\Domain\Shared\Exception\NotFound;
 use App\Infrastructure\Persistence\Doctrine\Reporting\SqlValue;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class DoctrineDesignCollectionRepository implements DesignCollectionRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -34,13 +31,12 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
 
     public function get(Ulid $id): DesignCollection
     {
-        return $this->entityManager->getRepository(DesignCollection::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('collection', (string) $id);
+        return $this->scope->get(DesignCollection::class, $id, 'collection');
     }
 
     public function all(): array
     {
-        return $this->entityManager->getRepository(DesignCollection::class)->findBy(['workspace' => $this->workspace->current()], ['name' => 'ASC']);
+        return $this->scope->findBy(DesignCollection::class, orderBy: ['name' => 'ASC']);
     }
 
     public function byProduct(): array
@@ -50,14 +46,10 @@ final readonly class DoctrineDesignCollectionRepository implements DesignCollect
             $collections[$collection->id()->toRfc4122()] = $collection;
         }
 
-        $rows = $this->entityManager->createQueryBuilder()
-            ->select('x.productId AS productId', 'IDENTITY(d.collection) AS collectionId')
-            ->from(Design::class, 'd')
+        $rows = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('x.productId AS productId', 'IDENTITY(d.collection) AS collectionId')->from(Design::class, 'd'), 'd')
             ->join('d.declinations', 'x')
-            ->where('d.workspace = :workspace')
             ->andWhere('d.collection IS NOT NULL')
             ->andWhere('x.productId IS NOT NULL')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->getQuery()
             ->getScalarResult();
 

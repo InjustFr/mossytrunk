@@ -6,9 +6,6 @@ namespace App\Domain\Reporting;
 
 use App\Domain\Shared\Money;
 
-/**
- * Sums of the figures every order records when it changes, over a set of orders.
- */
 final readonly class SalesTotals
 {
     public function __construct(

@@ -8,15 +8,12 @@ use App\Domain\Order\Exception\InvalidOrderQuantity;
 use App\Domain\Order\Exception\LineAlreadyIdentified;
 use App\Domain\Order\Exception\UnknownProductChosen;
 use App\Domain\Product\SellableItem;
+use App\Domain\Product\VariantLabel;
 use App\Domain\Shared\Money;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * `quantity` units of a (product, variant) tuple. Name and prices are snapshots taken when the
- * order is placed: later product changes never alter an order.
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'order_line')]
 #[ORM\Index(name: 'order_line_product_idx', columns: ['product_id'])]
@@ -51,9 +48,6 @@ class OrderLine
     #[ORM\Embedded(class: Money::class, columnPrefix: 'discount_')]
     private Money $discount;
 
-    /**
-     * @internal built by Order
-     */
     public function __construct(Order $order, SellableItem $item, int $quantity, Money $cost)
     {
         if ($quantity < 1) {
@@ -71,14 +65,16 @@ class OrderLine
         $this->discount = Money::zero();
     }
 
-    public function sells(SellableItem $item): bool
+    public function isFor(Ulid $productId, ?string $variant): bool
     {
-        return null !== $this->productId && null !== $item->productId && $this->productId->equals($item->productId) && $this->variant === $item->variant;
+        return ($this->productId?->equals($productId) ?? false) && $this->variant === $variant;
     }
 
-    /**
-     * @internal the order moves its sales from one product to another
-     */
+    public function sells(SellableItem $item): bool
+    {
+        return null !== $item->productId && $this->isFor($item->productId, $item->variant);
+    }
+
     public function reassign(SellableItem $item): void
     {
         $this->productId = $item->productId;
@@ -86,9 +82,6 @@ class OrderLine
         $this->productName = $item->productName;
     }
 
-    /**
-     * @internal the order absorbs another order
-     */
     public function copyInto(Order $order): self
     {
         $copy = clone $this;
@@ -100,12 +93,9 @@ class OrderLine
 
     public function sellsSameAs(self $other): bool
     {
-        return null !== $this->productId && null !== $other->productId && $this->productId->equals($other->productId) && $this->variant === $other->variant;
+        return null !== $other->productId && $this->isFor($other->productId, $other->variant);
     }
 
-    /**
-     * @internal identified through Order
-     */
     public function identify(SellableItem $item, Money $cost): void
     {
         if (!$this->sellsUnknownProduct()) {
@@ -115,9 +105,7 @@ class OrderLine
             throw new UnknownProductChosen();
         }
 
-        $this->productId = $item->productId;
-        $this->variant = $item->variant;
-        $this->productName = $item->productName;
+        $this->reassign($item);
         $this->cost = $cost;
     }
 
@@ -126,9 +114,6 @@ class OrderLine
         return null !== $this->productId && $this->cost->isZero();
     }
 
-    /**
-     * @internal the order fills the costs it did not know
-     */
     public function costAt(Money $unitCost): void
     {
         $this->cost = $unitCost->multiply($this->quantity);
@@ -159,9 +144,6 @@ class OrderLine
         return $this->cost;
     }
 
-    /**
-     * @internal the order shares its discounts between its lines
-     */
     public function shareDiscount(Money $discount): void
     {
         $this->discount = $discount;
@@ -204,7 +186,7 @@ class OrderLine
 
     public function label(): string
     {
-        return null === $this->variant ? $this->productName : \sprintf('%s — %s', $this->productName, $this->variant);
+        return VariantLabel::display($this->productName, $this->variant);
     }
 
     public function unitPrice(): Money
@@ -214,7 +196,7 @@ class OrderLine
 
     public function unitCost(): Money
     {
-        return Money::cents((int) round($this->cost->amount() / $this->quantity, 0, \PHP_ROUND_HALF_UP));
+        return $this->cost->prorate(1, $this->quantity);
     }
 
     public function quantity(): int

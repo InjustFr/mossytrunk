@@ -8,7 +8,7 @@ use App\Application\Integration\Connectors;
 use App\Application\Order\ListOrdersToCheck\OrdersToCheck;
 use App\Application\Order\ListOrdersToCheck\OrderToCheckView;
 use App\Application\WorkspaceContext;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Uid\Ulid;
 
@@ -56,7 +56,7 @@ final readonly class DoctrineOrdersToCheck implements OrdersToCheck
         return new OrderToCheckView(
             (string) SqlValue::ulid($row['id']),
             SqlValue::string($row['reference']),
-            new \DateTimeImmutable(SqlValue::string($row['placed_at']))->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format(\DATE_ATOM),
+            BusinessTime::atom(new \DateTimeImmutable(SqlValue::string($row['placed_at']))),
             $source,
             $this->connectors->labelOf($source),
             SqlValue::nullableString($row['payment_method']),

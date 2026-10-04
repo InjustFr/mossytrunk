@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Product\UpdateProductType;
 
+use App\Application\Product\ProductTypeAvailability;
 use App\Application\Product\Variants\VariantUsage;
 use App\Application\Transaction;
-use App\Domain\Product\Exception\TypeAlreadyExists;
-use App\Domain\Product\Exception\TypeCodeAlreadyUsed;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Product\VariantLabel;
@@ -17,6 +16,7 @@ final readonly class UpdateProductTypeHandler
 {
     public function __construct(
         private ProductTypeRepository $types,
+        private ProductTypeAvailability $availability,
         private VariantUsage $usage,
         private Transaction $transaction,
     ) {
@@ -30,10 +30,7 @@ final readonly class UpdateProductTypeHandler
     {
         $type = $this->types->get(Ulid::fromString($typeId));
 
-        $sameName = $this->types->findByName($name);
-        if (null !== $sameName && !$sameName->id()->equals($type->id())) {
-            throw new TypeAlreadyExists(trim($name));
-        }
+        $this->availability->assertNameFree($name, $type);
 
         $type->rename($name);
         $type->recolor($color);
@@ -67,11 +64,8 @@ final readonly class UpdateProductTypeHandler
 
     private function recode(ProductType $type, string $code): void
     {
-        $code = strtoupper(trim($code));
-        if ($code !== $type->code() && $this->types->codeExists($code)) {
-            throw new TypeCodeAlreadyUsed($code);
-        }
-
+        $code = ProductType::normalizedCode($code);
+        $this->availability->assertCodeFree($code, $type);
         $type->recode($code);
     }
 }

@@ -40,10 +40,6 @@ use Zenstruck\Foundry\Story;
 
 use function Zenstruck\Foundry\faker;
 
-/**
- * The production workspace's shape and volume (76 products, 349 SumUp orders over 2 events,
- * 6 supplier orders, 38 designs), to measure page performance locally.
- */
 final class ProductionVolumeStory extends Story
 {
     private const array TYPES = [

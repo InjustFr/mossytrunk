@@ -20,12 +20,12 @@ final readonly class DeleteOrdersHandler
 
     public function __invoke(DeleteOrders $command): int
     {
-        $ids = array_values(array_unique($command->orderIds));
-        foreach ($ids as $id) {
-            $this->deletion->delete($this->orders->get(Ulid::fromString($id)));
+        $orders = $this->orders->getMany(array_map(Ulid::fromString(...), array_values(array_unique($command->orderIds))));
+        foreach ($orders as $order) {
+            $this->deletion->delete($order);
         }
         $this->transaction->commit();
 
-        return \count($ids);
+        return \count($orders);
     }
 }

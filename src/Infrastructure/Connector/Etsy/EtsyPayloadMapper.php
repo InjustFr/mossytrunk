@@ -26,8 +26,8 @@ final class EtsyPayloadMapper
             'ETSY-'.$id,
             new \DateTimeImmutable('@'.Json::string($receipt['create_timestamp'] ?? $receipt['created_timestamp'] ?? '0')),
             $lines,
-            $listed->subtract(self::money($receipt['discount_amt'] ?? null)),
-            self::money($receipt['total_shipping_cost'] ?? null),
+            $listed->subtract(EtsyMoney::of($receipt['discount_amt'] ?? null)),
+            EtsyMoney::of($receipt['total_shipping_cost'] ?? null),
             PaymentMethod::Card,
         );
     }
@@ -46,18 +46,10 @@ final class EtsyPayloadMapper
         return new ExternalLine(
             Json::string($transaction['listing_id'] ?? ''),
             trim(Json::string($transaction['title'] ?? '')),
-            self::money($transaction['price'] ?? null),
+            EtsyMoney::of($transaction['price'] ?? null),
             max(1, (int) Json::number($transaction['quantity'] ?? 1)),
             [] === $variations ? null : implode(' / ', $variations),
             sku: '' === $sku ? null : $sku,
         );
-    }
-
-    private static function money(mixed $amount): Money
-    {
-        $amount = Json::object($amount);
-        $divisor = (int) Json::number($amount['divisor'] ?? 100);
-
-        return Money::cents((int) round((float) Json::number($amount['amount'] ?? 0) * 100 / max(1, $divisor)));
     }
 }

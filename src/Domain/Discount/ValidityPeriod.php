@@ -6,6 +6,7 @@ namespace App\Domain\Discount;
 
 use App\Domain\Discount\Exception\DiscountStartedToday;
 use App\Domain\Discount\Exception\ValidityEndsBeforeStart;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,7 +40,7 @@ final readonly class ValidityPeriod
 
     public function covers(\DateTimeImmutable $moment): bool
     {
-        $day = self::day($moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE)))->format('Y-m-d');
+        $day = BusinessTime::day($moment);
 
         return (null === $this->start || $day >= $this->start->format('Y-m-d'))
             && (null === $this->end || $day <= $this->end->format('Y-m-d'));
@@ -47,7 +48,7 @@ final readonly class ValidityPeriod
 
     public function statusOn(\DateTimeImmutable $moment): DiscountStatus
     {
-        $day = self::day($moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE)))->format('Y-m-d');
+        $day = BusinessTime::day($moment);
 
         return match (true) {
             null !== $this->end && $day > $this->end->format('Y-m-d') => DiscountStatus::Expired,
@@ -58,12 +59,12 @@ final readonly class ValidityPeriod
 
     public function startingOn(\DateTimeImmutable $moment): self
     {
-        return self::between($moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE)), $this->end);
+        return self::between(BusinessTime::local($moment), $this->end);
     }
 
     public function endingBefore(\DateTimeImmutable $moment): self
     {
-        $yesterday = self::day($moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE)))->modify('-1 day');
+        $yesterday = BusinessTime::midnightOf($moment)->modify('-1 day');
         if (null !== $this->start && $this->start > $yesterday) {
             throw new DiscountStartedToday();
         }
@@ -91,6 +92,6 @@ final readonly class ValidityPeriod
 
     private static function day(\DateTimeImmutable $date): \DateTimeImmutable
     {
-        return new \DateTimeImmutable($date->format('Y-m-d'), new \DateTimeZone(DateRange::TIMEZONE));
+        return BusinessTime::at($date->format('Y-m-d'));
     }
 }

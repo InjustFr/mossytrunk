@@ -174,7 +174,7 @@ final class StockItemTest extends TestCase
 
         $correction = $stock->correctTo(6, Money::cents(90), self::at('2026-04-01'));
 
-        self::assertSame(2, $correction->surplus());
+        self::assertSame([4, 6], [$correction->expected, $correction->counted]);
         self::assertTrue($correction->lossCost->isZero());
         self::assertSame(6, $stock->onHand());
         self::assertSame(600, $stock->remainingValue()->amount());

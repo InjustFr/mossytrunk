@@ -8,7 +8,7 @@ use App\Application\Purchasing\PurchaseLine;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Domain\Purchasing\Currency;
 use App\Domain\Purchasing\SupplierOrder;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class SupplierOrderPayload
@@ -50,7 +50,7 @@ final readonly class SupplierOrderPayload
             $this->discount,
             $this->deliveryFees,
             $this->supplierReference,
-            null === $this->receivedOn || '' === $this->receivedOn ? null : new \DateTimeImmutable($this->receivedOn.' 12:00', new \DateTimeZone(DateRange::TIMEZONE)),
+            null === $this->receivedOn || '' === $this->receivedOn ? null : BusinessTime::at($this->receivedOn.' 12:00'),
             Currency::from($this->currency),
             (int) round($this->exchangeRate * SupplierOrder::EURO_RATE),
         );

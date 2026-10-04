@@ -27,7 +27,7 @@ use App\Application\Product\MoveVariant\MoveVariantHandler;
 use App\Application\Product\RecordSellingPrice\RecordSellingPriceHandler;
 use App\Application\Product\UpdateProduct\UpdateProduct;
 use App\Application\Product\UpdateProduct\UpdateProductHandler;
-use App\Application\Sales\SaveChannel\SaveChannelHandler;
+use App\Application\Sales\CreateChannel\CreateChannelHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Order\Exception\LineAlreadyIdentified;
@@ -157,7 +157,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
     public function testSalesAreListedAtThePriceOfTheChannelLinkedToTheService(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        $channel = (string) self::getContainer()->get(SaveChannelHandler::class)(null, 'Stand', ChannelKind::Market, 'sumup');
+        $channel = (string) self::getContainer()->get(CreateChannelHandler::class)('Stand', ChannelKind::Market, 'sumup');
         $badge = self::createProduct('Badge', 300, 50);
         self::createProduct('Aimant', 500, 50);
         self::getContainer()->get(UpdateProductHandler::class)(new UpdateProduct($badge, 'Badge', 300, [], channelPrices: [$channel => 250]));
@@ -209,7 +209,7 @@ final class ImportSumUpSalesTest extends KernelTestCase
     public function testTheFeeSumUpReportedIsChargedOnceKnown(): void
     {
         $this->scheduleEvent('Salon de printemps', '2030-03-14', '2030-03-15');
-        self::getContainer()->get(SaveChannelHandler::class)(null, 'Stand', ChannelKind::Market, 'sumup');
+        self::getContainer()->get(CreateChannelHandler::class)('Stand', ChannelKind::Market, 'sumup');
         self::createProduct('Badge', 1_000, 50);
         $sale = static fn (string $code, ?int $fee): ExternalSale => ExternalSales::sumUp($code, new \DateTimeImmutable('2030-03-14T12:00:00Z'), Money::cents(1_000), [ExternalSales::line('Badge', Money::cents(1_000), 1)], PaymentMethod::Card, null === $fee ? null : Money::cents($fee));
         self::getContainer()->get(FakeSumUpGateway::class)->willReturn([$sale('TX-PAID', 17), $sale('TX-PENDING', null)]);

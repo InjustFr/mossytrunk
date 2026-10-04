@@ -62,13 +62,7 @@ final readonly class ReferenceTemplate
 
     private function uses(ReferenceToken $token): bool
     {
-        foreach ($this->parts as $part) {
-            if ($part instanceof ReferencePlaceholder && $token === $part->token) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->parts, static fn (string|ReferencePlaceholder $part): bool => $part instanceof ReferencePlaceholder && $token === $part->token);
     }
 
     private function maxLength(): int

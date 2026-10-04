@@ -12,14 +12,11 @@ interface ProductRepository
 
     public function remove(Product $product): void;
 
-    /**
-     * @throws \App\Domain\Shared\Exception\NotFound
-     */
     public function get(Ulid $id): Product;
 
-    public function findByReference(string $reference): ?Product;
+    public function find(Ulid $id): ?Product;
 
-    public function findByName(string $name): ?Product;
+    public function findByReference(string $reference): ?Product;
 
     /**
      * @return list<Product>
@@ -29,22 +26,22 @@ interface ProductRepository
     /**
      * @param list<Ulid> $ids
      *
-     * @return list<Product> the existing ones, in no particular order
+     * @return array<string, Product>
      */
     public function findByIds(array $ids): array;
 
     /**
-     * @return list<Product> sorted by type name (untyped last), then name
+     * @return list<Product>
      */
     public function all(): array;
 
     /**
-     * @return list<Product> sorted like all(), with their selling price history loaded
+     * @return list<Product>
      */
     public function catalogue(): array;
 
     /**
-     * @return list<Product> the products that are sold (no supplies), sorted like all()
+     * @return list<Product>
      */
     public function articles(): array;
 }

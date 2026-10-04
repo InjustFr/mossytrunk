@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Integration\ExternalItem;
 use App\Domain\Integration\ExternalItemRepository;
-use App\Domain\Shared\Exception\NotFound;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 
@@ -15,7 +13,7 @@ final readonly class DoctrineExternalItemRepository implements ExternalItemRepos
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -26,22 +24,21 @@ final readonly class DoctrineExternalItemRepository implements ExternalItemRepos
 
     public function get(Ulid $id): ExternalItem
     {
-        return $this->entityManager->getRepository(ExternalItem::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('external_item', (string) $id);
+        return $this->scope->get(ExternalItem::class, $id, 'external_item');
     }
 
     public function ofService(string $service): array
     {
-        return $this->entityManager->getRepository(ExternalItem::class)->findBy(['workspace' => $this->workspace->current(), 'service' => $service], ['seenAt' => 'DESC']);
+        return $this->scope->findBy(ExternalItem::class, ['service' => $service], ['seenAt' => 'DESC']);
     }
 
     public function linkedTo(Ulid $productId): array
     {
-        return $this->entityManager->getRepository(ExternalItem::class)->findBy(['workspace' => $this->workspace->current(), 'productId' => $productId]);
+        return $this->scope->findBy(ExternalItem::class, ['productId' => $productId]);
     }
 
     public function unlinkedCount(string $service): int
     {
-        return $this->entityManager->getRepository(ExternalItem::class)->count(['workspace' => $this->workspace->current(), 'service' => $service, 'productId' => null]);
+        return $this->scope->count(ExternalItem::class, ['service' => $service, 'productId' => null]);
     }
 }

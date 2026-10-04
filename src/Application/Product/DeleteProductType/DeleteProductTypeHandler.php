@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Product\DeleteProductType;
 
 use App\Application\Transaction;
-use App\Domain\Design\Gabarit;
 use App\Domain\Design\GabaritRepository;
 use App\Domain\Discount\DiscountRuleRepository;
 use App\Domain\Product\Exception\TypeStillUsed;
@@ -29,7 +28,7 @@ final readonly class DeleteProductTypeHandler
         $type = $this->types->get(Ulid::fromString($typeId));
 
         $products = \count($this->products->ofType($type));
-        $gabarits = \count(array_filter($this->gabarits->all(), static fn (Gabarit $gabarit): bool => $gabarit->type() === $type));
+        $gabarits = \count($this->gabarits->ofType($type));
         if ($products > 0 || $gabarits > 0) {
             throw new TypeStillUsed($type->name(), $products, $gabarits);
         }

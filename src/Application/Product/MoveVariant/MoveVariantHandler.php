@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Product\MoveVariant;
 
-use App\Application\Product\ProductReferenceGenerator;
+use App\Application\Product\NewProducts;
 use App\Application\Stock\StockKeeper;
 use App\Application\Transaction;
-use App\Application\WorkspaceContext;
 use App\Domain\Discount\DiscountRuleRepository;
 use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Order\OrderRepository;
@@ -15,6 +14,7 @@ use App\Domain\Product\Exception\SoldWithoutVariant;
 use App\Domain\Product\Exception\VariantMovedOntoItself;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
+use App\Domain\Shared\OptionalText;
 use Symfony\Component\Uid\Ulid;
 
 final readonly class MoveVariantHandler
@@ -24,17 +24,16 @@ final readonly class MoveVariantHandler
         private OrderRepository $orders,
         private DiscountRuleRepository $discountRules,
         private ExternalItemRepository $externalItems,
-        private ProductReferenceGenerator $references,
+        private NewProducts $newProducts,
         private StockKeeper $stock,
         private Transaction $transaction,
-        private WorkspaceContext $workspace,
     ) {
     }
 
     public function __invoke(MoveVariant $command): Ulid
     {
         $source = $this->products->get(Ulid::fromString($command->productId));
-        $variant = self::blankToNull($command->variant);
+        $variant = OptionalText::of($command->variant);
         $source->sellable($variant);
 
         $target = null === $command->targetProductId ? $this->newProductLike($source, (string) $command->newProductName) : $this->products->get(Ulid::fromString($command->targetProductId));
@@ -42,9 +41,9 @@ final readonly class MoveVariantHandler
             throw new VariantMovedOntoItself();
         }
 
-        $targetVariant = self::blankToNull($command->targetVariant);
+        $targetVariant = OptionalText::of($command->targetVariant);
         if (null !== $targetVariant && !$target->hasVariant($targetVariant)) {
-            if (!$target->hasVariants() && [] !== $this->orders->selling($target->id())) {
+            if (!$target->hasVariants() && $this->orders->sells($target->id())) {
                 throw new SoldWithoutVariant($target->displayName());
             }
             $target->addVariant($targetVariant);
@@ -78,21 +77,9 @@ final readonly class MoveVariantHandler
 
     private function newProductLike(Product $source, string $name): Product
     {
-        $product = Product::create(
-            $this->workspace->current(),
-            $this->references->generate($source->type(), trim($name)),
-            $name,
-            $source->sellingPrice(),
-            $source->type(),
-        );
+        $product = $this->newProducts->create($name, $source->sellingPrice(), $source->type());
         $product->bought($source->buyingPrice());
-        $this->products->add($product);
 
         return $product;
-    }
-
-    private static function blankToNull(?string $value): ?string
-    {
-        return null === $value || '' === trim($value) ? null : trim($value);
     }
 }

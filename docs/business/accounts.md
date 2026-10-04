@@ -38,4 +38,4 @@ Model: `src/Domain/Identity/`. Use cases: `src/Application/Identity/`. Sign-in: 
 | Mot de passe oublié | `/password/forgot` |
 | Choix du mot de passe (invitation or reset link) | `/password/set/{token}` → `/password/set` |
 | Déconnexion (POST) | `/logout` |
-| Paramètres | `/settings` — API `GET /api/workspace/settings`; services connectés: `/api/services` (see [imports.md](imports.md)) |
+| Paramètres | `/settings` — workspace name from the session; services connectés: `/api/services` (see [imports.md](imports.md)) |

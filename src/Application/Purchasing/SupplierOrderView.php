@@ -6,7 +6,7 @@ namespace App\Application\Purchasing;
 
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Purchasing\SupplierOrderLine;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 
 final readonly class SupplierOrderView
 {
@@ -46,7 +46,7 @@ final readonly class SupplierOrderView
             $order->orderedOn()->format('Y-m-d'),
             $order->status()->value,
             $order->receivedAt()?->format(\DateTimeInterface::ATOM),
-            $order->receivedAt()?->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
+            null === $order->receivedAt() ? null : BusinessTime::day($order->receivedAt()),
             $order->subtotal()->amount(),
             $order->discount()->amount(),
             $order->deliveryFees()->amount(),

@@ -18,8 +18,8 @@ use App\Application\Order\RequestedLine;
 use App\Application\Product\CreateProduct\CreateProduct;
 use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
+use App\Application\Sales\CreateChannel\CreateChannelHandler;
 use App\Application\Sales\OfferSupplies\OfferSuppliesHandler;
-use App\Application\Sales\SaveChannel\SaveChannelHandler;
 use App\Application\Stock\Restock\Restock;
 use App\Application\Stock\Restock\RestockHandler;
 use App\Domain\Event\EventRepository;
@@ -98,7 +98,7 @@ final class OrderSuppliesTest extends KernelTestCase
     {
         $this->offerOnMain([$this->sleeve]);
         $container = self::getContainer();
-        $stand = $container->get(SalesChannelRepository::class)->get($container->get(SaveChannelHandler::class)(null, 'Stand', ChannelKind::Market, null));
+        $stand = $container->get(SalesChannelRepository::class)->get($container->get(CreateChannelHandler::class)('Stand', ChannelKind::Market, null));
         $event = $container->get(EventRepository::class)->get(Ulid::fromString($this->event));
         $item = $container->get(ProductRepository::class)->get(Ulid::fromString($this->sticker))->sellableOn(null, null);
         $elsewhere = Order::place('EXT-1', $event, new \DateTimeImmutable('2030-03-14 15:00'), [new OrderedItem($item, 1)], [], $stand);

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Reference\ReferenceFormat;
 use App\Domain\Reference\ReferenceFormatRepository;
 use App\Domain\Reference\ReferenceKind;
@@ -14,14 +13,14 @@ final readonly class DoctrineReferenceFormatRepository implements ReferenceForma
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
     public function of(ReferenceKind $kind): ReferenceFormat
     {
-        return $this->entityManager->getRepository(ReferenceFormat::class)->findOneBy(['workspace' => $this->workspace->current(), 'kind' => $kind])
-            ?? $this->pending($kind)
+        return $this->known($kind)
+            ?? $this->scope->findOneBy(ReferenceFormat::class, ['kind' => $kind])
             ?? $this->standard($kind);
     }
 
@@ -30,11 +29,12 @@ final readonly class DoctrineReferenceFormatRepository implements ReferenceForma
         $this->entityManager->persist($format);
     }
 
-    private function pending(ReferenceKind $kind): ?ReferenceFormat
+    private function known(ReferenceKind $kind): ?ReferenceFormat
     {
-        foreach ($this->entityManager->getUnitOfWork()->getScheduledEntityInsertions() as $entity) {
-            if ($entity instanceof ReferenceFormat && $kind === $entity->kind()) {
-                return $entity;
+        $workspace = $this->scope->workspace();
+        foreach ($this->entityManager->getUnitOfWork()->getIdentityMap()[ReferenceFormat::class] ?? [] as $format) {
+            if ($format instanceof ReferenceFormat && $format->isFor($workspace, $kind)) {
+                return $format;
             }
         }
 
@@ -43,7 +43,7 @@ final readonly class DoctrineReferenceFormatRepository implements ReferenceForma
 
     private function standard(ReferenceKind $kind): ReferenceFormat
     {
-        $format = ReferenceFormat::standard($this->workspace->current(), $kind);
+        $format = ReferenceFormat::standard($this->scope->workspace(), $kind);
         $this->entityManager->persist($format);
 
         return $format;

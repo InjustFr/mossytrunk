@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Product\CreateProductType;
 
+use App\Application\Product\ProductTypeAvailability;
 use App\Application\WorkspaceContext;
-use App\Domain\Product\Exception\TypeAlreadyExists;
-use App\Domain\Product\Exception\TypeCodeAlreadyUsed;
 use App\Domain\Product\ProductType;
 use App\Domain\Product\ProductTypeRepository;
 use App\Domain\Product\TypeCodeGenerator;
@@ -15,6 +14,7 @@ final readonly class ProductTypeCreator
 {
     public function __construct(
         private ProductTypeRepository $types,
+        private ProductTypeAvailability $availability,
         private TypeCodeGenerator $codes,
         private WorkspaceContext $workspace,
     ) {
@@ -25,9 +25,7 @@ final readonly class ProductTypeCreator
      */
     public function create(string $name, ?string $color = null, ?string $code = null, array $variants = [], bool $prefixesNames = true): ProductType
     {
-        if (null !== $this->types->findByName($name)) {
-            throw new TypeAlreadyExists(trim($name));
-        }
+        $this->availability->assertNameFree($name);
 
         $type = ProductType::create(
             $this->workspace->current(),
@@ -44,13 +42,11 @@ final readonly class ProductTypeCreator
 
     private function codeOf(string $name, ?string $code): string
     {
-        $code = strtoupper(trim($code ?? ''));
+        $code = ProductType::normalizedCode($code ?? '');
         if ('' === $code) {
             return $this->codes->generate($name);
         }
-        if ($this->types->codeExists($code)) {
-            throw new TypeCodeAlreadyUsed($code);
-        }
+        $this->availability->assertCodeFree($code);
 
         return $code;
     }

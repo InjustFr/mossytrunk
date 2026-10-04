@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Presentation\Api;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -38,11 +37,7 @@ final readonly class SameOriginGuard
             : null === $origin || $origin === $request->getSchemeAndHttpHost();
 
         if (!$sameOrigin) {
-            $event->setResponse(new JsonResponse(
-                ['title' => $this->translator->trans('problem.cross_origin.title'), 'status' => Response::HTTP_FORBIDDEN, 'detail' => $this->translator->trans('problem.cross_origin.detail')],
-                Response::HTTP_FORBIDDEN,
-                ['Content-Type' => 'application/problem+json'],
-            ));
+            $event->setResponse(new ProblemResponse($this->translator->trans('problem.cross_origin.title'), Response::HTTP_FORBIDDEN, $this->translator->trans('problem.cross_origin.detail')));
         }
     }
 }

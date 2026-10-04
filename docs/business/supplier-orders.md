@@ -21,7 +21,7 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| F1 | A supplier has a name, unique per workspace (case-insensitive) | `Supplier::describe()`, `SaveSupplierHandler` | `SupplierOrderTest`, `PurchasingUseCasesTest` |
+| F1 | A supplier has a name, unique per workspace (case-insensitive) | `Supplier::describe()`, `SupplierAvailability` | `SupplierOrderTest`, `PurchasingUseCasesTest` |
 | F2 | An order has at least one line; each sellable item appears once; quantity ≥ 1; total price ≥ 0 | `SupplierOrder::revise()`, `SupplierOrderLine` | `SupplierOrderTest` |
 | F3 | A line's **cost** = its price − its share of the global discount + its share of the delivery fees; shares add up to the exact amounts (leftover cents go to the largest remainders / first lines). The global discount cannot exceed the lines' prices. Order total = Σ prices − discount + fees. Planned unit cost = cost / ordered quantity | `SupplierOrder::allocate()`, `CostAllocation`, `SupplierOrderLine::landedCost()` | `SupplierOrderTest`, `CostAllocationTest` |
 | F4 | An order can be revised (supplier, date, lines, discount, fees) at any time; it can be deleted only while « Commandée » | `SupplierOrder::revise()`, `DeleteSupplierOrderHandler` | `PurchasingUseCasesTest` |
@@ -36,7 +36,7 @@ Model: `src/Domain/Purchasing/Supplier.php`, `SupplierOrder.php`, `SupplierOrder
 
 | Use case | Endpoint |
 |---|---|
-| `ListSuppliers` / `SaveSupplier` | `GET /api/suppliers`, `POST /api/suppliers`, `PUT /api/suppliers/{id}` `{name, contact, notes}` |
+| `ListSuppliers` / `CreateSupplier` / `UpdateSupplier` | `GET /api/suppliers`, `POST /api/suppliers`, `PUT /api/suppliers/{id}` `{name, contact, notes}` |
 | `ListSupplierOrders` / `GetSupplierOrder` | `GET /api/supplier-orders`, `GET /api/supplier-orders/{id}` |
 | `PlaceSupplierOrder` / `ReviseSupplierOrder` | `POST /api/supplier-orders`, `PUT /api/supplier-orders/{id}` `{supplierId, orderedOn, receivedOn?, supplierReference?, currency: EUR|USD, exchangeRate, discount, deliveryFees, lines: [{productId, variant, quantity, totalPrice, received?}]}` (`received` required and `receivedOn` taken into account on a received order) |
 | `DeleteSupplierOrder` | `DELETE /api/supplier-orders/{id}` (422 once received) |

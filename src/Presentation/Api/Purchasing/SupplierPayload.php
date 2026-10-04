@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Purchasing;
 
-use App\Application\Purchasing\SaveSupplier\SaveSupplier;
+use App\Application\Purchasing\CreateSupplier\CreateSupplier;
+use App\Application\Purchasing\UpdateSupplier\UpdateSupplier;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class SupplierPayload
@@ -19,8 +20,13 @@ final readonly class SupplierPayload
     ) {
     }
 
-    public function toCommand(?string $supplierId = null): SaveSupplier
+    public function toCreate(): CreateSupplier
     {
-        return new SaveSupplier($supplierId, $this->name, $this->contact, $this->notes);
+        return new CreateSupplier($this->name, $this->contact, $this->notes);
+    }
+
+    public function toUpdate(string $supplierId): UpdateSupplier
+    {
+        return new UpdateSupplier($supplierId, $this->name, $this->contact, $this->notes);
     }
 }

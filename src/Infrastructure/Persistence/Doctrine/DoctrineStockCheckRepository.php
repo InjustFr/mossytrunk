@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Stock\StockCheck;
 use App\Domain\Stock\StockCheckRepository;
@@ -17,7 +16,7 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -73,13 +72,9 @@ final readonly class DoctrineStockCheckRepository implements StockCheckRepositor
 
     private function checks(): QueryBuilder
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('c', 'l', 'e')
-            ->from(StockCheck::class, 'c')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('c', 'l', 'e')->from(StockCheck::class, 'c'), 'c')
             ->join('c.event', 'e')
             ->leftJoin('c.lines', 'l')
-            ->where('c.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->orderBy('c.checkedAt', 'DESC');
     }
 }

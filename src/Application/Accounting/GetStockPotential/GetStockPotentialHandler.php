@@ -18,10 +18,7 @@ final readonly class GetStockPotentialHandler
 
     public function __invoke(): StockPotential
     {
-        $stockByProduct = [];
-        foreach ($this->stock->all() as $item) {
-            $stockByProduct[(string) $item->product()->id()][] = $item;
-        }
+        $stockByProduct = $this->stock->byProduct();
 
         $potential = StockPotential::none();
         foreach ($this->products->articles() as $product) {

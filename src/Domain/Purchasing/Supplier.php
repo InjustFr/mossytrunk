@@ -6,6 +6,7 @@ namespace App\Domain\Purchasing;
 
 use App\Domain\Identity\Workspace;
 use App\Domain\Purchasing\Exception\EmptySupplierName;
+use App\Domain\Shared\OptionalText;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -53,13 +54,8 @@ class Supplier
         }
 
         $this->name = $name;
-        $this->contact = self::blankToNull($contact);
-        $this->notes = self::blankToNull($notes);
-    }
-
-    private static function blankToNull(?string $value): ?string
-    {
-        return null === $value || '' === trim($value) ? null : trim($value);
+        $this->contact = OptionalText::of($contact);
+        $this->notes = OptionalText::of($notes);
     }
 
     public function id(): Ulid

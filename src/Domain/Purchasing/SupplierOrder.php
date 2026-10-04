@@ -18,6 +18,7 @@ use App\Domain\Reference\ReferenceSubject;
 use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Money;
+use App\Domain\Shared\OptionalText;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -118,10 +119,8 @@ class SupplierOrder implements Referenced
         $this->orderedOn = $orderedOn;
         $this->lines->clear();
         foreach ($items as $position => $purchased) {
-            foreach ($this->lines as $line) {
-                if ($line->isFor($purchased->productId, $purchased->item->variant)) {
-                    throw new OrderedTwice($purchased->item->label());
-                }
+            if (null !== $this->lineFor($purchased->productId, $purchased->item->variant)) {
+                throw new OrderedTwice($purchased->item->label());
             }
             $line = new SupplierOrderLine($this, $purchased, $position);
             if ($this->isReceived()) {
@@ -173,13 +172,7 @@ class SupplierOrder implements Referenced
 
     private function lineFor(Ulid $productId, ?string $variant): ?SupplierOrderLine
     {
-        foreach ($this->lines as $line) {
-            if ($line->isFor($productId, $variant)) {
-                return $line;
-            }
-        }
-
-        return null;
+        return $this->lines->findFirst(static fn (int $key, SupplierOrderLine $line): bool => $line->isFor($productId, $variant));
     }
 
     public function redateReception(\DateTimeImmutable $receivedAt): void
@@ -209,7 +202,7 @@ class SupplierOrder implements Referenced
 
     public function inEuros(Money $amount): Money
     {
-        return Money::cents((int) round($amount->amount() * $this->exchangeRateMicros / self::EURO_RATE, 0, \PHP_ROUND_HALF_UP));
+        return $amount->prorate($this->exchangeRateMicros, self::EURO_RATE);
     }
 
     public function currency(): Currency
@@ -224,7 +217,7 @@ class SupplierOrder implements Referenced
 
     public function referToSupplierOrder(?string $supplierReference): void
     {
-        $supplierReference = null === $supplierReference || '' === trim($supplierReference) ? null : trim($supplierReference);
+        $supplierReference = OptionalText::of($supplierReference);
         if (null !== $supplierReference && mb_strlen($supplierReference) > self::SUPPLIER_REFERENCE_MAX_LENGTH) {
             throw new SupplierReferenceTooLong(self::SUPPLIER_REFERENCE_MAX_LENGTH);
         }

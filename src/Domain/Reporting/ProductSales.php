@@ -7,9 +7,6 @@ namespace App\Domain\Reporting;
 use App\Domain\Shared\Money;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Units sold of one product (or one variant of it) across a set of orders, after their share of the orders' discounts.
- */
 final readonly class ProductSales
 {
     public function __construct(
@@ -23,6 +20,16 @@ final readonly class ProductSales
         public Money $cost,
         public bool $unknownCost,
     ) {
+    }
+
+    public function discount(): Money
+    {
+        return $this->gross->subtract($this->sales);
+    }
+
+    public function margin(): Money
+    {
+        return $this->sales->subtract($this->cost);
     }
 
     /**

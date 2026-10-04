@@ -16,7 +16,7 @@ final readonly class ConsumedSupplies
     }
 
     /**
-     * @return array<string, Money> keyed by event id
+     * @return array<string, Money>
      */
     public function byEvent(): array
     {

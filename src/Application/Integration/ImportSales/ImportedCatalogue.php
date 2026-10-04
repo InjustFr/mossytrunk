@@ -6,8 +6,7 @@ namespace App\Application\Integration\ImportSales;
 
 use App\Application\Product\CreateProductType\MiscellaneousType;
 use App\Application\Product\CreateProductType\ProductTypeCreator;
-use App\Application\Product\ProductReferenceGenerator;
-use App\Domain\Identity\Workspace;
+use App\Application\Product\NewProducts;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\ProductType;
@@ -17,14 +16,19 @@ use Symfony\Component\Uid\Ulid;
 
 final class ImportedCatalogue
 {
-    /** @var array<string, Product>|null */
-    private ?array $byDisplayName = null;
+    private bool $loaded = false;
 
-    /** @var array<string, Product>|null */
-    private ?array $byTypeAndName = null;
+    /** @var array<string, Product> */
+    private array $byDisplayName = [];
 
-    /** @var array<string, Product|null>|null */
-    private ?array $byOwnName = null;
+    /** @var array<string, Product> */
+    private array $byTypeAndName = [];
+
+    /** @var array<string, Product|null> */
+    private array $byOwnName = [];
+
+    /** @var array<string, Product|null> */
+    private array $byReference = [];
 
     /** @var array<string, Product> */
     private array $created = [];
@@ -38,41 +42,48 @@ final class ImportedCatalogue
 
     public function __construct(
         private readonly ProductRepository $products,
-        private readonly ProductReferenceGenerator $references,
+        private readonly NewProducts $newProducts,
         private readonly ProductTypeRepository $typeRepository,
         private readonly ProductTypeCreator $typeCreator,
         private readonly MiscellaneousType $miscellaneous,
-        private readonly Workspace $workspace,
     ) {
     }
 
     public function named(string $displayName, ?string $category = null): ?Product
     {
-        $product = $this->index()[mb_strtolower(trim($displayName))] ?? null;
+        $this->load();
+        $product = $this->byDisplayName[mb_strtolower(trim($displayName))] ?? null;
         if (null !== $product || null === $category || '' === trim($category)) {
             return $product;
         }
 
-        return $this->typedIndex()[self::typedKey(trim($category), self::withoutPrefix(trim($displayName), trim($category)))] ?? null;
+        return $this->byTypeAndName[self::typedKey(trim($category), self::withoutPrefix(trim($displayName), trim($category)))] ?? null;
     }
 
     public function namedWithoutType(string $name): ?Product
     {
-        return $this->ownNameIndex()[mb_strtolower(trim($name))] ?? null;
+        $this->load();
+
+        return $this->byOwnName[mb_strtolower(trim($name))] ?? null;
     }
 
     public function withReference(string $reference): ?Product
     {
         $reference = trim($reference);
+        if ('' === $reference) {
+            return null;
+        }
+        if (!\array_key_exists($reference, $this->byReference)) {
+            $product = $this->products->findByReference($reference);
+            $this->byReference[$reference] = true === $product?->isSupply() ? null : $product;
+        }
 
-        $product = '' === $reference ? null : $this->products->findByReference($reference);
-
-        return true === $product?->isSupply() ? null : $product;
+        return $this->byReference[$reference];
     }
 
     public function withId(Ulid $id): ?Product
     {
-        return $this->products->findByIds([$id])[0] ?? null;
+        return $this->products->find($id);
     }
 
     public function wasCreated(Product $product): bool
@@ -102,64 +113,31 @@ final class ImportedCatalogue
 
     private function create(string $name, Money $sellingPrice, ProductType $type): Product
     {
-        return $this->created(Product::create($this->workspace, $this->references->generate($type, $name), $name, $sellingPrice, $type));
+        return $this->created($this->newProducts->create($name, $sellingPrice, $type));
     }
 
     private function created(Product $product): Product
     {
-        $this->products->add($product);
-        $this->index()[mb_strtolower($product->displayName())] = $product;
-        $this->typedIndex()[self::typedKey($product->type()->name(), $product->name())] ??= $product;
-        $this->byOwnName = self::withOwnName($this->ownNameIndex(), $product);
+        $this->load();
+        $this->byDisplayName[mb_strtolower($product->displayName())] = $product;
+        $this->byTypeAndName[self::typedKey($product->type()->name(), $product->name())] ??= $product;
+        $this->byOwnName = self::withOwnName($this->byOwnName, $product);
         $this->created[(string) $product->id()] = $product;
 
         return $product;
     }
 
-    /**
-     * @return array<string, Product>
-     */
-    private function &index(): array
+    private function load(): void
     {
-        if (null === $this->byDisplayName) {
-            $this->byDisplayName = [];
-            foreach ($this->products->articles() as $product) {
-                $this->byDisplayName[mb_strtolower($product->displayName())] ??= $product;
-            }
+        if ($this->loaded) {
+            return;
         }
-
-        return $this->byDisplayName;
-    }
-
-    /**
-     * @return array<string, Product>
-     */
-    private function &typedIndex(): array
-    {
-        if (null === $this->byTypeAndName) {
-            $this->byTypeAndName = [];
-            foreach ($this->products->articles() as $product) {
-                $this->byTypeAndName[self::typedKey($product->type()->name(), $product->name())] ??= $product;
-            }
+        $this->loaded = true;
+        foreach ($this->products->articles() as $product) {
+            $this->byDisplayName[mb_strtolower($product->displayName())] ??= $product;
+            $this->byTypeAndName[self::typedKey($product->type()->name(), $product->name())] ??= $product;
+            $this->byOwnName = self::withOwnName($this->byOwnName, $product);
         }
-
-        return $this->byTypeAndName;
-    }
-
-    /**
-     * @return array<string, Product|null>
-     */
-    private function ownNameIndex(): array
-    {
-        if (null === $this->byOwnName) {
-            $index = [];
-            foreach ($this->products->articles() as $product) {
-                $index = self::withOwnName($index, $product);
-            }
-            $this->byOwnName = $index;
-        }
-
-        return $this->byOwnName;
     }
 
     /**

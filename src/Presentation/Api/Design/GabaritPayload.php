@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Api\Design;
 
-use App\Application\Design\SaveGabarit\SaveGabarit;
+use App\Application\Design\CreateGabarit\CreateGabarit;
+use App\Application\Design\UpdateGabarit\UpdateGabarit;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final readonly class GabaritPayload
@@ -30,8 +31,13 @@ final readonly class GabaritPayload
     ) {
     }
 
-    public function toCommand(?string $gabaritId = null): SaveGabarit
+    public function toCreate(): CreateGabarit
     {
-        return new SaveGabarit($gabaritId, $this->name, $this->typeId, $this->sellingPrice, $this->variants, $this->adaptations);
+        return new CreateGabarit($this->name, $this->typeId, $this->sellingPrice, $this->variants, $this->adaptations);
+    }
+
+    public function toUpdate(string $gabaritId): UpdateGabarit
+    {
+        return new UpdateGabarit($gabaritId, $this->name, $this->typeId, $this->sellingPrice, $this->variants, $this->adaptations);
     }
 }

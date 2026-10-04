@@ -17,6 +17,14 @@ final readonly class AppliedDiscount
     }
 
     /**
+     * @param list<self> $discounts
+     */
+    public static function total(array $discounts): Money
+    {
+        return Money::sum(array_map(static fn (self $discount): Money => $discount->amount, $discounts));
+    }
+
+    /**
      * @return array{label: string, amount: int, ruleId: ?string}
      */
     public function toArray(): array

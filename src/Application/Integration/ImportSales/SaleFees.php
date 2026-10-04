@@ -18,7 +18,7 @@ final readonly class SaleFees
     }
 
     /**
-     * @param array<array-key, ExternalSale> $sales by external id
+     * @param array<array-key, ExternalSale> $sales
      */
     public function settleImported(string $service, array $sales): int
     {
@@ -34,7 +34,7 @@ final readonly class SaleFees
     }
 
     /**
-     * @param array<array-key, ExternalSale> $sales by external id
+     * @param array<array-key, ExternalSale> $sales
      */
     private function settle(Order $order, string $service, array $sales): bool
     {

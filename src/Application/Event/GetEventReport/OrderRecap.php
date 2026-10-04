@@ -7,11 +7,6 @@ namespace App\Application\Event\GetEventReport;
 use App\Domain\Product\Product;
 use App\Domain\Reporting\ProductSales;
 
-/**
- * Groups an event's product sales for the orders recap: type → product → variants.
- * Types and display names are the products' current ones (a product with no type, or deleted, goes under a null type);
- * the name snapshotted on order lines is the fallback. Every level is sorted by sales, best first.
- */
 final class OrderRecap
 {
     /**
@@ -25,7 +20,7 @@ final class OrderRecap
         /** @var array<string, RecapNode> $types */
         $types = [];
         foreach ($sales as $line) {
-            $productKey = $line->productId?->toRfc4122() ?? '';
+            $productKey = (string) $line->productId;
             $product = $products[$productKey] ?? null;
             $typeName = $product?->type()?->name() ?? '';
 

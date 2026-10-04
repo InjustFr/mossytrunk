@@ -9,7 +9,7 @@ use Symfony\Component\Uid\Ulid;
 interface OrderSummaries
 {
     /**
-     * @return list<OrderSummaryView> most recent first, optionally restricted to one event
+     * @return list<OrderSummaryView>
      */
     public function list(?Ulid $eventId = null): array;
 }

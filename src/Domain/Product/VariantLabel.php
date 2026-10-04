@@ -18,6 +18,11 @@ final class VariantLabel
         return $label;
     }
 
+    public static function display(string $name, ?string $variant): string
+    {
+        return null === $variant ? $name : \sprintf('%s — %s', $name, $variant);
+    }
+
     public static function same(?string $a, ?string $b): bool
     {
         return null === $a || null === $b ? $a === $b : mb_strtolower(trim($a)) === mb_strtolower(trim($b));
@@ -28,13 +33,7 @@ final class VariantLabel
      */
     public static function find(array $labels, string $label): ?string
     {
-        foreach ($labels as $existing) {
-            if (self::same($existing, $label)) {
-                return $existing;
-            }
-        }
-
-        return null;
+        return array_find($labels, static fn (string $existing): bool => self::same($existing, $label));
     }
 
     /**

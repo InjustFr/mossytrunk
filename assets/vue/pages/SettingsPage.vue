@@ -14,12 +14,12 @@ import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue'
 import BaseModal from '../components/ui/BaseModal.vue';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
-import { useWorkspaceSettings } from '../composables/useWorkspaceSettings.js';
+import { useSession } from '../composables/useSession.js';
 import { useReferenceFormats } from '../composables/useReferenceFormats.js';
 
 const { t } = useI18n();
 
-const { settings, load } = useWorkspaceSettings();
+const session = useSession();
 const services = useServices();
 const toast = useToast();
 const references = useReferenceFormats();
@@ -121,15 +121,15 @@ const onRemove = (service) => run(() => services.remove(service.key), t('setting
 const onDisconnect = (service) => run(() => services.disconnect(service.key), t('settings.services.disconnected', { label: service.label }));
 
 onMounted(async () => {
-    await Promise.all([load(), services.load(), references.load()]);
+    await Promise.all([services.load(), references.load()]);
     announceConnectionOutcome();
 });
 </script>
 
 <template>
     <AppLayout :title="t('settings.title')">
-        <div v-if="settings" class="settings-page">
-            <p class="settings-page__workspace">{{ t('settings.workspace') }} <strong>{{ settings.name }}</strong></p>
+        <div class="settings-page">
+            <p class="settings-page__workspace">{{ t('settings.workspace') }} <strong>{{ session.workspace }}</strong></p>
             <BaseCard :title="t('settings.services.title')">
                 <template #actions>
                     <BaseButton v-if="!allAdded" variant="secondary" @click="openAdd"><Plus size="1rem" aria-hidden="true" /> {{ t('settings.services.add') }}</BaseButton>

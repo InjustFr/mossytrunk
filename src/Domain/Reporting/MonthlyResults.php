@@ -5,34 +5,29 @@ declare(strict_types=1);
 namespace App\Domain\Reporting;
 
 use App\Domain\Event\Event;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\Money;
 
-/**
- * Results per calendar month (Europe/Paris):
- * - an order counts in the month of its date;
- * - an event's expenses and the supplies consumed at it count in the month the event starts.
- */
 final readonly class MonthlyResults
 {
     /**
-     * @param array<string, SalesFigures> $months keyed "YYYY-MM"
+     * @param array<string, SalesFigures> $months
      */
     private function __construct(private array $months)
     {
     }
 
     /**
-     * @param array<string, SalesTotals> $salesByMonth            keyed "YYYY-MM" (Europe/Paris)
+     * @param array<string, SalesTotals> $salesByMonth
      * @param list<Event>                $events
-     * @param array<string, Money>       $consumedSuppliesByEvent keyed by event id
+     * @param array<string, Money>       $consumedSuppliesByEvent
      */
     public static function of(array $salesByMonth, array $events, array $consumedSuppliesByEvent = []): self
     {
         $expensesByMonth = [];
         $consumedByMonth = [];
         foreach ($events as $event) {
-            $month = self::monthKey($event->period()->start());
+            $month = BusinessTime::month($event->period()->start());
             $expensesByMonth[$month] = ($expensesByMonth[$month] ?? Money::zero())->add($event->totalExpenses());
             $consumedByMonth[$month] = ($consumedByMonth[$month] ?? Money::zero())->add($consumedSuppliesByEvent[(string) $event->id()] ?? Money::zero());
         }
@@ -61,18 +56,10 @@ final readonly class MonthlyResults
     }
 
     /**
-     * @return list<int> years having orders or expenses, most recent first
+     * @return list<int>
      */
-    public function years(): array
+    public function years(int ...$included): array
     {
-        $years = array_values(array_unique(array_map(static fn (string $month): int => (int) substr($month, 0, 4), array_keys($this->months))));
-        rsort($years);
-
-        return $years;
-    }
-
-    private static function monthKey(\DateTimeImmutable $moment): string
-    {
-        return $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m');
+        return SalesYears::of(array_keys($this->months), ...$included);
     }
 }

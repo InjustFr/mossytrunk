@@ -10,8 +10,6 @@ use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
- * Builds products through Product::create() — entities have no setters.
- *
  * @extends PersistentObjectFactory<Product>
  */
 final class ProductFactory extends PersistentObjectFactory

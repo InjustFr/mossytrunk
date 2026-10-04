@@ -13,10 +13,6 @@ use App\Domain\Shared\Money;
 use Psr\Clock\ClockInterface;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Batch edit (e.g. price of all stickers, add A3 to every print). Every change goes through the
- * entity methods, so the usual rules apply; any violation aborts the whole batch (nothing is saved).
- */
 final readonly class BatchUpdateProductsHandler
 {
     public function __construct(

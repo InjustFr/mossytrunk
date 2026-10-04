@@ -12,20 +12,14 @@ interface ProductTypeRepository
 
     public function remove(ProductType $type): void;
 
-    /**
-     * @throws \App\Domain\Shared\Exception\NotFound
-     */
     public function get(Ulid $id): ProductType;
 
-    /**
-     * Case-insensitive.
-     */
     public function findByName(string $name): ?ProductType;
 
     public function codeExists(string $code): bool;
 
     /**
-     * @return list<ProductType> sorted by name
+     * @return list<ProductType>
      */
     public function all(): array;
 }

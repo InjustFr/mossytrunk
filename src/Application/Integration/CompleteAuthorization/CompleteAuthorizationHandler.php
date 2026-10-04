@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\CompleteAuthorization;
 
+use App\Application\Integration\AddedConnection;
 use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
-use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Transaction;
-use App\Domain\Integration\ServiceConnectionRepository;
 
 final readonly class CompleteAuthorizationHandler
 {
     public function __construct(
         private Connectors $connectors,
-        private ServiceConnectionRepository $connections,
+        private AddedConnection $addedConnections,
         private ConnectionSession $session,
         private Transaction $transaction,
     ) {
@@ -23,7 +22,7 @@ final readonly class CompleteAuthorizationHandler
     public function __invoke(string $service, string $code, string $codeVerifier, string $redirectUri): string
     {
         $connector = $this->connectors->authorizing($service);
-        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($connector->describe()->label);
+        $connection = $this->addedConnections->of($connector);
 
         $authorization = $connector->authorize($this->session->configured($connection), $code, $codeVerifier, $redirectUri);
         $this->session->keepTokens($connection, $authorization->tokens);

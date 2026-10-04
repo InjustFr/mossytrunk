@@ -6,6 +6,7 @@ namespace App\Domain\Design;
 
 use App\Domain\Design\Exception\AdaptationsPending;
 use App\Domain\Design\Exception\AlreadyDeclined;
+use App\Domain\Design\Exception\DesignHasProducts;
 use App\Domain\Design\Exception\EmptyDesignName;
 use App\Domain\Design\Exception\NothingToValidate;
 use App\Domain\Design\Exception\SameProductTwice;
@@ -14,6 +15,7 @@ use App\Domain\Product\Product;
 use App\Domain\Product\ProductType;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
+use App\Domain\Shared\OptionalText;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -83,7 +85,7 @@ class Design
 
         $this->name = $name;
         $this->collection = $collection;
-        $this->notes = null === $notes || '' === trim($notes) ? null : trim($notes);
+        $this->notes = OptionalText::of($notes);
     }
 
     public function leaveCollection(): void
@@ -198,6 +200,13 @@ class Design
         return \count($this->pendingDeclinations()) < \count($this->declinations());
     }
 
+    public function assertRemovable(): void
+    {
+        if ($this->hasProducts()) {
+            throw new DesignHasProducts($this->name);
+        }
+    }
+
     private function markValidated(\DateTimeImmutable $at): void
     {
         $this->status = DesignStatus::Validated;
@@ -205,12 +214,15 @@ class Design
         $this->current = false;
     }
 
+    public function isDeclinedOn(Gabarit $gabarit): bool
+    {
+        return $this->declinations->exists(static fn (int $key, Declination $declination): bool => $declination->isOn($gabarit));
+    }
+
     private function assertNotDeclinedOn(Gabarit $gabarit): void
     {
-        foreach ($this->declinations as $declination) {
-            if ($declination->isOn($gabarit)) {
-                throw new AlreadyDeclined($gabarit->name());
-            }
+        if ($this->isDeclinedOn($gabarit)) {
+            throw new AlreadyDeclined($gabarit->name());
         }
     }
 
@@ -230,13 +242,8 @@ class Design
 
     public function declination(Ulid $declinationId): Declination
     {
-        foreach ($this->declinations as $declination) {
-            if ($declination->id()->equals($declinationId)) {
-                return $declination;
-            }
-        }
-
-        throw new NotFound('adaptation', (string) $declinationId);
+        return $this->declinations->findFirst(static fn (int $key, Declination $declination): bool => $declination->id()->equals($declinationId))
+            ?? throw new NotFound('adaptation', (string) $declinationId);
     }
 
     public function isValidated(): bool

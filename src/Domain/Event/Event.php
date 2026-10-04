@@ -16,14 +16,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * A real-world event (convention, market…) where products are sold.
- *
- * Rules (see docs/business/events.md):
- * - name and location are required, the period is an inclusive range of days.
- * - events never overlap (checked by the use cases), so any order date maps to at most one event.
- * - expenses have a label and a strictly positive amount.
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'event')]
 class Event
@@ -80,9 +72,6 @@ class Event
         $this->location = $location;
     }
 
-    /**
-     * The caller guarantees no other event overlaps and no order falls outside the new period.
-     */
     public function reschedule(DateRange $period): void
     {
         $this->period = $period;
@@ -108,13 +97,8 @@ class Event
 
     private function expense(Ulid $expenseId): Expense
     {
-        foreach ($this->expenses as $expense) {
-            if ($expense->id()->equals($expenseId)) {
-                return $expense;
-            }
-        }
-
-        throw new UnknownExpense((string) $expenseId);
+        return $this->expenses->findFirst(static fn (int $key, Expense $expense): bool => $expense->id()->equals($expenseId))
+            ?? throw new UnknownExpense((string) $expenseId);
     }
 
     public function covers(\DateTimeImmutable $moment): bool
@@ -122,9 +106,6 @@ class Event
         return $this->period->covers($moment);
     }
 
-    /**
-     * Upcoming until its first day, ongoing during its days, past from the day after its last day.
-     */
     public function timingOn(\DateTimeImmutable $today): EventTiming
     {
         return match (true) {

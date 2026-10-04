@@ -23,7 +23,7 @@ final readonly class CatalogueLinker
      */
     public function link(ServiceConnection $connection, ServiceDescription $description, iterable $lines): CatalogueImportReport
     {
-        $catalogue = $this->resolution->catalogueOf($connection);
+        $catalogue = $this->resolution->catalogue();
         $resolver = $this->resolution->resolver($catalogue, $connection, $description->linePrices);
         $read = $linked = 0;
         foreach ($lines as $line) {

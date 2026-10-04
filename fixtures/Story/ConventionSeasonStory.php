@@ -48,10 +48,6 @@ use Zenstruck\Foundry\Story;
 
 use function Zenstruck\Foundry\faker;
 
-/**
- * A believable season for a small illustration shop: catalogue, bundle discounts,
- * past conventions with expenses and orders, and an upcoming one without orders yet.
- */
 final class ConventionSeasonStory extends Story
 {
     private Workspace $workspace;

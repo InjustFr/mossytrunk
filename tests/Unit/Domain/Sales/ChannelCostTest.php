@@ -9,7 +9,7 @@ use App\Domain\Order\Exception\NegativePostage;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Product\Product;
-use App\Domain\Reporting\EventResult;
+use App\Domain\Reporting\SalesFigures;
 use App\Domain\Sales\ChannelCostKind;
 use App\Domain\Sales\Exception\EmptyCostLabel;
 use App\Domain\Sales\OrderCharge;
@@ -67,7 +67,7 @@ final class ChannelCostTest extends TestCase
         $order = $this->order($etsy, 1);
         $order->stamp(Money::cents(200));
 
-        $result = EventResult::of($order->event() ?? self::fail('no event'), RecordedSales::totals([$order]), []);
+        $result = SalesFigures::of(RecordedSales::totals([$order]), ($order->event() ?? self::fail('no event'))->totalExpenses());
 
         self::assertSame([318, 1_500 - 318 - 192], [$result->channelCosts->amount(), $result->result->amount()]);
     }

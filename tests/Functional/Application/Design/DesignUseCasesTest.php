@@ -7,16 +7,16 @@ namespace App\Tests\Functional\Application\Design;
 use App\Application\Design\AdjustDeclination\AdjustDeclination;
 use App\Application\Design\AdjustDeclination\AdjustDeclinationHandler;
 use App\Application\Design\AttachProductToDesign\AttachProductToDesignHandler;
+use App\Application\Design\CreateCollection\CreateCollectionHandler;
+use App\Application\Design\CreateDesign\CreateDesign;
+use App\Application\Design\CreateDesign\CreateDesignHandler;
+use App\Application\Design\CreateGabarit\CreateGabarit;
+use App\Application\Design\CreateGabarit\CreateGabaritHandler;
 use App\Application\Design\DeclineDesign\DeclineDesignHandler;
 use App\Application\Design\DesignProduct\DesignProductHandler;
 use App\Application\Design\DesignView;
 use App\Application\Design\GetDesign\GetDesignHandler;
 use App\Application\Design\ListDesigns\ListDesignsHandler;
-use App\Application\Design\SaveCollection\SaveCollectionHandler;
-use App\Application\Design\SaveDesign\SaveDesign;
-use App\Application\Design\SaveDesign\SaveDesignHandler;
-use App\Application\Design\SaveGabarit\SaveGabarit;
-use App\Application\Design\SaveGabarit\SaveGabaritHandler;
 use App\Application\Design\TickAdaptation\TickAdaptationHandler;
 use App\Application\Design\ValidateCollection\ValidateCollectionHandler;
 use App\Application\Design\ValidateDesign\ValidateDesignHandler;
@@ -43,9 +43,9 @@ final class DesignUseCasesTest extends KernelTestCase
     {
         self::actAsMemberOf();
         $types = self::getContainer()->get(CreateProductTypeHandler::class);
-        $saveGabarit = self::getContainer()->get(SaveGabaritHandler::class);
-        $this->print = (string) $saveGabarit(new SaveGabarit(null, 'Tirage 15×15', (string) $types('Print')->id(), 1_200, [], ['Recadrage carré']))->id();
-        $this->sticker = (string) $saveGabarit(new SaveGabarit(null, 'Sticker brillant', (string) $types('Sticker')->id(), 400, ['5 cm', '8 cm']))->id();
+        $createGabarit = self::getContainer()->get(CreateGabaritHandler::class);
+        $this->print = (string) $createGabarit(new CreateGabarit('Tirage 15×15', (string) $types('Print')->id(), 1_200, [], ['Recadrage carré']))->id();
+        $this->sticker = (string) $createGabarit(new CreateGabarit('Sticker brillant', (string) $types('Sticker')->id(), 400, ['5 cm', '8 cm']))->id();
     }
 
     public function testValidatingADesignCreatesOneProductPerDeclination(): void
@@ -87,9 +87,9 @@ final class DesignUseCasesTest extends KernelTestCase
 
     public function testACollectionValidatesItsDesignsTogether(): void
     {
-        $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', 'Automne');
-        $fern = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Fougère', $collectionId, null, [$this->sticker]));
-        $moss = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Mousse', $collectionId, null, [$this->sticker]));
+        $collectionId = (string) self::getContainer()->get(CreateCollectionHandler::class)('Sous-bois', 'Automne');
+        $fern = (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign('Fougère', $collectionId, null, [$this->sticker]));
+        $moss = (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign('Mousse', $collectionId, null, [$this->sticker]));
 
         self::assertSame(2, self::getContainer()->get(ValidateCollectionHandler::class)($collectionId));
         $this->clear();
@@ -102,7 +102,7 @@ final class DesignUseCasesTest extends KernelTestCase
 
     public function testDesignsAndCollectionsCanBeMarkedAsWorkInProgress(): void
     {
-        $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', null);
+        $collectionId = (string) self::getContainer()->get(CreateCollectionHandler::class)('Sous-bois', null);
         $designId = $this->design('Forêt');
 
         self::getContainer()->get(WorkOnDesignHandler::class)($designId, false);
@@ -139,7 +139,7 @@ final class DesignUseCasesTest extends KernelTestCase
     public function testAnExistingProductJoinsAnExistingDesign(): void
     {
         $productId = self::createProduct('Héron', 1_200, 300);
-        $designId = (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, 'Mousse', null, null, [$this->sticker]));
+        $designId = (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign('Mousse', null, null, [$this->sticker]));
         $attach = self::getContainer()->get(AttachProductToDesignHandler::class);
 
         self::assertSame($designId, (string) $attach($productId, $designId, $this->print));
@@ -153,7 +153,7 @@ final class DesignUseCasesTest extends KernelTestCase
 
     public function testTheProductListShowsTheCollectionOfEachProductDesign(): void
     {
-        $collectionId = (string) self::getContainer()->get(SaveCollectionHandler::class)(null, 'Sous-bois', null);
+        $collectionId = (string) self::getContainer()->get(CreateCollectionHandler::class)('Sous-bois', null);
         $heron = self::createProduct('Héron', 400, 60, ['5 cm']);
         $aigrette = self::createProduct('Aigrette', 400, 60, ['5 cm']);
         $loutre = self::createProduct('Loutre', 400, 60, ['5 cm']);
@@ -184,7 +184,7 @@ final class DesignUseCasesTest extends KernelTestCase
 
     private function design(string $name): string
     {
-        return (string) self::getContainer()->get(SaveDesignHandler::class)(new SaveDesign(null, $name, null, null, [$this->print, $this->sticker]));
+        return (string) self::getContainer()->get(CreateDesignHandler::class)(new CreateDesign($name, null, null, [$this->print, $this->sticker]));
     }
 
     private function view(string $designId): DesignView

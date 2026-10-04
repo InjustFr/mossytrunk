@@ -6,6 +6,7 @@ namespace App\Application\Product\DeleteProducts;
 
 use App\Application\Product\ProductDeletion;
 use App\Application\Transaction;
+use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use Symfony\Component\Uid\Ulid;
 
@@ -20,12 +21,10 @@ final readonly class DeleteProductsHandler
 
     public function __invoke(DeleteProducts $command): int
     {
-        $ids = array_values(array_unique($command->productIds));
-        foreach ($ids as $id) {
-            $this->deletion->delete($this->products->get(Ulid::fromString($id)));
-        }
+        $products = array_map(fn (string $id): Product => $this->products->get(Ulid::fromString($id)), array_values(array_unique($command->productIds)));
+        $this->deletion->delete(...$products);
         $this->transaction->commit();
 
-        return \count($ids);
+        return \count($products);
     }
 }

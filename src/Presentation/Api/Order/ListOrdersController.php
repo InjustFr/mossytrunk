@@ -9,11 +9,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Requirement\Requirement;
 
 #[Route('/api/orders', name: 'api_orders_list', methods: ['GET'], format: 'json')]
 final class ListOrdersController extends AbstractController
 {
-    public function __invoke(ListOrdersHandler $listOrders, #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^[0-7][0-9A-HJKMNP-TV-Z]{25}$/'])] ?string $eventId = null): JsonResponse
+    public function __invoke(ListOrdersHandler $listOrders, #[MapQueryParameter(filter: \FILTER_VALIDATE_REGEXP, options: ['regexp' => '/^'.Requirement::ULID.'$/'])] ?string $eventId = null): JsonResponse
     {
         return new JsonResponse($listOrders($eventId));
     }

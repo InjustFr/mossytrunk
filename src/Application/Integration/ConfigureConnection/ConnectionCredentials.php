@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ConfigureConnection;
 
+use App\Application\Integration\ConnectionSecrets;
 use App\Application\Integration\Exception\MissingSetting;
 use App\Application\Integration\ServiceDescription;
-use App\Application\Workspace\WorkspaceSecrets;
-use App\Domain\Identity\SecretName;
 use App\Domain\Integration\ServiceConnection;
 
 final readonly class ConnectionCredentials
 {
-    public function __construct(private WorkspaceSecrets $secrets)
+    public function __construct(private ConnectionSecrets $secrets)
     {
     }
 
@@ -34,10 +33,9 @@ final readonly class ConnectionCredentials
             $value = $field->normalize((string) ($fields[$field->name] ?? ''));
             $known = '' !== $value;
             if ($field->secret) {
-                $name = SecretName::of($connection->service(), $field->name);
-                $current = $this->secrets->reveal($connection->workspace(), $name);
+                $current = $this->secrets->reveal($connection, $field->name);
                 if ($known && $value !== $current) {
-                    $this->secrets->keep($connection->workspace(), $name, $value);
+                    $this->secrets->keep($connection, $field->name, $value);
                     $changed = true;
                 }
                 $known = $known || null !== $current;

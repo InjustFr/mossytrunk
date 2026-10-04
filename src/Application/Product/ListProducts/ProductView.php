@@ -10,7 +10,7 @@ use App\Domain\Design\DesignCollection;
 use App\Domain\Product\Product;
 use App\Domain\Product\SellingPriceChange;
 use App\Domain\Reporting\ProductSales;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 
 final readonly class ProductView
 {
@@ -87,7 +87,7 @@ final readonly class ProductView
             self::channelPricesOf($product),
             array_map(static fn (SellingPriceChange $change): array => [
                 'price' => $change->price()->amount(),
-                'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
+                'sinceDay' => BusinessTime::day($change->since()),
             ], $product->priceHistory()),
             $product->kind()->value,
             $stock->potential->toArray(),

@@ -23,7 +23,7 @@ final readonly class StockPotential
     }
 
     /**
-     * @param list<StockItem> $stockItems the product's stock, one per variant
+     * @param list<StockItem> $stockItems
      */
     public static function of(Product $product, array $stockItems): self
     {

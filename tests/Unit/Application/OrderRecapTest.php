@@ -31,9 +31,9 @@ final class OrderRecapTest extends TestCase
             self::sales($mousse, null, 5, 2_000, cost: 0),
             new ProductSales('Ancien produit', $deletedId, 'Ancien produit', null, 1, Money::cents(900), Money::cents(900), Money::cents(100), false),
         ], [
-            $foret->id()->toRfc4122() => $foret,
-            $riviere->id()->toRfc4122() => $riviere,
-            $mousse->id()->toRfc4122() => $mousse,
+            (string) $foret->id() => $foret,
+            (string) $riviere->id() => $riviere,
+            (string) $mousse->id() => $mousse,
         ]);
 
         self::assertSame(['Print', 'Sticker', null], array_column($groups, 'type'));

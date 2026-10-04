@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ImportSales;
 
+use App\Application\Integration\AddedConnection;
 use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
-use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ExternalSale;
 use App\Application\Order\OrderCharges;
 use App\Application\Order\OrderPricing;
@@ -17,20 +17,19 @@ use App\Application\Transaction;
 use App\Application\Translator;
 use App\Domain\Event\EventRepository;
 use App\Domain\Integration\SalesContext;
-use App\Domain\Integration\ServiceConnectionRepository;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Order\OrderRepository;
 use App\Domain\Reference\ReferenceKind;
 use App\Domain\Reference\ReferenceSubject;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 
 final readonly class ImportSalesHandler
 {
     public function __construct(
         private OrderCharges $charges,
         private Connectors $connectors,
-        private ServiceConnectionRepository $connections,
+        private AddedConnection $addedConnections,
         private ConnectionSession $session,
         private ExternalItemResolution $resolution,
         private EventRepository $events,
@@ -49,7 +48,7 @@ final readonly class ImportSalesHandler
     {
         $connector = $this->connectors->get($service);
         $description = $connector->describe();
-        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($description->label);
+        $connection = $this->addedConnections->of($connector);
 
         $sales = [];
         foreach ($connector->sales($this->session->credentials($connection)) as $sale) {
@@ -59,12 +58,16 @@ final readonly class ImportSalesHandler
         $alreadyImported = array_flip($this->orders->importedExternalIds($service, array_map(strval(...), array_keys($sales))));
         $feesUpdated = $this->saleFees->settleImported($service, $sales);
 
-        $catalogue = $this->resolution->catalogueOf($connection);
+        $catalogue = $this->resolution->catalogue();
         $resolver = $this->resolution->resolver($catalogue, $connection, $description->linePrices);
         $atEvent = SalesContext::AtEvent === $connection->salesContext();
+        $rules = $atEvent ? $this->pricing->rules() : [];
+        $linked = $this->orderChannel->of($service, null);
+        $needsEvent = $atEvent || (null !== $linked && !$linked->acceptsOrderWithoutEvent());
+        $discountLabel = $this->translator->trans('import.discount', ['service' => $description->label]);
 
         $imported = $withoutEvent = $waiting = $empty = 0;
-        $datesWithoutEvent = [];
+        $datesWithoutEvent = $eventsByDay = $channels = $checks = [];
         foreach ($sales as $id => $sale) {
             if (isset($alreadyImported[(string) $id])) {
                 continue;
@@ -85,13 +88,14 @@ final readonly class ImportSalesHandler
                 $items[] = new OrderedItem($item, $line->quantity);
             }
 
-            $channel = $this->orderChannel->of($service, null);
-            $needsEvent = $atEvent || (null !== $channel && !$channel->acceptsOrderWithoutEvent());
-            $event = $needsEvent ? $this->events->findCovering($sale->placedAt) : null;
-            $channel = $this->orderChannel->of($service, $event);
+            $day = BusinessTime::day($sale->placedAt);
+            if ($needsEvent && !\array_key_exists($day, $eventsByDay)) {
+                $eventsByDay[$day] = $this->events->findCovering($sale->placedAt);
+            }
+            $event = $needsEvent ? $eventsByDay[$day] : null;
             if ($needsEvent && null === $event) {
                 ++$withoutEvent;
-                $datesWithoutEvent[$sale->placedAt->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d')] = true;
+                $datesWithoutEvent[$day] = true;
                 continue;
             }
             if (!$resolved) {
@@ -99,7 +103,13 @@ final readonly class ImportSalesHandler
                 continue;
             }
 
-            $items = $this->stock->withdraw($event, $items);
+            $eventKey = (string) $event?->id();
+            if (!\array_key_exists($eventKey, $channels)) {
+                $channels[$eventKey] = $this->orderChannel->of($service, $event);
+                $checks[$eventKey] = $this->stock->checksAt($event);
+            }
+
+            $items = $this->stock->withdraw($event, $items, $checks[$eventKey]);
             $order = Order::imported(
                 $this->references->next(ReferenceKind::Order, ReferenceSubject::at($sale->placedAt)),
                 $connection->workspace(),
@@ -112,9 +122,9 @@ final readonly class ImportSalesHandler
                 $sale->charged,
                 $sale->shipping,
                 $sale->paymentMethod,
-                $atEvent ? $this->pricing->discounts($items, $sale->placedAt) : [],
-                $this->translator->trans('import.discount', ['service' => $description->label]),
-                $channel,
+                $atEvent ? $this->pricing->discounts($items, $sale->placedAt, $rules) : [],
+                $discountLabel,
+                $channels[$eventKey],
             );
             if (null !== $sale->fee) {
                 $order->settleSaleFee($service, $sale->id, $sale->fee);

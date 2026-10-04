@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Design;
 
-use App\Application\Product\ProductReferenceGenerator;
-use App\Application\WorkspaceContext;
+use App\Application\Product\NewProducts;
 use App\Domain\Design\Design;
-use App\Domain\Product\Product;
-use App\Domain\Product\ProductRepository;
 use Psr\Clock\ClockInterface;
 
 final readonly class DesignProduction
 {
     public function __construct(
-        private ProductRepository $products,
-        private ProductReferenceGenerator $references,
-        private WorkspaceContext $workspace,
+        private NewProducts $newProducts,
         private ClockInterface $clock,
     ) {
     }
@@ -25,16 +20,7 @@ final readonly class DesignProduction
     {
         $declinations = $design->validate($this->clock->now());
         foreach ($declinations as $declination) {
-            $type = $declination->gabarit()->type();
-            $product = Product::create(
-                $this->workspace->current(),
-                $this->references->generate($type, $declination->productName()),
-                $declination->productName(),
-                $declination->sellingPrice(),
-                $type,
-                $declination->variants(),
-            );
-            $this->products->add($product);
+            $product = $this->newProducts->create($declination->productName(), $declination->sellingPrice(), $declination->gabarit()->type(), $declination->variants());
             $declination->linkProduct($product->id());
         }
 

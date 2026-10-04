@@ -28,11 +28,11 @@ final class UserTest extends TestCase
     public function testInvitedUserHasNoPasswordUntilSet(): void
     {
         $user = User::invite('louis@example.com', Workspace::create('Atelier'));
-        self::assertFalse($user->hasPassword());
+        self::assertNull($user->passwordHash());
 
         $user->changePassword('hash');
 
-        self::assertTrue($user->hasPassword());
+        self::assertSame('hash', $user->passwordHash());
     }
 
     public function testWorkspaceNameIsRequired(): void

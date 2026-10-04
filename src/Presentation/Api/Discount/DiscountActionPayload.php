@@ -22,6 +22,6 @@ final readonly class DiscountActionPayload
      */
     public static function kinds(): array
     {
-        return array_map(static fn (DiscountActionKind $kind): string => $kind->value, DiscountActionKind::cases());
+        return array_column(DiscountActionKind::cases(), 'value');
     }
 }

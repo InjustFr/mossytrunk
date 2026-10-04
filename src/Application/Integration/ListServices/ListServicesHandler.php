@@ -8,12 +8,11 @@ use App\Application\Integration\AuthorizingConnector;
 use App\Application\Integration\CatalogueExporting;
 use App\Application\Integration\CatalogueImporting;
 use App\Application\Integration\CatalogueReading;
+use App\Application\Integration\ConnectionSecrets;
 use App\Application\Integration\Connectors;
 use App\Application\Integration\ReferencePublishing;
 use App\Application\Integration\SalesConnector;
 use App\Application\Integration\ServiceField;
-use App\Application\Workspace\WorkspaceSecrets;
-use App\Domain\Identity\SecretName;
 use App\Domain\Integration\ExternalItemRepository;
 use App\Domain\Integration\ServiceConnection;
 use App\Domain\Integration\ServiceConnectionRepository;
@@ -24,7 +23,7 @@ final readonly class ListServicesHandler
         private Connectors $connectors,
         private ServiceConnectionRepository $connections,
         private ExternalItemRepository $items,
-        private WorkspaceSecrets $secrets,
+        private ConnectionSecrets $secrets,
     ) {
     }
 
@@ -58,7 +57,7 @@ final readonly class ListServicesHandler
             $connector instanceof CatalogueImporting,
             $connector instanceof CatalogueReading,
             $connector instanceof ReferencePublishing,
-            array_map(static fn (ServiceField $field): FieldView => new FieldView($field->name, $field->label, $field->secret, $field->required, $field->pattern, $field->patternMessage, $field->hint, $field->maxLength), $description->fields),
+            array_map(static fn (ServiceField $field): FieldView => new FieldView($field->name, $field->label, $field->secret, $field->required, $field->hint, $field->maxLength), $description->fields),
             $description->defaultSalesContext->value,
             $description->defaultUnknownItems->value,
             null === $connection ? null : $this->connectionView($connector, $connection),
@@ -71,7 +70,7 @@ final readonly class ListServicesHandler
         $configured = true;
         foreach ($connector->describe()->fields as $field) {
             if ($field->secret) {
-                $secret = $this->secrets->reveal($connection->workspace(), SecretName::of($connection->service(), $field->name));
+                $secret = $this->secrets->reveal($connection, $field->name);
                 $values[$field->name] = new FieldValueView(null, null !== $secret, null === $secret ? null : '••••'.mb_substr($secret, -4));
                 $known = null !== $secret;
             } else {

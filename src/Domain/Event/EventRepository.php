@@ -11,23 +11,14 @@ interface EventRepository
 {
     public function add(Event $event): void;
 
-    /**
-     * @throws \App\Domain\Shared\Exception\NotFound
-     */
     public function get(Ulid $id): Event;
 
-    /**
-     * The event whose period covers the given moment (Europe/Paris day), if any.
-     */
     public function findCovering(\DateTimeImmutable $moment): ?Event;
 
-    /**
-     * First event overlapping the period, ignoring $except (the event being rescheduled).
-     */
     public function findOverlapping(DateRange $period, ?Ulid $except = null): ?Event;
 
     /**
-     * @return list<Event> most recent first
+     * @return list<Event>
      */
     public function all(): array;
 }

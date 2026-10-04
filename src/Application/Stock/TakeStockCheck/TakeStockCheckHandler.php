@@ -29,8 +29,10 @@ final readonly class TakeStockCheckHandler
     public function __invoke(TakeStockCheck $command): Ulid
     {
         $event = $this->events->get(Ulid::fromString($command->eventId));
-        $counts = array_map(function (CountedItem $counted): StockCount {
-            $product = $this->products->get(Ulid::fromString($counted->productId));
+        $products = $this->products->findByIds(array_map(static fn (CountedItem $counted): Ulid => Ulid::fromString($counted->productId), $command->items));
+        $counts = array_map(function (CountedItem $counted) use ($products): StockCount {
+            $productId = Ulid::fromString($counted->productId);
+            $product = $products[(string) $productId] ?? $this->products->get($productId);
 
             return new StockCount($this->stock->for($product, $counted->variant), $counted->counted, $product->buyingPrice());
         }, $command->items);

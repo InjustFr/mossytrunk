@@ -34,7 +34,7 @@ final readonly class BatchChannelPricePayload
      */
     public static function modes(): array
     {
-        return array_map(static fn (ChannelPriceMode $mode): string => $mode->value, ChannelPriceMode::cases());
+        return array_column(ChannelPriceMode::cases(), 'value');
     }
 
     #[Assert\Callback]

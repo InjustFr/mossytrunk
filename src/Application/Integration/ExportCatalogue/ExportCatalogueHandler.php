@@ -10,7 +10,7 @@ use App\Application\Translator;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Sales\SalesChannelRepository;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use Psr\Clock\ClockInterface;
 
 final readonly class ExportCatalogueHandler
@@ -36,7 +36,7 @@ final readonly class ExportCatalogueHandler
         return new CatalogueFile(
             $this->translator->trans('export.catalogue.filename', [
                 'service' => $service,
-                'date' => $this->clock->now()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
+                'date' => BusinessTime::day($this->clock->now()),
             ]),
             $connector->catalogue($items),
             \count($items),

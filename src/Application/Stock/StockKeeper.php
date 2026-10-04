@@ -12,6 +12,7 @@ use App\Domain\Order\OrderSupply;
 use App\Domain\Product\Product;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\StockCheck;
 use App\Domain\Stock\StockCheckRepository;
 use App\Domain\Stock\StockItem;
 use App\Domain\Stock\StockRepository;
@@ -26,13 +27,14 @@ final readonly class StockKeeper
     }
 
     /**
-     * @param list<OrderedItem> $items
+     * @param list<OrderedItem>     $items
+     * @param list<StockCheck>|null $checks
      *
      * @return list<OrderedItem>
      */
-    public function withdraw(?Event $event, array $items): array
+    public function withdraw(?Event $event, array $items, ?array $checks = null): array
     {
-        $checks = null === $event ? [] : $this->checks->ofEvent($event->id());
+        $checks ??= $this->checksAt($event);
 
         return array_map(function (OrderedItem $ordered) use ($checks): OrderedItem {
             $item = $ordered->item;
@@ -58,6 +60,14 @@ final readonly class StockKeeper
         }, $items);
     }
 
+    /**
+     * @return list<StockCheck>
+     */
+    public function checksAt(?Event $event): array
+    {
+        return null === $event ? [] : $this->checks->ofEvent($event->id());
+    }
+
     public function takeBack(Order $order, \DateTimeImmutable $returnedAt): void
     {
         foreach ($this->soldStock($order) as [$line, $stock]) {
@@ -78,7 +88,7 @@ final readonly class StockKeeper
 
     public function giveBack(OrderSupply $supply): void
     {
-        $product = $this->products->findByIds([$supply->productId()])[0] ?? null;
+        $product = $this->products->find($supply->productId());
         if (null !== $product && $product->sells($supply->variant())) {
             $this->stock->for($product, $supply->variant())->cancelWithdrawal($supply->quantity());
         }
@@ -92,7 +102,7 @@ final readonly class StockKeeper
         $sold = [];
         foreach ($order->lines() as $line) {
             $productId = $line->productId();
-            $product = null === $productId ? null : $this->products->findByIds([$productId])[0] ?? null;
+            $product = null === $productId ? null : $this->products->find($productId);
             if (null !== $product && $product->sells($line->variant())) {
                 $sold[] = [$line, $this->stock->for($product, $line->variant())];
             }

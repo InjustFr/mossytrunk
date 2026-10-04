@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Product\BatchUpdateProducts;
 
 use App\Domain\Product\Product;
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\Money;
 
 final readonly class SellingRepricing
@@ -18,10 +18,9 @@ final readonly class SellingRepricing
 
     public static function since(?string $day, \DateTimeImmutable $now): self
     {
-        $timezone = new \DateTimeZone(DateRange::TIMEZONE);
-        $today = null === $day || $now->setTimezone($timezone)->format('Y-m-d') === $day;
+        $today = null === $day || BusinessTime::day($now) === $day;
 
-        return new self($today ? null : new \DateTimeImmutable($day, $timezone), $now);
+        return new self($today ? null : BusinessTime::at($day), $now);
     }
 
     public function reprice(Product $product, Money $price): void

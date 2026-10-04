@@ -30,7 +30,7 @@ final readonly class RestockHandler
         $item = $this->stock->for($product, $command->variant);
         $lot = $item->receive($command->quantity, Money::cents($command->totalPaidCents), LotOrigin::Purchase, $this->clock->now());
         $product->bought($lot->unitCost());
-        $this->missingCosts->fill($item);
+        $this->missingCosts->fill([$item]);
 
         $this->transaction->commit();
     }

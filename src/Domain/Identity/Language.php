@@ -16,6 +16,6 @@ enum Language: string
      */
     public static function codes(): array
     {
-        return array_map(static fn (self $language): string => $language->value, self::cases());
+        return array_column(self::cases(), 'value');
     }
 }

@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Application\Integration\ReadCatalogue;
 
+use App\Application\Integration\AddedConnection;
 use App\Application\Integration\ConnectionSession;
 use App\Application\Integration\Connectors;
-use App\Application\Integration\Exception\ServiceNotAdded;
 use App\Application\Integration\ImportCatalogue\CatalogueImportReport;
 use App\Application\Integration\ImportCatalogue\CatalogueLinker;
-use App\Domain\Integration\ServiceConnectionRepository;
 
 final readonly class ReadCatalogueHandler
 {
     public function __construct(
         private Connectors $connectors,
-        private ServiceConnectionRepository $connections,
+        private AddedConnection $addedConnections,
         private ConnectionSession $session,
         private CatalogueLinker $linker,
     ) {
@@ -25,7 +24,7 @@ final readonly class ReadCatalogueHandler
     {
         $connector = $this->connectors->reading($service);
         $description = $connector->describe();
-        $connection = $this->connections->find($service) ?? throw new ServiceNotAdded($description->label);
+        $connection = $this->addedConnections->of($connector);
 
         return $this->linker->link($connection, $description, $connector->catalogueLines($this->session->credentials($connection)));
     }

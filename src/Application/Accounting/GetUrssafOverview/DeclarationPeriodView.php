@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Accounting\GetUrssafOverview;
 
 use App\Application\Accounting\PeriodTurnover;
+use App\Domain\Accounting\DeclarationStatus;
 use App\Domain\Accounting\UrssafDeclaration;
 use App\Domain\Reporting\UrssafContribution;
 
@@ -42,13 +43,7 @@ final readonly class DeclarationPeriodView
             $figures->turnover->amount(),
             $figures->orderCount,
             UrssafContribution::on($figures->turnover)->amount(),
-            match (true) {
-                null !== $declaration => $declaration->turnover()->equals($figures->turnover) ? 'declared' : 'changed',
-                $period->end()->format('Y-m-d') < $activityStart->setTimezone($period->end()->getTimezone())->format('Y-m-d') => 'inactive',
-                !$period->isOverOn($today) => $period->covers($today) ? 'current' : 'upcoming',
-                $period->isLateOn($today) => 'late',
-                default => 'due',
-            },
+            DeclarationStatus::of($period, $figures->turnover, $declaration, $today, $activityStart)->value,
             $declaration?->turnover()->amount(),
             $declaration?->declaredAt()->format(\DateTimeInterface::ATOM),
         );

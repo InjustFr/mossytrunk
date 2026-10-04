@@ -13,7 +13,7 @@ interface StockCheckRepository
     public function get(Ulid $id): StockCheck;
 
     /**
-     * @return list<StockCheck> most recent first
+     * @return list<StockCheck>
      */
     public function ofEvent(Ulid $eventId): array;
 
@@ -23,7 +23,7 @@ interface StockCheckRepository
     public function withUnexplainedUnits(): array;
 
     /**
-     * @return list<StockCheck> the checks where supplies went missing (consumed at the event)
+     * @return list<StockCheck>
      */
     public function consumingSupplies(): array;
 

@@ -36,20 +36,25 @@ class UrssafDeclaration
 
     private function __construct(Workspace $workspace, DeclarationPeriod $period, Money $turnover, \DateTimeImmutable $declaredAt)
     {
-        if (!$period->isOverOn($declaredAt)) {
-            throw new DeclarationPeriodNotOver($period->key());
-        }
-
         $this->id = new Ulid();
         $this->workspace = $workspace;
         $this->period = $period->key();
-        $this->turnover = $turnover;
-        $this->declaredAt = $declaredAt;
+        $this->declare($turnover, $declaredAt);
     }
 
     public static function record(Workspace $workspace, DeclarationPeriod $period, Money $turnover, \DateTimeImmutable $declaredAt): self
     {
         return new self($workspace, $period, $turnover, $declaredAt);
+    }
+
+    public function declare(Money $turnover, \DateTimeImmutable $declaredAt): void
+    {
+        if (!DeclarationPeriod::fromKey($this->period)->isOverOn($declaredAt)) {
+            throw new DeclarationPeriodNotOver($this->period);
+        }
+
+        $this->turnover = $turnover;
+        $this->declaredAt = $declaredAt;
     }
 
     public function period(): string

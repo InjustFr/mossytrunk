@@ -6,10 +6,6 @@ namespace App\Domain\Shared;
 
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * Euro amount stored as integer cents. Immutable; may be negative (e.g. a loss),
- * entities are responsible for refusing negative prices.
- */
 #[ORM\Embeddable]
 final readonly class Money
 {
@@ -62,12 +58,14 @@ final readonly class Money
         return new self($this->cents * $factor);
     }
 
-    /**
-     * Applies a rate expressed in basis points (1280 = 12.80 %), rounded half away from zero to the cent.
-     */
     public function percentage(int $basisPoints): self
     {
-        return new self((int) round($this->cents * $basisPoints / 10_000, 0, \PHP_ROUND_HALF_UP));
+        return $this->prorate($basisPoints, 10_000);
+    }
+
+    public function prorate(int $part, int $whole): self
+    {
+        return new self((int) round($this->cents * $part / $whole, 0, \PHP_ROUND_HALF_UP));
     }
 
     public function isZero(): bool

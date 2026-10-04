@@ -6,7 +6,9 @@ namespace App\Infrastructure\Persistence\Doctrine\Reporting;
 
 use App\Application\Reporting\ProductSalesLedger;
 use App\Application\WorkspaceContext;
+use App\Domain\Product\VariantLabel;
 use App\Domain\Reporting\ProductSales;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Money;
 use Doctrine\DBAL\Connection;
@@ -52,6 +54,16 @@ final readonly class DoctrineProductSalesLedger implements ProductSalesLedger
         )[0] ?? null;
     }
 
+    public function monthlyOf(Ulid $productId): array
+    {
+        $months = [];
+        foreach ($this->rows('l.product_id, grouped', 'NULL', 'l.product_id = :product', ['product' => $productId->toRfc4122(), 'timezone' => BusinessTime::ZONE], [], "to_char(o.placed_at AT TIME ZONE :timezone, 'YYYY-MM')") as $row) {
+            $months[SqlValue::string($row['grouped'])] = self::productSales($row);
+        }
+
+        return $months;
+    }
+
     /**
      * @param array<string, string|\DateTimeImmutable|null> $parameters
      * @param array<string, string>                         $types
@@ -60,9 +72,20 @@ final readonly class DoctrineProductSalesLedger implements ProductSalesLedger
      */
     private function sales(string $group, string $variant, string $condition, array $parameters, array $types = []): array
     {
-        $rows = $this->connection->fetchAllAssociative(
+        return array_map(self::productSales(...), $this->rows($group, $variant, $condition, $parameters, $types));
+    }
+
+    /**
+     * @param array<string, string|\DateTimeImmutable|null> $parameters
+     * @param array<string, string>                         $types
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function rows(string $group, string $variant, string $condition, array $parameters, array $types = [], string $key = 'NULL'): array
+    {
+        return $this->connection->fetchAllAssociative(
             <<<SQL
-                SELECT l.product_id AS product_id, {$variant} AS variant,
+                SELECT l.product_id AS product_id, {$variant} AS variant, {$key} AS grouped,
                     (ARRAY_AGG(l.product_name ORDER BY o.placed_at DESC))[1] AS product_name,
                     SUM(l.quantity) AS quantity, SUM(l.unit_price_cents * l.quantity) AS gross,
                     SUM(l.unit_price_cents * l.quantity - l.discount_cents) AS sales,
@@ -75,22 +98,26 @@ final readonly class DoctrineProductSalesLedger implements ProductSalesLedger
             ['workspace' => $this->workspace->current()->id()->toRfc4122(), ...$parameters],
             $types,
         );
+    }
 
-        return array_map(static function (array $row): ProductSales {
-            $name = SqlValue::string($row['product_name']);
-            $variant = SqlValue::nullableString($row['variant']);
+    /**
+     * @param array<string, mixed> $row
+     */
+    private static function productSales(array $row): ProductSales
+    {
+        $name = SqlValue::string($row['product_name']);
+        $variant = SqlValue::nullableString($row['variant']);
 
-            return new ProductSales(
-                null === $variant ? $name : \sprintf('%s — %s', $name, $variant),
-                SqlValue::ulid($row['product_id']),
-                $name,
-                $variant,
-                SqlValue::int($row['quantity']),
-                Money::cents(SqlValue::int($row['gross'])),
-                Money::cents(SqlValue::int($row['sales'])),
-                Money::cents(SqlValue::int($row['cost'])),
-                SqlValue::bool($row['unknown_cost']),
-            );
-        }, $rows);
+        return new ProductSales(
+            VariantLabel::display($name, $variant),
+            SqlValue::ulid($row['product_id']),
+            $name,
+            $variant,
+            SqlValue::int($row['quantity']),
+            Money::cents(SqlValue::int($row['gross'])),
+            Money::cents(SqlValue::int($row['sales'])),
+            Money::cents(SqlValue::int($row['cost'])),
+            SqlValue::bool($row['unknown_cost']),
+        );
     }
 }

@@ -7,16 +7,13 @@ namespace App\Application\Order;
 use App\Domain\Discount\AppliedDiscount;
 use App\Domain\Discount\BasketLine;
 use App\Domain\Discount\DiscountCalculator;
+use App\Domain\Discount\DiscountRule;
 use App\Domain\Discount\DiscountRuleRepository;
 use App\Domain\Order\Exception\InvalidOrderQuantity;
 use App\Domain\Order\OrderedItem;
 use App\Domain\Product\ProductRepository;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Turns requested lines into validated items and computes the automatic bundle discounts.
- * Shared by placing and previewing an order so both always agree.
- */
 final readonly class OrderPricing
 {
     public function __construct(
@@ -45,14 +42,23 @@ final readonly class OrderPricing
     }
 
     /**
-     * @param list<OrderedItem> $items
+     * @return list<DiscountRule>
+     */
+    public function rules(): array
+    {
+        return $this->discountRules->all();
+    }
+
+    /**
+     * @param list<OrderedItem>       $items
+     * @param list<DiscountRule>|null $rules
      *
      * @return list<AppliedDiscount>
      */
-    public function discounts(array $items, \DateTimeImmutable $placedAt): array
+    public function discounts(array $items, \DateTimeImmutable $placedAt, ?array $rules = null): array
     {
         $basket = array_values(array_filter(array_map(static fn (OrderedItem $ordered): ?BasketLine => BasketLine::of($ordered->item, $ordered->quantity), $items)));
 
-        return $this->calculator->calculate($basket, $this->discountRules->all(), $placedAt);
+        return $this->calculator->calculate($basket, $rules ?? $this->rules(), $placedAt);
     }
 }

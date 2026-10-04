@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Connector\SumUp;
 
+use App\Application\Csv;
 use App\Application\Integration\CatalogueItem;
+use App\Domain\Product\Sku;
 use App\Domain\Shared\Money;
 
 final readonly class SumUpCatalogueCsv
@@ -36,7 +38,7 @@ final readonly class SumUpCatalogueCsv
 
         return [
             [$item->name, '', '', '', '', '', '', '', $item->category],
-            ...array_map(static fn (string $variant): array => ['', $variant, self::price($item->price), '', self::NO_INVENTORY, '', $item->reference.'-'.$variant, '', ''], $item->variants),
+            ...array_map(static fn (string $variant): array => ['', $variant, self::price($item->price), '', self::NO_INVENTORY, '', Sku::of($item->reference, $variant), '', ''], $item->variants),
         ];
     }
 
@@ -45,11 +47,11 @@ final readonly class SumUpCatalogueCsv
      */
     private function line(array $cells): string
     {
-        return implode(',', array_map(static fn (string $cell): string => 1 === preg_match('/[",\r\n]/', $cell) ? '"'.str_replace('"', '""', $cell).'"' : $cell, $cells))."\r\n";
+        return Csv::row($cells, ',')."\r\n";
     }
 
     private static function price(Money $price): string
     {
-        return number_format($price->amount() / 100, 2, '.', '');
+        return Csv::amount($price, '.');
     }
 }

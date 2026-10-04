@@ -8,9 +8,6 @@ use App\Domain\Event\Exception\OverlappingEvent;
 use App\Domain\Shared\DateRange;
 use Symfony\Component\Uid\Ulid;
 
-/**
- * Domain service guarding the "events never overlap" rule, which spans several aggregates.
- */
 final readonly class EventScheduler
 {
     public function __construct(private EventRepository $events)

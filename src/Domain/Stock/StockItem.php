@@ -72,7 +72,7 @@ class StockItem
         $lot = new StockLot($this, $quantity, max(0, $quantity + min($this->onHand, 0)), $totalCost, $receivedAt, $origin, $sourceId);
         $this->lots->add($lot);
         $this->onHand += $quantity;
-        if (LotOrigin::Purchase === $origin || LotOrigin::SupplierOrder === $origin) {
+        if ($lot->isPurchase()) {
             $this->lastUnitCostCents = $lot->unitCost()->amount();
         }
 
@@ -197,13 +197,7 @@ class StockItem
 
     public function firstPurchaseUnitCost(): ?Money
     {
-        foreach ($this->lots() as $lot) {
-            if ($lot->isPurchase()) {
-                return $lot->unitCost();
-            }
-        }
-
-        return null;
+        return array_find($this->lots(), static fn (StockLot $lot): bool => $lot->isPurchase())?->unitCost();
     }
 
     public function isLatestPurchase(StockLot $lot): bool
@@ -213,31 +207,17 @@ class StockItem
 
     private function latestPurchase(): ?StockLot
     {
-        $purchases = array_values(array_filter($this->lots(), static fn (StockLot $lot): bool => $lot->isPurchase()));
-
-        return [] === $purchases ? null : $purchases[\count($purchases) - 1];
+        return array_find(array_reverse($this->lots()), static fn (StockLot $lot): bool => $lot->isPurchase());
     }
 
     private function lotFrom(Ulid $supplierOrderId): ?StockLot
     {
-        foreach ($this->lots as $lot) {
-            if ($lot->isFrom($supplierOrderId)) {
-                return $lot;
-            }
-        }
-
-        return null;
+        return $this->lots->findFirst(static fn (int $key, StockLot $lot): bool => $lot->isFrom($supplierOrderId));
     }
 
     public function nextUnitCost(Money $fallbackUnitCost): Money
     {
-        foreach ($this->lots() as $lot) {
-            if (!$lot->isExhausted()) {
-                return $lot->unitCost();
-            }
-        }
-
-        return $this->costWhenEmpty($fallbackUnitCost);
+        return array_find($this->lots(), static fn (StockLot $lot): bool => !$lot->isExhausted())?->unitCost() ?? $this->costWhenEmpty($fallbackUnitCost);
     }
 
     public function remainingValue(): Money
@@ -261,7 +241,7 @@ class StockItem
     }
 
     /**
-     * @return list<StockLot> oldest first
+     * @return list<StockLot>
      */
     public function lots(): array
     {

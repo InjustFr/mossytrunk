@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Accounting;
 
 use App\Domain\Accounting\Exception\UnknownDeclarationPeriod;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 
 final readonly class DeclarationPeriod
@@ -18,7 +19,7 @@ final readonly class DeclarationPeriod
 
     public static function containing(\DateTimeImmutable $moment, DeclarationPeriodicity $periodicity): self
     {
-        $local = $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE));
+        $local = BusinessTime::local($moment);
 
         return new self($periodicity, (int) $local->format('Y'), intdiv((int) $local->format('n') - 1, $periodicity->months()) + 1);
     }
@@ -57,7 +58,7 @@ final readonly class DeclarationPeriod
     {
         $month = ($this->index - 1) * $this->periodicity->months() + 1;
 
-        return new \DateTimeImmutable(\sprintf('%d-%02d-01', $this->year, $month), new \DateTimeZone(DateRange::TIMEZONE));
+        return BusinessTime::at(\sprintf('%d-%02d-01', $this->year, $month));
     }
 
     public function end(): \DateTimeImmutable
@@ -71,7 +72,7 @@ final readonly class DeclarationPeriod
     }
 
     /**
-     * @return list<string> the months of the period, "YYYY-MM"
+     * @return list<string>
      */
     public function months(): array
     {
@@ -92,11 +93,11 @@ final readonly class DeclarationPeriod
 
     public function isOverOn(\DateTimeImmutable $moment): bool
     {
-        return $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d') > $this->end()->format('Y-m-d');
+        return BusinessTime::day($moment) > $this->end()->format('Y-m-d');
     }
 
     public function isLateOn(\DateTimeImmutable $moment): bool
     {
-        return $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d') > $this->deadline()->format('Y-m-d');
+        return BusinessTime::day($moment) > $this->deadline()->format('Y-m-d');
     }
 }

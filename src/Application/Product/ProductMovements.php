@@ -10,27 +10,28 @@ use App\Domain\Order\OrderRepository;
 use App\Domain\Product\Product;
 use App\Domain\Stock\LotOrigin;
 use App\Domain\Stock\StockCheckRepository;
+use App\Domain\Stock\StockItem;
 use App\Domain\Stock\StockLot;
-use App\Domain\Stock\StockRepository;
 
 final readonly class ProductMovements
 {
     public function __construct(
         private OrderRepository $orders,
-        private StockRepository $stock,
         private StockCheckRepository $checks,
         private Connectors $connectors,
     ) {
     }
 
     /**
-     * @return list<array{date: string, kind: string, variant: ?string, quantity: int, cost: int, link: ?string, label: ?string}> most recent first
+     * @param list<StockItem> $stockItems
+     *
+     * @return list<array{date: string, kind: string, variant: ?string, quantity: int, cost: int, link: ?string, label: ?string}>
      */
-    public function of(Product $product): array
+    public function of(Product $product, array $stockItems): array
     {
         $productId = $product->id();
         $movements = [];
-        foreach ($this->stock->ofProduct($productId) as $item) {
+        foreach ($stockItems as $item) {
             foreach ($item->lots() as $lot) {
                 $movements[] = [
                     'date' => $lot->receivedAt()->format(\DateTimeInterface::ATOM),

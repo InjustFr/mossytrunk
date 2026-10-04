@@ -11,6 +11,7 @@ use App\Application\Stock\ProductStock;
 use App\Domain\Design\DesignRepository;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Product\SellingPriceChange;
+use App\Domain\Shared\BusinessTime;
 use App\Domain\Shared\DateRange;
 use App\Domain\Stock\StockRepository;
 use Psr\Clock\ClockInterface;
@@ -33,21 +34,17 @@ final readonly class GetProductHandler
         $product = $this->products->get(Ulid::fromString($productId));
         $year = DateRange::yearOf($this->clock->now());
         $stockItems = $this->stock->ofProduct($product->id());
-        $stock = ProductStock::of($product, $stockItems);
-        $ever = $this->sales->ofProduct($product->id());
         $design = $this->designs->findByProduct($product->id());
 
         return new ProductDetailView(
-            ProductView::fromProduct($product, $year, $this->sales->ofProduct($product->id(), DateRange::year($year)), $stock, $design?->collection()),
-            $ever->quantity ?? 0,
-            $ever?->sales->amount() ?? 0,
-            $stock->items,
-            $this->movements->of($product),
+            ProductView::fromProduct($product, $year, $this->sales->ofProduct($product->id(), DateRange::year($year)), ProductStock::of($product, $stockItems), $design?->collection()),
+            $this->sales->ofProduct($product->id())->quantity ?? 0,
+            $this->movements->of($product, $stockItems),
             array_reverse(array_map(static fn (SellingPriceChange $change): array => [
                 'id' => (string) $change->id(),
                 'price' => $change->price()->amount(),
                 'since' => $change->since()->format(\DateTimeInterface::ATOM),
-                'sinceDay' => $change->since()->setTimezone(new \DateTimeZone(DateRange::TIMEZONE))->format('Y-m-d'),
+                'sinceDay' => BusinessTime::day($change->since()),
             ], $product->priceHistory())),
             null === $design ? null : ['id' => (string) $design->id(), 'name' => $design->name()],
         );

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\Design\DeleteGabarit;
 
 use App\Application\Transaction;
-use App\Domain\Design\Declination;
 use App\Domain\Design\Design;
 use App\Domain\Design\DesignRepository;
 use App\Domain\Design\Exception\GabaritInUse;
@@ -25,7 +24,7 @@ final readonly class DeleteGabaritHandler
     {
         $gabarit = $this->gabarits->get(Ulid::fromString($gabaritId));
 
-        $declined = array_filter($this->designs->all(), static fn (Design $design): bool => [] !== array_filter($design->declinations(), static fn (Declination $declination): bool => $declination->gabarit() === $gabarit));
+        $declined = array_filter($this->designs->all(), static fn (Design $design): bool => $design->isDeclinedOn($gabarit));
         if ([] !== $declined) {
             throw new GabaritInUse($gabarit->name(), \count($declined));
         }

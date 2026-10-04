@@ -29,7 +29,7 @@ final readonly class SupplierOrderStock
 
         $restated = [];
         foreach ($order->lines() as $line) {
-            $product = $this->products->findByIds([$line->productId()])[0] ?? null;
+            $product = $this->products->find($line->productId());
             if (null === $product || !$product->sells($line->variant())) {
                 continue;
             }
@@ -38,9 +38,9 @@ final readonly class SupplierOrderStock
             if (null !== $lot && $item->isLatestPurchase($lot)) {
                 $product->bought($lot->unitCost());
             }
-            $this->missingCosts->fill($item);
             $restated[] = $item;
         }
+        $this->missingCosts->fill($restated);
 
         foreach ($this->stock->receivedFrom($order->id()) as $item) {
             if (!\in_array($item, $restated, true)) {

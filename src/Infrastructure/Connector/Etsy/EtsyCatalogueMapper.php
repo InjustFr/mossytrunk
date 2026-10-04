@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Infrastructure\Connector\Etsy;
 
 use App\Application\Integration\ExternalLine;
-use App\Domain\Shared\Money;
 use App\Infrastructure\Http\Json;
 
 final class EtsyCatalogueMapper
@@ -27,7 +26,7 @@ final class EtsyCatalogueMapper
         return array_map(static function (array $product) use ($listingId, $title): ExternalLine {
             $sku = trim(Json::string($product['sku'] ?? ''));
 
-            return new ExternalLine($listingId, $title, self::price($product), 1, self::variation($product), sku: '' === $sku ? null : $sku);
+            return new ExternalLine($listingId, $title, EtsyMoney::of(Json::objects($product['offerings'] ?? [])[0]['price'] ?? []), 1, self::variation($product), sku: '' === $sku ? null : $sku);
         }, $products);
     }
 
@@ -57,16 +56,5 @@ final class EtsyCatalogueMapper
         }
 
         return [] === $values ? null : implode(' / ', $values);
-    }
-
-    /**
-     * @param array<string, mixed> $product
-     */
-    private static function price(array $product): Money
-    {
-        $price = Json::object(Json::objects($product['offerings'] ?? [])[0]['price'] ?? []);
-        $divisor = (int) Json::number($price['divisor'] ?? 100);
-
-        return Money::cents((int) round((float) Json::number($price['amount'] ?? 0) * 100 / max(1, $divisor)));
     }
 }

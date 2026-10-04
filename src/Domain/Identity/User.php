@@ -23,7 +23,7 @@ class User
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $passwordHash = null;
 
-    #[ORM\ManyToOne(targetEntity: Workspace::class)]
+    #[ORM\ManyToOne(targetEntity: Workspace::class, fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Workspace $workspace;
 
@@ -90,11 +90,6 @@ class User
         }
 
         return Theme::of($this->themeBackground, $this->themeAccent);
-    }
-
-    public function hasPassword(): bool
-    {
-        return null !== $this->passwordHash;
     }
 
     public function id(): Ulid

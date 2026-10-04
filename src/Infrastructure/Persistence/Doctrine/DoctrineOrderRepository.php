@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine;
 
-use App\Application\WorkspaceContext;
 use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
@@ -25,7 +24,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private WorkspaceContext $workspace,
+        private WorkspaceScope $scope,
     ) {
     }
 
@@ -41,8 +40,22 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function get(Ulid $id): Order
     {
-        return $this->entityManager->getRepository(Order::class)->findOneBy(['id' => $id, 'workspace' => $this->workspace->current()])
-            ?? throw new NotFound('order', (string) $id);
+        return $this->scope->get(Order::class, $id, 'order');
+    }
+
+    public function getMany(array $ids): array
+    {
+        $query = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o')->from(Order::class, 'o'), 'o')
+            ->andWhere('o.id IN (:ids)')
+            ->setParameter('ids', array_map(static fn (Ulid $id): string => $id->toRfc4122(), $ids), ArrayParameterType::STRING)
+            ->getQuery();
+
+        $found = [];
+        foreach ($this->loaded($query, 'lines', 'supplies', 'importedSales') as $order) {
+            $found[(string) $order->id()] = $order;
+        }
+
+        return array_map(static fn (Ulid $id): Order => $found[(string) $id] ?? throw new NotFound('order', (string) $id), $ids);
     }
 
     public function salesWithin(DateRange $period): array
@@ -54,45 +67,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             ->andWhere('o.placedAt >= :from AND o.placedAt < :until')
             ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
-            ->getQuery());
-    }
-
-    public function firstSaleAt(): ?\DateTimeImmutable
-    {
-        return $this->saleAt('MIN');
-    }
-
-    public function lastSaleAt(): ?\DateTimeImmutable
-    {
-        return $this->saleAt('MAX');
-    }
-
-    private function saleAt(string $aggregate): ?\DateTimeImmutable
-    {
-        $moment = $this->entityManager->createQueryBuilder()
-            ->select(\sprintf('%s(o.placedAt)', $aggregate))
-            ->from(Order::class, 'o')
-            ->where('o.workspace = :workspace')
-            ->andWhere('o.refundedAt IS NULL')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return \is_string($moment) ? new \DateTimeImmutable($moment) : null;
-    }
-
-    /**
-     * @param Query<null, Order> $query
-     *
-     * @return list<Order>
-     */
-    private function loaded(Query $query): array
-    {
-        foreach (['lines', 'supplies', 'importedSales'] as $collection) {
-            $query->setFetchMode(Order::class, $collection, ClassMetadata::FETCH_EAGER);
-        }
-
-        return $query->getResult();
+            ->getQuery(), 'lines', 'importedSales');
     }
 
     public function mergeCandidatesOf(Order $order): array
@@ -108,52 +83,37 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             $query->andWhere('o.event IS NULL');
         }
 
-        return $this->loaded($query->getQuery());
-    }
-
-    private function orders(?Ulid $eventId): QueryBuilder
-    {
-        $query = $this->entityManager->createQueryBuilder()
-            ->select('o', 'e')
-            ->from(Order::class, 'o')
-            ->leftJoin('o.event', 'e')
-            ->where('o.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
-            ->orderBy('o.placedAt', 'DESC');
-
-        if (null !== $eventId) {
-            $query->andWhere('e.id = :event')->setParameter('event', $eventId, UlidType::NAME);
-        }
-
-        return $query;
+        return $this->loaded($query->getQuery(), 'lines', 'importedSales');
     }
 
     public function selling(Ulid $productId): array
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('o', 'l', 'e', 'i')
-            ->from(Order::class, 'o')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 'l', 'e')->from(Order::class, 'o'), 'o')
             ->join('o.lines', 'l')
             ->leftJoin('o.event', 'e')
-            ->leftJoin('o.importedSales', 'i')
-            ->where('o.workspace = :workspace')
             ->andWhere('o.id IN (SELECT IDENTITY(s.order) FROM '.OrderLine::class.' s WHERE s.productId = :product)')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('product', $productId, UlidType::NAME)
             ->getQuery()
             ->getResult();
     }
 
+    public function sells(Ulid $productId): bool
+    {
+        return null !== $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o.id')->from(Order::class, 'o'), 'o')
+            ->join('o.lines', 'l')
+            ->andWhere('l.productId = :product')
+            ->setParameter('product', $productId, UlidType::NAME)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function using(Ulid $supplyId): array
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('o', 's', 'e')
-            ->from(Order::class, 'o')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 's', 'e')->from(Order::class, 'o'), 'o')
             ->join('o.supplies', 's')
             ->leftJoin('o.event', 'e')
-            ->where('o.workspace = :workspace')
             ->andWhere('s.productId = :supply')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('supply', $supplyId, UlidType::NAME)
             ->getQuery()
             ->getResult();
@@ -165,13 +125,9 @@ final readonly class DoctrineOrderRepository implements OrderRepository
             return [];
         }
 
-        $ids = $this->entityManager->createQueryBuilder()
-            ->select('s.externalId')
-            ->from(ImportedSale::class, 's')
-            ->where('s.externalId IN (:ids)')
+        $ids = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('s.externalId')->from(ImportedSale::class, 's'), 's')
+            ->andWhere('s.externalId IN (:ids)')
             ->andWhere('s.source = :source')
-            ->andWhere('s.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('source', $source)
             ->setParameter('ids', $externalIds, ArrayParameterType::STRING)
             ->getQuery()
@@ -182,13 +138,9 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function awaitingSaleFees(string $source): array
     {
-        return $this->entityManager->createQueryBuilder()
-            ->select('o', 'i')
-            ->from(Order::class, 'o')
+        return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 'i')->from(Order::class, 'o'), 'o')
             ->join('o.importedSales', 'i')
-            ->where('o.workspace = :workspace')
             ->andWhere('o.id IN (SELECT IDENTITY(s.order) FROM '.ImportedSale::class.' s WHERE s.source = :source AND s.fee IS NULL)')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->setParameter('source', $source)
             ->getQuery()
             ->getResult();
@@ -196,14 +148,10 @@ final readonly class DoctrineOrderRepository implements OrderRepository
 
     public function countWithoutEventOn(Ulid $channelId): int
     {
-        return (int) $this->entityManager->createQueryBuilder()
-            ->select('COUNT(o.id)')
-            ->from(Order::class, 'o')
-            ->where('o.channel = :channel')
+        return (int) $this->scope->restrict($this->entityManager->createQueryBuilder()->select('COUNT(o.id)')->from(Order::class, 'o'), 'o')
+            ->andWhere('o.channel = :channel')
             ->andWhere('o.event IS NULL')
-            ->andWhere('o.workspace = :workspace')
             ->setParameter('channel', $channelId, UlidType::NAME)
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -212,17 +160,40 @@ final readonly class DoctrineOrderRepository implements OrderRepository
     {
         [$from, $until] = SalePeriodBounds::of($period);
 
-        return (int) $this->entityManager->createQueryBuilder()
-            ->select('COUNT(o.id)')
-            ->from(Order::class, 'o')
-            ->where('o.event = :event')
-            ->andWhere('o.workspace = :workspace')
-            ->setParameter('workspace', $this->workspace->current()->id(), UlidType::NAME)
+        return (int) $this->scope->restrict($this->entityManager->createQueryBuilder()->select('COUNT(o.id)')->from(Order::class, 'o'), 'o')
+            ->andWhere('o.event = :event')
             ->andWhere('o.placedAt < :from OR o.placedAt >= :until')
             ->setParameter('event', $eventId, UlidType::NAME)
             ->setParameter('from', $from, Types::DATETIMETZ_IMMUTABLE)
             ->setParameter('until', $until, Types::DATETIMETZ_IMMUTABLE)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    private function orders(?Ulid $eventId): QueryBuilder
+    {
+        $query = $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 'e')->from(Order::class, 'o'), 'o')
+            ->leftJoin('o.event', 'e')
+            ->orderBy('o.placedAt', 'DESC');
+
+        if (null !== $eventId) {
+            $query->andWhere('e.id = :event')->setParameter('event', $eventId, UlidType::NAME);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param Query<null, Order> $query
+     *
+     * @return list<Order>
+     */
+    private function loaded(Query $query, string ...$collections): array
+    {
+        foreach ($collections as $collection) {
+            $query->setFetchMode(Order::class, $collection, ClassMetadata::FETCH_EAGER);
+        }
+
+        return $query->getResult();
     }
 }

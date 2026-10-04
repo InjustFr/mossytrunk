@@ -9,14 +9,14 @@ use Symfony\Component\Uid\Ulid;
 final readonly class SalesByProduct
 {
     /**
-     * @param array<string, ProductSales> $products keyed by product id
+     * @param array<string, ProductSales> $products
      */
     private function __construct(private array $products)
     {
     }
 
     /**
-     * @param list<ProductSales> $sales one per product
+     * @param list<ProductSales> $sales
      */
     public static function of(array $sales): self
     {
@@ -36,7 +36,7 @@ final readonly class SalesByProduct
     }
 
     /**
-     * @return list<ProductSales> best sales first
+     * @return list<ProductSales>
      */
     public function ranked(): array
     {

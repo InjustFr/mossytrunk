@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reference;
 
-use App\Domain\Shared\DateRange;
+use App\Domain\Shared\BusinessTime;
 
 final readonly class ReferenceSubject
 {
@@ -17,16 +17,11 @@ final readonly class ReferenceSubject
 
     public static function at(\DateTimeImmutable $moment): self
     {
-        return new self(self::local($moment), '', '');
+        return new self(BusinessTime::local($moment), '', '');
     }
 
     public static function named(\DateTimeImmutable $moment, string $typeCode, string $nameCode): self
     {
-        return new self(self::local($moment), $typeCode, $nameCode);
-    }
-
-    private static function local(\DateTimeImmutable $moment): \DateTimeImmutable
-    {
-        return $moment->setTimezone(new \DateTimeZone(DateRange::TIMEZONE));
+        return new self(BusinessTime::local($moment), $typeCode, $nameCode);
     }
 }

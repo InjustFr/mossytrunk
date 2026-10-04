@@ -7,15 +7,9 @@ namespace App\Domain\Shared;
 use App\Domain\Shared\Exception\DateRangeEndsBeforeStart;
 use Doctrine\ORM\Mapping as ORM;
 
-/**
- * Inclusive range of whole calendar days in the business time zone (Europe/Paris).
- * A moment is covered when its local date falls between start and end dates.
- */
 #[ORM\Embeddable]
 final readonly class DateRange
 {
-    public const string TIMEZONE = 'Europe/Paris';
-
     private function __construct(
         #[ORM\Column(type: 'date_immutable')]
         private \DateTimeImmutable $start,
@@ -26,8 +20,8 @@ final readonly class DateRange
 
     public static function fromDates(\DateTimeImmutable $start, \DateTimeImmutable $end): self
     {
-        $start = self::toDay($start);
-        $end = self::toDay($end);
+        $start = BusinessTime::midnightOf($start);
+        $end = BusinessTime::midnightOf($end);
 
         if ($end < $start) {
             throw new DateRangeEndsBeforeStart();
@@ -38,9 +32,7 @@ final readonly class DateRange
 
     public static function year(int $year): self
     {
-        $timezone = new \DateTimeZone(self::TIMEZONE);
-
-        return new self(new \DateTimeImmutable(\sprintf('%04d-01-01', $year), $timezone), new \DateTimeImmutable(\sprintf('%04d-12-31', $year), $timezone));
+        return new self(BusinessTime::at(\sprintf('%04d-01-01', $year)), BusinessTime::at(\sprintf('%04d-12-31', $year)));
     }
 
     public function start(): \DateTimeImmutable
@@ -60,45 +52,23 @@ final readonly class DateRange
 
     public static function yearOf(\DateTimeImmutable $moment): int
     {
-        return (int) self::toDay($moment)->format('Y');
+        return (int) BusinessTime::local($moment)->format('Y');
     }
 
     public function covers(\DateTimeImmutable $moment): bool
     {
-        $day = self::toDay($moment)->format('Y-m-d');
+        $day = BusinessTime::day($moment);
 
         return $day >= $this->start->format('Y-m-d') && $day <= $this->end->format('Y-m-d');
     }
 
-    /**
-     * True when the whole range is after the moment's local day.
-     */
     public function isAfter(\DateTimeImmutable $moment): bool
     {
-        return $this->start->format('Y-m-d') > self::toDay($moment)->format('Y-m-d');
+        return $this->start->format('Y-m-d') > BusinessTime::day($moment);
     }
 
-    /**
-     * True when the whole range is before the moment's local day.
-     */
     public function isBefore(\DateTimeImmutable $moment): bool
     {
-        return $this->end->format('Y-m-d') < self::toDay($moment)->format('Y-m-d');
-    }
-
-    public function overlaps(self $other): bool
-    {
-        return $this->start->format('Y-m-d') <= $other->end->format('Y-m-d')
-            && $other->start->format('Y-m-d') <= $this->end->format('Y-m-d');
-    }
-
-    /**
-     * Midnight of the moment's local date in the business time zone.
-     */
-    private static function toDay(\DateTimeImmutable $moment): \DateTimeImmutable
-    {
-        $local = $moment->setTimezone(new \DateTimeZone(self::TIMEZONE));
-
-        return new \DateTimeImmutable($local->format('Y-m-d'), new \DateTimeZone(self::TIMEZONE));
+        return $this->end->format('Y-m-d') < BusinessTime::day($moment);
     }
 }

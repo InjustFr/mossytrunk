@@ -3,7 +3,7 @@
 At the end of an event the user wants to know what was sold, what was spent and what is left.
 The report is **computed on the fly** from the event and its orders — nothing is stored.
 
-Model: `src/Domain/Reporting/EventResult.php`, `SalesFigures.php` (formula shared with the [dashboard](dashboard.md)), `UrssafContribution.php`, `ProductSales.php`;
+Model: `src/Domain/Reporting/SalesFigures.php` (formula shared with the [dashboard](dashboard.md)), `UrssafContribution.php`, `ProductSales.php`;
 use case `GetEventReport` → `GET /api/events/{id}/report`; UI: report card on `/events/{id}` (`EventReport.vue`).
 
 ## Formula
@@ -22,12 +22,12 @@ result (Résultat)  = turnover − cost of goods − supplies − supplies consu
 
 | # | Rule | Where | Tests |
 |---|---|---|---|
-| R1 | URSSAF contributions are **12.8 % of the turnover** (after discounts), micro-entrepreneur flat rate for selling goods. The rate lives in one constant | `UrssafContribution::RATE_BASIS_POINTS` | `EventResultTest`, `MoneyTest` |
-| R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A cost of 0 means *unknown* (product never bought) and is flagged with a warning icon | `EventResult::productSales()` | `EventResultTest` |
+| R1 | URSSAF contributions are **12.8 % of the turnover** (after discounts), micro-entrepreneur flat rate for selling goods. The rate lives in one constant | `UrssafContribution::RATE_BASIS_POINTS` | `EventFiguresTest`, `MoneyTest` |
+| R2 | Cost of goods uses the cost of the units **taken from stock at the time of sale** (oldest lot first, see [stock.md](stock.md)). A cost of 0 means *unknown* (product never bought) and is flagged with a warning icon | `ProductSalesLedger::ofEvent()`, `OrderRecap` | `EventReportTest`, `OrderRecapTest` |
 | R3 | Only the event's own orders count | `GetEventReportHandler` | `EventReportTest` |
-| R4 | The result can be negative (loss) | `EventResult` | `EventResultTest` |
+| R4 | The result can be negative (loss) | `SalesFigures::of()` | `EventFiguresTest` |
 | R5 | Supplies and channel costs of the event's orders lower the result; they do not change the turnover nor URSSAF (rows shown only when not zero) | `SalesFigures::of()` | `ChannelCostTest` |
-| R6 | Supplies found missing at the event's inventories (flyers, giveaways) are consumed by the event: « Fournitures consommées (inventaire) » lowers its result, in the list of events and the dashboard too (month the event starts, like its expenses) | `ConsumedSupplies`, `EventResult::of()`, `MonthlyResults::of()` | `StockUseCasesTest` |
+| R6 | Supplies found missing at the event's inventories (flyers, giveaways) are consumed by the event: « Fournitures consommées (inventaire) » lowers its result, in the list of events and the dashboard too (month the event starts, like its expenses) | `ConsumedSupplies`, `GetEventReportHandler`, `MonthlyResults::of()` | `StockUseCasesTest` |
 
 ## Display (visual grouping only — not domain concepts)
 
