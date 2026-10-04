@@ -55,7 +55,7 @@ jobs:
         with:
           name: ci-build
 
-      - run: make ci-unbundle
+      - run: make ci-unbundle ci-warmup
 
       - run: make -j4 --output-sync=target ci-checks
 

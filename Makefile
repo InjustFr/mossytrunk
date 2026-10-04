@@ -20,7 +20,7 @@ export E2E_ASSETS_DIR
 OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-up ci-build ci-bundle ci-unbundle ci-checks ci-e2e image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-up ci-build ci-bundle ci-unbundle ci-warmup ci-checks ci-e2e image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -110,9 +110,10 @@ ci-build: ci-up ## Install PHP and JS dependencies and build the production asse
 ci-bundle: ## Pack what ci-build produced for the CI test jobs (CI_BUNDLE)
 	tar -czf $(CI_BUNDLE) vendor public/build $(wildcard public/bundles)
 
-ci-unbundle: ## Unpack the ci-build output (CI_BUNDLE) and start the stack
+ci-unbundle: ## Unpack the ci-build output (CI_BUNDLE)
 	tar -xzf $(CI_BUNDLE)
-	$(MAKE) ci-up
+
+ci-warmup: ci-up ## Start the dev stack and warm its cache (PHPStan reads the dev container)
 	$(CONSOLE) cache:warmup
 
 ci-e2e: ## Playwright on the production build (PLAYWRIGHT_ARGS to pick projects or a shard)
