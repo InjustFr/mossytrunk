@@ -195,6 +195,13 @@ class Design
         return array_values(array_filter($this->declinations(), static fn (Declination $declination): bool => !$declination->isProduced()));
     }
 
+    public function isReadyToValidate(): bool
+    {
+        $pending = $this->pendingDeclinations();
+
+        return [] !== $pending && [] === array_filter($pending, static fn (Declination $declination): bool => [] !== $declination->pendingAdaptations());
+    }
+
     public function hasProducts(): bool
     {
         return \count($this->pendingDeclinations()) < \count($this->declinations());

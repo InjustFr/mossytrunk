@@ -33,13 +33,15 @@ final readonly class ListDesignsHandler
         return new DesignBoard(
             array_map(static function (DesignCollection $collection) use ($byCollection): array {
                 $designs = $byCollection[(string) $collection->id()] ?? [];
+                $open = array_filter($designs, static fn (Design $design): bool => !$design->isValidated());
 
                 return [
                     'id' => (string) $collection->id(),
                     'name' => $collection->name(),
                     'description' => $collection->description(),
                     'current' => $collection->isCurrent(),
-                    'validated' => [] !== $designs && [] === array_filter($designs, static fn (Design $design): bool => !$design->isValidated()),
+                    'validated' => [] !== $designs && [] === $open,
+                    'readyToValidate' => [] !== $open && [] === array_filter($open, static fn (Design $design): bool => !$design->isReadyToValidate()),
                     'designs' => array_map(DesignView::of(...), $designs),
                 ];
             }, $this->collections->all()),

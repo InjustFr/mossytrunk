@@ -20,6 +20,6 @@ final readonly class ProductDetailPageController
 
     public function __invoke(string $id): Response
     {
-        return $this->page->render('ProductDetailPage', 'product', ['productId' => $id], preload: ["/api/products/$id", '/api/gabarits', '/api/designs', '/api/product-types', "/api/products/$id/stock", '/api/sales-channels']);
+        return $this->page->render('ProductDetailPage', 'product', ['productId' => $id], preload: ["/api/products/$id", '/api/product-types', "/api/products/$id/stock", '/api/sales-channels']);
     }
 }

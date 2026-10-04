@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Presentation\Web\Page;
 
+use App\Domain\Integration\ServiceConnection;
+use App\Domain\Integration\ServiceConnectionRepository;
 use App\Presentation\Web\VuePage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\AsController;
@@ -15,7 +17,7 @@ use Symfony\Component\Routing\Requirement\Requirement;
 #[Route('/orders', name: 'orders', methods: ['GET'])]
 final readonly class OrdersPageController
 {
-    public function __construct(private VuePage $page)
+    public function __construct(private VuePage $page, private ServiceConnectionRepository $connections)
     {
     }
 
@@ -23,6 +25,8 @@ final readonly class OrdersPageController
     {
         $orders = null === $event ? '/api/orders' : "/api/orders?eventId=$event";
 
-        return $this->page->render('OrdersPage', 'orders', preload: [$orders, '/api/products', '/api/events', '/api/services', '/api/sales-channels']);
+        $items = array_map(static fn (ServiceConnection $connection): string => "/api/services/{$connection->service()}/items", $this->connections->all());
+
+        return $this->page->render('OrdersPage', 'orders', preload: [$orders, '/api/products', '/api/events', '/api/services', '/api/sales-channels', ...$items]);
     }
 }

@@ -72,6 +72,22 @@ final class DesignTest extends TestCase
         self::assertSame(['Détourage'], $declination->pendingAdaptations());
     }
 
+    public function testADesignIsReadyToValidateOnceEveryPendingDeclinationIsAdapted(): void
+    {
+        $design = Design::start(TestWorkspace::get(), 'Forêt');
+        self::assertFalse($design->isReadyToValidate());
+        $declination = $design->decline($this->glossy);
+        self::assertFalse($design->isReadyToValidate());
+
+        $design->tick($declination->id(), 'Détourage', true);
+
+        self::assertTrue($design->isReadyToValidate());
+        foreach ($design->validate(new \DateTimeImmutable()) as $produced) {
+            $produced->linkProduct(new Ulid());
+        }
+        self::assertFalse($design->isReadyToValidate());
+    }
+
     public function testValidationNeedsADeclination(): void
     {
         $this->expectException(InvalidDesign::class);
