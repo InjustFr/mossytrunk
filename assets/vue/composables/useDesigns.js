@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useApi } from './useApi.js';
 
 export function useGabarits() {
@@ -56,4 +56,12 @@ export function useDesign(designId) {
         tick: (declinationId, adaptation, done) => api.put(`${base}/declinations/${declinationId}/adaptations`, { adaptation, done }),
         validate: () => api.post(`${base}/validation`),
     };
+}
+
+export function useDesignProgress(design) {
+    const pending = computed(() => design.value?.declinations.filter((declination) => !declination.productId) ?? []);
+    const hasProducts = computed(() => (design.value?.declinations.length ?? 0) > pending.value.length);
+    const ready = computed(() => design.value?.readyToValidate ?? false);
+
+    return { pending, hasProducts, ready };
 }

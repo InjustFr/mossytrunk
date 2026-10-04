@@ -2,9 +2,10 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Download } from '@lucide/vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import { formatDate, localDay } from '../../composables/useDate.js';
 
 const props = defineProps({
@@ -32,9 +33,9 @@ const ready = computed(() => Boolean(range.value.from && range.value.to));
 
 <template>
     <div class="orders-export">
-        <ToggleGroupRoot :model-value="choice" type="single" class="orders-export__presets" :aria-label="t('accounting.export.label')" @update:model-value="(value) => value && (choice = value)">
+        <ChoiceGroup v-model="choice" class="orders-export__presets" :aria-label="t('accounting.export.label')">
             <ToggleGroupItem v-for="(preset, key) in presets" :key="key" :value="key" class="chip">{{ t(preset.label) }}</ToggleGroupItem>
-        </ToggleGroupRoot>
+        </ChoiceGroup>
         <div v-if="choice === 'custom'" class="orders-export__custom">
             <BaseDateRangePicker v-model:start="customFrom" v-model:end="customTo" :aria-label="t('accounting.export.custom')" />
         </div>

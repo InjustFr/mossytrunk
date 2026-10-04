@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Plus, Trash2, X } from '@lucide/vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
@@ -9,6 +9,7 @@ import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormDisclosure from '../ui/FormDisclosure.vue';
 import FormError from '../ui/FormError.vue';
@@ -17,6 +18,7 @@ import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 import { describePeriod, describeRange, pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatDate } from '../../composables/useDate.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     rule: { type: Object, default: null },
@@ -36,25 +38,18 @@ const ACTIONS = [
 const emptyTarget = () => ({ kind: 'type', id: '', variant: '' });
 const emptyCondition = () => ({ quantity: 1, targets: [emptyTarget()] });
 const emptyForm = () => ({ name: '', conditions: [emptyCondition()], actionKind: 'fixedPrice', amount: null, percent: null, startsOn: '', endsOn: '' });
-const form = reactive(emptyForm());
-const errors = ref({});
-const saving = ref(false);
+const fromRule = (rule) => ({
+    name: rule.name,
+    conditions: rule.conditions.map(({ quantity, targets }) => ({ quantity, targets: targets.map(({ kind, id, variant }) => ({ kind, id, variant: variant ?? '' })) })),
+    actionKind: rule.action.kind,
+    amount: rule.action.kind === 'percentOff' ? null : rule.action.value,
+    percent: rule.action.kind === 'percentOff' ? rule.action.value / 100 : null,
+    startsOn: rule.startsOn ?? '',
+    endsOn: rule.endsOn ?? '',
+});
+const form = reactive(props.rule ? fromRule(props.rule) : emptyForm());
+const { saving, errors, run } = useFormSubmit();
 const isEditing = computed(() => props.rule !== null);
-
-watch(() => props.rule, (rule) => {
-    Object.assign(form, rule
-        ? {
-            name: rule.name,
-            conditions: rule.conditions.map(({ quantity, targets }) => ({ quantity, targets: targets.map(({ kind, id, variant }) => ({ kind, id, variant: variant ?? '' })) })),
-            actionKind: rule.action.kind,
-            amount: rule.action.kind === 'percentOff' ? null : rule.action.value,
-            percent: rule.action.kind === 'percentOff' ? rule.action.value / 100 : null,
-            startsOn: rule.startsOn ?? '',
-            endsOn: rule.endsOn ?? '',
-        }
-        : emptyForm());
-    errors.value = {};
-}, { immediate: true });
 
 const offered = (subjects, target) => subjects.filter((subject) => !subject.archived || subject.id === target.id);
 const productOptions = (target) => offered(props.products, target).map((product) => ({ value: product.id, label: product.displayName }));
@@ -121,9 +116,7 @@ function removeCondition(index) {
 }
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({
             name: form.name,
             conditions: form.conditions.map((condition) => ({
@@ -138,11 +131,7 @@ async function onSubmit() {
         if (!isEditing.value) {
             Object.assign(form, emptyForm());
         }
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -222,15 +211,9 @@ async function onSubmit() {
             </FormSection>
 
             <FormSection :title="t('discounts.form.action')">
-                <ToggleGroupRoot
-                    :model-value="form.actionKind"
-                    type="single"
-                    class="discount-rule-form__kinds"
-                    :aria-label="t('discounts.form.actionKind')"
-                    @update:model-value="(kind) => kind && (form.actionKind = kind)"
-                >
+                <ChoiceGroup v-model="form.actionKind" class="discount-rule-form__kinds" :aria-label="t('discounts.form.actionKind')">
                     <ToggleGroupItem v-for="option in ACTIONS" :key="option.value" :value="option.value" class="chip">{{ t(option.label) }}</ToggleGroupItem>
-                </ToggleGroupRoot>
+                </ChoiceGroup>
                 <FormField v-if="form.actionKind === 'percentOff'" as="group" :label="valueLabel" :error="errors['action.value'] ?? errors['action.kind']">
                     <span class="discount-rule-form__value">
                         <BaseNumberField v-model="form.percent" :min="0" :max="100" :step="0.5" :label="valueLabel" />
@@ -261,8 +244,8 @@ async function onSubmit() {
             </FormDisclosure>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('discounts.form.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('discounts.form.save') : t('discounts.form.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('common.save') : t('discounts.form.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

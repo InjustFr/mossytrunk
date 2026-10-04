@@ -12,10 +12,7 @@
     "name": "Nom",
     "namePlaceholder": "Ex. Boutique Etsy",
     "service": "Service lié",
-    "noService": "Aucun",
     "serviceHint": "Les ventes importées de ce service sont comptées à ses prix.",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
     "create": "Ajouter le canal",
     "created": "Canal « {name} » ajouté.",
     "updated": "Canal « {name} » modifié.",
@@ -40,7 +37,6 @@
     "detail": {
         "back": "Canaux de vente",
         "fallbackTitle": "Canal de vente",
-        "edit": "Modifier",
         "settings": "Réglages",
         "kind": "Type",
         "service": "Service lié"
@@ -58,8 +54,6 @@
         "editTitle": "Prix de {name} sur {channel}",
         "amount": "Prix",
         "follow": "Suivre le prix {main}",
-        "save": "Enregistrer",
-        "cancel": "Annuler",
         "saved": "Prix de {name} enregistré.",
         "batch": "Modifier les prix affichés",
         "batchTitle": "Modifier les prix de {channel}",
@@ -92,8 +86,6 @@
             "percent": "% de la commande"
         },
         "amount": "Montant",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "added": "Frais « {label} » ajouté.",
         "updated": "Frais « {label} » modifié.",
         "removed": "Frais « {label} » supprimé.",

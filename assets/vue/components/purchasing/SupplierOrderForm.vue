@@ -1,10 +1,11 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { ToggleGroupItem } from 'reka-ui';
 import BaseModal from '../ui/BaseModal.vue';
 import ProductForm from '../products/ProductForm.vue';
 import { useProducts } from '../../composables/useProducts.js';
 import { useToast } from '../../composables/useToast.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { X } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -12,6 +13,7 @@ import BaseDatePicker from '../ui/BaseDatePicker.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import { formatCents } from '../../composables/useMoney.js';
 import FormActions from '../ui/FormActions.vue';
 import FormError from '../ui/FormError.vue';
@@ -37,9 +39,19 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 
 const blank = () => ({ supplierId: '', orderedOn: localDay(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0, currency: 'EUR', exchangeRate: 1 });
-const form = reactive(blank());
-const errors = ref({});
-const saving = ref(false);
+const fromOrder = (order) => ({
+    supplierId: order.supplier.id,
+    orderedOn: order.orderedOn,
+    receivedOn: order.receivedOn,
+    supplierReference: order.supplierReference ?? '',
+    lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice, receivedQuantity }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice, received: receivedQuantity })),
+    discount: order.discount,
+    deliveryFees: order.deliveryFees,
+    currency: order.currency,
+    exchangeRate: order.exchangeRate,
+});
+const form = reactive(props.order ? fromOrder(props.order) : blank());
+const { saving, errors, run } = useFormSubmit();
 const received = computed(() => props.order?.status === 'received');
 const picker = ref(null);
 const productOpen = ref(false);
@@ -58,23 +70,6 @@ async function onProductCreated(name) {
     picker.value?.choose(createdId);
 }
 
-watch(() => props.order, (order) => {
-    Object.assign(form, order
-        ? {
-            supplierId: order.supplier.id,
-            orderedOn: order.orderedOn,
-            receivedOn: order.receivedOn,
-            supplierReference: order.supplierReference ?? '',
-            lines: order.lines.map(({ productId, variant, label, orderedQuantity, totalPrice, receivedQuantity }) => ({ productId, variant, label, quantity: orderedQuantity, totalPrice, received: receivedQuantity })),
-            discount: order.discount,
-            deliveryFees: order.deliveryFees,
-            currency: order.currency,
-            exchangeRate: order.exchangeRate,
-        }
-        : blank());
-    errors.value = {};
-}, { immediate: true });
-
 const BY_DISCOUNT = 'discount';
 const BY_PAID = 'paid';
 const adjustBy = ref(BY_DISCOUNT);
@@ -88,7 +83,9 @@ const total = computed(() => beforeDiscount.value - discount.value);
 const landed = computed(() => landedCosts(form.lines, discount.value, form.deliveryFees));
 
 const DRAFT_KEY = 'mossytrunk.supplier-order-draft';
+const DRAFT_DELAY = 300;
 const draftRestored = ref(false);
+let draftTimer = null;
 
 function readDraft() {
     try {
@@ -125,9 +122,26 @@ onMounted(() => {
     draftRestored.value = true;
 });
 
+function cancelDraftSave() {
+    clearTimeout(draftTimer);
+    draftTimer = null;
+}
+
+function saveDraft() {
+    cancelDraftSave();
+    writeDraft({ form, adjustBy: adjustBy.value, paid: paid.value });
+}
+
 watch([form, adjustBy, paid], () => {
-    if (!props.order) writeDraft({ form: JSON.parse(JSON.stringify(form)), adjustBy: adjustBy.value, paid: paid.value });
+    if (props.order) return;
+    cancelDraftSave();
+    draftTimer = setTimeout(saveDraft, DRAFT_DELAY);
 }, { deep: true });
+
+onBeforeUnmount(() => {
+    if (draftTimer !== null) saveDraft();
+});
+
 const dollars = computed(() => form.currency === 'USD');
 const rate = computed(() => (dollars.value ? form.exchangeRate ?? 0 : 1));
 const inEuros = (cents) => Math.round(cents * rate.value);
@@ -151,9 +165,7 @@ async function onSubmit() {
         errors.value = { paid: t('purchasing.form.paidTooHigh') };
         return;
     }
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({
             supplierId: form.supplierId,
             orderedOn: form.orderedOn,
@@ -165,16 +177,12 @@ async function onSubmit() {
             currency: form.currency,
             exchangeRate: dollars.value ? form.exchangeRate ?? 0 : 1,
         });
-        if (!props.order) writeDraft(null);
-        emit('saved');
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { form: error.message };
+        if (!props.order) {
+            cancelDraftSave();
+            writeDraft(null);
         }
-    } finally {
-        saving.value = false;
-    }
+        emit('saved');
+    });
 }
 </script>
 
@@ -192,19 +200,19 @@ async function onSubmit() {
                     <SupplierSelect v-model="form.supplierId" :suppliers="suppliers" :save="saveSupplier" />
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.orderedOn')" :error="errors.orderedOn">
-                    <div class="supplier-order-form__date"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
+                    <div class="control--short"><BaseDatePicker v-model="form.orderedOn" :aria-label="t('purchasing.form.orderedOn')" /></div>
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.currency')" :error="errors.currency">
-                    <BaseSelect v-model="form.currency" :options="currencyOptions" :aria-label="t('purchasing.form.currency')" class="supplier-order-form__currency" />
+                    <BaseSelect v-model="form.currency" :options="currencyOptions" :aria-label="t('purchasing.form.currency')" class="control--short" />
                 </FormField>
                 <FormField v-if="dollars" as="group" :label="t('purchasing.form.exchangeRate')" :error="errors.exchangeRate" :hint="t('purchasing.form.exchangeRateHint')">
-                    <BaseNumberField v-model="form.exchangeRate" :min="0" :step="0.01" :format-options="rateFormat" :label="t('purchasing.form.exchangeRate')" class="supplier-order-form__money" />
+                    <BaseNumberField v-model="form.exchangeRate" :min="0" :step="0.01" :format-options="rateFormat" :label="t('purchasing.form.exchangeRate')" class="control--short" />
                 </FormField>
                 <FormField v-if="received" as="group" :label="t('purchasing.form.receivedOn')" :error="errors.receivedOn">
-                    <div class="supplier-order-form__date"><BaseDatePicker v-model="form.receivedOn" :aria-label="t('purchasing.form.receivedOn')" /></div>
+                    <div class="control--short"><BaseDatePicker v-model="form.receivedOn" :aria-label="t('purchasing.form.receivedOn')" /></div>
                 </FormField>
                 <FormField :label="t('purchasing.form.supplierReference')" :error="errors.supplierReference" :hint="t('purchasing.form.supplierReferenceHint')" optional>
-                    <input v-model="form.supplierReference" type="text" maxlength="100" autocomplete="off" class="supplier-order-form__reference">
+                    <input v-model="form.supplierReference" type="text" maxlength="100" autocomplete="off" class="control--medium">
                 </FormField>
             </FormSection>
 
@@ -248,26 +256,20 @@ async function onSubmit() {
 
             <FormSection :title="t('purchasing.form.extras')" :description="t('purchasing.form.extrasHint')">
                 <FormField :label="t('purchasing.form.deliveryFees')" :error="errors.deliveryFees">
-                    <BaseMoneyField v-model="form.deliveryFees" :currency="form.currency" class="supplier-order-form__money" />
+                    <BaseMoneyField v-model="form.deliveryFees" :currency="form.currency" class="control--short" />
                 </FormField>
                 <FormField as="group" :label="t('purchasing.form.adjustBy')">
-                    <ToggleGroupRoot
-                        :model-value="adjustBy"
-                        type="single"
-                        class="supplier-order-form__adjust"
-                        :aria-label="t('purchasing.form.adjustBy')"
-                        @update:model-value="(value) => value && (adjustBy = value)"
-                    >
+                    <ChoiceGroup v-model="adjustBy" class="supplier-order-form__adjust" :aria-label="t('purchasing.form.adjustBy')">
                         <ToggleGroupItem :value="BY_DISCOUNT" class="supplier-order-form__adjust-mode">{{ t('purchasing.form.byDiscount') }}</ToggleGroupItem>
                         <ToggleGroupItem :value="BY_PAID" class="supplier-order-form__adjust-mode">{{ t('purchasing.form.byPaid') }}</ToggleGroupItem>
-                    </ToggleGroupRoot>
+                    </ChoiceGroup>
                 </FormField>
                 <FormField v-if="adjustBy === BY_DISCOUNT" :label="t('purchasing.form.discount')" :error="errors.discount">
-                    <BaseMoneyField v-model="form.discount" :currency="form.currency" class="supplier-order-form__money" />
+                    <BaseMoneyField v-model="form.discount" :currency="form.currency" class="control--short" />
                 </FormField>
                 <template v-else>
                     <FormField :label="t('purchasing.form.paid')" :error="errors.paid ?? (paidTooHigh ? t('purchasing.form.paidTooHigh') : null)" :hint="t('purchasing.form.paidHint')">
-                        <BaseMoneyField v-model="paid" :currency="form.currency" class="supplier-order-form__money" />
+                        <BaseMoneyField v-model="paid" :currency="form.currency" class="control--short" />
                     </FormField>
                     <p class="supplier-order-form__deduced">{{ t('purchasing.form.discountFromPaid') }} <MoneyAmount :cents="discount" :currency="form.currency" /></p>
                 </template>
@@ -276,8 +278,8 @@ async function onSubmit() {
             </FormSection>
 
             <FormActions sticky>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('purchasing.form.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ order ? t('purchasing.form.save') : t('purchasing.form.place') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ order ? t('common.save') : t('purchasing.form.place') }}</BaseButton>
             </FormActions>
         </fieldset>
         <BaseModal v-model:open="productOpen" :title="t('purchasing.form.newProductTitle')">
@@ -288,9 +290,6 @@ async function onSubmit() {
 
 <style scoped>
 .supplier-order-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.supplier-order-form__date,
-.supplier-order-form__money { max-width: 11rem; }
-.supplier-order-form .supplier-order-form__reference { max-width: 16rem; }
 .supplier-order-form__lines,
 .supplier-order-form__lines tbody,
 .supplier-order-form__lines tfoot { display: block; }
@@ -345,7 +344,6 @@ async function onSubmit() {
 
 .supplier-order-form__total strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 400; color: var(--color-ink); font-variant-numeric: tabular-nums; }
 .supplier-order-form__draft { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-accent-soft); font-size: var(--font-size-md); }
-.supplier-order-form :deep(.supplier-order-form__currency) { max-width: 11rem; }
 .supplier-order-form__in-euros { color: var(--color-muted); font-size: var(--font-size-sm); }
 .supplier-order-form__deduced { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .supplier-order-form__adjust { display: inline-flex; align-self: flex-start; border: 0.0625rem solid var(--color-border-strong); border-radius: var(--radius); overflow: hidden; }

@@ -16,12 +16,24 @@ function dismiss(id) {
     }
 }
 
+async function attempt(action, successMessage = null) {
+    try {
+        await action();
+        if (successMessage) push('success', successMessage);
+        return true;
+    } catch (error) {
+        push('error', error.message);
+        return false;
+    }
+}
+
 export function useToast() {
     return {
         toasts: state.toasts,
         success: (message) => push('success', message),
         error: (message) => push('error', message),
         info: (message) => push('info', message),
+        attempt,
         dismiss,
     };
 }

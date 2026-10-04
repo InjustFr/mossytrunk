@@ -47,8 +47,6 @@
         "validFrom": "Début de validité",
         "endsOn": "Fin",
         "validUntil": "Fin de validité",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "create": "Créer la remise",
         "or": "ou",
         "addTarget": "Ajouter un produit ou un type",

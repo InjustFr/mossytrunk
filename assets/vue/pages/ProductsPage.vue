@@ -24,12 +24,13 @@ import { useProductTypes } from '../composables/useProductTypes.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useServices } from '../composables/useServices.js';
 import { useStock } from '../composables/useStock.js';
+import { useModalTarget } from '../composables/useModalTarget.js';
 import { useToast } from '../composables/useToast.js';
 import { typeColors } from '../composables/useTypeColor.js';
 
 const { products, activeProducts, load, create, update, batchUpdate, removeSelected, moveVariant, remove, archive, restore } = useProducts();
 const { types, activeTypes, load: loadTypes, allVariantsOf } = useProductTypes();
-const filters = useProductFilters(products);
+const filters = useProductFilters(products, types, activeTypes);
 const toast = useToast();
 const { t } = useI18n();
 const { restock } = useStock();
@@ -39,19 +40,11 @@ const colors = computed(() => typeColors(types.value));
 const modalOpen = ref(false);
 const typesOpen = ref(false);
 const batchOpen = ref(false);
-const moving = ref(null);
-const moveOpen = computed({ get: () => moving.value !== null, set: (open) => { if (!open) moving.value = null; } });
+const { target: moving, open: moveOpen } = useModalTarget();
 const editing = ref(null);
-const restocking = ref(null);
-const restockOpen = computed({ get: () => restocking.value !== null, set: (open) => { if (!open) restocking.value = null; } });
-const viewingStock = ref(null);
-const historyOpen = computed({ get: () => viewingStock.value !== null, set: (open) => { if (!open) viewingStock.value = null; } });
+const { target: restocking, open: restockOpen } = useModalTarget();
+const { target: viewingStock, open: historyOpen } = useModalTarget();
 
-const typesOfKind = computed(() => {
-    const used = new Set(products.value.filter((product) => product.kind === filters.kind.value).map((product) => product.typeId));
-    const unused = new Set(products.value.map((product) => product.typeId));
-    return (filters.archived.value ? types.value : activeTypes.value).filter((type) => used.has(type.id) || !unused.has(type.id));
-});
 const shownPotential = computed(() => sumPotential(filters.filtered.value));
 const creatingSupply = computed(() => filters.kind.value === KINDS.supply);
 const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : creatingSupply.value ? 'products.page.newSupply' : 'products.page.new'));
@@ -92,24 +85,20 @@ async function onRestocked({ quantity, variant }) {
 }
 
 async function onRemove(product) {
-    try {
-        await remove(product.id);
-        toast.success(t('products.toast.removed', { name: product.displayName }));
+    if (await toast.attempt(() => remove(product.id), t('products.toast.removed', { name: product.displayName }))) {
         filters.selectedIds.value = filters.selectedIds.value.filter((id) => id !== product.id);
         await load();
-    } catch (error) {
-        toast.error(error.message);
     }
 }
 
 async function onRemoveSelected() {
-    try {
+    const removed = await toast.attempt(async () => {
         const { deleted } = await removeSelected(filters.selectedIds.value);
         toast.success(t('products.toast.selectionRemoved', deleted));
+    });
+    if (removed) {
         filters.clearSelection();
         await load();
-    } catch (error) {
-        toast.error(error.message);
     }
 }
 
@@ -173,7 +162,7 @@ onMounted(() => Promise.all([load(), loadTypes(), services.load(), loadChannels(
                 v-model:missing-cost="filters.missingCost.value"
                 v-model:low-stock="filters.lowStock.value"
                 :low-stock-count="filters.lowStockCount.value"
-                :types="typesOfKind"
+                :types="filters.typesOfKind.value"
                 :missing-cost-count="filters.missingCostCount.value"
                 :type-colors="colors"
             />

@@ -9,6 +9,7 @@ import FieldError from '../ui/FieldError.vue';
 const props = defineProps({
     item: { type: Object, required: true },
     products: { type: Array, required: true },
+    productOptions: { type: Array, required: true },
     submit: { type: Function, required: true },
 });
 const emit = defineEmits(['linked']);
@@ -20,7 +21,6 @@ const error = ref(null);
 const saving = ref(false);
 
 const product = computed(() => props.products.find((p) => p.id === productId.value) ?? null);
-const productOptions = computed(() => props.products.map((p) => ({ value: p.id, label: p.displayName })));
 const variantOptions = computed(() => (product.value?.variants ?? []).map((v) => ({ value: v, label: v })));
 
 watch(productId, () => {
@@ -61,7 +61,7 @@ const itemName = computed(() => (props.item.variation ? `${props.item.label} —
         <div class="external-item__target">
             <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('import.row.productPlaceholder')" :aria-label="t('import.row.productFor', { item: itemName })" />
             <BaseSelect v-if="variantOptions.length" v-model="variant" :options="variantOptions" :placeholder="t('import.row.variantPlaceholder')" :aria-label="t('import.row.variantFor', { item: itemName })" />
-            <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? t('import.row.edit') : t('import.row.link') }}</BaseButton>
+            <BaseButton :variant="item.linkedTo ? 'ghost' : 'secondary'" :loading="saving" @click="onLink">{{ item.linkedTo ? t('common.edit') : t('import.row.link') }}</BaseButton>
         </div>
         <FieldError v-if="error">{{ error }}</FieldError>
     </li>

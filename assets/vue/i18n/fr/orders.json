@@ -54,7 +54,6 @@
         "search": "Rechercher un produit…",
         "variant": "Variante",
         "quantity": "Quantité",
-        "add": "Ajouter",
         "chooseProduct": "Choisissez un produit.",
         "chooseVariant": "Choisissez une variante pour « {product} »."
     },
@@ -110,7 +109,6 @@
         "product": "Produit",
         "variant": "Variante",
         "chooseProduct": "Choisissez un produit.",
-        "cancel": "Annuler",
         "save": "Associer",
         "saved": "Vente associée à « {name} »."
     },
@@ -121,7 +119,6 @@
         "choose": "Commande à fusionner",
         "none": "Aucune autre commande du même événement et de la même source.",
         "items": "{count} article | {count} articles",
-        "cancel": "Annuler",
         "submit": "Fusionner",
         "done": "Commande {reference} fusionnée dans celle-ci."
     },
@@ -147,8 +144,6 @@
         "supply": "Fourniture",
         "variant": "Variante",
         "quantity": "Quantité",
-        "cancel": "Annuler",
-        "submit": "Ajouter",
         "remove": "Retirer {label}",
         "removeMessage": "Les fournitures retirées reviennent en stock.",
         "added": "Fourniture ajoutée.",
@@ -164,8 +159,6 @@
         "title": "Affranchissement",
         "amount": "Affranchissement",
         "hint": "Ce que l'envoi a coûté (timbre, étiquette…).",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "saved": "Affranchissement enregistré."
     }
 }

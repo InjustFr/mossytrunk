@@ -33,7 +33,8 @@ const { t } = useI18n();
 
 const knownCost = (product) => product.stockUnitCost > 0;
 const margin = (product) => (knownCost(product) ? product.sellingPrice - product.stockUnitCost : null);
-const stockOf = (product) => variantStock(product, props.stockVariants);
+const stocks = computed(() => new Map(props.products.map((product) => [product.id, variantStock(product, props.stockVariants)])));
+const stockOf = (product) => stocks.value.get(product.id);
 const stockDetail = (product) => stockOf(product).entries.map((item) => t('products.list.stockDetail', { variant: item.variant ?? t('products.list.stock'), count: item.onHand })).join(', ');
 
 const channelColumn = (channel) => `channel:${channel.id}`;

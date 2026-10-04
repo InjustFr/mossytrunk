@@ -12,7 +12,7 @@ import StatusBadge from '../components/ui/StatusBadge.vue';
 import BackLink from '../components/ui/BackLink.vue';
 import DeclinationCard from '../components/designs/DeclinationCard.vue';
 import DesignForm from '../components/designs/DesignForm.vue';
-import { useDesign, useDesignBoard, useGabarits } from '../composables/useDesigns.js';
+import { useDesign, useDesignBoard, useDesignProgress, useGabarits } from '../composables/useDesigns.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
@@ -33,19 +33,11 @@ const editOpen = ref(false);
 
 const validated = computed(() => design.value?.status === 'validated');
 const available = computed(() => gabarits.value.filter((gabarit) => !design.value?.declinations.some((d) => d.gabarit.id === gabarit.id)));
-const pending = computed(() => design.value?.declinations.filter((d) => !d.productId) ?? []);
-const hasProducts = computed(() => (design.value?.declinations.length ?? 0) > pending.value.length);
-const ready = computed(() => pending.value.length > 0 && pending.value.every((d) => d.ready));
+const { pending, hasProducts, ready } = useDesignProgress(design);
 const productNames = computed(() => pending.value.map((d) => d.displayName).join(', '));
 
 async function run(action, success) {
-    try {
-        await action();
-        if (success) toast.success(success);
-        await load();
-    } catch (error) {
-        toast.error(error.message);
-    }
+    if (await toast.attempt(action, success)) await load();
 }
 
 const onDecline = (gabarit) => run(() => decline(gabarit.id), t('designs.detail.declined', { name: gabarit.name }));
@@ -59,15 +51,10 @@ async function submitAdjustment(declination, payload) {
     await Promise.all([load(), loadTypes()]);
 }
 
-async function onValidate() {
-    try {
-        const { productsCreated } = await validate();
-        toast.success(t('designs.detail.validated', productsCreated));
-        await load();
-    } catch (error) {
-        toast.error(error.message);
-    }
-}
+const onValidate = () => run(async () => {
+    const { productsCreated } = await validate();
+    toast.success(t('designs.detail.validated', productsCreated));
+});
 
 async function onRemove() {
     await remove();
@@ -89,8 +76,8 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
         <template #back><BackLink :href="listUrl('/designs')">{{ t('designs.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="design">
-                <ConfirmButton v-if="!hasProducts" variant="ghost" :label="t('designs.detail.delete')" :message="t('designs.detail.deleteMessage', { name: design.name })" @confirm="onRemove" />
-                <BaseButton variant="secondary" @click="editOpen = true">{{ t('designs.detail.edit') }}</BaseButton>
+                <ConfirmButton v-if="!hasProducts" variant="ghost" :label="t('common.delete')" :message="t('designs.detail.deleteMessage', { name: design.name })" @confirm="onRemove" />
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('common.edit') }}</BaseButton>
                 <ConfirmButton
                     v-if="ready"
                     variant="primary"

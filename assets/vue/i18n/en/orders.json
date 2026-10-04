@@ -54,7 +54,6 @@
         "search": "Search for a product…",
         "variant": "Variant",
         "quantity": "Quantity",
-        "add": "Add",
         "chooseProduct": "Choose a product.",
         "chooseVariant": "Choose a variant for “{product}”."
     },
@@ -110,7 +109,6 @@
         "product": "Product",
         "variant": "Variant",
         "chooseProduct": "Choose a product.",
-        "cancel": "Cancel",
         "save": "Link",
         "saved": "Sale linked to “{name}”."
     },
@@ -121,7 +119,6 @@
         "choose": "Order to merge",
         "none": "No other order from the same event and source.",
         "items": "{count} item | {count} items",
-        "cancel": "Cancel",
         "submit": "Merge",
         "done": "Order {reference} merged into this one."
     },
@@ -147,8 +144,6 @@
         "supply": "Supply",
         "variant": "Variant",
         "quantity": "Quantity",
-        "cancel": "Cancel",
-        "submit": "Add",
         "remove": "Remove {label}",
         "removeMessage": "Removed supplies go back to stock.",
         "added": "Supply added.",
@@ -164,8 +159,6 @@
         "title": "Postage",
         "amount": "Postage",
         "hint": "What shipping cost (stamp, label…).",
-        "cancel": "Cancel",
-        "save": "Save",
         "saved": "Postage saved."
     }
 }

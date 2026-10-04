@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import { Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -8,6 +8,7 @@ import BaseCombobox from '../ui/BaseCombobox.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import FieldError from '../ui/FieldError.vue';
 import VariantPicker from '../products/VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
@@ -144,16 +145,10 @@ function addType() {
 
 <template>
     <div class="purchase-line-picker">
-        <ToggleGroupRoot
-            :model-value="mode"
-            type="single"
-            class="purchase-line-picker__modes"
-            :aria-label="t('purchasing.picker.mode')"
-            @update:model-value="(value) => value && (mode = value)"
-        >
+        <ChoiceGroup v-model="mode" class="purchase-line-picker__modes" :aria-label="t('common.add')">
             <ToggleGroupItem :value="PRODUCT" class="chip">{{ t('purchasing.picker.oneProduct') }}</ToggleGroupItem>
             <ToggleGroupItem :value="TYPE" class="chip">{{ t('purchasing.picker.wholeType') }}</ToggleGroupItem>
-        </ToggleGroupRoot>
+        </ChoiceGroup>
         <BaseButton variant="ghost" class="purchase-line-picker__create" @click="emit('create')"><Plus size="1rem" aria-hidden="true" /> {{ t('purchasing.form.newProduct') }}</BaseButton>
 
         <template v-if="mode === PRODUCT">
@@ -173,7 +168,7 @@ function addType() {
                 <span class="purchase-line-picker__label">{{ t('purchasing.picker.totalPrice') }}</span>
                 <BaseMoneyField v-model="totalPrice" :currency="currency" />
             </label>
-            <BaseButton variant="secondary" class="purchase-line-picker__add" @click="addProduct">{{ t('purchasing.picker.add') }}</BaseButton>
+            <BaseButton variant="secondary" class="purchase-line-picker__add" @click="addProduct">{{ t('common.add') }}</BaseButton>
         </template>
 
         <template v-else>
@@ -195,16 +190,10 @@ function addType() {
             </div>
             <div class="purchase-line-picker__field purchase-line-picker__pricing">
                 <span class="purchase-line-picker__label" aria-hidden="true">{{ t('purchasing.picker.priceFor') }}</span>
-                <ToggleGroupRoot
-                    :model-value="pricing"
-                    type="single"
-                    class="segmented"
-                    :aria-label="t('purchasing.picker.priceFor')"
-                    @update:model-value="(value) => value && (pricing = value)"
-                >
+                <ChoiceGroup v-model="pricing" class="segmented" :aria-label="t('purchasing.picker.priceFor')">
                     <ToggleGroupItem :value="PER_UNIT" class="segmented__item">{{ t('purchasing.picker.perUnit') }}</ToggleGroupItem>
                     <ToggleGroupItem :value="FOR_ALL" class="segmented__item">{{ t('purchasing.picker.forAll') }}</ToggleGroupItem>
-                </ToggleGroupRoot>
+                </ChoiceGroup>
             </div>
             <label class="purchase-line-picker__field purchase-line-picker__price">
                 <span class="purchase-line-picker__label">{{ t(pricing === FOR_ALL ? 'purchasing.picker.forAll' : 'purchasing.picker.unitPrice') }}</span>

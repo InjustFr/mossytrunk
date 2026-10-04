@@ -44,7 +44,7 @@ const selected = computed({
 <template>
     <SelectRoot v-model="selected">
         <SelectTrigger :class="['control', 'select', `select--${size}`]" v-bind="$attrs">
-            <SelectValue class="select__value" :placeholder="placeholder ?? t('ui.select.placeholder')" />
+            <SelectValue class="select__value" :placeholder="placeholder ?? t('common.choose')" />
             <ChevronDown class="select__chevron" size="1rem" aria-hidden="true" />
         </SelectTrigger>
         <SelectPortal>

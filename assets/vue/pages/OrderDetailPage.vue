@@ -21,6 +21,7 @@ import BackLink from '../components/ui/BackLink.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
+import { useModalTarget } from '../composables/useModalTarget.js';
 import { useToast } from '../composables/useToast.js';
 import { formatDate, formatDateTime } from '../composables/useDate.js';
 import { visit } from '../composables/useNavigation.js';
@@ -32,16 +33,20 @@ const props = defineProps({
 
 const { t } = useI18n();
 const { order, load, remove, refund, identifyLine, mergeWith, candidates, addSupply, removeSupply, stamp } = useOrder(props.orderId);
+const { channels, load: loadChannels } = useSalesChannels();
+const { articles: products, load: loadProducts } = useProducts();
+const toast = useToast();
 const postageOpen = ref(false);
+const supplyOpen = ref(false);
+const mergeOpen = ref(false);
+const { target: identifying, open: identifyOpen } = useModalTarget();
+const channelSupplies = computed(() => channels.value.find((channel) => channel.id === order.value?.channelId)?.supplies ?? []);
 
 async function onPostageSaved() {
     postageOpen.value = false;
     toast.success(t('orders.postage.saved'));
     await load();
 }
-const { channels, load: loadChannels } = useSalesChannels();
-const supplyOpen = ref(false);
-const channelSupplies = computed(() => channels.value.find((channel) => channel.id === order.value?.channelId)?.supplies ?? []);
 
 async function onSupplyAdded() {
     supplyOpen.value = false;
@@ -50,25 +55,15 @@ async function onSupplyAdded() {
 }
 
 async function onSupplyRemoved(supply) {
-    try {
-        await removeSupply(supply.id);
-        toast.success(t('orders.supplies.removed', { label: supply.label }));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    await toast.attempt(() => removeSupply(supply.id), t('orders.supplies.removed', { label: supply.label }));
     await load();
 }
-const mergeOpen = ref(false);
 
 async function onMerged(other) {
     mergeOpen.value = false;
     toast.success(t('orders.merge.done', { reference: other.reference }));
     await load();
 }
-const { articles: products, load: loadProducts } = useProducts();
-const toast = useToast();
-const identifying = ref(null);
-const identifyOpen = computed({ get: () => identifying.value !== null, set: (open) => { if (!open) identifying.value = null; } });
 
 async function onIdentified(name) {
     identifying.value = null;

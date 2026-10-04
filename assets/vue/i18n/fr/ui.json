@@ -1,13 +1,8 @@
 {
-    "close": "Fermer",
-    "cancel": "Annuler",
     "combobox": {
         "placeholder": "Rechercher…",
         "empty": "Aucun résultat.",
         "showChoices": "Afficher les choix"
-    },
-    "select": {
-        "placeholder": "Choisir…"
     },
     "datePicker": {
         "open": "Ouvrir le calendrier",

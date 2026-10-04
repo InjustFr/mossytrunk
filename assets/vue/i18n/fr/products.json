@@ -3,8 +3,6 @@
     "negative": "Négatif",
     "lowStock": "Stock bas",
     "emptyStock": "Stock vide",
-    "cancel": "Annuler",
-    "save": "Enregistrer",
     "page": {
         "title": "Produits",
         "types": "Types de produit",
@@ -43,7 +41,6 @@
     "detail": {
         "fallbackTitle": "Produit",
         "back": "Produits",
-        "edit": "Modifier",
         "restock": "Réapprovisionner",
         "reference": "Référence",
         "type": "Type",
@@ -269,7 +266,6 @@
         "createOption": "＋ Créer un type…",
         "newName": "Nom du nouveau type",
         "nameRequired": "Le nom du type est obligatoire.",
-        "createShort": "Créer",
         "choose": "Choisir un type…",
         "prefixesNames": "Préfixer le nom des produits",
         "prefixedExample": "Ses produits s'affichent « {type} Forêt ».",
@@ -308,7 +304,6 @@
         "label": "Couleur du type",
         "custom": "Couleur personnalisée",
         "customNamed": "Personnalisée {color}",
-        "add": "Ajouter",
         "moss": "Mousse",
         "terracotta": "Terre cuite",
         "slate": "Ardoise",

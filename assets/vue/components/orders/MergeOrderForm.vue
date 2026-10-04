@@ -10,6 +10,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 import RadioCard from '../ui/RadioCard.vue';
 import PaymentMethod from './PaymentMethod.vue';
 import { formatDateTime } from '../../composables/useDate.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     order: { type: Object, required: true },
@@ -21,8 +22,7 @@ const { t } = useI18n();
 
 const orders = ref(null);
 const chosen = ref('');
-const error = ref(null);
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit('form', { byField: false });
 
 const distance = (other) => Math.abs(new Date(other.placedAt) - new Date(props.order.placedAt));
 const sorted = computed(() => [...(orders.value ?? [])].sort((a, b) => distance(a) - distance(b)));
@@ -33,23 +33,17 @@ onMounted(async () => {
 });
 
 async function onSubmit() {
-    saving.value = true;
-    error.value = null;
-    try {
+    await run(async () => {
         await props.submit(chosen.value);
         emit('merged', orders.value.find((other) => other.id === chosen.value));
-    } catch (exception) {
-        error.value = exception.message;
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
 <template>
     <form class="merge-order-form" novalidate @submit.prevent="onSubmit">
         <p class="merge-order-form__intro">{{ t('orders.merge.intro', { reference: order.reference }) }}</p>
-        <FormError v-if="error">{{ error }}</FormError>
+        <FormError v-if="errors.form">{{ errors.form }}</FormError>
         <EmptyState v-if="orders && orders.length === 0">{{ t('orders.merge.none') }}</EmptyState>
         <RadioGroupRoot v-else-if="orders" v-model="chosen" class="merge-order-form__orders" :aria-label="t('orders.merge.choose')">
             <RadioCard v-for="other in sorted" :key="other.id" :value="other.id" class="merge-order-form__order">
@@ -64,7 +58,7 @@ async function onSubmit() {
             </RadioCard>
         </RadioGroupRoot>
         <FormActions>
-            <BaseButton variant="ghost" @click="emit('cancel')">{{ t('orders.merge.cancel') }}</BaseButton>
+            <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
             <BaseButton type="submit" :loading="saving" :disabled="!chosen">{{ t('orders.merge.submit') }}</BaseButton>
         </FormActions>
     </form>

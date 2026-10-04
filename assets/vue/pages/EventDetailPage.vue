@@ -71,7 +71,7 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
         <template #back><BackLink :href="listUrl('/events')">{{ t('events.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="event">
-                <BaseButton variant="secondary" @click="editOpen = true">{{ t('events.detail.edit') }}</BaseButton>
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('common.edit') }}</BaseButton>
                 <BaseButton variant="secondary" :href="`/events/${event.id}/check`">{{ t('events.detail.checkOrders') }}</BaseButton>
                 <BaseButton variant="secondary" :href="`/events/${event.id}/stock-check`">{{ t('events.detail.stockCheck') }}</BaseButton>
                 <BaseButton @click="openExpense()">{{ t('events.detail.addExpense') }}</BaseButton>

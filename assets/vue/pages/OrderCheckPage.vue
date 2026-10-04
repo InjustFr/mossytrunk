@@ -41,14 +41,9 @@ async function onToggle(order) {
     const checked = !order.checked;
     setChecked(order.id, checked);
     saving.value = new Set([...saving.value, order.id]);
-    try {
-        await (checked ? orderCheck.check(order.id) : orderCheck.uncheck(order.id));
-    } catch (exception) {
-        setChecked(order.id, !checked);
-        toast.error(exception.message);
-    } finally {
-        saving.value = new Set([...saving.value].filter((id) => id !== order.id));
-    }
+    const saved = await toast.attempt(() => (checked ? orderCheck.check(order.id) : orderCheck.uncheck(order.id)));
+    if (!saved) setChecked(order.id, !checked);
+    saving.value = new Set([...saving.value].filter((id) => id !== order.id));
 }
 
 onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));

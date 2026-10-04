@@ -12,6 +12,7 @@ import ServiceModal from '../components/settings/ServiceModal.vue';
 import ReferenceFormats from '../components/settings/ReferenceFormats.vue';
 import ReferenceFormatForm from '../components/settings/ReferenceFormatForm.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
+import { takeQuery } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 import { useServices } from '../composables/useServices.js';
 import { useSession } from '../composables/useSession.js';
@@ -37,15 +38,12 @@ const CONNECTION_OUTCOMES = {
 };
 
 function announceConnectionOutcome() {
-    const params = new URLSearchParams(window.location.search);
-    const outcome = params.get('connection');
+    const outcome = takeQuery('connection');
+    const serviceKey = takeQuery('service');
     const tone = CONNECTION_OUTCOMES[outcome];
     if (!tone) return;
-    const service = services.services.value.find((candidate) => candidate.key === params.get('service'));
+    const service = services.services.value.find((candidate) => candidate.key === serviceKey);
     toast[tone](t(`settings.services.outcome.${outcome}`, { label: service?.label ?? t('settings.services.someService') }));
-    params.delete('connection');
-    params.delete('service');
-    window.history.replaceState(window.history.state, '', `${window.location.pathname}${params.size ? `?${params}` : ''}`);
 }
 
 function openAdd() {
@@ -64,12 +62,7 @@ async function onSaved(service, added) {
 }
 
 async function run(action, message) {
-    try {
-        await action();
-        toast.success(message);
-    } catch (error) {
-        toast.error(error.message);
-    }
+    await toast.attempt(action, message);
     await services.load();
 }
 
@@ -77,28 +70,21 @@ const importingCatalogue = ref(null);
 
 async function onImportCatalogue(service, importing) {
     importingCatalogue.value = service.key;
-    try {
+    await toast.attempt(async () => {
         const report = await importing();
         toast.success([
             t('settings.connected.catalogueImported', { label: service.label, linked: report.itemsLinked, read: report.itemsRead }, report.itemsLinked),
             report.productsCreated > 0 ? t('settings.connected.catalogueCreated', report.productsCreated) : '',
             report.itemsToLink > 0 ? t('settings.connected.catalogueToLink', report.itemsToLink) : '',
         ].filter(Boolean).join(' '));
-    } catch (error) {
-        toast.error(error.message);
-    } finally {
-        importingCatalogue.value = null;
-    }
+    });
+    importingCatalogue.value = null;
 }
 
-async function onPublishReferences(service) {
-    try {
-        const published = await services.publishReferences(service.key);
-        toast.success(t('settings.connected.referencesPublished', { label: service.label, linked: published.itemsLinked, updated: published.listingsUpdated }, published.listingsUpdated));
-    } catch (error) {
-        toast.error(error.message);
-    }
-}
+const onPublishReferences = (service) => toast.attempt(async () => {
+    const published = await services.publishReferences(service.key);
+    toast.success(t('settings.connected.referencesPublished', { label: service.label, linked: published.itemsLinked, updated: published.listingsUpdated }, published.listingsUpdated));
+});
 
 const editingFormat = ref(null);
 const formatModalOpen = ref(false);

@@ -10,6 +10,7 @@ import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import TypeColorPicker from './TypeColorPicker.vue';
 import TypeVariantsEditor from './TypeVariantsEditor.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
 import { useToast } from '../../composables/useToast.js';
@@ -30,8 +31,7 @@ const form = reactive({
     archivedVariants: [...(props.type?.archivedVariants ?? [])],
     prefixesNames: props.type?.prefixesNames ?? true,
 });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 const savedVariants = ref([...(props.type?.variants ?? [])]);
 const toast = useToast();
 const moreOpen = ref(false);
@@ -63,21 +63,12 @@ async function renameSaved(from, to) {
 }
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({ ...form });
         emit('saved', form.name.trim());
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { form: error.message };
-        }
-        if (errors.value.code) {
-            moreOpen.value = true;
-        }
-    } finally {
-        saving.value = false;
+    });
+    if (errors.value.code) {
+        moreOpen.value = true;
     }
 }
 </script>
@@ -101,7 +92,7 @@ async function onSubmit() {
 
             <FormDisclosure v-model:open="moreOpen" :title="t('products.types.more')" :summary="moreSummary">
                 <FormField :label="t('products.types.code')" :error="errors.code" :hint="t('products.types.codeHint')">
-                    <input v-model="form.code" type="text" maxlength="8" autocomplete="off" class="product-type-form__code" @input="onCodeInput">
+                    <input v-model="form.code" type="text" maxlength="8" autocomplete="off" class="product-type-form__code control--short" @input="onCodeInput">
                 </FormField>
                 <FormField as="group" :label="t('products.types.display')" :hint="example">
                     <label class="product-type-form__switch"><BaseSwitch v-model="form.prefixesNames" /> {{ t('products.types.prefixesNames') }}</label>
@@ -109,8 +100,8 @@ async function onSubmit() {
             </FormDisclosure>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t(type ? 'products.save' : 'products.types.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ type ? t('common.save') : t('products.types.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>
@@ -118,6 +109,6 @@ async function onSubmit() {
 
 <style scoped>
 .product-type-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.product-type-form .product-type-form__code { max-width: 11rem; text-transform: uppercase; }
+.product-type-form__code { text-transform: uppercase; }
 .product-type-form__switch { display: flex; align-items: center; gap: var(--space-2); min-height: 2.375rem; font-size: var(--font-size-md); cursor: pointer; }
 </style>

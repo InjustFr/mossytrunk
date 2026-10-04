@@ -13,6 +13,7 @@ import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatDate } from '../../composables/useDate.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { formatSignedCents } from '../../composables/useMoney.js';
 
 const props = defineProps({
@@ -26,8 +27,7 @@ const { t } = useI18n();
 const NEW = '__new__';
 const editing = ref(null);
 const form = reactive({ price: null, since: '' });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 function edit(change = null) {
     editing.value = change?.id ?? NEW;
@@ -35,20 +35,11 @@ function edit(change = null) {
     errors.value = {};
 }
 
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         await props.save(editing.value === NEW ? null : editing.value, { price: form.price ?? -1, since: form.since });
         editing.value = null;
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { form: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -60,7 +51,7 @@ async function onSubmit() {
                     <FieldError v-if="errors.form">{{ errors.form }}</FieldError>
                     <FormSection>
                         <FormField :label="t('products.prices.price')" :error="errors.price">
-                            <BaseMoneyField v-model="form.price" class="price-history__amount" />
+                            <BaseMoneyField v-model="form.price" class="control--short" />
                         </FormField>
                         <FormField as="group" :label="t('products.prices.since')" :error="errors.since">
                             <BaseDatePicker v-model="form.since" :aria-label="t('products.prices.since')" />
@@ -68,8 +59,8 @@ async function onSubmit() {
                     </FormSection>
                     <FormActions>
                         <template v-if="index === 0" #note>{{ t('products.prices.currentHint') }}</template>
-                        <BaseButton variant="ghost" @click="editing = null">{{ t('products.cancel') }}</BaseButton>
-                        <BaseButton type="submit" :loading="saving">{{ t('products.save') }}</BaseButton>
+                        <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
+                        <BaseButton type="submit" :loading="saving">{{ t('common.save') }}</BaseButton>
                     </FormActions>
                 </form>
                 <template v-else>
@@ -96,7 +87,7 @@ async function onSubmit() {
             <FieldError v-if="errors.form">{{ errors.form }}</FieldError>
             <FormSection>
                 <FormField :label="t('products.prices.price')" :error="errors.price">
-                    <BaseMoneyField v-model="form.price" class="price-history__amount" />
+                    <BaseMoneyField v-model="form.price" class="control--short" />
                 </FormField>
                 <FormField as="group" :label="t('products.prices.since')" :error="errors.since">
                     <BaseDatePicker v-model="form.since" :aria-label="t('products.prices.since')" />
@@ -104,7 +95,7 @@ async function onSubmit() {
             </FormSection>
             <FormActions>
                 <template #note>{{ t('products.prices.newHint') }}</template>
-                <BaseButton variant="ghost" @click="editing = null">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton variant="ghost" @click="editing = null">{{ t('common.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ t('products.prices.add') }}</BaseButton>
             </FormActions>
         </form>
@@ -130,6 +121,5 @@ async function onSubmit() {
 .price-history__since { width: 100%; font-size: var(--font-size-sm); }
 .price-history__form { display: flex; flex-direction: column; gap: var(--space-4); width: 100%; padding: var(--space-2) 0; color: var(--color-text); }
 .price-history__form--new { padding: var(--space-4); border-radius: var(--radius); background: var(--color-bg); }
-.price-history__amount { max-width: 11rem; }
 .price-history__add { align-self: flex-start; }
 </style>

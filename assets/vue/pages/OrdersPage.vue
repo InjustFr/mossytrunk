@@ -19,26 +19,12 @@ import { useImport } from '../composables/useImport.js';
 import { isReady, useServices } from '../composables/useServices.js';
 import { useEvents } from '../composables/useEvents.js';
 import { useOrderSearch } from '../composables/useOrderSearch.js';
-import { useOrders } from '../composables/useOrders.js';
+import { useCheckedChannel, useOrders } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useToast } from '../composables/useToast.js';
 
-const { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts } = useOrders();
-const missingCosts = computed(() => orders.value.some((order) => order.unknownCosts > 0));
-const filling = ref(false);
-
-async function onFillCosts() {
-    filling.value = true;
-    try {
-        const { filled } = await fillMissingCosts();
-        if (filled > 0) toast.success(t('orders.page.costsFilled', filled));
-        else toast.error(t('orders.page.noCostToFill'));
-        await load();
-    } finally {
-        filling.value = false;
-    }
-}
+const { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts, missingCosts } = useOrders();
 const { channels, load: loadChannels } = useSalesChannels();
 const { search, unassigned, unassignedCount, visible, filtering } = useOrderSearch(orders);
 const { articles: products, load: loadProducts } = useProducts();
@@ -56,6 +42,21 @@ const linkerOpen = computed({
 const formOpen = ref(false);
 const lastPlacedId = ref(null);
 const checkedIds = ref([]);
+const { channel: checkedChannel, supplyBlocker } = useCheckedChannel(orders, checkedIds, channels);
+const supplyOpen = ref(false);
+const filling = ref(false);
+
+async function onFillCosts() {
+    filling.value = true;
+    try {
+        const { filled } = await fillMissingCosts();
+        if (filled > 0) toast.success(t('orders.page.costsFilled', filled));
+        else toast.error(t('orders.page.noCostToFill'));
+        await load();
+    } finally {
+        filling.value = false;
+    }
+}
 
 async function deleteChecked() {
     const { deleted } = await removeSelected(checkedIds.value);
@@ -63,19 +64,6 @@ async function deleteChecked() {
     checkedIds.value = [];
     await load();
 }
-
-const supplyOpen = ref(false);
-const checkedChannelIds = computed(() => {
-    const checked = new Set(checkedIds.value);
-    return [...new Set(orders.value.filter((order) => checked.has(order.id)).map((order) => order.channelId ?? null))];
-});
-const checkedChannel = computed(() => (checkedChannelIds.value.length === 1 ? channels.value.find((channel) => channel.id === checkedChannelIds.value[0]) ?? null : null));
-const supplyBlocker = computed(() => {
-    if (checkedChannelIds.value.length > 1) return t('orders.supplies.severalChannels');
-    if (!checkedChannel.value) return t('orders.supplies.noChannel');
-    if (checkedChannel.value.supplies.length === 0) return t('orders.supplies.noneOnChannel', { channel: checkedChannel.value.name });
-    return null;
-});
 
 async function recomputeChecked() {
     const { updated } = await recomputeCharges(checkedIds.value);

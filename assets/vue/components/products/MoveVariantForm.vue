@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { RadioGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -10,6 +10,7 @@ import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import RadioCard from '../ui/RadioCard.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { sameVariant } from '../../composables/useVariantStock.js';
 
@@ -22,9 +23,17 @@ const emit = defineEmits(['moved', 'cancel']);
 const { t } = useI18n();
 const { variantsOf } = useProductTypes();
 
-const form = reactive({ variant: '', mode: 'new', targetProductId: '', newProductName: '', targetVariant: '' });
-const errors = ref({});
-const saving = ref(false);
+const lastWord = (name) => name.trim().split(/\s+/).at(-1) ?? '';
+const withoutLastWord = (name) => name.trim().split(/\s+/).slice(0, -1).join(' ');
+
+const form = reactive({
+    variant: props.product.variants[0] ?? '',
+    mode: 'new',
+    targetProductId: '',
+    newProductName: props.product.variants.length === 0 ? withoutLastWord(props.product.name) : props.product.name,
+    targetVariant: '',
+});
+const { saving, errors, run } = useFormSubmit();
 
 const hasVariants = computed(() => props.product.variants.length > 0);
 const variantOptions = computed(() => props.product.variants.map((variant) => ({ value: variant, label: variant })));
@@ -34,9 +43,6 @@ const productOptions = computed(() => props.products
 const modes = ['new', 'existing'];
 const target = computed(() => props.products.find((product) => product.id === form.targetProductId) ?? null);
 const targetName = computed(() => (form.mode === 'new' ? form.newProductName.trim() : target.value?.displayName ?? ''));
-
-const lastWord = (name) => name.trim().split(/\s+/).at(-1) ?? '';
-const withoutLastWord = (name) => name.trim().split(/\s+/).slice(0, -1).join(' ');
 
 const targetTypeId = computed(() => (form.mode === 'new' ? props.product.typeId : target.value?.typeId) ?? null);
 const targetVariants = computed(() => [...new Set([...variantsOf(targetTypeId.value), ...(form.mode === 'existing' ? target.value?.variants ?? [] : [])])]);
@@ -55,25 +61,12 @@ const suggestedVariant = computed(() => {
     return lastWord(props.product.name);
 });
 
-watch(() => props.product, (product) => {
-    const whole = product.variants.length === 0;
-    Object.assign(form, {
-        variant: product.variants[0] ?? '',
-        mode: 'new',
-        targetProductId: '',
-        newProductName: whole ? withoutLastWord(product.name) : product.name,
-    });
-    errors.value = {};
-}, { immediate: true });
-
 watch([suggestedVariant, targetVariants], ([suggestion, variants]) => {
     form.targetVariant = variants.find((variant) => sameVariant(variant, suggestion)) ?? '';
 }, { immediate: true });
 
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         await props.submit({
             variant: hasVariants.value ? form.variant : null,
             targetProductId: form.mode === 'existing' ? form.targetProductId || null : null,
@@ -81,14 +74,7 @@ async function onSubmit() {
             targetVariant: form.targetVariant,
         });
         emit('moved', { variant: form.targetVariant, target: targetName.value });
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { form: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -99,7 +85,7 @@ async function onSubmit() {
 
             <FormSection>
                 <FormField v-if="hasVariants" as="group" :label="t('products.move.variant')">
-                    <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.move.variant')" class="move-variant-form__narrow" />
+                    <BaseSelect v-model="form.variant" :options="variantOptions" :aria-label="t('products.move.variant')" class="control--medium" />
                 </FormField>
                 <FormField as="group" :label="t('products.move.destination')">
                     <RadioGroupRoot v-model="form.mode" class="move-variant-form__modes" :aria-label="t('products.move.destination')">
@@ -118,7 +104,7 @@ async function onSubmit() {
                     <BaseCombobox v-model="form.targetProductId" :options="productOptions" :aria-label="t('products.move.targetProduct')" :placeholder="t('products.move.searchProduct')" />
                 </FormField>
                 <FormField as="group" :label="t('products.move.targetVariant')" :error="errors.targetVariant" :hint="targetChosen && targetVariants.length === 0 ? t('products.move.noTypeVariants') : null">
-                    <BaseSelect v-model="form.targetVariant" :options="targetVariantOptions" :aria-label="t('products.move.targetVariant')" class="move-variant-form__narrow" />
+                    <BaseSelect v-model="form.targetVariant" :options="targetVariantOptions" :aria-label="t('products.move.targetVariant')" class="control--medium" />
                 </FormField>
             </FormSection>
 
@@ -129,7 +115,7 @@ async function onSubmit() {
                         <template #target><strong>{{ targetName || '…' }}<template v-if="form.targetVariant"> — {{ form.targetVariant }}</template></strong></template>
                     </i18n-t>
                 </template>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ t('products.move.submit') }}</BaseButton>
             </FormActions>
         </fieldset>
@@ -138,7 +124,6 @@ async function onSubmit() {
 
 <style scoped>
 .move-variant-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.move-variant-form :deep(.move-variant-form__narrow) { max-width: 16rem; }
 .move-variant-form strong { color: var(--color-ink); font-weight: 600; }
 
 .move-variant-form__modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); }

@@ -91,13 +91,7 @@ async function onPriceSaved(changeId, payload) {
 }
 
 async function onPriceForgotten(changeId) {
-    try {
-        await forgetPrice(props.productId, changeId);
-        toast.success(t('products.toast.priceForgotten'));
-        await load();
-    } catch (error) {
-        toast.error(error.message);
-    }
+    if (await toast.attempt(() => forgetPrice(props.productId, changeId), t('products.toast.priceForgotten'))) await load();
 }
 
 function onDesigned(designId) {
@@ -105,7 +99,11 @@ function onDesigned(designId) {
     visit(`/designs/${designId}`);
 }
 
-onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), loadChannels()]));
+async function loadDesignChoices() {
+    if (!supply.value && !detail.value?.design) await Promise.all([loadGabarits(), loadBoard()]);
+}
+
+onMounted(() => Promise.all([load().then(loadDesignChoices), loadTypes(), loadChannels()]));
 </script>
 
 <template>
@@ -113,7 +111,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
         <template #back><BackLink :href="listUrl('/products')">{{ t('products.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="product">
-                <BaseButton variant="secondary" @click="editOpen = true">{{ t('products.detail.edit') }}</BaseButton>
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('common.edit') }}</BaseButton>
                 <BaseButton @click="restockOpen = true">{{ t('products.detail.restock') }}</BaseButton>
             </template>
         </template>

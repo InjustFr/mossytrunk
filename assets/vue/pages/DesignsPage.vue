@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { Trash2 } from '@lucide/vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -13,6 +13,7 @@ import DesignForm from '../components/designs/DesignForm.vue';
 import DesignIndex from '../components/designs/DesignIndex.vue';
 import DesignRows from '../components/designs/DesignRows.vue';
 import BaseSwitch from '../components/ui/BaseSwitch.vue';
+import ChoiceGroup from '../components/ui/ChoiceGroup.vue';
 import GabaritManager from '../components/designs/GabaritManager.vue';
 import WorkbenchCard from '../components/designs/WorkbenchCard.vue';
 import { DESIGN_STATUSES, useDesignFilters } from '../composables/useDesignFilters.js';
@@ -34,19 +35,14 @@ const editingCollection = ref(null);
 const gabaritsOpen = ref(false);
 
 const filters = useDesignFilters(board);
-const allDesigns = computed(() => [...(board.value?.collections.flatMap((c) => c.designs) ?? []), ...(board.value?.standalone ?? [])]);
-const onBench = computed(() => allDesigns.value.filter((design) => design.current && design.status !== 'validated'));
 const collections = computed(() => board.value?.collections ?? []);
-const selectedStatus = computed({ get: () => filters.status.value, set: (value) => { if (value) filters.status.value = value; } });
-const { selected } = filters;
+const { selected, allDesigns, onBench } = filters;
 const shelfName = (shelf) => shelf.collection?.name ?? t('designs.noCollection');
 const emptyShelf = computed(() => {
     if (filters.searching.value) return t('designs.shelf.nothingFound');
     if (selected.value && selected.value.designs.length === 0) return t(selected.value.collection ? 'designs.page.collectionEmpty' : 'designs.page.standaloneEmpty');
     return t(`designs.shelf.none.${filters.status.value}`);
 });
-const openDesigns = (collection) => collection.designs.filter((design) => design.status !== 'validated');
-const readyToValidate = (collection) => openDesigns(collection).length > 0 && openDesigns(collection).every((design) => design.declinations.length > 0 && design.adaptationsDone === design.adaptationsTotal);
 
 function newDesign(collectionId = '') {
     designCollectionId.value = collectionId;
@@ -82,13 +78,11 @@ async function onBenchToggled(collection, current) {
 }
 
 async function onValidateCollection(collection) {
-    try {
+    const validated = await toast.attempt(async () => {
         const { productsCreated } = await validateCollection(collection.id);
         toast.success(t('designs.page.collectionValidated', { name: collection.name, count: productsCreated }, productsCreated));
-        await load();
-    } catch (error) {
-        toast.error(error.message);
-    }
+    });
+    if (validated) await load();
 }
 
 async function onGabaritRemoved(name) {
@@ -148,12 +142,12 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                         </label>
                     </header>
 
-                    <ToggleGroupRoot v-model="selectedStatus" type="single" class="designs-page__statuses" :aria-label="t('designs.filters.status')">
+                    <ChoiceGroup v-model="filters.status.value" class="designs-page__statuses" :aria-label="t('designs.filters.status')">
                         <ToggleGroupItem v-for="value in Object.values(DESIGN_STATUSES)" :key="value" :value="value" class="designs-page__status">
                             {{ t(`designs.filters.statuses.${value}`) }}
                             <span class="designs-page__status-count">{{ filters.counts.value[value] }}</span>
                         </ToggleGroupItem>
-                    </ToggleGroupRoot>
+                    </ChoiceGroup>
 
                     <DesignRows v-if="selected" :designs="selected.shown" :empty="emptyShelf" />
                     <template v-else>
@@ -174,15 +168,15 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                                 :message="t('designs.page.removeCollectionMessage', { count: selected.designs.length }, selected.designs.length)"
                                 @confirm="onRemoveCollection(selected.collection)"
                             />
-                            <BaseButton variant="ghost" @click="openCollection(selected.collection)">{{ t('designs.page.edit') }}</BaseButton>
+                            <BaseButton variant="ghost" @click="openCollection(selected.collection)">{{ t('common.edit') }}</BaseButton>
                         </template>
                         <BaseButton variant="secondary" @click="newDesign(selected.collection?.id ?? '')">{{ t('designs.page.addDesign') }}</BaseButton>
                         <ConfirmButton
-                            v-if="selected.collection && readyToValidate(selected.collection)"
+                            v-if="selected.collection?.readyToValidate"
                             variant="primary"
                             :label="t('designs.page.validateCollection')"
                             :confirm-label="t('designs.page.validate')"
-                            :message="t('designs.page.validateCollectionMessage', { name: selected.collection.name, count: openDesigns(selected.collection).length }, openDesigns(selected.collection).length)"
+                            :message="t('designs.page.validateCollectionMessage', { name: selected.collection.name, count: selected.open }, selected.open)"
                             @confirm="onValidateCollection(selected.collection)"
                         />
                     </footer>

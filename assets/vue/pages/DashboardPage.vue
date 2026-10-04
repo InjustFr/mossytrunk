@@ -13,6 +13,7 @@ import ResultsTable from '../components/dashboard/ResultsTable.vue';
 import ResultBars from '../components/reporting/ResultBars.vue';
 import ResultReceipt from '../components/reporting/ResultReceipt.vue';
 import { monthName, useDashboard } from '../composables/useDashboard.js';
+import { resultLines } from '../composables/useResultLines.js';
 import { useTypeColors } from '../composables/useTypeColor.js';
 import { formatDate } from '../composables/useDate.js';
 
@@ -22,18 +23,10 @@ const { colors: typeColors, load: loadTypes } = useTypeColors();
 const isEmpty = computed(() => dashboard.value !== null && dashboard.value.byYear.length === 0 && dashboard.value.events.length === 0);
 const yearOptions = computed(() => (dashboard.value?.years ?? []).map((year) => ({ value: year, label: String(year) })));
 
-const receiptLines = computed(() => {
-    const total = dashboard.value.total;
-    return [
-        { key: 'turnover', label: t('dashboard.receipt.turnover'), amount: total.turnover },
-        { key: 'costOfGoods', label: t('dashboard.receipt.costOfGoods'), amount: total.costOfGoods, sign: '−' },
-        ...(total.supplies > 0 ? [{ key: 'supplies', label: t('dashboard.receipt.supplies'), amount: total.supplies, sign: '−' }] : []),
-        ...(total.consumedSupplies > 0 ? [{ key: 'consumedSupplies', label: t('dashboard.receipt.consumedSupplies'), amount: total.consumedSupplies, sign: '−' }] : []),
-        ...(total.channelCosts > 0 ? [{ key: 'channelCosts', label: t('dashboard.receipt.channelCosts'), amount: total.channelCosts, sign: '−' }] : []),
-        { key: 'expenses', label: t('dashboard.receipt.expenses'), amount: total.expenses, sign: '−' },
-        { key: 'urssaf', label: 'URSSAF', hint: t('dashboard.receipt.urssafRate'), amount: total.urssaf, sign: '−' },
-    ];
-});
+const receiptLines = computed(() => resultLines(dashboard.value.total, {
+    label: (key) => t(`dashboard.receipt.${key}`),
+    urssafHint: t('dashboard.receipt.urssafRate'),
+}));
 
 const eventBars = computed(() => dashboard.value.events.map((event) => ({
     id: event.id,

@@ -6,7 +6,7 @@ const STOCK_PARAM = 'stock';
 
 export const KINDS = { article: 'article', supply: 'supply' };
 
-export function useProductFilters(allProducts) {
+export function useProductFilters(allProducts, types, activeTypes) {
     const kind = queryText('kind', KINDS.article);
     const ofKind = computed(() => allProducts.value.filter((product) => product.kind === kind.value));
     const archived = queryFlag('archived', 'yes');
@@ -20,6 +20,11 @@ export function useProductFilters(allProducts) {
     const lowStock = queryFlag(STOCK_PARAM, 'low');
     const lowStockCount = computed(() => products.value.filter((product) => product.lowStock).length);
     const selectedIds = ref([]);
+    const typesOfKind = computed(() => {
+        const typesInKind = new Set(ofKind.value.map((product) => product.typeId));
+        const typesInUse = new Set(allProducts.value.map((product) => product.typeId));
+        return (archived.value ? types.value : activeTypes.value).filter((type) => typesInKind.has(type.id) || !typesInUse.has(type.id));
+    });
 
     watch(typeId, () => { variants.value = []; });
     watch([archived, kind], () => {
@@ -53,5 +58,5 @@ export function useProductFilters(allProducts) {
 
     const clearSelection = () => { selectedIds.value = []; };
 
-    return { kind, archived, archivedCount, typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
+    return { kind, archived, archivedCount, typesOfKind, typeId, variants, search, missingCost, missingCostCount, lowStock, lowStockCount, filtered, selectedIds, allVisibleSelected, toggleAllVisible, clearSelection };
 }

@@ -59,7 +59,6 @@
             "insert": "Insert {label}",
             "restore": "Back to the original format",
             "scope": "Apply",
-            "save": "Save",
             "renumber": "Renumber",
             "renumberMessage": "Existing references will be replaced by the new format. This cannot be undone.",
             "skuWarning": "Product references are also the SKUs on SumUp and Etsy: export the SumUp catalogue again and write the references on Etsy again after renumbering."
@@ -127,8 +126,6 @@
         "secretKept": "Key saved ({hint}). Leave empty to keep it.",
         "salesContext": "Where to attach sales",
         "unknownItems": "Unknown item",
-        "cancel": "Cancel",
-        "save": "Save",
         "add": "Add {label}"
     },
     "modal": {

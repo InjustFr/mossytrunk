@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
@@ -7,6 +7,7 @@ import FormActions from '../ui/FormActions.vue';
 import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     event: { type: Object, default: null },
@@ -16,32 +17,19 @@ const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
 const emptyForm = () => ({ name: '', location: '', startDate: '', endDate: '' });
-const form = reactive(emptyForm());
-const errors = ref({});
-const saving = ref(false);
+const fromEvent = (event) => ({ name: event.name, location: event.location, startDate: event.startDate, endDate: event.endDate });
+const form = reactive(props.event ? fromEvent(props.event) : emptyForm());
+const { saving, errors, run } = useFormSubmit();
 const isEditing = computed(() => props.event !== null);
 
-watch(() => props.event, (event) => {
-    Object.assign(form, event
-        ? { name: event.name, location: event.location, startDate: event.startDate, endDate: event.endDate }
-        : emptyForm());
-    errors.value = {};
-}, { immediate: true });
-
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({ ...form });
         emit('saved', form.name);
         if (!isEditing.value) {
             Object.assign(form, emptyForm());
         }
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -63,8 +51,8 @@ async function onSubmit() {
             </FormSection>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('events.form.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('events.form.save') : t('events.form.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('common.save') : t('events.form.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

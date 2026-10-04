@@ -5,7 +5,7 @@ import { normalize } from './useSearch.js';
 export const DESIGN_STATUSES = { open: 'open', validated: 'validated', all: 'all' };
 export const DESIGN_SCOPES = { all: '', standalone: 'none' };
 
-const isValidated = (design) => design.status === 'validated';
+export const isValidated = (design) => design.status === 'validated';
 const words = (design, collection) => normalize([design.name, collection?.name ?? '', ...design.declinations.map((declination) => declination.gabarit.name)].join(' '));
 
 export function useDesignFilters(board) {
@@ -46,6 +46,8 @@ export function useDesignFilters(board) {
         .map((shelf) => ({ ...shelf, shown: shelf.matching.filter(hasStatus) }))
         .filter((shelf) => activeScope.value !== DESIGN_SCOPES.all || shelf.shown.length > 0));
     const selected = computed(() => (activeScope.value === DESIGN_SCOPES.all ? null : groups.value[0] ?? null));
+    const allDesigns = computed(() => [...(board.value?.collections.flatMap((collection) => collection.designs) ?? []), ...(board.value?.standalone ?? [])]);
+    const onBench = computed(() => allDesigns.value.filter((design) => design.current && !isValidated(design)));
 
-    return { search, status, scope, activeScope, searching, index, counts, groups, selected };
+    return { search, status, scope, activeScope, searching, index, counts, groups, selected, allDesigns, onBench };
 }

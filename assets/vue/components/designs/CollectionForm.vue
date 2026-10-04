@@ -1,10 +1,11 @@
 <script setup>
-import { reactive, ref, watch } from 'vue';
+import { reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     collection: { type: Object, default: null },
@@ -13,29 +14,14 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
-const form = reactive({ name: '', description: '' });
-const errors = ref({});
-const saving = ref(false);
+const form = reactive({ name: props.collection?.name ?? '', description: props.collection?.description ?? '' });
+const { saving, errors, run } = useFormSubmit('name');
 
-watch(() => props.collection, (collection) => {
-    Object.assign(form, { name: collection?.name ?? '', description: collection?.description ?? '' });
-    errors.value = {};
-}, { immediate: true });
-
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         await props.submit({ name: form.name, description: form.description || null });
         emit('saved', form.name);
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { name: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -51,8 +37,8 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('designs.collectionForm.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ collection ? t('designs.collectionForm.save') : t('designs.collectionForm.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ collection ? t('common.save') : t('designs.collectionForm.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

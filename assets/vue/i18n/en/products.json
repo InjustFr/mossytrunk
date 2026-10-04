@@ -3,8 +3,6 @@
     "negative": "Negative",
     "lowStock": "Low stock",
     "emptyStock": "Out of stock",
-    "cancel": "Cancel",
-    "save": "Save",
     "page": {
         "title": "Products",
         "types": "Product types",
@@ -43,7 +41,6 @@
     "detail": {
         "fallbackTitle": "Product",
         "back": "Products",
-        "edit": "Edit",
         "restock": "Restock",
         "reference": "Reference",
         "type": "Type",
@@ -269,7 +266,6 @@
         "createOption": "＋ Create a type…",
         "newName": "New type name",
         "nameRequired": "The type name is required.",
-        "createShort": "Create",
         "choose": "Choose a type…",
         "prefixesNames": "Prefix product names",
         "prefixedExample": "Its products are shown as “{type} Forest”.",
@@ -308,7 +304,6 @@
         "label": "Type color",
         "custom": "Custom color",
         "customNamed": "Custom {color}",
-        "add": "Add",
         "moss": "Moss",
         "terracotta": "Terracotta",
         "slate": "Slate",

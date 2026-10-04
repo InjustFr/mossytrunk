@@ -34,7 +34,6 @@
         "productFor": "Produit pour {item}",
         "variantPlaceholder": "Variante",
         "variantFor": "Variante pour {item}",
-        "edit": "Modifier",
         "link": "Associer"
     }
 }

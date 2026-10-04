@@ -20,9 +20,7 @@
     "detail": {
         "title": "Commande fournisseur",
         "back": "Commandes fournisseurs",
-        "delete": "Supprimer",
         "deleteMessage": "La commande {reference} sera supprimée définitivement.",
-        "edit": "Modifier",
         "unpack": "Déballer le colis",
         "editTitle": "Modifier la commande fournisseur",
         "updated": "Commande {reference} mise à jour.",
@@ -80,8 +78,6 @@
         "discount": "Remise globale",
         "deliveryFees": "Frais de livraison",
         "totalPaid": "Total payé",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "place": "Passer la commande",
         "supplierReference": "Référence fournisseur",
         "supplierReferenceHint": "Le numéro de commande chez le fournisseur.",
@@ -117,10 +113,8 @@
         "quantity": "Quantité",
         "orderedQuantity": "Quantité commandée",
         "totalPrice": "Prix total",
-        "add": "Ajouter",
         "chooseProduct": "Choisissez un produit.",
         "chooseVariant": "Choisissez une variante pour « {product} ».",
-        "mode": "Ajouter",
         "oneProduct": "Un produit",
         "wholeType": "Tout un type",
         "type": "Type",
@@ -146,8 +140,6 @@
         "contact": "Contact",
         "contactPlaceholder": "E-mail, téléphone, site…",
         "notes": "Notes",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "add": "Ajouter le fournisseur"
     },
     "supplierSelect": {
@@ -155,9 +147,7 @@
         "placeholder": "Choisir un fournisseur",
         "label": "Fournisseur",
         "namePlaceholder": "Ex. Imprimerie du Lac",
-        "nameLabel": "Nom du nouveau fournisseur",
-        "create": "Créer",
-        "cancel": "Annuler"
+        "nameLabel": "Nom du nouveau fournisseur"
     },
     "reception": {
         "steps": "Lignes à contrôler",
@@ -175,7 +165,6 @@
         "less": "{count} en moins",
         "conform": "Conforme",
         "nothingHint": "Rien reçu : ce produit n'entrera pas en stock et son coût ne sera pas réparti.",
-        "cancel": "Annuler",
         "previous": "Précédent",
         "check": "Vérifier",
         "next": "Suivant",
@@ -192,7 +181,6 @@
         "none": "Aucune autre commande de ce fournisseur avec le même statut.",
         "choose": "Commande à fusionner",
         "units": "{count} article | {count} articles",
-        "cancel": "Annuler",
         "submit": "Fusionner"
     }
 }

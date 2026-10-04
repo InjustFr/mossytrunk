@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
@@ -8,6 +8,7 @@ import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import ServiceOptions from '../settings/ServiceOptions.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     channel: { type: Object, default: null },
@@ -20,25 +21,18 @@ const { t } = useI18n();
 const NONE = '__none__';
 const KINDS = ['market', 'online'].map((kind) => ({ value: kind, label: `channels.kinds.${kind}`, description: `channels.kindHints.${kind}` }));
 const form = reactive({ name: props.channel?.name ?? '', kind: props.channel?.kind ?? 'online', service: props.channel?.service ?? NONE });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 const serviceOptions = computed(() => [
-    { value: NONE, label: t('channels.noService') },
+    { value: NONE, label: t('common.none') },
     ...props.services.map((service) => ({ value: service.key, label: service.label })),
 ]);
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({ name: form.name, kind: form.kind, service: form.service === NONE ? null : form.service });
         emit('saved', form.name.trim());
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -58,8 +52,8 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('channels.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t(channel ? 'channels.save' : 'channels.create') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t(channel ? 'common.save' : 'channels.create') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

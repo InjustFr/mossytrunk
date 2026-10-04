@@ -11,7 +11,6 @@
     "detail": {
         "titleFallback": "Événement",
         "back": "Marchés & salons",
-        "edit": "Modifier",
         "checkOrders": "Vérifier les commandes",
         "stockCheck": "Faire l'inventaire",
         "addExpense": "Ajouter une dépense",
@@ -43,8 +42,6 @@
         "location": "Lieu",
         "locationPlaceholder": "Lyon",
         "dates": "Dates",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "create": "Créer l'événement"
     },
     "list": {
@@ -60,7 +57,7 @@
         "orderCount": "{count} commande | {count} commandes",
         "noOrders": "Aucune commande.",
         "turnover": "Chiffre d'affaires",
-        "buyingCost": "Coût d'achat",
+        "costOfGoods": "Coût d'achat",
         "expenses": "Dépenses",
         "rate": "{rate} %",
         "grossSales": "Ventes brutes",
@@ -74,8 +71,6 @@
         "label": "Libellé",
         "labelPlaceholder": "Stand, train, hôtel…",
         "amount": "Montant",
-        "cancel": "Annuler",
-        "save": "Enregistrer",
         "add": "Ajouter la dépense",
         "shared": "Répartir sur plusieurs événements",
         "sharedHint": "Le montant est partagé à parts égales entre cet événement et les suivants, jusqu'au nombre d'événements ou à la date indiqués (le premier atteint).",

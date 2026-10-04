@@ -1,10 +1,11 @@
-import { ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
+import { t } from '../i18n/index.js';
 import { useApi } from './useApi.js';
 import { queryText } from './useQueryState.js';
 
 export function useOrders() {
     const api = useApi();
-    const orders = ref([]);
+    const orders = shallowRef([]);
     const eventFilter = queryText('event');
 
     async function load() {
@@ -17,8 +18,25 @@ export function useOrders() {
     const addSupplies = (orderIds, payload) => api.post('/api/orders/supplies', { orderIds, ...payload });
     const recomputeCharges = (orderIds) => api.post('/api/orders/charges', { orderIds });
     const fillMissingCosts = () => api.post('/api/orders/missing-costs');
+    const missingCosts = computed(() => orders.value.some((order) => order.unknownCosts > 0));
 
-    return { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts };
+    return { orders, eventFilter, load, place, removeSelected, addSupplies, recomputeCharges, fillMissingCosts, missingCosts };
+}
+
+export function useCheckedChannel(orders, checkedIds, channels) {
+    const channelIds = computed(() => {
+        const checked = new Set(checkedIds.value);
+        return [...new Set(orders.value.filter((order) => checked.has(order.id)).map((order) => order.channelId ?? null))];
+    });
+    const channel = computed(() => (channelIds.value.length === 1 ? channels.value.find((candidate) => candidate.id === channelIds.value[0]) ?? null : null));
+    const supplyBlocker = computed(() => {
+        if (channelIds.value.length > 1) return t('orders.supplies.severalChannels');
+        if (!channel.value) return t('orders.supplies.noChannel');
+        if (channel.value.supplies.length === 0) return t('orders.supplies.noneOnChannel', { channel: channel.value.name });
+        return null;
+    });
+
+    return { channel, supplyBlocker };
 }
 
 export function useOrder(orderId) {

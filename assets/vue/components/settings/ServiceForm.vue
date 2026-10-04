@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive } from 'vue';
 import { Copy } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
@@ -11,6 +11,7 @@ import IconButton from '../ui/IconButton.vue';
 import ServiceOptions from './ServiceOptions.vue';
 import { SALES_CONTEXTS, UNKNOWN_ITEMS } from '../../composables/useServices.js';
 import { useToast } from '../../composables/useToast.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const { t } = useI18n();
 
@@ -27,8 +28,7 @@ const options = reactive({
     salesContext: connection?.salesContext ?? props.service.defaultSalesContext,
     unknownItems: connection?.unknownItems ?? props.service.defaultUnknownItems,
 });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 const callbackUrl = computed(() => `${window.location.origin}/settings/${props.service.key}/callback`);
 
@@ -46,16 +46,12 @@ async function copyCallback() {
 }
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    const saved = await run(async () => {
         await props.submit({ fields: { ...fields }, ...options });
         emit('saved');
-    } catch (error) {
-        const fieldErrors = Object.fromEntries(Object.entries(error.fieldErrors ?? {}).map(([path, message]) => [path.replace(/^\[|\]$/g, ''), message]));
-        errors.value = Object.keys(fieldErrors).length ? fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
+    });
+    if (!saved) {
+        errors.value = Object.fromEntries(Object.entries(errors.value).map(([path, message]) => [path.replace(/^\[|\]$/g, ''), message]));
     }
 }
 </script>
@@ -94,8 +90,8 @@ async function onSubmit() {
             </FormSection>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('settings.form.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ connection ? t('settings.form.save') : t('settings.form.add', { label: service.label }) }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ connection ? t('common.save') : t('settings.form.add', { label: service.label }) }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

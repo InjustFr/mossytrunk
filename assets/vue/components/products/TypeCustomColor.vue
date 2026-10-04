@@ -34,8 +34,8 @@ function add() {
             <PopoverContent class="popover type-custom-color" side="bottom" align="start" :side-offset="8" :aria-label="t('products.colors.custom')">
                 <ColorPanel v-model="draft" />
                 <div class="actions-row">
-                    <PopoverClose as-child><BaseButton variant="ghost">{{ t('products.cancel') }}</BaseButton></PopoverClose>
-                    <BaseButton variant="secondary" @click="add">{{ t('products.colors.add') }}</BaseButton>
+                    <PopoverClose as-child><BaseButton variant="ghost">{{ t('common.cancel') }}</BaseButton></PopoverClose>
+                    <BaseButton variant="secondary" @click="add">{{ t('common.add') }}</BaseButton>
                 </div>
             </PopoverContent>
         </PopoverPortal>

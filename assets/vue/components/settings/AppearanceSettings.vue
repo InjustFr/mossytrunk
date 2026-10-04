@@ -17,15 +17,12 @@ const preset = computed(() => presetOf(theme.value));
 async function save(next) {
     theme.value = { ...next };
     if (next.background === kept.value.background && next.accent === kept.value.accent) return;
-    try {
-        await choose(next);
+    if (await toast.attempt(() => choose(next), t('settings.appearance.saved'))) {
         kept.value = { ...next };
-        toast.success(t('settings.appearance.saved'));
-    } catch (error) {
-        theme.value = { ...kept.value };
-        applyTheme(kept.value);
-        toast.error(error.message);
+        return;
     }
+    theme.value = { ...kept.value };
+    applyTheme(kept.value);
 }
 
 function preview(key, color) {

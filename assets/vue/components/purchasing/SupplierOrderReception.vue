@@ -7,6 +7,7 @@ import BaseNumberField from '../ui/BaseNumberField.vue';
 import FormError from '../ui/FormError.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const { t } = useI18n();
 
@@ -18,8 +19,7 @@ const emit = defineEmits(['received', 'cancel']);
 
 const counts = reactive(Object.fromEntries(props.order.lines.map((line) => [line.id, null])));
 const step = ref(0);
-const saving = ref(false);
-const error = ref(null);
+const { saving, errors, run } = useFormSubmit('form', { byField: false });
 
 const lines = computed(() => props.order.lines);
 const reviewing = computed(() => step.value === lines.value.length);
@@ -41,16 +41,10 @@ function next() {
 }
 
 async function validate() {
-    saving.value = true;
-    error.value = null;
-    try {
+    await run(async () => {
         await props.submit(lines.value.map((line) => ({ lineId: line.id, received: counts[line.id] })));
         emit('received');
-    } catch (exception) {
-        error.value = exception.message;
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -129,7 +123,7 @@ async function validate() {
             <p v-if="counted(current) && counts[current.id] === 0" class="reception__hint">{{ t('purchasing.reception.nothingHint') }}</p>
 
             <div class="actions-row">
-                <BaseButton variant="ghost" @click="step === 0 ? emit('cancel') : step--">{{ step === 0 ? t('purchasing.reception.cancel') : t('purchasing.reception.previous') }}</BaseButton>
+                <BaseButton variant="ghost" @click="step === 0 ? emit('cancel') : step--">{{ step === 0 ? t('common.cancel') : t('purchasing.reception.previous') }}</BaseButton>
                 <BaseButton :disabled="!counted(current)" @click="next">{{ step === lines.length - 1 ? t('purchasing.reception.check') : t('purchasing.reception.next') }}</BaseButton>
             </div>
         </section>
@@ -162,7 +156,7 @@ async function validate() {
                 </tbody>
             </table>
             <p class="reception__hint">{{ t('purchasing.reception.reviewHint') }}</p>
-            <FormError v-if="error">{{ error }}</FormError>
+            <FormError v-if="errors.form">{{ errors.form }}</FormError>
             <div class="actions-row">
                 <BaseButton variant="ghost" @click="step--">{{ t('purchasing.reception.previous') }}</BaseButton>
                 <BaseButton :loading="saving" @click="validate">{{ t('purchasing.reception.validate') }}</BaseButton>

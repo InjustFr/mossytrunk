@@ -12,10 +12,7 @@
     "name": "Name",
     "namePlaceholder": "E.g. Etsy shop",
     "service": "Linked service",
-    "noService": "None",
     "serviceHint": "Sales imported from this service are counted at its prices.",
-    "cancel": "Cancel",
-    "save": "Save",
     "create": "Add the channel",
     "created": "Channel “{name}” added.",
     "updated": "Channel “{name}” updated.",
@@ -40,7 +37,6 @@
     "detail": {
         "back": "Sales channels",
         "fallbackTitle": "Sales channel",
-        "edit": "Edit",
         "settings": "Settings",
         "kind": "Kind",
         "service": "Linked service"
@@ -58,8 +54,6 @@
         "editTitle": "Price of {name} on {channel}",
         "amount": "Price",
         "follow": "Follow the {main} price",
-        "save": "Save",
-        "cancel": "Cancel",
         "saved": "Price of {name} saved.",
         "batch": "Edit the shown prices",
         "batchTitle": "Edit the prices of {channel}",
@@ -92,8 +86,6 @@
             "percent": "% of the order"
         },
         "amount": "Amount",
-        "cancel": "Cancel",
-        "save": "Save",
         "added": "Cost “{label}” added.",
         "updated": "Cost “{label}” updated.",
         "removed": "Cost “{label}” deleted.",

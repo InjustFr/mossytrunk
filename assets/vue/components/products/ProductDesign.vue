@@ -8,6 +8,7 @@ import FieldError from '../ui/FieldError.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -21,8 +22,7 @@ const { t } = useI18n();
 
 const mode = ref(null);
 const form = reactive({ gabaritId: '', designId: '' });
-const error = ref(null);
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 const gabaritOptions = computed(() => props.gabarits.map((g) => ({ value: g.id, label: g.typeName ? `${g.name} (${g.typeName})` : g.name })));
 const designOptions = computed(() => props.designs.map((d) => ({ value: d.id, label: d.name })));
@@ -30,20 +30,14 @@ const suggestedGabarit = computed(() => props.gabarits.find((g) => g.typeId && g
 
 watch(mode, () => {
     Object.assign(form, { gabaritId: suggestedGabarit.value, designId: '' });
-    error.value = null;
+    errors.value = {};
 });
 
-async function onSubmit() {
-    saving.value = true;
-    error.value = null;
-    try {
+function onSubmit() {
+    return run(async () => {
         const { designId } = await props.submit({ gabaritId: form.gabaritId, designId: mode.value === 'attach' ? form.designId : null });
         emit('designed', designId);
-    } catch (exception) {
-        error.value = exception.message;
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -66,17 +60,17 @@ async function onSubmit() {
                 <template #link><a href="/designs">{{ t('products.design.designsPage') }}</a></template>
             </i18n-t>
             <form v-if="mode" class="product-design__form" novalidate @submit.prevent="onSubmit">
-                <FieldError v-if="error">{{ error }}</FieldError>
+                <FieldError v-if="errors.form">{{ errors.form }}</FieldError>
                 <FormSection>
-                    <FormField v-if="mode === 'attach'" as="group" :label="t('products.design.design')">
+                    <FormField v-if="mode === 'attach'" as="group" :label="t('products.design.design')" :error="errors.designId">
                         <BaseSelect v-model="form.designId" :options="designOptions" :aria-label="t('products.design.design')" :placeholder="t('products.design.chooseDesign')" />
                     </FormField>
-                    <FormField as="group" :label="t('products.design.gabarit')">
+                    <FormField as="group" :label="t('products.design.gabarit')" :error="errors.gabaritId">
                         <BaseSelect v-model="form.gabaritId" :options="gabaritOptions" :aria-label="t('products.design.gabaritLabel')" :placeholder="t('products.design.chooseGabarit')" />
                     </FormField>
                 </FormSection>
                 <FormActions>
-                    <BaseButton variant="ghost" @click="mode = null">{{ t('products.cancel') }}</BaseButton>
+                    <BaseButton variant="ghost" @click="mode = null">{{ t('common.cancel') }}</BaseButton>
                     <BaseButton type="submit" :loading="saving">{{ t(mode === 'create' ? 'products.design.createSubmit' : 'products.design.attachSubmit') }}</BaseButton>
                 </FormActions>
             </form>

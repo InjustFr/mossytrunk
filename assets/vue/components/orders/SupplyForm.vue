@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
@@ -8,6 +8,7 @@ import FormActions from '../ui/FormActions.vue';
 import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     supplies: { type: Array, required: true },
@@ -18,8 +19,7 @@ const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
 const form = reactive({ supplyId: props.supplies[0]?.id ?? '', variant: null, quantity: 1 });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 const supplyOptions = computed(() => props.supplies.map((supply) => ({ value: supply.id, label: supply.name })));
 const variants = computed(() => props.supplies.find((supply) => supply.id === form.supplyId)?.variants ?? []);
@@ -30,16 +30,10 @@ watch(variants, (list) => {
 }, { immediate: true });
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         const result = await props.submit({ supplyId: form.supplyId, variant: form.variant, quantity: form.quantity ?? 0 });
         emit('saved', result?.updated ?? 1);
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -59,8 +53,8 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('orders.supplies.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t('orders.supplies.submit') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t('common.add') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

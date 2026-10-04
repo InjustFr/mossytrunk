@@ -15,6 +15,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 import TypeSelect from '../products/TypeSelect.vue';
 import VariantPicker from '../products/VariantPicker.vue';
 import VariantsInput from '../products/VariantsInput.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
@@ -29,8 +30,7 @@ const { variantsOf } = useProductTypes();
 const empty = () => ({ name: '', typeId: '', sellingPrice: null, variants: [], adaptations: [] });
 const editingId = ref(null);
 const form = reactive(empty());
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit('name');
 
 function edit(gabarit) {
     editingId.value = gabarit?.id ?? null;
@@ -52,21 +52,12 @@ async function onRemove(gabarit) {
     }
 }
 
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         await props.save(editingId.value, { ...form, typeId: form.typeId || null, sellingPrice: form.sellingPrice ?? -1 });
         emit('saved', form.name);
         edit(null);
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { name: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -100,7 +91,7 @@ async function onSubmit() {
                         <TypeSelect v-model="form.typeId" />
                     </FormField>
                     <FormField :label="t('designs.gabarits.sellingPrice')" :error="errors.sellingPrice">
-                        <BaseMoneyField v-model="form.sellingPrice" class="gabarit-manager__price" />
+                        <BaseMoneyField v-model="form.sellingPrice" class="control--short" />
                     </FormField>
                     <FormField as="group" :label="t('designs.gabarits.variants')" :error="errors.variants">
                         <VariantPicker v-model="form.variants" :options="variantsOf(form.typeId)" :empty="form.typeId ? null : t('products.variantPicker.chooseTypeFirst')" />
@@ -110,8 +101,8 @@ async function onSubmit() {
                     </FormField>
                 </FormSection>
                 <FormActions>
-                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('designs.gabarits.cancel') }}</BaseButton>
-                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('designs.gabarits.save') : t('designs.gabarits.add') }}</BaseButton>
+                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('common.cancel') }}</BaseButton>
+                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('common.save') : t('designs.gabarits.add') }}</BaseButton>
                 </FormActions>
             </fieldset>
         </form>
@@ -124,5 +115,4 @@ async function onSubmit() {
 .gabarit-manager__summary { display: flex; flex-direction: column; }
 .gabarit-manager__meta { color: var(--color-muted); font-size: var(--font-size-sm); }
 .gabarit-manager__form { display: flex; flex-direction: column; gap: var(--space-4); }
-.gabarit-manager__price { max-width: 11rem; }
 </style>

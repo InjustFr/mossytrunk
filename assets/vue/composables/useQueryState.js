@@ -18,6 +18,16 @@ function rememberListUrl(url) {
     }
 }
 
+export function takeQuery(name) {
+    const url = new URL(window.location.href);
+    const value = url.searchParams.get(name);
+    if (value !== null) {
+        url.searchParams.delete(name);
+        window.history.replaceState(window.history.state, '', url);
+    }
+    return value;
+}
+
 export function listUrl(path) {
     return rememberedListUrls()[path] ?? path;
 }

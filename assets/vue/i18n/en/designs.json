@@ -13,7 +13,6 @@
         "benchEmpty": "Nothing in progress. Start a design, or put one back on the workbench from its page.",
         "collectionEmpty": "No designs in this collection.",
         "standaloneEmpty": "No designs without a collection.",
-        "edit": "Edit",
         "addDesign": "Add a design",
         "validateCollection": "Release the collection from the workshop",
         "validate": "Confirm",
@@ -31,9 +30,7 @@
     "detail": {
         "titleFallback": "Design",
         "back": "Designs",
-        "delete": "Delete",
         "deleteMessage": "The design “{name}” and its adaptations will be deleted.",
-        "edit": "Edit",
         "editTitle": "Edit design",
         "createNewProducts": "Create the new products",
         "validate": "Release from the workshop",
@@ -56,8 +53,6 @@
     "collectionForm": {
         "name": "Name",
         "description": "Description",
-        "cancel": "Cancel",
-        "save": "Save",
         "create": "Create collection"
     },
     "declination": {
@@ -82,8 +77,6 @@
         "gabarits": "Templates",
         "notes": "Notes",
         "notesPlaceholder": "Idea, palette, references…",
-        "cancel": "Cancel",
-        "save": "Save",
         "start": "Start design"
     },
     "rows": {
@@ -105,8 +98,6 @@
         "newAdaptation": "New adjustment",
         "adaptationPlaceholder": "3 mm bleed, then Enter",
         "adaptationItem": "adjustment",
-        "cancel": "Cancel",
-        "save": "Save",
         "add": "Add template",
         "remove": "Delete the template {name}",
         "removeMessage": "Only possible when no design is declined on this template."

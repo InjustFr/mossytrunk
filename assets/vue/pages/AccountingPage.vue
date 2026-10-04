@@ -1,10 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { I18nT, useI18n } from 'vue-i18n';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSelect from '../components/ui/BaseSelect.vue';
+import ChoiceGroup from '../components/ui/ChoiceGroup.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import DeclarationSlip from '../components/accounting/DeclarationSlip.vue';
 import OrdersExport from '../components/accounting/OrdersExport.vue';
@@ -36,7 +37,7 @@ async function onYear(year) {
 }
 
 async function onPeriodicity(periodicity) {
-    if (!periodicity || periodicity === overview.value.periodicity) return;
+    if (periodicity === overview.value.periodicity) return;
     await setPeriodicity(periodicity);
     selectedKey.value = null;
     toast.success(periodicity === 'monthly' ? t('accounting.toast.monthly') : t('accounting.toast.quarterly'));
@@ -45,16 +46,11 @@ async function onPeriodicity(periodicity) {
 
 async function onDeclare(period) {
     saving.value = true;
-    try {
-        await declare(period.key);
-        toast.success(t('accounting.toast.declared', { period: periodLabel(period) }));
+    if (await toast.attempt(() => declare(period.key), t('accounting.toast.declared', { period: periodLabel(period) }))) {
         selectedKey.value = null;
         await reload();
-    } catch (error) {
-        toast.error(error.message);
-    } finally {
-        saving.value = false;
     }
+    saving.value = false;
 }
 
 async function onWithdraw(period) {
@@ -70,10 +66,10 @@ onMounted(() => Promise.all([load(), loadPotential()]));
     <AppLayout :title="t('accounting.title')">
         <template #actions>
             <template v-if="overview">
-                <ToggleGroupRoot :model-value="overview.periodicity" type="single" class="accounting-page__periodicity" :aria-label="t('accounting.periodicity.label')" @update:model-value="onPeriodicity">
+                <ChoiceGroup :model-value="overview.periodicity" class="accounting-page__periodicity" :aria-label="t('accounting.periodicity.label')" @update:model-value="onPeriodicity">
                     <ToggleGroupItem value="monthly" class="accounting-page__periodicity-item">{{ t('accounting.periodicity.monthly') }}</ToggleGroupItem>
                     <ToggleGroupItem value="quarterly" class="accounting-page__periodicity-item">{{ t('accounting.periodicity.quarterly') }}</ToggleGroupItem>
-                </ToggleGroupRoot>
+                </ChoiceGroup>
                 <BaseSelect :model-value="String(overview.year)" :options="yearOptions" :aria-label="t('accounting.year')" size="small" @update:model-value="onYear" />
             </template>
         </template>

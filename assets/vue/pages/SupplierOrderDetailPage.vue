@@ -55,13 +55,7 @@ async function onSaved() {
 }
 
 async function onRemove() {
-    try {
-        await remove(props.orderId);
-        toast.success(t('purchasing.detail.deleted', { reference: order.value.reference }));
-        visit(listUrl('/supplier-orders'));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    if (await toast.attempt(() => remove(props.orderId), t('purchasing.detail.deleted', { reference: order.value.reference }))) visit(listUrl('/supplier-orders'));
 }
 
 async function onMerged(absorbed) {
@@ -84,9 +78,9 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
         <template #back><BackLink :href="listUrl('/supplier-orders')">{{ t('purchasing.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="order && !receiving">
-                <ConfirmButton v-if="isOrdered" variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />
+                <ConfirmButton v-if="isOrdered" variant="ghost" :label="t('common.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />
                 <BaseButton variant="secondary" @click="mergeOpen = true">{{ t('purchasing.detail.merge') }}</BaseButton>
-                <BaseButton variant="secondary" @click="editOpen = true">{{ t('purchasing.detail.edit') }}</BaseButton>
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('common.edit') }}</BaseButton>
                 <BaseButton v-if="isOrdered" @click="receiving = true">{{ t('purchasing.detail.unpack') }}</BaseButton>
             </template>
         </template>

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { ArrowRight, CalendarRange, Pencil, Trash2 } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseSwitch from '../ui/BaseSwitch.vue';
@@ -18,17 +19,16 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'toggle', 'remove']);
 const { t } = useI18n();
 
-
-const typeOf = (id) => props.types.find((type) => type.id === id);
-const productOf = (id) => props.products.find((product) => product.id === id);
+const typesById = computed(() => new Map(props.types.map((type) => [type.id, type])));
+const productsById = computed(() => new Map(props.products.map((product) => [product.id, product])));
 
 function describe(target) {
     if (target.kind === 'type') {
-        const type = typeOf(target.id);
+        const type = typesById.value.get(target.id);
         return { name: type?.name ?? target.name, color: type?.color ?? null };
     }
-    const product = productOf(target.id);
-    return { name: product?.displayName ?? target.name, color: typeOf(product?.typeId)?.color ?? null };
+    const product = productsById.value.get(target.id);
+    return { name: product?.displayName ?? target.name, color: typesById.value.get(product?.typeId)?.color ?? null };
 }
 
 const conditionKey = (condition) => condition.targets.map((target) => `${target.kind}-${target.id}-${target.variant}`).join('|');
@@ -37,7 +37,7 @@ const period = (rule) => describePeriod(rule.startsOn, rule.endsOn);
 
 const status = (key) => t(`discounts.status.${key}`);
 
-function saving(rule) {
+function savingOf(rule) {
     const day = pricingDay(rule.startsOn, rule.endsOn);
     const regular = regularPrice(props.products, rule.conditions, day);
     if (!regular) {
@@ -49,6 +49,8 @@ function saving(rule) {
         saved: describeRange({ min: savingOn(regular.min, rule.action), max: savingOn(regular.max, rule.action) }),
     };
 }
+
+const savings = computed(() => new Map(props.rules.map((rule) => [rule.id, savingOf(rule)])));
 </script>
 
 <template>
@@ -82,17 +84,17 @@ function saving(rule) {
                     {{ period(rule) }}
                 </span>
             </div>
-            <dl v-if="saving(rule)" class="discount-rule-list__figures">
+            <dl v-if="savings.get(rule.id)" class="discount-rule-list__figures">
                 <div class="discount-rule-list__figure">
                     <dt class="eyebrow">{{ t('discounts.list.regularPrice') }}</dt>
                     <dd>
-                        {{ saving(rule).regular }}
-                        <span v-if="saving(rule).day" class="discount-rule-list__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(saving(rule).day) }) }}</span>
+                        {{ savings.get(rule.id).regular }}
+                        <span v-if="savings.get(rule.id).day" class="discount-rule-list__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(savings.get(rule.id).day) }) }}</span>
                     </dd>
                 </div>
                 <div class="discount-rule-list__figure">
                     <dt class="eyebrow">{{ t('discounts.list.customerSaving') }}</dt>
-                    <dd class="discount-rule-list__saved">{{ saving(rule).saved }}</dd>
+                    <dd class="discount-rule-list__saved">{{ savings.get(rule.id).saved }}</dd>
                 </div>
             </dl>
             <span v-else class="discount-rule-list__figures" />

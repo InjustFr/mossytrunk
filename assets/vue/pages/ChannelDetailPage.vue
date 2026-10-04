@@ -63,13 +63,7 @@ async function onSaved(name) {
 }
 
 async function onRemoved() {
-    try {
-        await salesChannels.remove(props.channelId);
-        toast.success(t('channels.removed', { name: channel.value.name }));
-        visit(listUrl('/channels'));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    if (await toast.attempt(() => salesChannels.remove(props.channelId), t('channels.removed', { name: channel.value.name }))) visit(listUrl('/channels'));
 }
 
 const editingCost = ref(null);
@@ -95,12 +89,7 @@ async function onCostRemoved(cost) {
 }
 
 async function onSuppliesChanged(supplyIds) {
-    try {
-        await salesChannels.offerSupplies(props.channelId, supplyIds);
-        toast.success(t('channels.supplies.saved'));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    await toast.attempt(() => salesChannels.offerSupplies(props.channelId, supplyIds), t('channels.supplies.saved'));
     await loadChannel();
 }
 
@@ -130,7 +119,7 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                     :message="t('channels.removeMessage')"
                     @confirm="onRemoved"
                 />
-                <BaseButton variant="secondary" @click="editOpen = true">{{ t('channels.detail.edit') }}</BaseButton>
+                <BaseButton variant="secondary" @click="editOpen = true">{{ t('common.edit') }}</BaseButton>
             </template>
         </template>
 
@@ -143,7 +132,7 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
                         <StatusBadge v-if="channel.main" tone="success" :title="t('channels.mainHint')">{{ t('channels.main') }}</StatusBadge>
                     </dd>
                 </div>
-                <div><dt>{{ t('channels.detail.service') }}</dt><dd>{{ channel.serviceLabel ?? t('channels.noService') }}</dd></div>
+                <div><dt>{{ t('channels.detail.service') }}</dt><dd>{{ channel.serviceLabel ?? t('common.none') }}</dd></div>
             </dl>
 
             <BaseCard :title="t('channels.costs.title')">

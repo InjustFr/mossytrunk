@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { Toggle, ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { Archive, PackageMinus, TriangleAlert } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import TypeMark from '../ui/TypeMark.vue';
 
 const props = defineProps({
@@ -21,7 +22,6 @@ const lowStock = defineModel('lowStock', { type: Boolean, default: false });
 const archived = defineModel('archived', { type: Boolean, default: false });
 const kind = defineModel('kind', { type: String, required: true });
 const KIND_OPTIONS = ['article', 'supply'];
-const selectedKind = computed({ get: () => kind.value, set: (value) => { if (value) kind.value = value; } });
 const { t } = useI18n();
 
 const ALL = '__all__';
@@ -29,25 +29,21 @@ const chips = computed(() => [{ id: ALL, name: t('products.filters.all'), mark: 
 
 const selectedChip = computed({
     get: () => typeId.value || ALL,
-    set: (chip) => {
-        if (chip) {
-            typeId.value = chip === ALL ? '' : chip;
-        }
-    },
+    set: (chip) => { typeId.value = chip === ALL ? '' : chip; },
 });
 </script>
 
 <template>
     <div class="product-filters">
-        <ToggleGroupRoot v-model="selectedKind" type="single" class="product-filters__kinds" :aria-label="t('products.filters.byKind')">
+        <ChoiceGroup v-model="kind" class="product-filters__kinds" :aria-label="t('products.filters.byKind')">
             <ToggleGroupItem v-for="option in KIND_OPTIONS" :key="option" :value="option" class="product-filters__kind">{{ t(`products.filters.kinds.${option}`) }}</ToggleGroupItem>
-        </ToggleGroupRoot>
+        </ChoiceGroup>
         <input v-model="search" class="control control--compact product-filters__search" type="search" :placeholder="t('products.filters.searchPlaceholder')" :aria-label="t('products.filters.searchLabel')">
-        <ToggleGroupRoot v-model="selectedChip" type="single" class="product-filters__chips" :aria-label="t('products.filters.byType')">
+        <ChoiceGroup v-model="selectedChip" class="product-filters__chips" :aria-label="t('products.filters.byType')">
             <ToggleGroupItem v-for="chip in chips" :key="chip.id" :value="chip.id" class="chip product-filters__chip">
                 <TypeMark v-if="chip.mark" :color="typeColors.get(chip.name)" />{{ chip.name }}
             </ToggleGroupItem>
-        </ToggleGroupRoot>
+        </ChoiceGroup>
         <Toggle v-if="lowStockCount > 0 || lowStock" v-model="lowStock" class="chip chip--warning product-filters__missing product-filters__low-stock">
             <PackageMinus size="0.875rem" aria-hidden="true" />
             {{ t('products.filters.lowStock', lowStockCount) }}

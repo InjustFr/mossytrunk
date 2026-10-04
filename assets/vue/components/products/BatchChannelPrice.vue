@@ -1,11 +1,12 @@
 <script setup>
 import { computed, watch } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import { ArrowRight } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
 import BaseSelect from '../ui/BaseSelect.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
@@ -53,18 +54,18 @@ watch(() => change.value.target, (targetId) => {
 <template>
     <FormSection :title="fixedTarget ? null : t('products.channelPrice.title')" :description="fixedTarget ? null : t('products.channelPrice.intro')">
         <FormField v-if="!fixedTarget" as="group" :label="t('products.channelPrice.target')" :error="errors['channelPrice.channelId']">
-            <BaseSelect v-model="change.target" :options="targetOptions" :aria-label="t('products.channelPrice.target')" class="batch-channel-price__select" />
+            <BaseSelect v-model="change.target" :options="targetOptions" :aria-label="t('products.channelPrice.target')" class="control--medium" />
         </FormField>
         <template v-if="active">
             <FormField as="group" :label="t('products.channelPrice.mode')" :error="errors['channelPrice.mode']">
-                <BaseSelect v-model="change.mode" :options="modeOptions" :aria-label="t('products.channelPrice.mode')" class="batch-channel-price__select" />
+                <BaseSelect v-model="change.mode" :options="modeOptions" :aria-label="t('products.channelPrice.mode')" class="control--medium" />
             </FormField>
             <FormField v-if="change.mode === CHANNEL_PRICE_MODES.fixed" :label="t('products.channelPrice.newPrice')" :error="errors['channelPrice.price']">
-                <BaseMoneyField v-model="change.price" class="batch-channel-price__amount" />
+                <BaseMoneyField v-model="change.price" class="control--short" />
             </FormField>
             <template v-if="derived">
                 <FormField as="group" :label="t('products.channelPrice.source')" :error="errors['channelPrice.sourceChannelId']">
-                    <BaseSelect v-model="change.source" :options="sourceOptions" :aria-label="t('products.channelPrice.source')" class="batch-channel-price__select" />
+                    <BaseSelect v-model="change.source" :options="sourceOptions" :aria-label="t('products.channelPrice.source')" class="control--medium" />
                 </FormField>
                 <FormField as="group" :label="t('products.channelPrice.adjustment')" :hint="t('products.channelPrice.adjustmentHint')">
                     <div class="batch-channel-price__adjustment">
@@ -73,18 +74,12 @@ watch(() => change.value.target, (targetId) => {
                             :step="change.unit === ADJUSTMENT_UNITS.percent ? 1 : 0.5"
                             :format-options="adjustmentFormat"
                             :label="t('products.channelPrice.adjustment')"
-                            class="batch-channel-price__amount"
+                            class="control--short"
                         />
-                        <ToggleGroupRoot
-                            :model-value="change.unit"
-                            type="single"
-                            class="segmented"
-                            :aria-label="t('products.channelPrice.unit')"
-                            @update:model-value="(unit) => unit && (change.unit = unit)"
-                        >
+                        <ChoiceGroup v-model="change.unit" class="segmented" :aria-label="t('products.channelPrice.unit')">
                             <ToggleGroupItem :value="ADJUSTMENT_UNITS.percent" class="segmented__item">%</ToggleGroupItem>
                             <ToggleGroupItem :value="ADJUSTMENT_UNITS.cents" class="segmented__item">€</ToggleGroupItem>
-                        </ToggleGroupRoot>
+                        </ChoiceGroup>
                     </div>
                 </FormField>
             </template>
@@ -102,10 +97,7 @@ watch(() => change.value.target, (targetId) => {
 </template>
 
 <style scoped>
-.batch-channel-price__select { max-width: 16rem; }
-.batch-channel-price__amount { max-width: 11rem; }
 .batch-channel-price__adjustment { display: flex; align-items: center; gap: var(--space-2); }
-
 
 .batch-channel-price__previews { display: flex; flex-direction: column; gap: var(--space-1); margin: 0; padding: var(--space-2) var(--space-3); list-style: none; border-radius: var(--radius); background: var(--color-bg); font-size: var(--font-size-sm); }
 .batch-channel-price__preview { display: flex; align-items: center; gap: var(--space-2); font-variant-numeric: tabular-nums; }

@@ -1,11 +1,12 @@
 <script setup>
-import { reactive, ref } from 'vue';
+import { reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormError from '../ui/FormError.vue';
 import BatchChannelPrice from '../products/BatchChannelPrice.vue';
 import { channelPriceChangePayload, emptyChannelPriceChange } from '../../composables/useChannelPrices.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     channel: { type: Object, required: true },
@@ -17,20 +18,13 @@ const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
 const change = reactive({ ...emptyChannelPriceChange(), target: props.channel.id });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         const result = await props.submit({ productIds: props.products.map((product) => product.id), channelPrice: channelPriceChangePayload(change) });
         emit('saved', result.updated);
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -41,7 +35,7 @@ async function onSubmit() {
             <p class="channel-batch-price-form__intro">{{ t('channels.prices.batchIntro', products.length) }}</p>
             <BatchChannelPrice v-model="change" :channels="channels" :products="products" :errors="errors" fixed-target />
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('channels.prices.cancel') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
                 <BaseButton type="submit" :loading="saving">{{ t('channels.prices.apply', products.length) }}</BaseButton>
             </FormActions>
         </fieldset>

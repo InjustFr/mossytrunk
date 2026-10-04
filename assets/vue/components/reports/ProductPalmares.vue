@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatShare } from '../../composables/useProductReports.js';
 import { formatCents } from '../../composables/useMoney.js';
@@ -21,12 +22,11 @@ const showAll = ref(false);
 const hovered = ref(null);
 const search = ref('');
 
-const rankOf = computed(() => new Map([...props.products].sort((a, b) => b[sort.value] - a[sort.value] || b.revenue - a.revenue).map((product, index) => [product.id, index + 1])));
+const byRank = computed(() => [...props.products].sort((a, b) => b[sort.value] - a[sort.value] || b.revenue - a.revenue));
+const rankOf = computed(() => new Map(byRank.value.map((product, index) => [product.id, index + 1])));
 const ranked = computed(() => {
     const needle = normalize(search.value.trim());
-    return [...props.products]
-        .filter((product) => needle === '' || normalize(`${product.name} ${product.typeName}`).includes(needle))
-        .sort((a, b) => rankOf.value.get(a.id) - rankOf.value.get(b.id));
+    return needle === '' ? byRank.value : byRank.value.filter((product) => normalize(`${product.name} ${product.typeName}`).includes(needle));
 });
 const shown = computed(() => (showAll.value || search.value.trim() !== '' ? ranked.value : ranked.value.slice(0, FIRST)));
 const lengthOf = (product) => (sort.value === 'revenue' ? product.gross : Math.max(0, product[sort.value]));
@@ -40,15 +40,9 @@ const figure = (product) => (sort.value === 'units' ? t('reports.palmares.units'
     <section class="palmares" aria-labelledby="palmares-title">
         <header class="palmares__header">
             <h2 id="palmares-title" class="palmares__title">{{ t('reports.palmares.title') }}</h2>
-            <ToggleGroupRoot
-                :model-value="sort"
-                type="single"
-                class="palmares__sorts"
-                :aria-label="t('reports.palmares.sortBy')"
-                @update:model-value="(value) => value && (sort = value)"
-            >
+            <ChoiceGroup v-model="sort" class="palmares__sorts" :aria-label="t('reports.palmares.sortBy')">
                 <ToggleGroupItem v-for="key in SORTS" :key="key" :value="key" class="palmares__sort">{{ t(`reports.palmares.sorts.${key}`) }}</ToggleGroupItem>
-            </ToggleGroupRoot>
+            </ChoiceGroup>
         </header>
         <input v-model="search" class="control control--compact palmares__search" type="search" :placeholder="t('reports.palmares.search')" :aria-label="t('reports.palmares.search')">
         <p v-if="sort === 'revenue'" class="palmares__legend">

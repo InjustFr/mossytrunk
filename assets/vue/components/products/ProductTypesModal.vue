@@ -22,13 +22,7 @@ const activeTypes = computed(() => types.value.filter((type) => !type.archived))
 const archivedTypes = computed(() => types.value.filter((type) => type.archived));
 
 async function change(action, type, message) {
-    try {
-        await action(type.id);
-        toast.success(t(message, { name: type.name }));
-        emit('changed');
-    } catch (error) {
-        toast.error(error.message);
-    }
+    if (await toast.attempt(() => action(type.id), t(message, { name: type.name }))) emit('changed');
 }
 
 const onArchive = (type) => change(archive, type, 'products.toast.typeArchived');
@@ -90,5 +84,4 @@ function onSaved(name) {
 .product-types-modal__step { display: flex; flex-direction: column; gap: var(--space-4); }
 .product-types-modal__intro { margin: 0; color: var(--color-muted); font-size: var(--font-size-md); }
 .product-types-modal__archived { display: flex; flex-direction: column; gap: var(--space-2); padding-top: var(--space-4); border-top: 0.0625rem solid var(--color-border); }
-
 </style>

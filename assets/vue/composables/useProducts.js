@@ -1,9 +1,9 @@
-import { computed, ref } from 'vue';
+import { computed, ref, shallowRef } from 'vue';
 import { useApi } from './useApi.js';
 
 export function useProducts() {
     const api = useApi();
-    const products = ref([]);
+    const products = shallowRef([]);
     const loading = ref(false);
 
     async function load() {

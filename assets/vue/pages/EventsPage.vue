@@ -10,12 +10,13 @@ import EventComparison from '../components/events/EventComparison.vue';
 import EventList from '../components/events/EventList.vue';
 import EventForm from '../components/events/EventForm.vue';
 import { useEvents } from '../composables/useEvents.js';
+import { takeQuery } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 
 const { upcoming, past, load, create } = useEvents();
 const toast = useToast();
 const { t } = useI18n();
-const modalOpen = ref(new URLSearchParams(window.location.search).has('new'));
+const modalOpen = ref(takeQuery('new') !== null);
 
 async function onSaved(name) {
     toast.success(t('events.page.created', { name }));

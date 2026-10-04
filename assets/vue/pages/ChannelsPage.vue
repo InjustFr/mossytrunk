@@ -35,12 +35,7 @@ async function onSaved(name) {
 }
 
 async function onRemoved(channel) {
-    try {
-        await salesChannels.remove(channel.id);
-        toast.success(t('channels.removed', { name: channel.name }));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    await toast.attempt(() => salesChannels.remove(channel.id), t('channels.removed', { name: channel.name }));
     await salesChannels.load();
 }
 

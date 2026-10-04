@@ -1,10 +1,8 @@
 import { computed, ref } from 'vue';
-import { intlLocale } from '../i18n/locale.js';
 import { useApi } from './useApi.js';
 
 const types = ref([]);
 
-const byName = (a, b) => a.name.localeCompare(b.name, intlLocale());
 const activeTypes = computed(() => types.value.filter((type) => !type.archived));
 
 export function useProductTypes() {
@@ -16,7 +14,7 @@ export function useProductTypes() {
 
     async function create(name, color, code = null, variants = [], prefixesNames = true) {
         const type = await api.post('/api/product-types', { name, color, code, variants, prefixesNames });
-        types.value = [...types.value, type].sort(byName);
+        await load();
         return type;
     }
 

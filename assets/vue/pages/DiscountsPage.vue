@@ -10,20 +10,16 @@ import DiscountRuleList from '../components/discounts/DiscountRuleList.vue';
 import { useDiscountRules } from '../composables/useDiscountRules.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
+import { takeQuery } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 
-const { rules, load, create, update, setActive, remove } = useDiscountRules();
+const { rules, currentRules, pastRules, load, create, update, setActive, remove } = useDiscountRules();
 const { articles: products, load: loadProducts } = useProducts();
 const { types, load: loadTypes } = useProductTypes();
 const toast = useToast();
 const { t } = useI18n();
 const modalOpen = ref(false);
 const editing = ref(null);
-
-const currentRules = computed(() => rules.value.filter((rule) => rule.status !== 'expired'));
-const pastRules = computed(() => rules.value
-    .filter((rule) => rule.status === 'expired')
-    .sort((a, b) => (b.endsOn ?? '').localeCompare(a.endsOn ?? '')));
 
 const modalTitle = computed(() => (editing.value ? t('discounts.page.edit') : t('discounts.page.new')));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
@@ -45,12 +41,7 @@ async function onSaved(name) {
 }
 
 async function onToggle(rule, running) {
-    try {
-        await setActive(rule.id, running);
-        toast.success(t(running ? 'discounts.page.started' : 'discounts.page.stopped', { name: rule.name }));
-    } catch (error) {
-        toast.error(error.message);
-    }
+    await toast.attempt(() => setActive(rule.id, running), t(running ? 'discounts.page.started' : 'discounts.page.stopped', { name: rule.name }));
     await load();
 }
 
@@ -60,7 +51,7 @@ async function onRemove(rule) {
     await load();
 }
 
-const requestedRuleId = new URLSearchParams(window.location.search).get('rule');
+const requestedRuleId = takeQuery('rule');
 
 function openRequestedRule() {
     if (!requestedRuleId) {

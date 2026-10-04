@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDatePicker from '../ui/BaseDatePicker.vue';
@@ -11,6 +10,7 @@ import OrderDraftLines from './OrderDraftLines.vue';
 import OrderLinePicker from './OrderLinePicker.vue';
 import OrderTotals from './OrderTotals.vue';
 import { useOrderDraft } from '../../composables/useOrderDraft.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -20,25 +20,18 @@ const emit = defineEmits(['placed']);
 
 const { t } = useI18n();
 const draft = useOrderDraft();
-const saving = ref(false);
-const error = ref(null);
+const { saving, errors, run } = useFormSubmit();
 
 async function onSubmit() {
     if (draft.lines.length === 0) {
-        error.value = t('orders.form.noLines');
+        errors.value = { form: t('orders.form.noLines') };
         return;
     }
-    saving.value = true;
-    error.value = null;
-    try {
+    await run(async () => {
         const order = await props.submit(draft.payload());
         draft.reset();
         emit('placed', order);
-    } catch (e) {
-        error.value = e.message;
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -46,7 +39,7 @@ async function onSubmit() {
     <form class="order-form" novalidate @submit.prevent="onSubmit">
         <fieldset class="form-lock" :disabled="saving">
             <FormSection>
-                <FormField as="group" :label="t('orders.form.date')">
+                <FormField as="group" :label="t('orders.form.date')" :error="errors.placedAt">
                     <BaseDatePicker v-model="draft.placedAt.value" with-time />
                 </FormField>
                 <Transition name="fade">
@@ -69,7 +62,7 @@ async function onSubmit() {
                 />
             </FormSection>
 
-            <FormError v-if="error || draft.previewError.value">{{ error ?? draft.previewError.value }}</FormError>
+            <FormError v-if="errors.form || draft.previewError.value">{{ errors.form ?? draft.previewError.value }}</FormError>
 
             <div class="order-form__checkout">
                 <OrderTotals

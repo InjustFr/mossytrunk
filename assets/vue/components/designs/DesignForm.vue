@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
@@ -7,6 +7,7 @@ import BaseSelect from '../ui/BaseSelect.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     design: { type: Object, default: null },
@@ -18,33 +19,18 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 const { t } = useI18n();
 
-const form = reactive({ name: '', collectionId: '', notes: '', gabaritIds: [] });
-const errors = ref({});
-const saving = ref(false);
+const form = reactive(props.design
+    ? { name: props.design.name, collectionId: props.design.collection?.id ?? '', notes: props.design.notes ?? '', gabaritIds: [] }
+    : { name: '', collectionId: props.collectionId, notes: '', gabaritIds: [] });
+const { saving, errors, run } = useFormSubmit('name');
 
 const collectionOptions = computed(() => [{ value: '', label: t('designs.noCollection') }, ...props.collections.map((c) => ({ value: c.id, label: c.name }))]);
 
-watch(() => [props.design, props.collectionId], () => {
-    Object.assign(form, props.design
-        ? { name: props.design.name, collectionId: props.design.collection?.id ?? '', notes: props.design.notes ?? '', gabaritIds: [] }
-        : { name: '', collectionId: props.collectionId, notes: '', gabaritIds: [] });
-    errors.value = {};
-}, { immediate: true });
-
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         const result = await props.submit({ name: form.name, collectionId: form.collectionId || null, notes: form.notes || null, gabaritIds: form.gabaritIds });
         emit('saved', { name: form.name, id: result?.id ?? props.design?.id });
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { name: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -68,8 +54,8 @@ async function onSubmit() {
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('designs.form.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ design ? t('designs.form.save') : t('designs.form.start') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ design ? t('common.save') : t('designs.form.start') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

@@ -36,7 +36,7 @@ function focusFirstField(event) {
                 <DialogContent class="modal__panel" :aria-describedby="undefined" @open-auto-focus="focusFirstField">
                     <header class="modal__header">
                         <DialogTitle class="modal__title">{{ title }}</DialogTitle>
-                        <DialogClose class="modal__close" :aria-label="t('ui.close')"><X size="1rem" aria-hidden="true" /></DialogClose>
+                        <DialogClose class="modal__close" :aria-label="t('common.close')"><X size="1rem" aria-hidden="true" /></DialogClose>
                     </header>
                     <div class="modal__body"><slot /></div>
                 </DialogContent>

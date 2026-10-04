@@ -9,6 +9,7 @@ import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import { ownPriceOn, priceOn } from '../../composables/useChannelPrices.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -21,21 +22,14 @@ const { t } = useI18n();
 
 const follow = ref(!props.channel.main && ownPriceOn(props.product, props.channel) === null);
 const price = ref(priceOn(props.product, props.channel));
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 const shownPrice = computed(() => (follow.value ? props.product.sellingPrice : price.value));
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit(follow.value ? null : price.value ?? -1);
         emit('saved', props.product.displayName);
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -52,14 +46,14 @@ async function onSubmit() {
                     <BaseMoneyField
                         :model-value="shownPrice"
                         :disabled="follow"
-                        class="channel-price-form__amount"
+                        class="control--short"
                         @update:model-value="(value) => (price = value)"
                     />
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('channels.prices.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t('channels.prices.save') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t('common.save') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>
@@ -68,5 +62,4 @@ async function onSubmit() {
 <style scoped>
 .channel-price-form { display: flex; flex-direction: column; gap: var(--space-5); }
 .channel-price-form__follow { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-md); cursor: pointer; }
-.channel-price-form__amount { max-width: 11rem; }
 </style>

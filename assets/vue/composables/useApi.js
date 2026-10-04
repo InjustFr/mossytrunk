@@ -17,9 +17,10 @@ export class ApiError extends Error {
 const REFRESH_HEADER = 'X-Refresh';
 const REFRESHED_HEADER = 'X-Refreshed';
 
+const MAX_RESPONSES = 50;
 const responses = new Map();
 const fetching = new Map();
-const loadedOnPage = new Set();
+const loadedOnPage = new Map();
 let generation = 0;
 let preloaded = new Map();
 
@@ -27,6 +28,12 @@ document.addEventListener('turbo:visit', () => {
     loadedOnPage.clear();
     preloaded = new Map();
 });
+
+function remember(url, data) {
+    responses.delete(url);
+    responses.set(url, data);
+    if (responses.size > MAX_RESPONSES) responses.delete(responses.keys().next().value);
+}
 
 function takePreloaded(url) {
     const element = document.getElementById('app-preload');
@@ -52,14 +59,14 @@ async function request(method, url, body, refresh = []) {
 async function change(method, url, body) {
     let refreshed = {};
     try {
-        const { data, refreshed: received = {} } = await request(method, url, body, [...loadedOnPage]);
+        const { data, refreshed: received = {} } = await request(method, url, body, [...new Set(loadedOnPage.values())]);
         refreshed = received;
         return data;
     } finally {
         generation += 1;
         responses.clear();
         preloaded = new Map(Object.entries(refreshed));
-        preloaded.forEach((data, refreshedUrl) => responses.set(refreshedUrl, data));
+        preloaded.forEach((data, refreshedUrl) => remember(refreshedUrl, data));
     }
 }
 
@@ -68,7 +75,7 @@ function fresh(url, quietly) {
         const startedAt = generation;
         const pending = (quietly ? send('GET', url) : request('GET', url))
             .then((data) => {
-                if (startedAt === generation) responses.set(url, data);
+                if (startedAt === generation) remember(url, data);
                 return data;
             })
             .finally(() => fetching.delete(url));
@@ -78,10 +85,10 @@ function fresh(url, quietly) {
 }
 
 async function load(url, target) {
-    loadedOnPage.add(url);
+    loadedOnPage.set(target, url);
     const preload = takePreloaded(url);
     if (preload.found) {
-        responses.set(url, preload.data);
+        remember(url, preload.data);
         target.value = preload.data;
         return preload.data;
     }

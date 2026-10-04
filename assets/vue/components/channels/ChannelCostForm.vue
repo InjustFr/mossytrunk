@@ -1,15 +1,17 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { computed, reactive } from 'vue';
+import { ToggleGroupItem } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseMoneyField from '../ui/BaseMoneyField.vue';
 import BaseNumberField from '../ui/BaseNumberField.vue';
+import ChoiceGroup from '../ui/ChoiceGroup.vue';
 import FormActions from '../ui/FormActions.vue';
 import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import { COST_KINDS } from '../../composables/useChannelCosts.js';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const props = defineProps({
     cost: { type: Object, default: null },
@@ -24,24 +26,17 @@ const form = reactive({
     cents: props.cost?.kind === COST_KINDS.fixed ? props.cost.amount : null,
     percent: props.cost?.kind === COST_KINDS.percent ? props.cost.amount / 100 : null,
 });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit();
 const percentFormat = { style: 'unit', unit: 'percent', maximumFractionDigits: 2 };
 const amount = computed(() => (form.kind === COST_KINDS.percent
     ? (Number.isFinite(form.percent) ? Math.round(form.percent * 100) : -1)
     : form.cents ?? -1));
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.submit({ label: form.label, kind: form.kind, amount: amount.value });
         emit('saved', form.label.trim());
-    } catch (error) {
-        errors.value = Object.keys(error.fieldErrors ?? {}).length ? error.fieldErrors : { form: error.message };
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -65,21 +60,15 @@ async function onSubmit() {
                             class="channel-cost-form__field"
                         />
                         <BaseMoneyField v-else v-model="form.cents" :aria-label="t('channels.costs.amount')" class="channel-cost-form__field" />
-                        <ToggleGroupRoot
-                            :model-value="form.kind"
-                            type="single"
-                            class="segmented"
-                            :aria-label="t('channels.costs.kind')"
-                            @update:model-value="(kind) => kind && (form.kind = kind)"
-                        >
+                        <ChoiceGroup v-model="form.kind" class="segmented" :aria-label="t('channels.costs.kind')">
                             <ToggleGroupItem v-for="kind in Object.values(COST_KINDS)" :key="kind" :value="kind" class="segmented__item">{{ t(`channels.costs.kinds.${kind}`) }}</ToggleGroupItem>
-                        </ToggleGroupRoot>
+                        </ChoiceGroup>
                     </div>
                 </FormField>
             </FormSection>
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('channels.costs.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t(cost ? 'channels.costs.save' : 'channels.costs.add') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ t(cost ? 'common.save' : 'channels.costs.add') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

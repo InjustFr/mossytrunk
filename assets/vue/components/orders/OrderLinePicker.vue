@@ -57,7 +57,7 @@ async function add() {
         <div class="order-line-picker__row">
             <BaseCombobox v-model="productId" :options="productOptions" :placeholder="t('orders.picker.search')" :aria-label="t('orders.picker.product')" />
             <BaseNumberField v-model="quantity" class="order-line-picker__quantity" :min="1" :label="t('orders.picker.quantity')" @keydown.enter.prevent="add" />
-            <BaseButton variant="secondary" @click="add">{{ t('orders.picker.add') }}</BaseButton>
+            <BaseButton variant="secondary" @click="add">{{ t('common.add') }}</BaseButton>
         </div>
         <Transition name="fade">
             <ToggleGroupRoot

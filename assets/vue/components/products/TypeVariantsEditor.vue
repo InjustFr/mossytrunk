@@ -108,7 +108,7 @@ async function confirmRenaming() {
                         @blur="confirmRenaming"
                     >
                     <IconButton :icon="Check" :label="t('products.types.variants.confirmRename', { variant })" :disabled="renaming" @click="confirmRenaming" />
-                    <IconButton :icon="X" :label="t('products.cancel')" :disabled="renaming" @mousedown.prevent @click="stopRenaming" />
+                    <IconButton :icon="X" :label="t('common.cancel')" :disabled="renaming" @mousedown.prevent @click="stopRenaming" />
                 </template>
                 <template v-else>
                     <span class="type-variants__label">{{ variant }} <StatusBadge v-if="isArchived(variant)">{{ t('products.types.variants.archived') }}</StatusBadge></span>

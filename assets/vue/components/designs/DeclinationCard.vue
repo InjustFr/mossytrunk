@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Trash2 } from '@lucide/vue';
 import BaseButton from '../ui/BaseButton.vue';
@@ -12,6 +12,7 @@ import FormSection from '../ui/FormSection.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
 import ProductTag from '../products/ProductTag.vue';
 import VariantPicker from '../products/VariantPicker.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 
 const props = defineProps({
@@ -24,8 +25,7 @@ const { t } = useI18n();
 const { types, variantsOf } = useProductTypes();
 
 const form = reactive({ productName: '', sellingPrice: null, variants: [] });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit('productName');
 
 watch(() => props.declination, (declination) => {
     Object.assign(form, { productName: declination.productName, sellingPrice: declination.sellingPrice, variants: [...declination.variants] });
@@ -39,17 +39,7 @@ const typePrefix = computed(() => (props.declination.gabarit.prefixesNames ? pro
 const typeColor = computed(() => types.value.find((type) => type.id === props.declination.gabarit.typeId)?.color ?? null);
 const displayName = computed(() => (form.productName.trim() ? [typePrefix.value, form.productName.trim()].filter(Boolean).join(' ') : ''));
 
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
-        await props.submit({ ...form, sellingPrice: form.sellingPrice ?? -1 });
-    } catch (error) {
-        errors.value = error.fieldErrors ?? { productName: error.message };
-    } finally {
-        saving.value = false;
-    }
-}
+const onSubmit = () => run(() => props.submit({ ...form, sellingPrice: form.sellingPrice ?? -1 }));
 </script>
 
 <template>
@@ -84,7 +74,7 @@ async function onSubmit() {
                         <input v-model="form.productName" type="text">
                     </FormField>
                     <FormField :label="t('designs.declination.sellingPrice')" :error="errors.sellingPrice">
-                        <BaseMoneyField v-model="form.sellingPrice" class="declination__price" />
+                        <BaseMoneyField v-model="form.sellingPrice" class="control--short" />
                     </FormField>
                     <FormField as="group" :label="t('designs.declination.variants')" :error="errors.variants">
                         <VariantPicker v-model="form.variants" :options="variantsOf(declination.gabarit.typeId)" />
@@ -109,5 +99,4 @@ async function onSubmit() {
 .declination__product-link { font-size: var(--font-size-md); white-space: nowrap; }
 .declination__none { margin: 0; color: var(--color-subtle); font-size: var(--font-size-md); }
 .declination__form { display: flex; flex-direction: column; gap: var(--space-4); }
-.declination__price { max-width: 11rem; }
 </style>

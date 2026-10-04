@@ -9,6 +9,7 @@ import FormActions from '../ui/FormActions.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const { t } = useI18n();
 
@@ -20,8 +21,7 @@ const emit = defineEmits(['saved']);
 
 const editingId = ref(null);
 const form = reactive({ name: '', contact: '', notes: '' });
-const errors = ref({});
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit('name');
 
 function edit(supplier) {
     editingId.value = supplier?.id ?? null;
@@ -30,20 +30,11 @@ function edit(supplier) {
 }
 
 async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+    await run(async () => {
         await props.save(editingId.value, { ...form });
         emit('saved', form.name);
         edit(null);
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { name: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -75,8 +66,8 @@ async function onSubmit() {
                     </FormField>
                 </FormSection>
                 <FormActions>
-                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('purchasing.suppliers.cancel') }}</BaseButton>
-                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('purchasing.suppliers.save') : t('purchasing.suppliers.add') }}</BaseButton>
+                    <BaseButton v-if="editingId" variant="ghost" @click="edit(null)">{{ t('common.cancel') }}</BaseButton>
+                    <BaseButton type="submit" :loading="saving">{{ editingId ? t('common.save') : t('purchasing.suppliers.add') }}</BaseButton>
                 </FormActions>
             </fieldset>
         </form>

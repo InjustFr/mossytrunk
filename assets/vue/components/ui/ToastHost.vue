@@ -27,7 +27,7 @@ function onOpenChange(id, open) {
             @update:open="onOpenChange(toast.id, $event)"
         >
             <ToastDescription class="toast__message">{{ toast.message }}</ToastDescription>
-            <ToastClose class="toast__close" :aria-label="t('ui.close')"><X size="1rem" aria-hidden="true" /></ToastClose>
+            <ToastClose class="toast__close" :aria-label="t('common.close')"><X size="1rem" aria-hidden="true" /></ToastClose>
         </ToastRoot>
         <ToastViewport class="toast-host" />
     </ToastProvider>

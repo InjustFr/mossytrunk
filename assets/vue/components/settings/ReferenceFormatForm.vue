@@ -9,6 +9,7 @@ import FormField from '../ui/FormField.vue';
 import Notice from '../ui/Notice.vue';
 import ReferenceTokens from './ReferenceTokens.vue';
 import ServiceOptions from './ServiceOptions.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 
 const PREVIEW_DELAY = 250;
 
@@ -24,8 +25,7 @@ const emit = defineEmits(['saved', 'cancel']);
 const template = ref(props.format.template);
 const scope = ref('future');
 const example = ref(props.format.example);
-const error = ref(null);
-const saving = ref(false);
+const { saving, errors, run } = useFormSubmit('template');
 const input = ref(null);
 
 const renumbering = computed(() => scope.value === 'existing');
@@ -53,11 +53,11 @@ async function refreshExample(value) {
         const shown = await props.preview(props.format.kind, value);
         if (call !== latest) return;
         example.value = shown;
-        error.value = null;
+        errors.value = {};
     } catch (failure) {
         if (call !== latest) return;
         example.value = null;
-        error.value = failure.message;
+        errors.value = { template: failure.message };
     }
 }
 
@@ -72,23 +72,17 @@ async function insert(placeholder) {
 }
 
 async function onSubmit() {
-    saving.value = true;
-    error.value = null;
-    try {
+    await run(async () => {
         const { renamed } = await props.change(props.format.kind, template.value, renumbering.value);
         emit('saved', renamed);
-    } catch (failure) {
-        error.value = failure.message;
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
 <template>
     <form class="reference-format-form" novalidate @submit.prevent="renumbering || onSubmit()">
         <fieldset class="form-lock" :disabled="saving">
-            <FormField :label="t('settings.references.form.template')" :error="error" :hint="t('settings.references.form.templateHint')">
+            <FormField :label="t('settings.references.form.template')" :error="errors.template" :hint="t('settings.references.form.templateHint')">
                 <input ref="input" v-model="template" type="text" class="reference-format-form__input" autocomplete="off" spellcheck="false">
             </FormField>
             <p class="reference-format-form__example" aria-live="polite">
@@ -110,16 +104,16 @@ async function onSubmit() {
             </Notice>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('ui.cancel') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
                 <ConfirmButton
                     v-if="renumbering"
-                    :label="t('settings.references.form.save')"
+                    :label="t('common.save')"
                     :confirm-label="t('settings.references.form.renumber')"
                     :message="t('settings.references.form.renumberMessage')"
                     variant="primary"
                     @confirm="onSubmit"
                 />
-                <BaseButton v-else type="submit" :loading="saving">{{ t('settings.references.form.save') }}</BaseButton>
+                <BaseButton v-else type="submit" :loading="saving">{{ t('common.save') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>

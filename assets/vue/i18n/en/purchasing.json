@@ -20,9 +20,7 @@
     "detail": {
         "title": "Supplier order",
         "back": "Supplier orders",
-        "delete": "Delete",
         "deleteMessage": "Order {reference} will be permanently deleted.",
-        "edit": "Edit",
         "unpack": "Unpack the parcel",
         "editTitle": "Edit supplier order",
         "updated": "Order {reference} updated.",
@@ -80,8 +78,6 @@
         "discount": "Overall discount",
         "deliveryFees": "Delivery fees",
         "totalPaid": "Total paid",
-        "cancel": "Cancel",
-        "save": "Save",
         "place": "Place the order",
         "supplierReference": "Supplier reference",
         "supplierReferenceHint": "The order number at the supplier.",
@@ -117,10 +113,8 @@
         "quantity": "Quantity",
         "orderedQuantity": "Ordered quantity",
         "totalPrice": "Total price",
-        "add": "Add",
         "chooseProduct": "Choose a product.",
         "chooseVariant": "Choose a variant for “{product}”.",
-        "mode": "Add",
         "oneProduct": "One product",
         "wholeType": "A whole type",
         "type": "Type",
@@ -146,8 +140,6 @@
         "contact": "Contact",
         "contactPlaceholder": "Email, phone, website…",
         "notes": "Notes",
-        "cancel": "Cancel",
-        "save": "Save",
         "add": "Add the supplier"
     },
     "supplierSelect": {
@@ -155,9 +147,7 @@
         "placeholder": "Choose a supplier",
         "label": "Supplier",
         "namePlaceholder": "E.g. Lakeside Printing",
-        "nameLabel": "New supplier name",
-        "create": "Create",
-        "cancel": "Cancel"
+        "nameLabel": "New supplier name"
     },
     "reception": {
         "steps": "Lines to check",
@@ -175,7 +165,6 @@
         "less": "{count} missing",
         "conform": "As ordered",
         "nothingHint": "Nothing received: this product will not enter stock and its cost will not be split.",
-        "cancel": "Cancel",
         "previous": "Previous",
         "check": "Review",
         "next": "Next",
@@ -192,7 +181,6 @@
         "none": "No other order from this supplier with the same status.",
         "choose": "Order to merge",
         "units": "{count} item | {count} items",
-        "cancel": "Cancel",
         "submit": "Merge"
     }
 }

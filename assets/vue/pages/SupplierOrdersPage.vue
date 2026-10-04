@@ -1,11 +1,12 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
+import { ToggleGroupItem } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
+import ChoiceGroup from '../components/ui/ChoiceGroup.vue';
 import SupplierManager from '../components/purchasing/SupplierManager.vue';
 import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderList from '../components/purchasing/SupplierOrderList.vue';
@@ -69,15 +70,9 @@ onMounted(async () => {
         </template>
 
         <BaseCard>
-            <ToggleGroupRoot
-                :model-value="status"
-                type="single"
-                class="supplier-orders-page__filters"
-                :aria-label="t('purchasing.page.filterLabel')"
-                @update:model-value="(value) => value && (status = value)"
-            >
+            <ChoiceGroup v-model="status" class="supplier-orders-page__filters" :aria-label="t('purchasing.page.filterLabel')">
                 <ToggleGroupItem v-for="filter in filters" :key="filter.value" :value="filter.value" class="chip">{{ filter.label }}</ToggleGroupItem>
-            </ToggleGroupRoot>
+            </ChoiceGroup>
             <SupplierOrderList :orders="visible" />
         </BaseCard>
 

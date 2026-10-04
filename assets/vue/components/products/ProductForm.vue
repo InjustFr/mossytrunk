@@ -14,6 +14,7 @@ import ProductTag from './ProductTag.vue';
 import TypeSelect from './TypeSelect.vue';
 import VariantPicker from './VariantPicker.vue';
 import ServiceOptions from '../settings/ServiceOptions.vue';
+import { useFormSubmit } from '../../composables/useFormSubmit.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { useProducts } from '../../composables/useProducts.js';
 import { useSuggestion } from '../../composables/useSuggestion.js';
@@ -31,9 +32,18 @@ const { t } = useI18n();
 
 const KIND_OPTIONS = ['article', 'supply'].map((kind) => ({ value: kind, label: `products.form.kinds.${kind}`, description: `products.form.kindHints.${kind}` }));
 const emptyForm = () => ({ kind: props.kind, typeId: '', name: '', reference: '', sellingPrice: null, variants: [], lowStockThreshold: 10, channelPrices: {} });
-const form = reactive(emptyForm());
-const errors = ref({});
-const saving = ref(false);
+const fromProduct = (product) => ({
+    kind: product.kind,
+    typeId: product.typeId ?? '',
+    name: product.name,
+    reference: product.reference,
+    sellingPrice: product.sellingPrice,
+    variants: [...product.variants],
+    lowStockThreshold: product.lowStockThreshold,
+    channelPrices: { ...product.channelPrices },
+});
+const form = reactive(props.product ? fromProduct(props.product) : emptyForm());
+const { saving, errors, run } = useFormSubmit();
 
 const isEditing = computed(() => props.product !== null);
 const supply = computed(() => form.kind === 'supply');
@@ -53,23 +63,6 @@ const mainChannel = computed(() => mainChannelOf(props.channels));
 const moreOpen = ref(false);
 const moreSummary = computed(() => [form.reference, t('products.form.lowStockSummary', { threshold: form.lowStockThreshold ?? 0 })].filter(Boolean).join(', '));
 
-watch(() => props.product, (product) => {
-    Object.assign(form, product
-        ? {
-            kind: product.kind,
-            typeId: product.typeId ?? '',
-            name: product.name,
-            reference: product.reference,
-            sellingPrice: product.sellingPrice,
-            variants: [...product.variants],
-            lowStockThreshold: product.lowStockThreshold,
-            channelPrices: { ...product.channelPrices },
-        }
-        : emptyForm());
-    errors.value = {};
-    referenceSuggestion.reset(!product);
-}, { immediate: true });
-
 watch(() => props.kind, (kind) => {
     if (!isEditing.value) form.kind = kind;
 });
@@ -82,10 +75,8 @@ watch(() => form.typeId, (typeId, previous) => {
     }
 });
 
-async function onSubmit() {
-    saving.value = true;
-    errors.value = {};
-    try {
+function onSubmit() {
+    return run(async () => {
         await props.submit({
             typeId: form.typeId || null,
             name: form.name,
@@ -102,14 +93,7 @@ async function onSubmit() {
             Object.assign(form, emptyForm());
             referenceSuggestion.reset(true);
         }
-    } catch (error) {
-        errors.value = error.fieldErrors ?? {};
-        if (Object.keys(errors.value).length === 0) {
-            errors.value = { form: error.message };
-        }
-    } finally {
-        saving.value = false;
-    }
+    });
 }
 </script>
 
@@ -131,7 +115,7 @@ async function onSubmit() {
                     <input v-model="form.name" type="text" required :placeholder="t('products.form.namePlaceholder')">
                 </FormField>
                 <FormField v-if="!supply" :label="mainChannel ? t('products.form.mainPrice', { channel: mainChannel.name }) : t('products.form.sellingPrice')" :error="errors.sellingPrice">
-                    <BaseMoneyField v-model="form.sellingPrice" class="product-form__price" />
+                    <BaseMoneyField v-model="form.sellingPrice" class="control--short" />
                 </FormField>
                 <FormField
                     v-for="(channel, index) in supply ? [] : otherChannels"
@@ -143,7 +127,7 @@ async function onSubmit() {
                     <BaseMoneyField
                         :model-value="form.channelPrices[channel.id] ?? null"
                         :placeholder="formatCents(form.sellingPrice)"
-                        class="product-form__price"
+                        class="control--short"
                         @update:model-value="(price) => (form.channelPrices[channel.id] = price)"
                     />
                 </FormField>
@@ -157,7 +141,7 @@ async function onSubmit() {
                     <input v-model="form.reference" type="text" maxlength="64" autocomplete="off" @input="referenceSuggestion.edited($event.target.value)">
                 </FormField>
                 <FormField as="group" :label="t('products.form.lowStockThreshold')" :error="errors.lowStockThreshold" :hint="t('products.form.lowStockThresholdHint')">
-                    <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" class="product-form__threshold" />
+                    <BaseNumberField v-model="form.lowStockThreshold" :min="0" :label="t('products.form.lowStockThreshold')" class="control--short" />
                 </FormField>
                 <FormField as="group" :label="t('products.form.buyingPrice')" :hint="t('products.form.buyingPriceHint')">
                     <p class="product-form__fact">
@@ -168,8 +152,8 @@ async function onSubmit() {
             </FormDisclosure>
 
             <FormActions>
-                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('products.cancel') }}</BaseButton>
-                <BaseButton type="submit" :loading="saving">{{ t(isEditing ? 'products.save' : 'products.form.add') }}</BaseButton>
+                <BaseButton variant="ghost" @click="emit('cancel')">{{ t('common.cancel') }}</BaseButton>
+                <BaseButton type="submit" :loading="saving">{{ isEditing ? t('common.save') : t('products.form.add') }}</BaseButton>
             </FormActions>
         </fieldset>
     </form>
@@ -177,7 +161,5 @@ async function onSubmit() {
 
 <style scoped>
 .product-form { display: flex; flex-direction: column; gap: var(--space-5); }
-.product-form__price,
-.product-form__threshold { max-width: 11rem; }
 .product-form__fact { margin: 0; padding-top: 0.5625rem; font-size: var(--font-size-md); color: var(--color-text); }
 </style>
