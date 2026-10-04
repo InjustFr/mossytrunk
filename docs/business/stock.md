@@ -25,7 +25,7 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 | K6 | Placing an order (manual or imported) takes its units from stock and stores the resulting **total cost on each order line**; imported sales are taken oldest first | `StockKeeper::withdraw()`, `PlaceOrderHandler`, `ImportSalesHandler` | `StockUseCasesTest`, `ImportSumUpSalesTest` |
 | K7 | **Deleting** an order (a mistake: one or ticked ones) erases its withdrawal as if it never happened: its units go back into the lots they were taken from (the most recently consumed ones, so FIFO stays as if the sale never existed), no lot is added, and the return of a refunded order is erased too. **Refunding** an order keeps its sale and takes its units back as a « Retour de commande » lot at their sale cost, dated at the refund and linked to the order | `StockItem::cancelWithdrawal()`, `cancelReturnOf()`, `takeBack()`, `StockKeeper::cancelSale()`, `takeBack()`, `OrderDeletion`, `RefundOrderHandler` | `StockItemTest`, `StockUseCasesTest` |
 | K8 | Moving a variant moves its stock (lots and balance) to the target item | `StockKeeper::move()`, `StockItem::absorb()` | `StockItemTest`, `StockUseCasesTest` |
-| K9 | **Stock bas** when `onHand ≤ threshold` (per variant; the product is flagged when any variant is). **Négatif** when `onHand < 0` | `StockItem::isLowAt()`, `ProductStock` | `StockItemTest`, `StockUseCasesTest` |
+| K9 | **Stock bas** when `onHand ≤ threshold` (per variant; the product is flagged when any variant is). **Stock vide** (red) when `onHand = 0`, **Négatif** when `onHand < 0` | `StockItem::isLowAt()`, `ProductStock` | `StockItemTest`, `StockUseCasesTest` |
 | K10 | The product's **stock cost** is the average unit cost of the units left in stock, or its buying price when nothing is left; the product list's margin uses it | `ProductStock::of()` | `StockUseCasesTest` |
 
 ## Inventory after an event (Inventaire)
@@ -55,6 +55,6 @@ Model: `src/Domain/Stock/StockItem.php`, `StockLot.php`, `StockCheck.php`, `Stoc
 
 ## UI
 
-- **Produits**: « Réserve » column with « Stock bas » / « Négatif » badges (variant detail in the tooltip), « Coût » = stock cost, filter « produits en stock bas » (`?stock=bas`), row actions « Réapprovisionner » and « Historique de la réserve » (lots strip, oldest first, and lot table). The product form has « Alerte stock bas ».
+- **Produits**: « Réserve » column with « Stock bas » / « Stock vide » / « Négatif » badges left of the count (variant detail in the tooltip; same badges on the product page and in the stock history, `StockBadge`), « Coût » = stock cost, filter « produits en stock bas » (`?stock=bas`), row actions « Réapprovisionner » and « Historique de la réserve » (lots strip, oldest first, and lot table). The product form has « Alerte stock bas ».
 - **Événement**: « Faire l'inventaire » (past or ongoing events) opens `/events/{id}/stock-check`; a warning banner lists unexplained units with « Classer l'écart ». The events comparison table shows a warning icon.
 - **Carnet de bord**: a notice counts products in low or negative stock.

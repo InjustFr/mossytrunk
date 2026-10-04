@@ -2,6 +2,7 @@
     "single": "Unique",
     "negative": "Négatif",
     "lowStock": "Stock bas",
+    "emptyStock": "Stock vide",
     "cancel": "Annuler",
     "save": "Enregistrer",
     "page": {
@@ -206,7 +207,6 @@
     },
     "stockHistory": {
         "onHand": "En réserve",
-        "negative": "Stock négatif",
         "onHandCount": "{count} en réserve",
         "empty": "Rien n'est encore entré en réserve. Réapprovisionnez pour suivre son coût.",
         "date": "Date",

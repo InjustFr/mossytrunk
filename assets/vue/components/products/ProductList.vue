@@ -11,6 +11,7 @@ import IconButton from '../ui/IconButton.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import SortableHeader from '../ui/SortableHeader.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
+import StockBadge from './StockBadge.vue';
 import TypeMark from '../ui/TypeMark.vue';
 import { formatRatio } from '../../composables/useMoney.js';
 import { useSort } from '../../composables/useSort.js';
@@ -111,9 +112,8 @@ function setChecked(id, checked) {
                     <span v-else class="product-list__variants" :title="product.variants.join(', ')">{{ product.variants.join(', ') }}</span>
                 </td>
                 <td class="data-table__cell--number product-list__stock" :title="product.variants.length ? stockDetail(product) : null">
+                    <StockBadge :units="stockOf(product).onHand" :low="stockOf(product).low" :negative="stockOf(product).negative" class="product-list__flag" />
                     <button type="button" class="product-list__on-hand" :aria-label="t('products.list.stockHistory', { name: product.displayName })" @click="emit('history', product)">{{ stockOf(product).onHand }}</button>
-                    <StatusBadge v-if="stockOf(product).negative" tone="danger" class="product-list__flag">{{ t('products.negative') }}</StatusBadge>
-                    <StatusBadge v-else-if="stockOf(product).low" tone="warning" class="product-list__flag">{{ t('products.lowStock') }}</StatusBadge>
                 </td>
                 <td class="data-table__cell--number">
                     <TriangleAlert v-if="!knownCost(product)" class="product-list__warning" size="0.875rem" :aria-label="t('products.list.unknownCost')" role="img" />
@@ -185,6 +185,6 @@ function setChecked(id, checked) {
     transition: border-color var(--transition);
 }
 .product-list__on-hand:hover { border-bottom-color: var(--color-ink); }
-.product-list__flag { margin-left: var(--space-1); }
+.product-list__flag { margin-right: var(--space-1); }
 .product-list__warning { margin-right: var(--space-1); color: var(--color-warning); vertical-align: -0.125rem; }
 </style>

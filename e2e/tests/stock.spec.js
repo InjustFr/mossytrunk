@@ -8,7 +8,7 @@ test('restock a product twice and read its lots, oldest first', async ({ page, r
     await page.goto('/products');
     await page.getByLabel('Rechercher un produit').fill(product.name);
     const row = page.getByRole('row').filter({ hasText: product.name });
-    await expect(row.getByText('Stock bas')).toBeVisible();
+    await expect(row.getByText('Stock vide')).toBeVisible();
 
     for (const [quantity, total] of [['10', '5'], ['10', '10']]) {
         await row.getByRole('button', { name: `Réapprovisionner ${product.name}` }).click();

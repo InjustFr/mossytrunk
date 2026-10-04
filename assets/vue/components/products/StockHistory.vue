@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
 import MoneyAmount from '../ui/MoneyAmount.vue';
-import StatusBadge from '../ui/StatusBadge.vue';
+import StockBadge from './StockBadge.vue';
 import LotStrip from '../stock/LotStrip.vue';
 import { formatDate } from '../../composables/useDate.js';
 import { lotOriginLabel, useStock } from '../../composables/useStock.js';
@@ -26,8 +26,7 @@ onMounted(async () => {
         <section v-for="item in items ?? []" :key="item.variant ?? ''" class="stock-history__item">
             <header class="stock-history__header">
                 <h3 class="stock-history__title">{{ item.variant ?? t('products.stockHistory.onHand') }}</h3>
-                <StatusBadge v-if="item.negative" tone="danger">{{ t('products.stockHistory.negative') }}</StatusBadge>
-                <StatusBadge v-else-if="item.low" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
+                <StockBadge :units="item.onHand" :low="item.low" :negative="item.negative" />
                 <span class="stock-history__on-hand">{{ t('products.stockHistory.onHandCount', { count: item.onHand }) }}</span>
             </header>
             <EmptyState v-if="item.lots.length === 0">{{ t('products.stockHistory.empty') }}</EmptyState>

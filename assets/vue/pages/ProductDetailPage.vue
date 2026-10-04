@@ -9,6 +9,7 @@ import BaseModal from '../components/ui/BaseModal.vue';
 import IconButton from '../components/ui/IconButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import StockBadge from '../components/products/StockBadge.vue';
 import ChannelPriceForm from '../components/channels/ChannelPriceForm.vue';
 import PriceHistory from '../components/products/PriceHistory.vue';
 import ProductDesign from '../components/products/ProductDesign.vue';
@@ -146,9 +147,8 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
                 <div>
                     <dt>{{ t('products.detail.onHand') }}</dt>
                     <dd>
+                        <StockBadge :units="product.onHand" :low="product.lowStock" :negative="product.negativeStock" />
                         {{ product.onHand }}
-                        <StatusBadge v-if="product.negativeStock" tone="danger">{{ t('products.negative') }}</StatusBadge>
-                        <StatusBadge v-else-if="product.lowStock" tone="warning">{{ t('products.lowStock') }}</StatusBadge>
                     </dd>
                 </div>
                 <div v-if="!supply && product.potential.units > 0" :title="t('stock.potential.note')">

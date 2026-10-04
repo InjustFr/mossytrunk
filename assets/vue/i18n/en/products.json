@@ -2,6 +2,7 @@
     "single": "Single",
     "negative": "Negative",
     "lowStock": "Low stock",
+    "emptyStock": "Out of stock",
     "cancel": "Cancel",
     "save": "Save",
     "page": {
@@ -206,7 +207,6 @@
     },
     "stockHistory": {
         "onHand": "In stock",
-        "negative": "Negative stock",
         "onHandCount": "{count} in stock",
         "empty": "Nothing has entered stock yet. Restock to track its cost.",
         "date": "Date",
