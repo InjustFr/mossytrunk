@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, Plus } from '@lucide/vue';
+import { Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -8,6 +8,7 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import ChannelCostForm from '../components/channels/ChannelCostForm.vue';
 import ChannelCosts from '../components/channels/ChannelCosts.vue';
 import ChannelBatchPriceForm from '../components/channels/ChannelBatchPriceForm.vue';
@@ -22,6 +23,7 @@ import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
 import { useServices } from '../composables/useServices.js';
 import { useToast } from '../composables/useToast.js';
+import { normalize } from '../composables/useSearch.js';
 
 const props = defineProps({
     channelId: { type: String, required: true },
@@ -47,7 +49,6 @@ function openPrice(product) {
 
 const main = computed(() => mainChannelOf(salesChannels.channels.value));
 const linkedService = computed(() => services.services.value.find((service) => service.key === channel.value?.service && service.connection) ?? null);
-const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const shownProducts = computed(() => {
     const needle = normalize(search.value.trim());
     return activeArticles.value.filter((product) => needle === '' || normalize(`${product.displayName} ${product.reference}`).includes(needle));
@@ -120,7 +121,7 @@ onMounted(() => Promise.all([loadChannel(), salesChannels.load(), loadProducts()
 
 <template>
     <AppLayout :title="channel?.name ?? t('channels.detail.fallbackTitle')">
-        <template #back><a class="back-link" :href="listUrl('/channels')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('channels.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/channels')">{{ t('channels.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="channel">
                 <ConfirmButton

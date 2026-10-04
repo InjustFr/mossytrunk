@@ -1,15 +1,14 @@
 import { t } from '../i18n/index.js';
 import { formatCents } from './useMoney.js';
+import { formatDate, localDay } from './useDate.js';
 import { intlLocale } from '../i18n/locale.js';
+import { sameVariant } from './useVariantStock.js';
 
-const sameVariant = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const offers = (product, variant) => !variant || product.variants.some((candidate) => sameVariant(candidate, variant));
 const targets = (product, target) => (target.kind === 'type' ? product.typeId === target.id : product.id === target.id);
 const chosen = (condition) => condition.targets.filter((target) => target.id);
 
-const localDay = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
-
-export function pricingDay(startsOn, endsOn, today = localDay(new Date())) {
+export function pricingDay(startsOn, endsOn, today = localDay()) {
     if (endsOn && endsOn < today) return endsOn;
     if (startsOn && startsOn > today) return startsOn;
     return null;
@@ -55,6 +54,20 @@ export function savingOn(regular, action) {
         return Math.min(action.value, regular);
     }
     return Math.round((regular * action.value) / 10000);
+}
+
+export function describeRange({ min, max }) {
+    return min === max ? formatCents(min) : t('discounts.range', { min: formatCents(min), max: formatCents(max) });
+}
+
+export function describePeriod(startsOn, endsOn, alwaysKey = 'discounts.list.always') {
+    if (startsOn && endsOn) {
+        return t('discounts.list.between', { start: formatDate(startsOn), end: formatDate(endsOn) });
+    }
+    if (startsOn) {
+        return t('discounts.list.from', { start: formatDate(startsOn) });
+    }
+    return endsOn ? t('discounts.list.until', { end: formatDate(endsOn) }) : t(alwaysKey);
 }
 
 export function describeAction(action) {

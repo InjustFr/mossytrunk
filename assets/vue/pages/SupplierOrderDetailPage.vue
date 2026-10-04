@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -9,6 +8,7 @@ import BaseModal from '../components/ui/BaseModal.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import MergeSupplierOrderForm from '../components/purchasing/MergeSupplierOrderForm.vue';
 import SupplierOrderForm from '../components/purchasing/SupplierOrderForm.vue';
 import SupplierOrderReception from '../components/purchasing/SupplierOrderReception.vue';
@@ -81,7 +81,7 @@ onMounted(() => Promise.all([load(), loadSuppliers(), loadProducts(), loadTypes(
 
 <template>
     <AppLayout :title="order?.reference ?? t('purchasing.detail.title')">
-        <template #back><a class="back-link" :href="listUrl('/supplier-orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('purchasing.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/supplier-orders')">{{ t('purchasing.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="order && !receiving">
                 <ConfirmButton v-if="isOrdered" variant="ghost" :label="t('purchasing.detail.delete')" :message="t('purchasing.detail.deleteMessage', { reference: order.reference })" @confirm="onRemove" />

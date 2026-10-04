@@ -22,6 +22,7 @@ import MoneyAmount from '../ui/MoneyAmount.vue';
 import PurchaseLinePicker from './PurchaseLinePicker.vue';
 import SupplierSelect from './SupplierSelect.vue';
 import { landedCosts } from '../../composables/usePurchasing.js';
+import { localDay } from '../../composables/useDate.js';
 
 const { t } = useI18n();
 
@@ -35,8 +36,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['saved', 'cancel']);
 
-const today = () => new Date().toLocaleDateString('sv-SE');
-const blank = () => ({ supplierId: '', orderedOn: today(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0, currency: 'EUR', exchangeRate: 1 });
+const blank = () => ({ supplierId: '', orderedOn: localDay(), receivedOn: null, supplierReference: '', lines: [], discount: 0, deliveryFees: 0, currency: 'EUR', exchangeRate: 1 });
 const form = reactive(blank());
 const errors = ref({});
 const saving = ref(false);

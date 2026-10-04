@@ -2,7 +2,6 @@ import { computed, ref, watch } from 'vue';
 
 export const PAGE_SIZES = [20, 50, 100];
 
-/** Client-side pagination of a reactive list. The page is kept in range when the list shrinks. */
 export function usePagination(items, initialPageSize = PAGE_SIZES[0], state = { page: ref(1), pageSize: ref(initialPageSize) }) {
     const { page, pageSize } = state;
 

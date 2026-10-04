@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import FieldError from '../ui/FieldError.vue';
 import IconButton from '../ui/IconButton.vue';
 import StatusBadge from '../ui/StatusBadge.vue';
+import { sameVariant } from '../../composables/useVariantStock.js';
 
 const props = defineProps({
     rename: { type: Function, required: true },
@@ -20,8 +21,7 @@ const renaming = ref(false);
 const error = ref(null);
 const renameInput = ref(null);
 
-const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
-const taken = (label, except = null) => variants.value.some((variant) => variant !== except && same(variant, label));
+const taken = (label, except = null) => variants.value.some((variant) => variant !== except && sameVariant(variant, label));
 
 function add() {
     const label = draft.value.trim();

@@ -26,9 +26,7 @@ const visible = ref(readVisible());
 watch(visible, (value) => {
     try {
         window.localStorage.setItem(STORAGE_KEY, String(value));
-    } catch {
-        // storage unavailable: keep the choice for this page only
-    }
+    } catch {}
 });
 </script>
 

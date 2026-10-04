@@ -1,8 +1,6 @@
 import { t } from '../i18n/index.js';
 import { useApi } from './useApi.js';
 
-export const LOW_STOCK_PARAM = 'stock';
-
 const LOT_ORIGINS = {
     purchase: 'stock.origin.purchase',
     supplier_order: 'stock.origin.supplierOrder',

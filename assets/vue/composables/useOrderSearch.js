@@ -1,8 +1,7 @@
 import { computed } from 'vue';
 import { formatDay, formatNumericDay, formatTime } from './useDate.js';
 import { queryFlag, queryText } from './useQueryState.js';
-
-const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+import { normalize } from './useSearch.js';
 
 function searchableText(order) {
     const time = formatTime(order.placedAt);
@@ -23,10 +22,11 @@ export function useOrderSearch(orders) {
 
     const unassignedCount = computed(() => orders.value.filter((order) => order.unidentifiedLines > 0).length);
 
+    const texts = computed(() => new Map(orders.value.map((order) => [order.id, searchableText(order)])));
     const visible = computed(() => {
         const terms = normalize(search.value).split(/\s+/).filter(Boolean);
         return orders.value.filter((order) => (!unassigned.value || order.unidentifiedLines > 0)
-            && (terms.length === 0 || terms.every((term) => searchableText(order).includes(term))));
+            && terms.every((term) => texts.value.get(order.id).includes(term)));
     });
 
     const filtering = computed(() => search.value !== '' || unassigned.value);

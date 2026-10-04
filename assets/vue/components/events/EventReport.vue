@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import ResultReceipt from '../reporting/ResultReceipt.vue';
 import OrderRecap from './OrderRecap.vue';
-import { intlLocale } from '../../i18n/locale.js';
+import { perLocale } from '../../i18n/locale.js';
 
 const props = defineProps({
     report: { type: Object, required: true },
@@ -15,7 +15,8 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-const rate = (value) => t('events.report.rate', { rate: new Intl.NumberFormat(intlLocale()).format(value) });
+const numberFormatter = perLocale((locale) => new Intl.NumberFormat(locale));
+const rate = (value) => t('events.report.rate', { rate: numberFormatter().format(value) });
 
 const lines = computed(() => [
     { key: 'turnover', label: t('events.report.turnover'), amount: props.report.total.turnover, open: props.report.orders.count > 0 },

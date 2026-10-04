@@ -1,10 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
 import BaseModal from '../components/ui/BaseModal.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import EventForm from '../components/events/EventForm.vue';
 import EventHeader from '../components/events/EventHeader.vue';
 import EventReport from '../components/events/EventReport.vue';
@@ -68,7 +68,7 @@ onMounted(() => Promise.all([load(), loadTypes(), loadChecks()]));
 
 <template>
     <AppLayout :title="event?.name ?? t('events.detail.titleFallback')">
-        <template #back><a class="back-link" :href="listUrl('/events')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('events.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/events')">{{ t('events.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="event">
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('events.detail.edit') }}</BaseButton>

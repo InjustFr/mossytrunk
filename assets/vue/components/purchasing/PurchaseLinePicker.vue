@@ -11,6 +11,7 @@ import BaseSelect from '../ui/BaseSelect.vue';
 import FieldError from '../ui/FieldError.vue';
 import VariantPicker from '../products/VariantPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
+import { sameVariant } from '../../composables/useVariantStock.js';
 
 const { t } = useI18n();
 
@@ -28,8 +29,8 @@ const productId = ref('');
 const variant = ref('');
 const typeId = ref('');
 const typeVariants = ref([]);
-const collectionId = ref('');
 const ANY = '__any__';
+const collectionId = ref(ANY);
 const PER_UNIT = 'unit';
 const FOR_ALL = 'all';
 const pricing = ref(PER_UNIT);
@@ -48,15 +49,14 @@ const typeOptions = computed(() => activeTypes.value
     .map((type) => ({ value: type.id, label: type.name })));
 
 const label = (item, chosen) => (chosen ? `${item.displayName} — ${chosen}` : item.displayName);
-const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
-const wanted = (candidate) => typeVariants.value.length === 0 || typeVariants.value.some((chosen) => same(chosen, candidate));
+const wanted = (candidate) => typeVariants.value.length === 0 || typeVariants.value.some((chosen) => sameVariant(chosen, candidate));
 
 const collectionOptions = computed(() => {
     const seen = new Map();
     purchasable.value.filter((p) => p.typeId === typeId.value && p.collectionId).forEach((p) => seen.set(p.collectionId, p.collectionName));
     return [{ value: ANY, label: t('purchasing.picker.anyCollection') }, ...[...seen].map(([value, label]) => ({ value, label }))];
 });
-const inCollection = (p) => !collectionId.value || collectionId.value === ANY || p.collectionId === collectionId.value;
+const inCollection = (p) => collectionId.value === ANY || p.collectionId === collectionId.value;
 
 const typeItems = computed(() => purchasable.value
     .filter((p) => p.typeId === typeId.value && inCollection(p))

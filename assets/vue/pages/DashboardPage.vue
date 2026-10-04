@@ -15,7 +15,6 @@ import ResultReceipt from '../components/reporting/ResultReceipt.vue';
 import { monthName, useDashboard } from '../composables/useDashboard.js';
 import { useTypeColors } from '../composables/useTypeColor.js';
 import { formatDate } from '../composables/useDate.js';
-import { visit } from '../composables/useNavigation.js';
 
 const { t } = useI18n();
 const { dashboard, load } = useDashboard();
@@ -60,7 +59,7 @@ onMounted(() => Promise.all([load(), loadTypes()]));
                 {{ t('dashboard.welcome.text') }}
             </p>
             <div class="dashboard-page__welcome-actions">
-                <BaseButton @click="visit('/events?new')">{{ t('dashboard.welcome.createEvent') }}</BaseButton>
+                <BaseButton href="/events?new">{{ t('dashboard.welcome.createEvent') }}</BaseButton>
             </div>
         </section>
 

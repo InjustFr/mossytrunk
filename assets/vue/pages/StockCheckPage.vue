@@ -1,6 +1,5 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
-import { ArrowLeft } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -12,6 +11,7 @@ import { useStock } from '../composables/useStock.js';
 import { useToast } from '../composables/useToast.js';
 import { visit } from '../composables/useNavigation.js';
 import FormError from '../components/ui/FormError.vue';
+import BackLink from '../components/ui/BackLink.vue';
 
 const props = defineProps({
     eventId: { type: String, required: true },
@@ -59,7 +59,7 @@ onMounted(async () => {
 
 <template>
     <AppLayout :title="t('stock.check.title')">
-        <template #back><a class="back-link" :href="`/events/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? t('stock.check.eventFallback') }}</a></template>
+        <template #back><BackLink :href="`/events/${eventId}`">{{ event?.name ?? t('stock.check.eventFallback') }}</BackLink></template>
         <template #actions>
             <BaseButton :loading="saving" :disabled="counted.length === 0" @click="onSubmit">{{ t('stock.check.save') }}</BaseButton>
         </template>

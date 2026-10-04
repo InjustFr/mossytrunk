@@ -15,8 +15,7 @@ import FormError from '../ui/FormError.vue';
 import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import IconButton from '../ui/IconButton.vue';
-import { pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
-import { formatCents } from '../../composables/useMoney.js';
+import { describePeriod, describeRange, pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatDate } from '../../composables/useDate.js';
 
 const props = defineProps({
@@ -97,17 +96,7 @@ const pricing = computed(() => {
 const valueLabel = computed(() => t(ACTIONS.find((option) => option.value === form.actionKind).valueLabel));
 
 const periodOpen = ref(false);
-const periodSummary = computed(() => {
-    if (form.startsOn && form.endsOn) {
-        return t('discounts.list.between', { start: formatDate(form.startsOn), end: formatDate(form.endsOn) });
-    }
-    if (form.startsOn) {
-        return t('discounts.list.from', { start: formatDate(form.startsOn) });
-    }
-    return form.endsOn ? t('discounts.list.until', { end: formatDate(form.endsOn) }) : t('discounts.form.always');
-});
-
-const range = ({ min, max }) => (min === max ? formatCents(min) : t('discounts.range', { min: formatCents(min), max: formatCents(max) }));
+const periodSummary = computed(() => describePeriod(form.startsOn, form.endsOn, 'discounts.form.always'));
 
 function setKind(target, kind) {
     if (kind && kind !== target.kind) {
@@ -254,8 +243,8 @@ async function onSubmit() {
                 <FormField v-if="pricing" as="group" :label="t('discounts.form.customerPrice')">
                     <p class="discount-rule-form__fact" data-test="discount-rule-pricing">
                         <i18n-t keypath="discounts.form.pricing" scope="global">
-                            <template #customer><strong>{{ range(pricing.customer) }}</strong></template>
-                            <template #regular>{{ range(pricing.regular) }}</template>
+                            <template #customer><strong>{{ describeRange(pricing.customer) }}</strong></template>
+                            <template #regular>{{ describeRange(pricing.regular) }}</template>
                         </i18n-t>
                         <span v-if="pricing.day" class="discount-rule-form__priced-on">{{ t('discounts.list.pricedOn', { date: formatDate(pricing.day) }) }}</span>
                     </p>

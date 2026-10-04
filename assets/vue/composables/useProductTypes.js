@@ -2,7 +2,6 @@ import { computed, ref } from 'vue';
 import { intlLocale } from '../i18n/locale.js';
 import { useApi } from './useApi.js';
 
-// Module-level: every component of the page shares the same list (a type created in a form shows up in filters).
 const types = ref([]);
 
 const byName = (a, b) => a.name.localeCompare(b.name, intlLocale());
@@ -21,30 +20,11 @@ export function useProductTypes() {
         return type;
     }
 
-    async function update(id, { name, color, code, variants, prefixesNames, archivedVariants }) {
-        await api.put(`/api/product-types/${id}`, { name, color, code, variants, prefixesNames, archivedVariants });
-        await load();
-    }
-
-    async function archive(id) {
-        await api.put(`/api/product-types/${id}/archive`);
-        await load();
-    }
-
-    async function restore(id) {
-        await api.del(`/api/product-types/${id}/archive`);
-        await load();
-    }
-
-    async function remove(id) {
-        await api.del(`/api/product-types/${id}`);
-        await load();
-    }
-
-    async function renameVariant(id, from, to) {
-        await api.post(`/api/product-types/${id}/variant-renaming`, { from, to });
-        await load();
-    }
+    const update = (id, { name, color, code, variants, prefixesNames, archivedVariants }) => api.put(`/api/product-types/${id}`, { name, color, code, variants, prefixesNames, archivedVariants }).then(load);
+    const archive = (id) => api.put(`/api/product-types/${id}/archive`).then(load);
+    const restore = (id) => api.del(`/api/product-types/${id}/archive`).then(load);
+    const remove = (id) => api.del(`/api/product-types/${id}`).then(load);
+    const renameVariant = (id, from, to) => api.post(`/api/product-types/${id}/variant-renaming`, { from, to }).then(load);
 
     const typeOf = (typeId) => types.value.find((type) => type.id === typeId);
     const allVariantsOf = (typeId) => typeOf(typeId)?.variants ?? [];

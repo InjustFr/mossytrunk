@@ -10,3 +10,5 @@ export function variantStock(product, variants) {
         negative: entries.some((entry) => entry.negative),
     };
 }
+
+export const sameVariant = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();

@@ -6,8 +6,7 @@ import ConfirmButton from '../ui/ConfirmButton.vue';
 import EmptyState from '../ui/EmptyState.vue';
 import IconButton from '../ui/IconButton.vue';
 import TypeMark from '../ui/TypeMark.vue';
-import { describeAction, pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
-import { formatCents } from '../../composables/useMoney.js';
+import { describeAction, describePeriod, describeRange, pricingDay, regularPrice, savingOn } from '../../composables/useRulePrice.js';
 import { formatDate } from '../../composables/useDate.js';
 
 const props = defineProps({
@@ -19,7 +18,6 @@ const props = defineProps({
 const emit = defineEmits(['edit', 'toggle', 'remove']);
 const { t } = useI18n();
 
-const range = (min, max) => (min === max ? formatCents(min) : t('discounts.range', { min: formatCents(min), max: formatCents(max) }));
 
 const typeOf = (id) => props.types.find((type) => type.id === id);
 const productOf = (id) => props.products.find((product) => product.id === id);
@@ -35,15 +33,7 @@ function describe(target) {
 
 const conditionKey = (condition) => condition.targets.map((target) => `${target.kind}-${target.id}-${target.variant}`).join('|');
 
-function period(rule) {
-    if (rule.startsOn && rule.endsOn) {
-        return t('discounts.list.between', { start: formatDate(rule.startsOn), end: formatDate(rule.endsOn) });
-    }
-    if (rule.startsOn) {
-        return t('discounts.list.from', { start: formatDate(rule.startsOn) });
-    }
-    return rule.endsOn ? t('discounts.list.until', { end: formatDate(rule.endsOn) }) : t('discounts.list.always');
-}
+const period = (rule) => describePeriod(rule.startsOn, rule.endsOn);
 
 const status = (key) => t(`discounts.status.${key}`);
 
@@ -55,8 +45,8 @@ function saving(rule) {
     }
     return {
         day,
-        regular: range(regular.min, regular.max),
-        saved: range(savingOn(regular.min, rule.action), savingOn(regular.max, rule.action)),
+        regular: describeRange(regular),
+        saved: describeRange({ min: savingOn(regular.min, rule.action), max: savingOn(regular.max, rule.action) }),
     };
 }
 </script>

@@ -27,7 +27,6 @@ const { t } = useI18n();
 
 const props = defineProps({
     withTime: { type: Boolean, default: false },
-    invalid: { type: Boolean, default: false },
 });
 const model = defineModel({ type: String, default: '' });
 
@@ -52,7 +51,7 @@ const date = computed({
         :week-starts-on="1"
         fixed-weeks
     >
-        <DatePickerField v-slot="{ segments }" class="control date-picker__field" :data-invalid="invalid || undefined">
+        <DatePickerField v-slot="{ segments }" class="control date-picker__field">
             <template v-for="item in segments" :key="item.part">
                 <DatePickerInput v-if="item.part === 'literal'" :part="item.part" class="date-picker__literal">{{ item.value }}</DatePickerInput>
                 <DatePickerInput v-else :part="item.part" class="date-picker__segment">{{ item.value }}</DatePickerInput>

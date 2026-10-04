@@ -65,7 +65,10 @@ async function deleteChecked() {
 }
 
 const supplyOpen = ref(false);
-const checkedChannelIds = computed(() => [...new Set(orders.value.filter((order) => checkedIds.value.includes(order.id)).map((order) => order.channelId ?? null))]);
+const checkedChannelIds = computed(() => {
+    const checked = new Set(checkedIds.value);
+    return [...new Set(orders.value.filter((order) => checked.has(order.id)).map((order) => order.channelId ?? null))];
+});
 const checkedChannel = computed(() => (checkedChannelIds.value.length === 1 ? channels.value.find((channel) => channel.id === checkedChannelIds.value[0]) ?? null : null));
 const supplyBlocker = computed(() => {
     if (checkedChannelIds.value.length > 1) return t('orders.supplies.severalChannels');

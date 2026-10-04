@@ -17,15 +17,14 @@ const props = defineProps({
 const emit = defineEmits(['saved']);
 const open = defineModel('open', { type: Boolean, required: true });
 
-const chosen = ref(null);
+const service = ref(null);
 
 watch(open, (isOpen) => {
     if (isOpen) {
-        chosen.value = props.editing;
+        service.value = props.editing;
     }
 });
 
-const service = computed(() => chosen.value);
 const title = computed(() => {
     if (props.editing) return t('settings.modal.edit', { label: props.editing.label });
     return service.value ? t('settings.modal.add', { label: service.value.label }) : t('settings.modal.addService');
@@ -44,9 +43,9 @@ function onSaved() {
 <template>
     <BaseModal v-model:open="open" :title="title">
         <Transition name="step" mode="out-in">
-            <ServicePicker v-if="!service" key="picker" :services="services" @choose="chosen = $event" />
+            <ServicePicker v-if="!service" key="picker" :services="services" @choose="service = $event" />
             <div v-else :key="service.key" class="service-modal__step">
-                <BackButton v-if="!editing" @click="chosen = null">{{ t('settings.modal.otherService') }}</BackButton>
+                <BackButton v-if="!editing" @click="service = null">{{ t('settings.modal.otherService') }}</BackButton>
                 <ServiceForm :service="service" :submit="submit" @saved="onSaved" @cancel="open = false" />
             </div>
         </Transition>

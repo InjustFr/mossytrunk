@@ -1,10 +1,10 @@
 import { computed } from 'vue';
 import { queryText } from './useQueryState.js';
+import { normalize } from './useSearch.js';
 
 export const DESIGN_STATUSES = { open: 'open', validated: 'validated', all: 'all' };
 export const DESIGN_SCOPES = { all: '', standalone: 'none' };
 
-const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 const isValidated = (design) => design.status === 'validated';
 const words = (design, collection) => normalize([design.name, collection?.name ?? '', ...design.declinations.map((declination) => declination.gabarit.name)].join(' '));
 

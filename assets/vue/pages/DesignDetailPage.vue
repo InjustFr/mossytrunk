@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, Plus } from '@lucide/vue';
+import { Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -9,12 +9,14 @@ import BaseSwitch from '../components/ui/BaseSwitch.vue';
 import ConfirmButton from '../components/ui/ConfirmButton.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import DeclinationCard from '../components/designs/DeclinationCard.vue';
 import DesignForm from '../components/designs/DesignForm.vue';
 import { useDesign, useDesignBoard, useGabarits } from '../composables/useDesigns.js';
 import { formatDateTime } from '../composables/useDate.js';
 import { useProductTypes } from '../composables/useProductTypes.js';
 import { visit } from '../composables/useNavigation.js';
+import { listUrl } from '../composables/useQueryState.js';
 import { useToast } from '../composables/useToast.js';
 
 const props = defineProps({
@@ -70,7 +72,7 @@ async function onValidate() {
 async function onRemove() {
     await remove();
     toast.success(t('designs.detail.removed', { name: design.value.name }));
-    visit('/designs');
+    visit(listUrl('/designs'));
 }
 
 async function onSaved({ name }) {
@@ -84,7 +86,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes()]))
 
 <template>
     <AppLayout :title="design?.name ?? t('designs.detail.titleFallback')">
-        <template #back><a class="back-link" href="/designs"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('designs.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/designs')">{{ t('designs.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="design">
                 <ConfirmButton v-if="!hasProducts" variant="ghost" :label="t('designs.detail.delete')" :message="t('designs.detail.deleteMessage', { name: design.name })" @confirm="onRemove" />

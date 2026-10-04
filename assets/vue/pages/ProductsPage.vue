@@ -56,7 +56,10 @@ const shownPotential = computed(() => sumPotential(filters.filtered.value));
 const creatingSupply = computed(() => filters.kind.value === KINDS.supply);
 const modalTitle = computed(() => t(editing.value ? 'products.page.editTitle' : creatingSupply.value ? 'products.page.newSupply' : 'products.page.new'));
 const submit = (payload) => (editing.value ? update(editing.value.id, payload) : create(payload));
-const selectedProducts = computed(() => products.value.filter((product) => filters.selectedIds.value.includes(product.id)));
+const selectedProducts = computed(() => {
+    const selected = new Set(filters.selectedIds.value);
+    return products.value.filter((product) => selected.has(product.id));
+});
 const submitBatch = (changes) => batchUpdate({ productIds: filters.selectedIds.value, ...changes });
 
 function openCreate() {

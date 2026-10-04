@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, CircleCheck } from '@lucide/vue';
+import { CircleCheck } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -8,6 +8,7 @@ import BaseCard from '../components/ui/BaseCard.vue';
 import BaseSwitch from '../components/ui/BaseSwitch.vue';
 import EmptyState from '../components/ui/EmptyState.vue';
 import ProgressBar from '../components/ui/ProgressBar.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import OrderToCheck from '../components/orders/OrderToCheck.vue';
 import { useEvent } from '../composables/useEvents.js';
 import { useOrderCheck } from '../composables/useOrderCheck.js';
@@ -55,7 +56,7 @@ onMounted(() => Promise.all([orderCheck.load(orders), loadEvent()]));
 
 <template>
     <AppLayout :title="t('check.title')">
-        <template #back><a class="back-link" :href="`/events/${eventId}`"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ event?.name ?? t('check.eventFallback') }}</a></template>
+        <template #back><BackLink :href="`/events/${eventId}`">{{ event?.name ?? t('check.eventFallback') }}</BackLink></template>
         <template #actions>
             <BaseButton variant="secondary" :href="stockCheckUrl">{{ t('check.toStockCheck') }}</BaseButton>
         </template>

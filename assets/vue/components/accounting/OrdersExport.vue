@@ -5,7 +5,7 @@ import { Download } from '@lucide/vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import BaseButton from '../ui/BaseButton.vue';
 import BaseDateRangePicker from '../ui/BaseDateRangePicker.vue';
-import { formatDate } from '../../composables/useDate.js';
+import { formatDate, localDay } from '../../composables/useDate.js';
 
 const props = defineProps({
     urlFor: { type: Function, required: true },
@@ -13,13 +13,12 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-const iso = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const today = new Date();
 const quarterStart = Math.floor(today.getMonth() / 3) * 3;
 const presets = {
-    lastMonth: { label: 'accounting.export.lastMonth', from: iso(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: iso(new Date(today.getFullYear(), today.getMonth(), 0)) },
-    lastQuarter: { label: 'accounting.export.lastQuarter', from: iso(new Date(today.getFullYear(), quarterStart - 3, 1)), to: iso(new Date(today.getFullYear(), quarterStart, 0)) },
-    thisYear: { label: 'accounting.export.thisYear', from: `${today.getFullYear()}-01-01`, to: iso(today) },
+    lastMonth: { label: 'accounting.export.lastMonth', from: localDay(new Date(today.getFullYear(), today.getMonth() - 1, 1)), to: localDay(new Date(today.getFullYear(), today.getMonth(), 0)) },
+    lastQuarter: { label: 'accounting.export.lastQuarter', from: localDay(new Date(today.getFullYear(), quarterStart - 3, 1)), to: localDay(new Date(today.getFullYear(), quarterStart, 0)) },
+    thisYear: { label: 'accounting.export.thisYear', from: `${today.getFullYear()}-01-01`, to: localDay(today) },
     custom: { label: 'accounting.export.custom' },
 };
 

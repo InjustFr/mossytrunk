@@ -1,8 +1,8 @@
 import { computed, ref, watch } from 'vue';
 import { queryFlag, queryList, queryText } from './useQueryState.js';
 
-export const MISSING_COST_PARAM = 'purchase-price';
-export const STOCK_PARAM = 'stock';
+const MISSING_COST_PARAM = 'purchase-price';
+const STOCK_PARAM = 'stock';
 
 export const KINDS = { article: 'article', supply: 'supply' };
 
@@ -40,12 +40,14 @@ export function useProductFilters(allProducts) {
         });
     });
 
-    const allVisibleSelected = computed(() => filtered.value.length > 0 && filtered.value.every((p) => selectedIds.value.includes(p.id)));
+    const selectedSet = computed(() => new Set(selectedIds.value));
+    const allVisibleSelected = computed(() => filtered.value.length > 0 && filtered.value.every((p) => selectedSet.value.has(p.id)));
 
     function toggleAllVisible() {
         const visible = filtered.value.map((p) => p.id);
+        const visibleSet = new Set(visible);
         selectedIds.value = allVisibleSelected.value
-            ? selectedIds.value.filter((id) => !visible.includes(id))
+            ? selectedIds.value.filter((id) => !visibleSet.has(id))
             : [...new Set([...selectedIds.value, ...visible])];
     }
 

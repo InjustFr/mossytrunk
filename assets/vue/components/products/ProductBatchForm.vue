@@ -14,6 +14,7 @@ import BatchChannelPrice from './BatchChannelPrice.vue';
 import VariantPicker from './VariantPicker.vue';
 import { channelPriceChangePayload, emptyChannelPriceChange, mainChannelOf } from '../../composables/useChannelPrices.js';
 import { useProductTypes } from '../../composables/useProductTypes.js';
+import { sameVariant } from '../../composables/useVariantStock.js';
 
 const props = defineProps({
     count: { type: Number, required: true },
@@ -39,8 +40,7 @@ const mainChannel = computed(() => mainChannelOf(props.channels));
 const priced = computed(() => props.products.some((product) => product.kind !== 'supply'));
 const changeType = computed(() => form.typeId !== UNCHANGED);
 const union = (lists) => [...new Set(lists.flat())];
-const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
-const everyProductHas = (variant) => props.products.every((product) => product.variants.some((existing) => same(existing, variant)));
+const everyProductHas = (variant) => props.products.every((product) => product.variants.some((existing) => sameVariant(existing, variant)));
 const addable = computed(() => (changeType.value
     ? variantsOf(form.typeId)
     : union(props.products.map((product) => variantsOf(product.typeId)))).filter((variant) => !everyProductHas(variant)));

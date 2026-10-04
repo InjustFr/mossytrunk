@@ -3,6 +3,7 @@ import { computed, watch } from 'vue';
 import { ToggleGroupItem, ToggleGroupRoot } from 'reka-ui';
 import { useI18n } from 'vue-i18n';
 import EmptyState from '../ui/EmptyState.vue';
+import { sameVariant } from '../../composables/useVariantStock.js';
 
 const props = defineProps({
     options: { type: Array, required: true },
@@ -12,11 +13,10 @@ const props = defineProps({
 const selected = defineModel({ type: Array, required: true });
 const { t } = useI18n();
 
-const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 const choices = computed(() => [
     ...props.options,
-    ...selected.value.filter((label) => !props.options.some((option) => same(option, label))),
+    ...selected.value.filter((label) => !props.options.some((option) => sameVariant(option, label))),
 ]);
 
 const ordered = computed({

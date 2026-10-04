@@ -270,7 +270,6 @@
         "newName": "New type name",
         "nameRequired": "The type name is required.",
         "createShort": "Create",
-        "none": "No type",
         "choose": "Choose a type…",
         "prefixesNames": "Prefix product names",
         "prefixedExample": "Its products are shown as “{type} Forest”.",

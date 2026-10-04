@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, Pencil } from '@lucide/vue';
+import { Pencil } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseButton from '../components/ui/BaseButton.vue';
@@ -9,6 +9,7 @@ import BaseModal from '../components/ui/BaseModal.vue';
 import IconButton from '../components/ui/IconButton.vue';
 import MoneyAmount from '../components/ui/MoneyAmount.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import StockBadge from '../components/products/StockBadge.vue';
 import ChannelPriceForm from '../components/channels/ChannelPriceForm.vue';
 import PriceHistory from '../components/products/PriceHistory.vue';
@@ -109,7 +110,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadBoard(), loadTypes(), l
 
 <template>
     <AppLayout :title="product?.displayName ?? t('products.detail.fallbackTitle')">
-        <template #back><a class="back-link" :href="listUrl('/products')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('products.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/products')">{{ t('products.detail.back') }}</BackLink></template>
         <template #actions>
             <template v-if="product">
                 <BaseButton variant="secondary" @click="editOpen = true">{{ t('products.detail.edit') }}</BaseButton>

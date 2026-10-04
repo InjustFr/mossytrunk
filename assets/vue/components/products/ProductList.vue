@@ -56,6 +56,8 @@ const columns = computed(() => ({
 const { sorted, sortBy, ariaSort } = useSort(toRef(props, 'products'), columns, 'type', 'ascending');
 const salesYear = computed(() => props.products[0]?.salesYear ?? new Date().getFullYear());
 
+const checkedSet = computed(() => new Set(checkedIds.value));
+
 function setChecked(id, checked) {
     checkedIds.value = checked ? [...checkedIds.value, id] : checkedIds.value.filter((existing) => existing !== id);
 }
@@ -90,7 +92,7 @@ function setChecked(id, checked) {
             >
                 <td class="product-list__check">
                     <BaseCheckbox
-                        :model-value="checkedIds.includes(product.id)"
+                        :model-value="checkedSet.has(product.id)"
                         :aria-label="t('products.list.select', { name: product.displayName })"
                         @update:model-value="setChecked(product.id, $event)"
                     />

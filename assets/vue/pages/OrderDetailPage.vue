@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { ArrowLeft, Plus } from '@lucide/vue';
+import { Plus } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import AppLayout from '../layouts/AppLayout.vue';
 import BaseCard from '../components/ui/BaseCard.vue';
@@ -17,6 +17,7 @@ import OrderSupplies from '../components/orders/OrderSupplies.vue';
 import SupplyForm from '../components/orders/SupplyForm.vue';
 import PaymentMethod from '../components/orders/PaymentMethod.vue';
 import StatusBadge from '../components/ui/StatusBadge.vue';
+import BackLink from '../components/ui/BackLink.vue';
 import { useOrder } from '../composables/useOrders.js';
 import { useProducts } from '../composables/useProducts.js';
 import { useSalesChannels } from '../composables/useSalesChannels.js';
@@ -91,7 +92,7 @@ onMounted(() => Promise.all([load(), loadProducts(), loadChannels()]));
 
 <template>
     <AppLayout :title="order ? t('orders.detail.title', { reference: order.reference }) : t('orders.detail.titleFallback')">
-        <template #back><a class="back-link" :href="listUrl('/orders')"><ArrowLeft size="0.875rem" aria-hidden="true" /> {{ t('orders.detail.back') }}</a></template>
+        <template #back><BackLink :href="listUrl('/orders')">{{ t('orders.detail.back') }}</BackLink></template>
         <template #actions>
             <BaseButton v-if="order && !order.refundedAt" variant="secondary" @click="mergeOpen = true">{{ t('orders.merge.open') }}</BaseButton>
             <ConfirmButton

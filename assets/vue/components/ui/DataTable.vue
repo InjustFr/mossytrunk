@@ -44,7 +44,6 @@ const showPagination = computed(() => paginated.value && pagination.total.value 
             v-if="showPagination"
             v-model:page-size="pagination.pageSize.value"
             :page="pagination.page.value"
-            :page-count="pagination.pageCount.value"
             :from="pagination.from.value"
             :to="pagination.to.value"
             :total="pagination.total.value"

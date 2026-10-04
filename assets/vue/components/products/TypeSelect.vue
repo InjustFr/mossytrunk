@@ -8,9 +8,6 @@ import TypeColorPicker from './TypeColorPicker.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
 import { nextTypeColor } from '../../composables/useTypeColor.js';
 
-const props = defineProps({
-    allowNone: { type: Boolean, default: false },
-});
 const typeId = defineModel({ type: String, default: '' });
 const { types, create } = useProductTypes();
 const { t } = useI18n();
@@ -25,7 +22,6 @@ const saving = ref(false);
 const input = ref(null);
 
 const options = computed(() => [
-    ...(props.allowNone ? [{ value: '', label: t('products.types.none') }] : []),
     ...types.value
         .filter((type) => !type.archived || type.id === typeId.value)
         .map((type) => ({ value: type.id, label: type.archived ? t('products.types.archivedOption', { name: type.name }) : type.name })),

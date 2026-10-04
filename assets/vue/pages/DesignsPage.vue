@@ -38,7 +38,7 @@ const allDesigns = computed(() => [...(board.value?.collections.flatMap((c) => c
 const onBench = computed(() => allDesigns.value.filter((design) => design.current && design.status !== 'validated'));
 const collections = computed(() => board.value?.collections ?? []);
 const selectedStatus = computed({ get: () => filters.status.value, set: (value) => { if (value) filters.status.value = value; } });
-const selected = computed(() => filters.selected.value);
+const { selected } = filters;
 const shelfName = (shelf) => shelf.collection?.name ?? t('designs.noCollection');
 const emptyShelf = computed(() => {
     if (filters.searching.value) return t('designs.shelf.nothingFound');
@@ -58,7 +58,7 @@ function openCollection(collection = null) {
     collectionOpen.value = true;
 }
 
-async function onDesignSaved({ name, id }) {
+function onDesignSaved({ name, id }) {
     designOpen.value = false;
     toast.success(t('designs.page.started', { name }));
     visit(`/designs/${id}`);
@@ -155,9 +155,7 @@ onMounted(() => Promise.all([load(), loadGabarits(), loadTypes()]));
                         </ToggleGroupItem>
                     </ToggleGroupRoot>
 
-                    <template v-if="selected">
-                        <DesignRows :designs="selected.shown" :empty="emptyShelf" />
-                    </template>
+                    <DesignRows v-if="selected" :designs="selected.shown" :empty="emptyShelf" />
                     <template v-else>
                         <div v-for="group in filters.groups.value" :key="group.key" class="designs-page__group">
                             <h3 class="designs-page__group-title">

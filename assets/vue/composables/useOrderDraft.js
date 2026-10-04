@@ -2,10 +2,6 @@ import { reactive, ref, watch } from 'vue';
 import { useApi } from './useApi.js';
 import { nowForInput } from './useDate.js';
 
-/**
- * State of the order being typed: date, lines as (productId, variant, quantity) tuples,
- * and a debounced server preview (matching event, automatic discounts, totals).
- */
 export function useOrderDraft() {
     const api = useApi();
     const placedAt = ref(nowForInput());

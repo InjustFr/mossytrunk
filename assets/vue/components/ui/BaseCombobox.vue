@@ -21,7 +21,6 @@ defineOptions({ inheritAttrs: false });
 const props = defineProps({
     options: { type: Array, required: true },
     placeholder: { type: String, default: undefined },
-    empty: { type: String, default: undefined },
 });
 const model = defineModel({ type: String, default: '' });
 
@@ -39,7 +38,7 @@ const labelOf = (value) => props.options.find((option) => option.value === value
         <ComboboxPortal>
             <ComboboxContent class="popover combobox__content" position="popper" :side-offset="4">
                 <ComboboxViewport class="combobox__viewport">
-                    <ComboboxEmpty class="combobox__empty">{{ empty ?? t('ui.combobox.empty') }}</ComboboxEmpty>
+                    <ComboboxEmpty class="combobox__empty">{{ t('ui.combobox.empty') }}</ComboboxEmpty>
                     <ComboboxItem
                         v-for="option in options"
                         :key="option.value"

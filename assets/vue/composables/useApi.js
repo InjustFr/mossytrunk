@@ -9,7 +9,6 @@ export class ApiError extends Error {
         this.violations = violations;
     }
 
-    /** Field path => message, for inline form errors. */
     get fieldErrors() {
         return Object.fromEntries(this.violations.map((v) => [v.propertyPath, v.title ?? v.message]));
     }

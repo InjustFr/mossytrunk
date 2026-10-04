@@ -19,7 +19,6 @@ const { t } = useI18n();
 
 const props = defineProps({
     page: { type: Number, required: true },
-    pageCount: { type: Number, required: true },
     from: { type: Number, required: true },
     to: { type: Number, required: true },
     total: { type: Number, required: true },

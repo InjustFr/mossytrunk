@@ -11,6 +11,7 @@ import FormField from '../ui/FormField.vue';
 import FormSection from '../ui/FormSection.vue';
 import RadioCard from '../ui/RadioCard.vue';
 import { useProductTypes } from '../../composables/useProductTypes.js';
+import { sameVariant } from '../../composables/useVariantStock.js';
 
 const props = defineProps({
     product: { type: Object, required: true },
@@ -36,7 +37,6 @@ const targetName = computed(() => (form.mode === 'new' ? form.newProductName.tri
 
 const lastWord = (name) => name.trim().split(/\s+/).at(-1) ?? '';
 const withoutLastWord = (name) => name.trim().split(/\s+/).slice(0, -1).join(' ');
-const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 const targetTypeId = computed(() => (form.mode === 'new' ? props.product.typeId : target.value?.typeId) ?? null);
 const targetVariants = computed(() => [...new Set([...variantsOf(targetTypeId.value), ...(form.mode === 'existing' ? target.value?.variants ?? [] : [])])]);
@@ -67,7 +67,7 @@ watch(() => props.product, (product) => {
 }, { immediate: true });
 
 watch([suggestedVariant, targetVariants], ([suggestion, variants]) => {
-    form.targetVariant = variants.find((variant) => same(variant, suggestion)) ?? '';
+    form.targetVariant = variants.find((variant) => sameVariant(variant, suggestion)) ?? '';
 }, { immediate: true });
 
 async function onSubmit() {

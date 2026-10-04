@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatShare } from '../../composables/useProductReports.js';
 import { formatCents } from '../../composables/useMoney.js';
+import { normalize } from '../../composables/useSearch.js';
 
 const props = defineProps({
     products: { type: Array, required: true },
@@ -19,7 +20,6 @@ const sort = ref('revenue');
 const showAll = ref(false);
 const hovered = ref(null);
 const search = ref('');
-const normalize = (text) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 const rankOf = computed(() => new Map([...props.products].sort((a, b) => b[sort.value] - a[sort.value] || b.revenue - a.revenue).map((product, index) => [product.id, index + 1])));
 const ranked = computed(() => {

@@ -36,7 +36,8 @@ const days = computed(() => {
     return totals;
 });
 
-const allChecked = computed(() => props.orders.length > 0 && props.orders.every((order) => checkedIds.value.includes(order.id)));
+const checkedSet = computed(() => new Set(checkedIds.value));
+const allChecked = computed(() => props.orders.length > 0 && props.orders.every((order) => checkedSet.value.has(order.id)));
 
 function checkAll(checked) {
     checkedIds.value = checked ? props.orders.map((order) => order.id) : [];
@@ -85,7 +86,7 @@ const withDayHeaders = (rows) => rows.map((order, index) => ({
                 <tr :class="['order-list__row', { 'order-list__row--new': order.id === highlightId, 'order-list__row--unassigned': order.unidentifiedLines > 0 }]">
                     <td class="order-list__check">
                         <BaseCheckbox
-                            :model-value="checkedIds.includes(order.id)"
+                            :model-value="checkedSet.has(order.id)"
                             :aria-label="t('orders.list.select', { reference: order.reference })"
                             @update:model-value="setChecked(order.id, $event)"
                         />
