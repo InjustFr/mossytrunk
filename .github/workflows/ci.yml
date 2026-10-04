@@ -14,7 +14,7 @@ env:
   IMAGE: docker.io/injust/mossytrunk
 
 jobs:
-  checks:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -26,7 +26,36 @@ jobs:
         with:
           save-cache: 'true'
 
-      - run: make ci-install
+      - run: make ci-build
+
+      - run: make ci-bundle
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-build
+          path: ci-build.tgz
+          retention-days: 1
+          compression-level: 0
+
+      - if: always()
+        run: docker compose down --volumes
+
+  checks:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ./.github/actions/dev-stack
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-build
+
+      - run: make ci-unbundle
 
       - run: make -j4 --output-sync=target ci-checks
 
@@ -34,6 +63,7 @@ jobs:
         run: docker compose down --volumes
 
   e2e:
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -51,7 +81,11 @@ jobs:
 
       - uses: ./.github/actions/dev-stack
 
-      - run: make ci-install
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-build
+
+      - run: make ci-unbundle
 
       - run: make ci-e2e PLAYWRIGHT_ARGS="${{ matrix.part.args }}"
 

@@ -40,3 +40,7 @@ yarn-error.log
 
 /.claude/worktrees/
 /e2e/shots/
+
+###> ci ###
+/ci-build.tgz
+###< ci ###

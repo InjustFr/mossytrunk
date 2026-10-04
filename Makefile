@@ -15,11 +15,12 @@ E2E_ASSETS_DIR ?= build-e2e
 E2E_LANES ?= 4
 POSTGRES_USER ?= app
 PLAYWRIGHT_ARGS ?=
+CI_BUNDLE ?= ci-build.tgz
 export E2E_ASSETS_DIR
 OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
 BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(TAG) -t $(IMAGE):latest
 
-.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-install ci-checks ci-test ci-e2e image push deploy deploy-files
+.PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-up ci-build ci-bundle ci-unbundle ci-checks ci-e2e image push deploy deploy-files
 
 up: ## Start the stack (app on http://localhost:8080)
 	$(DC) up -d --wait php database node mailpit
@@ -86,29 +87,37 @@ e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default bui
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e@mossytrunk.local --workspace=E2E --env=test
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
-	for lane in $$(seq 2 $(E2E_LANES)); do \
-		$(EXEC) database psql -U $(POSTGRES_USER) -d postgres -q -c "DROP DATABASE IF EXISTS app_e2e_test$$lane" -c "CREATE DATABASE app_e2e_test$$lane TEMPLATE app_e2e_test1"; \
+	lane=2; while [ $$lane -le $(E2E_LANES) ]; do \
+		$(EXEC) database psql -U $(POSTGRES_USER) -d postgres -q -c "DROP DATABASE IF EXISTS app_e2e_test$$lane" -c "CREATE DATABASE app_e2e_test$$lane TEMPLATE app_e2e_test1" || exit 1; \
+		lane=$$((lane + 1)); \
 	done
 	$(DC) --profile e2e run $(NO_TTY) --rm -e E2E_LANES=$(E2E_LANES) playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
 
 qa: cs phpstan deptrac test e2e
 
-ci: ci-install ## Full suite from a fresh checkout (GitHub Actions runs its parts in parallel jobs: ci-checks, ci-e2e)
+ci: ci-build ## Full suite from a fresh checkout (GitHub Actions builds once in ci-build, then runs ci-checks and ci-e2e shards in parallel jobs)
 	$(MAKE) -j4 $(OUTPUT_SYNC) ci-checks
-	$(MAKE) e2e-run E2E_ASSETS_DIR=build
+	$(MAKE) ci-e2e
 
-ci-install:
+ci-up:
 	$(DC) up -d --wait php database mailpit
+
+ci-build: ci-up ## Install PHP and JS dependencies and build the production assets
 	$(PHP) composer install --no-interaction --no-progress
 	$(RUN) --no-deps node npm ci --no-audit --no-fund
+	$(MAKE) assets
 
-ci-e2e: assets ## Playwright on the production build (PLAYWRIGHT_ARGS to pick projects or a shard)
+ci-bundle: ## Pack what ci-build produced for the CI test jobs (CI_BUNDLE)
+	tar -czf $(CI_BUNDLE) vendor public/build $(wildcard public/bundles)
+
+ci-unbundle: ## Unpack the ci-build output (CI_BUNDLE) and start the stack
+	tar -xzf $(CI_BUNDLE)
+	$(MAKE) ci-up
+
+ci-e2e: ## Playwright on the production build (PLAYWRIGHT_ARGS to pick projects or a shard)
 	$(MAKE) e2e-run E2E_ASSETS_DIR=build
 
-ci-checks: cs phpstan deptrac ci-test
-
-ci-test: assets
-	$(MAKE) test
+ci-checks: cs phpstan deptrac test
 
 image: ## Build the production image locally (IMAGE, TAG, PLATFORM)
 	$(BUILD) --load .
