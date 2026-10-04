@@ -10,6 +10,7 @@ use App\Domain\Order\Exception\UnknownProductChosen;
 use App\Domain\Product\SellableItem;
 use App\Domain\Product\VariantLabel;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\LotRevision;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -117,6 +118,16 @@ class OrderLine
     public function costAt(Money $unitCost): void
     {
         $this->cost = $unitCost->multiply($this->quantity);
+    }
+
+    public function followLot(LotRevision $revision): bool
+    {
+        if (!$revision->drewFrom($this->quantity, $this->cost)) {
+            return false;
+        }
+        $this->cost = $revision->costOf($this->quantity);
+
+        return true;
     }
 
     public function sameUnitAmountsAs(self $other): bool

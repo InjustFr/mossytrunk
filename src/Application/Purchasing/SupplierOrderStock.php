@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Purchasing;
 
 use App\Application\Order\MissingCosts;
+use App\Application\Order\RevisedLotCosts;
 use App\Domain\Product\ProductRepository;
 use App\Domain\Purchasing\SupplierOrder;
 use App\Domain\Shared\Money;
@@ -17,6 +18,7 @@ final readonly class SupplierOrderStock
         private ProductRepository $products,
         private StockRepository $stock,
         private MissingCosts $missingCosts,
+        private RevisedLotCosts $revisedLotCosts,
     ) {
     }
 
@@ -34,9 +36,14 @@ final readonly class SupplierOrderStock
                 continue;
             }
             $item = $this->stock->for($product, $line->variant());
+            $previous = $item->lotFrom($order->id());
             $lot = $item->restate($order->id(), (int) $line->receivedQuantity(), $order->inEuros($line->landedCost()), $receivedAt);
             if (null !== $lot && $item->isLatestPurchase($lot)) {
                 $product->bought($lot->unitCost());
+            }
+            $revision = $previous?->revisedAs($lot);
+            if (null !== $revision) {
+                $this->revisedLotCosts->follow($item, $revision);
             }
             $restated[] = $item;
         }

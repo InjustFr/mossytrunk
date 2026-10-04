@@ -210,7 +210,7 @@ class StockItem
         return array_find(array_reverse($this->lots()), static fn (StockLot $lot): bool => $lot->isPurchase());
     }
 
-    private function lotFrom(Ulid $supplierOrderId): ?StockLot
+    public function lotFrom(Ulid $supplierOrderId): ?StockLot
     {
         return $this->lots->findFirst(static fn (int $key, StockLot $lot): bool => $lot->isFrom($supplierOrderId));
     }

@@ -8,6 +8,7 @@ use App\Domain\Order\ImportedSale;
 use App\Domain\Order\Order;
 use App\Domain\Order\OrderLine;
 use App\Domain\Order\OrderRepository;
+use App\Domain\Order\OrderSupply;
 use App\Domain\Shared\DateRange;
 use App\Domain\Shared\Exception\NotFound;
 use App\Infrastructure\Persistence\Doctrine\Reporting\SalePeriodBounds;
@@ -113,7 +114,7 @@ final readonly class DoctrineOrderRepository implements OrderRepository
         return $this->scope->restrict($this->entityManager->createQueryBuilder()->select('o', 's', 'e')->from(Order::class, 'o'), 'o')
             ->join('o.supplies', 's')
             ->leftJoin('o.event', 'e')
-            ->andWhere('s.productId = :supply')
+            ->andWhere('o.id IN (SELECT IDENTITY(u.order) FROM '.OrderSupply::class.' u WHERE u.productId = :supply)')
             ->setParameter('supply', $supplyId, UlidType::NAME)
             ->getQuery()
             ->getResult();

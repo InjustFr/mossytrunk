@@ -7,6 +7,7 @@ namespace App\Domain\Order;
 use App\Domain\Order\Exception\InvalidOrderQuantity;
 use App\Domain\Product\SellableItem;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\LotRevision;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -67,6 +68,16 @@ class OrderSupply
 
         $this->quantity += $quantity;
         $this->cost = $this->cost->add($cost);
+    }
+
+    public function followLot(LotRevision $revision): bool
+    {
+        if (!$revision->drewFrom($this->quantity, $this->cost)) {
+            return false;
+        }
+        $this->cost = $revision->costOf($this->quantity);
+
+        return true;
     }
 
     public function copyInto(Order $order): self

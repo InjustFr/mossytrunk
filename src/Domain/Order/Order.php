@@ -26,6 +26,7 @@ use App\Domain\Shared\CostAllocation;
 use App\Domain\Shared\Exception\NegativeAmount;
 use App\Domain\Shared\Exception\NotFound;
 use App\Domain\Shared\Money;
+use App\Domain\Stock\LotRevision;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -439,6 +440,23 @@ class Order implements Referenced
         $this->recordSales();
 
         return $filled;
+    }
+
+    public function followLot(Ulid $productId, ?string $variant, LotRevision $revision): int
+    {
+        if ($this->isRefunded()) {
+            return 0;
+        }
+        $followed = 0;
+        foreach ($this->lines() as $line) {
+            $followed += (int) ($line->isFor($productId, $variant) && $line->followLot($revision));
+        }
+        foreach ($this->supplies() as $supply) {
+            $followed += (int) ($supply->uses($productId, $variant) && $supply->followLot($revision));
+        }
+        $this->recordSales();
+
+        return $followed;
     }
 
     public function unknownCostLines(): int

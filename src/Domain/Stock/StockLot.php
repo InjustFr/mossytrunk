@@ -69,6 +69,16 @@ class StockLot
         return $given;
     }
 
+    public function revisedAs(?self $revised): ?LotRevision
+    {
+        if (null === $revised) {
+            return null;
+        }
+        $revision = new LotRevision($this->totalCost, $this->quantity, $revised->totalCost, $revised->quantity);
+
+        return $revision->changesUnitCost() ? $revision : null;
+    }
+
     public function isExhausted(): bool
     {
         return 0 === $this->remaining;

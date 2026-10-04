@@ -6,12 +6,16 @@ namespace App\Tests\Functional\Application\Purchasing;
 
 use App\Application\Event\ScheduleEvent\ScheduleEvent;
 use App\Application\Event\ScheduleEvent\ScheduleEventHandler;
+use App\Application\Order\AddOrderSupplies\AddOrderSupplies;
+use App\Application\Order\AddOrderSupplies\AddOrderSuppliesHandler;
 use App\Application\Order\FillMissingCosts\FillMissingCostsHandler;
 use App\Application\Order\GetOrder\GetOrderHandler;
 use App\Application\Order\ListOrders\ListOrdersHandler;
 use App\Application\Order\PlaceOrder\PlaceOrder;
 use App\Application\Order\PlaceOrder\PlaceOrderHandler;
 use App\Application\Order\RequestedLine;
+use App\Application\Product\CreateProduct\CreateProduct;
+use App\Application\Product\CreateProduct\CreateProductHandler;
 use App\Application\Product\CreateProductType\CreateProductTypeHandler;
 use App\Application\Product\GetProduct\GetProductHandler;
 use App\Application\Product\ListProducts\ProductView;
@@ -28,9 +32,12 @@ use App\Application\Purchasing\ReceiveSupplierOrder\ReceiveSupplierOrderHandler;
 use App\Application\Purchasing\ReviseSupplierOrder\ReviseSupplierOrderHandler;
 use App\Application\Purchasing\SupplierOrderDraft;
 use App\Application\Purchasing\SupplierOrderView;
+use App\Application\Sales\OfferSupplies\OfferSuppliesHandler;
 use App\Application\Stock\GetProductStock\GetProductStockHandler;
+use App\Domain\Product\ProductKind;
 use App\Domain\Purchasing\Currency;
 use App\Domain\Purchasing\Exception\InvalidPurchase;
+use App\Domain\Sales\SalesChannelRepository;
 use App\Domain\Shared\Exception\NotFound;
 use App\Tests\Support\ActsAsUser;
 use App\Tests\Support\CreatesProducts;
@@ -131,6 +138,29 @@ final class PurchasingUseCasesTest extends KernelTestCase
         self::assertSame([360, 1_500 - 360], [$order->costOfGoods, $order->margin]);
         self::assertSame([1_500 - 360, 0], [$container->get(ListOrdersHandler::class)()[0]->profit, $container->get(ListOrdersHandler::class)()[0]->unknownCosts]);
         self::assertSame(0, $container->get(FillMissingCostsHandler::class)());
+    }
+
+    public function testCorrectingAReceivedOrderRecostsTheOrdersThatTookItsUnits(): void
+    {
+        $container = self::getContainer();
+        $sleeve = (string) $container->get(CreateProductHandler::class)(new CreateProduct('Pochette', 0, typeId: (string) $container->get(CreateProductTypeHandler::class)('Pochette')->id(), kind: ProductKind::Supply));
+        $container->get(OfferSuppliesHandler::class)((string) $container->get(SalesChannelRepository::class)->main()->id(), [$sleeve]);
+        $orderId = $this->place([new PurchaseLine($sleeve, null, 1_000, 2_000), new PurchaseLine($this->sticker, null, 100, 2_000)]);
+        $lines = $this->view($orderId)->lines;
+        $container->get(ReceiveSupplierOrderHandler::class)($orderId, [$lines[0]['id'] => 1_000, $lines[1]['id'] => 100]);
+        $container->get(ScheduleEventHandler::class)(new ScheduleEvent('Salon', 'Lyon', new \DateTimeImmutable('2030-03-14'), new \DateTimeImmutable('2030-03-14')));
+        $sold = (string) $container->get(PlaceOrderHandler::class)(new PlaceOrder(new \DateTimeImmutable('2030-03-14 12:00'), [new RequestedLine($this->sticker, null, 2)]))->id();
+        $container->get(AddOrderSuppliesHandler::class)(new AddOrderSupplies([$sold], $sleeve, null, 3));
+        self::assertSame([40, 6], [$container->get(GetOrderHandler::class)($sold)->costOfGoods, $container->get(GetOrderHandler::class)($sold)->suppliesCost]);
+
+        $container->get(ReviseSupplierOrderHandler::class)($orderId, new SupplierOrderDraft($this->supplierId, new \DateTimeImmutable('2026-09-01'), [
+            new PurchaseLine($sleeve, null, 500, 2_000, 500),
+            new PurchaseLine($this->sticker, null, 100, 3_000, 100),
+        ]));
+        $this->clear();
+
+        $order = $container->get(GetOrderHandler::class)($sold);
+        self::assertSame([60, 12], [$order->costOfGoods, $order->suppliesCost]);
     }
 
     public function testAnOrderInDollarsStocksItsCostInEuros(): void
