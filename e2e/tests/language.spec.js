@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { choose } from './support/select.js';
 
 test('the app follows the browser language until a language is chosen, and the choice is kept', async ({ page }) => {

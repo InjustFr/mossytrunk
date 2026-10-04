@@ -39,7 +39,7 @@ services:
     environment:
       BASE_URL: http://php-e2e
       CI: ${CI:-}
-      E2E_OWN_DATABASE: ${E2E_OWN_DATABASE:-}
+      E2E_LANES: ${E2E_LANES:-1}
       MAILPIT_URL: http://mailpit:8025
     volumes:
       - ./:/app
@@ -50,6 +50,7 @@ services:
   php-e2e:
     image: mossytrunk-dev
     build: .
+    command: [frankenphp, run, --config, /app/docker/frankenphp/Caddyfile.e2e, --adapter, caddyfile]
     healthcheck: *php-healthcheck
     profiles: [e2e]
     depends_on:
@@ -59,6 +60,8 @@ services:
       APP_ENV: test
       APP_DEBUG: 0
       E2E_NATIVE_SESSIONS: 1
+      E2E_ROLLBACK: 1
+      FRANKENPHP_LOOP_MAX: 0
       ASSETS_DIR: ${E2E_ASSETS_DIR:-build-e2e}
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
       MAILER_DSN: smtp://mailpit:1025

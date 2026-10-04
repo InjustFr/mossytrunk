@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { forgetService } from './support/api.js';
 
 test('add SumUp from the settings: its API key is never shown again', async ({ page, request }) => {

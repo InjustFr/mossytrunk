@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 
 test('home redirects to the dashboard with navigation', async ({ page }) => {
     await page.goto('/');

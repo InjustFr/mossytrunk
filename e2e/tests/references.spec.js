@@ -1,15 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { createEvent, createProduct } from './support/api.js';
 import { unique } from './support/unique.js';
-
-const DEFAULTS = { order: 'CMD-{date}-{random}', supplier_order: 'CMF-{date}-{random}' };
-
-test.afterAll(async ({ request }) => {
-    for (const [kind, template] of Object.entries(DEFAULTS)) {
-        const response = await request.put(`/api/references/formats/${kind}`, { data: { template, applyToExisting: false } });
-        expect(response.status()).toBe(200);
-    }
-});
 
 test('choose the format of order references from the settings, with tags and a live example', async ({ page, request }) => {
     const product = await createProduct(request);

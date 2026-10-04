@@ -15,11 +15,13 @@ export async function defineVariants(request, type, variants) {
     return { ...type, variants };
 }
 
-let unprefixedType = null;
+const unprefixedTypes = new WeakMap();
 
 async function typeKeepingNames(request) {
-    unprefixedType ??= await createType(request, unique('Divers'), { prefixesNames: false });
-    return unprefixedType;
+    if (!unprefixedTypes.has(request)) {
+        unprefixedTypes.set(request, await createType(request, unique('Divers'), { prefixesNames: false }));
+    }
+    return unprefixedTypes.get(request);
 }
 
 export async function createProduct(request, { name = unique('Produit'), sellingPrice = 400, buyingPrice = 0, variants = [], type = null } = {}) {

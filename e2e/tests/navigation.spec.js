@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 
 test('navigating between pages does not reload the document (Turbo Drive)', async ({ page }) => {
     await page.goto('/orders');

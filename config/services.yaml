@@ -61,4 +61,12 @@ when@test:
                 $mock: '@session.storage.factory.mock_file'
                 $native: '@session.storage.factory.native'
                 $useNative: '%env(bool:default::E2E_NATIVE_SESSIONS)%'
+        App\Tests\Support\EndToEnd\:
+            resource: '../tests/Support/EndToEnd/'
+            autowire: true
+            autoconfigure: true
+        App\Tests\Support\EndToEnd\KeepStaticConnections:
+            autoconfigure: true
+            arguments:
+                $enabled: '%env(bool:default::E2E_ROLLBACK)%'
 

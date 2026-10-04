@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 
 test('switch URSSAF periodicity and download the orders of a period as CSV', async ({ page }) => {
     await page.goto('/accounting');

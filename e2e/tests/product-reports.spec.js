@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { unique } from './support/unique.js';
 import { createEvent, createProduct, restock } from './support/api.js';
 

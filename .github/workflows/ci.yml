@@ -42,12 +42,10 @@ jobs:
       fail-fast: false
       matrix:
         part:
-          - { name: chromium-1, args: --project=chromium --shard=1/2 }
-          - { name: chromium-2, args: --project=chromium --shard=2/2 }
-          - { name: workspace-wide, args: --project=workspace-wide }
+          - { name: shard-1, args: --shard=1/3 }
+          - { name: shard-2, args: --shard=2/3 }
+          - { name: shard-3, args: --shard=3/3 }
     name: e2e (${{ matrix.part.name }})
-    env:
-      E2E_OWN_DATABASE: 1
     steps:
       - uses: actions/checkout@v5
 

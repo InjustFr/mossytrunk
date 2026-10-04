@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { E2E_EMAIL, E2E_PASSWORD, RESET_EMAIL, signIn } from './support/account.js';
 import { clearEmailsTo, latestEmailTo, passwordLinkFrom } from './support/mailpit.js';
 

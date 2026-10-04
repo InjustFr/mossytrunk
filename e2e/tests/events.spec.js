@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { fillDate, fillDateRange } from './support/date.js';
 import { unique, uniqueDay } from './support/unique.js';
 

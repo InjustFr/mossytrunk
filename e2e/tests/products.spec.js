@@ -1,8 +1,8 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 import { choose } from './support/select.js';
 import { fillDate } from './support/date.js';
 import { unique, uniqueTypeCode } from './support/unique.js';
-import { createProduct, createType, defineVariants } from './support/api.js';
+import { createEvent, createProduct, createType, defineVariants } from './support/api.js';
 
 const uniqueCode = (prefix) => `${prefix}${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`.toUpperCase();
 
@@ -168,6 +168,9 @@ test('long lists are paginated', async ({ page, request }) => {
 test('the dashboard leads to the products never bought', async ({ page, request }) => {
     const unknown = await createProduct(request, { name: unique('Mystère'), sellingPrice: 1_000, buyingPrice: 0 });
     const known = await createProduct(request, { name: unique('Connu'), sellingPrice: 1_000, buyingPrice: 400 });
+    const event = await createEvent(request);
+    const order = await request.post('/api/orders', { data: { placedAt: `${event.startDate}T10:00`, lines: [{ productId: known.id, variant: null, quantity: 1 }] } });
+    expect(order.status()).toBe(201);
 
     await page.goto('/dashboard');
     await page.getByRole('status').getByRole('link', { name: "Voir les produits sans coût d'achat" }).click();

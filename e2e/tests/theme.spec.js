@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './support/test.js';
 
 test('the user picks a theme or their own colours, and keeps them', async ({ page }) => {
     await page.goto('/settings');

@@ -12,6 +12,8 @@ DEPLOY_HOST ?= debian@duprat.cloud
 DEPLOY_DIR ?= /mnt/mossytrunk
 REMOTE_DOCKER ?= sudo -n docker
 E2E_ASSETS_DIR ?= build-e2e
+E2E_LANES ?= 4
+POSTGRES_USER ?= app
 PLAYWRIGHT_ARGS ?=
 export E2E_ASSETS_DIR
 OUTPUT_SYNC = $(if $(filter output-sync,$(.FEATURES)),--output-sync=target)
@@ -75,15 +77,19 @@ phpstan: ## Static analysis (level in phpstan.dist.neon)
 
 e2e: assets-e2e e2e-run ## Playwright end-to-end tests against a dedicated app container
 
-e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default build-e2e)
+e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default build-e2e), E2E_LANES tests at a time (1-4)
 	$(DC) --profile e2e up -d --wait php-e2e mailpit
 	$(EXEC) php-e2e php bin/console cache:clear --env=test
-	$(EXEC) php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
-	$(EXEC) php-e2e php bin/console doctrine:database:create --env=test
-	$(EXEC) php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
-	$(EXEC) php-e2e php bin/console app:user:create e2e@mossytrunk.local --workspace=E2E --env=test
-	$(EXEC) php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
-	$(DC) --profile e2e run $(NO_TTY) --rm playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
+	$(EXEC) php-e2e curl -sf -X POST http://localhost:2019/frankenphp/workers/restart
+	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
+	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:database:create --env=test
+	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
+	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e@mossytrunk.local --workspace=E2E --env=test
+	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
+	for lane in $$(seq 2 $(E2E_LANES)); do \
+		$(EXEC) database psql -U $(POSTGRES_USER) -d postgres -q -c "DROP DATABASE IF EXISTS app_e2e_test$$lane" -c "CREATE DATABASE app_e2e_test$$lane TEMPLATE app_e2e_test1"; \
+	done
+	$(DC) --profile e2e run $(NO_TTY) --rm -e E2E_LANES=$(E2E_LANES) playwright sh -c "npm ci --no-audit --no-fund && ./node_modules/.bin/playwright test $(PLAYWRIGHT_ARGS)"
 
 qa: cs phpstan deptrac test e2e
 

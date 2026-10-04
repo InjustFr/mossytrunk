@@ -1,0 +1,23 @@
+{
+	skip_install_trust
+	auto_https off
+}
+
+(lane) {
+	:{args[0]} {
+		root public/
+		php_server {
+			worker {
+				name lane{args[1]}
+				file ./public/index.php
+				num 1
+				env TEST_TOKEN {args[1]}
+			}
+		}
+	}
+}
+
+import lane 8001 1
+import lane 8002 2
+import lane 8003 3
+import lane 8004 4
