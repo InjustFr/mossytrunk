@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import KeptShareTrack from './KeptShareTrack.vue';
+import MoneyAmount from '../ui/MoneyAmount.vue';
 import { formatCents, formatRatio } from '../../composables/useMoney.js';
 
 defineProps({
@@ -9,8 +10,6 @@ defineProps({
 });
 
 const { t } = useI18n();
-
-const isLoss = (item) => item.value < 0;
 </script>
 
 <template>
@@ -29,7 +28,7 @@ const isLoss = (item) => item.value < 0;
                 </span>
                 <KeptShareTrack :result="item.value" :turnover="item.turnover" class="result-bars__track" />
                 <span class="result-bars__figures">
-                    <span :class="['result-bars__value', { 'result-bars__value--loss': isLoss(item) }]">{{ formatCents(item.value) }}</span>
+                    <MoneyAmount :cents="item.value" signed class="result-bars__value" />
                     <span class="result-bars__ratio">{{ t('reporting.bars.ratio', { ratio: formatRatio(item.value, item.turnover), turnover: formatCents(item.turnover) }) }}</span>
                 </span>
             </li>
@@ -74,7 +73,6 @@ const isLoss = (item) => item.value < 0;
 
 .result-bars__figures { display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .result-bars__value { font-weight: 600; }
-.result-bars__value--loss { color: var(--color-danger); }
 .result-bars__ratio { color: var(--color-muted); font-size: var(--font-size-sm); }
 
 @media (max-width: 40rem) {

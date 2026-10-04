@@ -3,7 +3,8 @@ import { computed, useSlots } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ChevronRight } from '@lucide/vue';
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
-import { formatCents, formatRatio } from '../../composables/useMoney.js';
+import MoneyAmount from '../ui/MoneyAmount.vue';
+import { formatRatio } from '../../composables/useMoney.js';
 
 const props = defineProps({
     title: { type: String, required: true },
@@ -23,7 +24,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
     <section :class="['receipt', { 'receipt--expandable': expandable }]" :aria-label="title">
         <div class="receipt__summary">
             <h2 class="receipt__title">{{ title }}</h2>
-            <p :class="['receipt__result', { 'receipt__result--loss': result < 0 }]" :data-test="resultTest">{{ formatCents(result) }}</p>
+            <p class="receipt__result" :data-test="resultTest"><MoneyAmount :cents="result" signed /></p>
             <p v-if="turnover > 0" class="receipt__ratio">{{ t('reporting.receipt.ratio', { ratio: formatRatio(result, turnover) }) }}</p>
             <slot name="summary" />
         </div>
@@ -36,7 +37,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
                         <span v-else class="receipt__chevron" aria-hidden="true" />
                         <span class="receipt__label">{{ line.label }}<span v-if="line.hint" class="receipt__hint">{{ line.hint }}</span></span>
                         <span class="receipt__sign">{{ line.sign ?? '' }}</span>
-                        <span class="receipt__amount">{{ formatCents(line.amount) }}</span>
+                        <MoneyAmount :cents="line.amount" class="receipt__amount" />
                     </component>
                     <CollapsibleContent v-if="hasDetail(line.key)" class="receipt__detail"><slot :name="`detail-${line.key}`" /></CollapsibleContent>
                 </component>
@@ -45,7 +46,7 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
                 <span class="receipt__chevron" aria-hidden="true" />
                 <span class="receipt__label">{{ t('reporting.receipt.result') }}</span>
                 <span class="receipt__sign">=</span>
-                <span :class="['receipt__amount', { 'receipt__amount--loss': result < 0 }]">{{ formatCents(result) }}</span>
+                <MoneyAmount :cents="result" signed class="receipt__amount" />
             </div>
         </div>
     </section>
@@ -75,7 +76,6 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
     overflow-wrap: anywhere;
 }
 
-.receipt__result--loss { color: var(--color-danger); }
 .receipt__ratio { margin: 0 0 var(--space-2); color: var(--color-muted); }
 .receipt__summary :deep(p) { margin: 0; }
 
@@ -107,7 +107,6 @@ const expandable = computed(() => props.lines.some((line) => hasDetail(line.key)
 .receipt__hint { margin-left: var(--space-2); color: var(--color-muted); font-size: var(--font-size-md); }
 .receipt__sign { color: var(--color-muted); text-align: center; }
 .receipt__amount { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.receipt__amount--loss { color: var(--color-danger); }
 
 .receipt__detail { padding: var(--space-2) 0 var(--space-4) var(--space-5); border-bottom: 0.0625rem dashed var(--color-border-strong); }
 
