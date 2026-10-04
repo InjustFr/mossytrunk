@@ -27,8 +27,10 @@
     --color-success: color-mix(in oklab, oklch(from var(--theme-background) calc(0.76 - 0.25 * clamp(0, (l - 0.62) * 100, 1)) 0.13 145) 85%, var(--theme-accent));
     --color-warning: color-mix(in oklab, oklch(from var(--theme-background) calc(0.8 - 0.22 * clamp(0, (l - 0.62) * 100, 1)) 0.13 70) 85%, var(--theme-accent));
     --color-chart-out: color-mix(in oklab, oklch(from var(--theme-background) calc(0.72 - 0.22 * clamp(0, (l - 0.62) * 100, 1)) 0.11 262) 85%, var(--theme-accent));
-    --color-danger-soft: color-mix(in oklch, var(--color-danger) 10%, var(--color-surface));
-    --color-warning-soft: color-mix(in oklch, var(--color-warning) 12%, var(--color-surface));
+    --color-surface-hueless: oklch(from var(--color-surface) l 0 none);
+    --color-danger-soft: color-mix(in oklch, var(--color-danger) 10%, var(--color-surface-hueless));
+    --color-success-soft: color-mix(in oklch, var(--color-success) 12%, var(--color-surface-hueless));
+    --color-warning-soft: color-mix(in oklch, var(--color-warning) 12%, var(--color-surface-hueless));
     --color-backdrop: rgb(17 17 17 / 35%);
 
     --radius: 0.5rem;

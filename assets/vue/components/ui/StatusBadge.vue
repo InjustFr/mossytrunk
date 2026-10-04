@@ -25,5 +25,5 @@ defineProps({
 
 .status-badge--warning { background: var(--color-warning-soft); color: var(--color-warning); }
 .status-badge--danger { background: var(--color-danger-soft); color: var(--color-danger); }
-.status-badge--success { background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.status-badge--success { background: var(--color-success-soft); color: var(--color-success); }
 </style>
