@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { choose } from './support/select.js';
+import { closeToast } from './support/toast.js';
 import { unique } from './support/unique.js';
 import { createEvent, createProduct, createType, restock } from './support/api.js';
 
@@ -36,7 +37,7 @@ test('a sales channel gets its own prices, one by one or in batch', async ({ pag
     await batch.getByRole('spinbutton', { name: 'Ajustement' }).press('Tab');
     await expect(batch.getByRole('list', { name: 'Aperçu' })).toContainText('4,40');
     await batch.getByRole('button', { name: 'Appliquer à 2 produits' }).click();
-    await expect(page.getByTestId('toast')).toContainText('2 produits mis à jour.');
+    await closeToast(page, '2 produits mis à jour.');
 
     await expect(page.getByRole('columnheader', { name: name })).toBeVisible();
     await expect(page.getByRole('row').filter({ hasText: moss.displayName })).toContainText('4,40');
@@ -54,7 +55,7 @@ test('a sales channel gets its own prices, one by one or in batch', async ({ pag
     const price = page.getByRole('dialog', { name: `Prix de ${fern.displayName} sur ${name}` });
     await price.getByRole('switch').click();
     await price.getByRole('button', { name: 'Enregistrer' }).click();
-    await expect(page.getByTestId('toast').last()).toContainText(`Prix de ${fern.displayName} enregistré.`);
+    await closeToast(page, `Prix de ${fern.displayName} enregistré.`);
     await expect(page.getByRole('row').filter({ hasText: fern.displayName }).getByRole('cell').nth(2)).toContainText('6,00');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await page.getByRole('button', { name: `Modifier le prix de ${moss.displayName}` }).click();
