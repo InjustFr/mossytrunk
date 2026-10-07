@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Domain\Identity;
 
 use App\Domain\Identity\Exception\InvalidAccount;
+use App\Domain\Identity\Exception\InvalidEmail;
 use App\Domain\Identity\User;
 use App\Domain\Identity\Workspace;
 use PHPUnit\Framework\TestCase;
@@ -13,7 +14,7 @@ final class UserTest extends TestCase
 {
     public function testEmailIsNormalized(): void
     {
-        $user = User::invite('  Louis@Example.COM ', Workspace::create('Atelier'));
+        $user = User::join('account', '  Louis@Example.COM ', Workspace::create('Atelier'));
 
         self::assertSame('louis@example.com', $user->email());
     }
@@ -22,17 +23,27 @@ final class UserTest extends TestCase
     {
         $this->expectException(InvalidAccount::class);
 
-        User::invite('not-an-email', Workspace::create('Atelier'));
+        User::join('account', 'not-an-email', Workspace::create('Atelier'));
     }
 
-    public function testInvitedUserHasNoPasswordUntilSet(): void
+    public function testFollowsItsMossyleafAccount(): void
     {
-        $user = User::invite('louis@example.com', Workspace::create('Atelier'));
-        self::assertNull($user->passwordHash());
+        $user = User::join('account', 'louis@example.com', Workspace::create('Atelier'));
+        self::assertSame('account', $user->accountId());
 
-        $user->changePassword('hash');
+        $user->linkAccount('another-account');
+        $user->changeEmail(' Lou@Example.com ');
 
-        self::assertSame('hash', $user->passwordHash());
+        self::assertSame(['another-account', 'lou@example.com'], [$user->accountId(), $user->email()]);
+    }
+
+    public function testChangedEmailMustBeValid(): void
+    {
+        $user = User::join('account', 'louis@example.com', Workspace::create('Atelier'));
+
+        $this->expectExceptionObject(new InvalidEmail('lou'));
+
+        $user->changeEmail('lou');
     }
 
     public function testWorkspaceNameIsRequired(): void

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Web;
 
-use App\Application\Identity\CreateUser\CreateUser;
-use App\Application\Identity\CreateUser\CreateUserHandler;
+use App\Domain\Identity\UserRepository;
+use App\Infrastructure\Security\SecurityUser;
+use App\Tests\Support\FakeAccounts;
+use App\Tests\Support\Json;
 use App\Tests\Support\SignsInClient;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Mime\Email;
 
 final class AuthenticationTest extends WebTestCase
 {
@@ -33,61 +34,120 @@ final class AuthenticationTest extends WebTestCase
         self::assertResponseStatusCodeSame(401);
     }
 
-    public function testInvitedUserSetsPasswordThenSignsIn(): void
+    public function testSignedInUsersSkipTheLogin(): void
+    {
+        $client = self::signedInClient();
+
+        $client->request('GET', '/login');
+
+        self::assertResponseRedirects('/dashboard');
+    }
+
+    public function testSignedOutVisitorsSignInWithTheirMossyleafAccount(): void
     {
         $client = self::createClient();
-        self::getContainer()->get(CreateUserHandler::class)(new CreateUser('louis@example.com', 'Atelier'));
-        $link = $this->linkFromLastEmail();
 
-        $client->request('GET', $link);
-        self::assertResponseRedirects('/password/set');
-        $client->request('GET', '/password/set');
-        self::assertTrue(self::props($client)['invitation']);
+        $client->request('GET', '/login');
 
-        $client->request('POST', '/password/set', ['_csrf_token' => self::props($client)['csrfToken'], 'password' => 'correct horse battery', 'confirmation' => 'correct horse battery']);
-        self::assertResponseRedirects('/login');
+        $query = $this->authorizeQuery($client);
+        self::assertSame(['code', 'mossytrunk', 'http://localhost/login/check', 'openid email profile', 'S256'], [$query['response_type'], $query['client_id'], $query['redirect_uri'], $query['scope'], $query['code_challenge_method']]);
+        self::assertMatchesRegularExpression('/^[A-Za-z0-9_-]{22,}$/', $query['state']);
+        self::assertMatchesRegularExpression('/^[A-Za-z0-9_-]{43}$/', $query['code_challenge']);
+    }
 
-        $this->signIn($client, 'Louis@example.com', 'correct horse battery');
-        self::assertResponseRedirects('/dashboard');
+    public function testANewAccountSignsInAndLandsWhereItWasGoing(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/products');
+        $client->request('GET', '/login');
+        $state = $this->authorizeQuery($client)['state'];
+
+        $client->request('GET', '/login/check', ['state' => $state, 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com'])]);
+
+        self::assertResponseRedirects('/products');
         $client->jsonRequest('GET', '/api/products');
         self::assertResponseIsSuccessful();
+        self::assertSame('Atelier Mousse', self::getContainer()->get(UserRepository::class)->findByAccountId('account-1')?->workspace()->name());
+        self::assertNotNull($client->getCookieJar()->get('REMEMBERME'));
     }
 
-    public function testWrongPasswordIsRejected(): void
+    public function testAnExistingUserSignsInWithTheirEmail(): void
     {
         $client = self::createClient();
-        self::getContainer()->get(CreateUserHandler::class)(new CreateUser('louis@example.com', 'Atelier'));
+        $user = self::createMemberFromBeforeAccounts('Atelier', 'louis@example.com');
+        $client->request('GET', '/login');
 
-        $this->signIn($client, 'louis@example.com', 'wrong password');
+        $client->request('GET', '/login/check', ['state' => $this->authorizeQuery($client)['state'], 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'louis@example.com'])]);
+
+        self::assertResponseRedirects('/dashboard');
+        self::assertSame((string) $user->id(), (string) self::getContainer()->get(UserRepository::class)->findByAccountId('account-1')?->id());
+    }
+
+    public function testAnUnknownStateIsRefused(): void
+    {
+        $client = self::createClient();
+        $client->request('GET', '/login');
+
+        $client->request('GET', '/login/check', ['state' => 'forged', 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com'])]);
+        self::assertResponseRedirects('/login');
         $client->followRedirect();
 
-        self::assertSame('Incorrect email or password.', self::props($client)['error']);
+        self::assertSame('This sign-in took too long or was opened in another tab, please try again.', Json::string(self::props($client), 'error'));
+        $client->jsonRequest('GET', '/api/products');
+        self::assertResponseStatusCodeSame(401);
     }
 
-    public function testUsedLinkShowsAnError(): void
+    public function testAStateIsUsedOnlyOnce(): void
     {
         $client = self::createClient();
+        $client->request('GET', '/login');
+        $state = $this->authorizeQuery($client)['state'];
+        $client->request('GET', '/login/check', ['state' => $state, 'code' => 'not-a-code']);
+        $client->followRedirect();
+        self::assertSame('Unable to sign in, please try again.', Json::string(self::props($client), 'error'));
 
-        $client->request('GET', '/password/set/'.str_repeat('a', 72));
+        $client->request('GET', '/login/check', ['state' => $state, 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com'])]);
         $client->followRedirect();
 
-        self::assertResponseStatusCodeSame(400);
-        self::assertSame('This link is not valid.', self::props($client)['linkError']);
+        self::assertSame('This sign-in took too long or was opened in another tab, please try again.', Json::string(self::props($client), 'error'));
     }
 
-    public function testForgotPasswordNeverRevealsAccounts(): void
+    public function testAnAccountWithoutAccessSeesWhy(): void
     {
         $client = self::createClient();
-        self::getContainer()->get(CreateUserHandler::class)(new CreateUser('louis@example.com', 'Atelier'));
+        $client->request('GET', '/login');
 
-        foreach (['louis@example.com' => 1, 'nobody@example.com' => 0] as $email => $emailsSent) {
-            $client->request('GET', '/password/forgot');
-            $client->request('POST', '/password/forgot', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email]);
-            self::assertResponseRedirects('/password/forgot');
-            self::assertEmailCount($emailsSent);
-            $client->followRedirect();
-            self::assertTrue(self::props($client)['sent']);
-        }
+        $client->request('GET', '/login/check', ['state' => $this->authorizeQuery($client)['state'], 'error' => 'access_denied']);
+        $client->followRedirect();
+
+        self::assertSame('Your mossyleaf account does not have access to MossyTrunk yet.', Json::string(self::props($client), 'error'));
+    }
+
+    public function testAnEmailTakenByAnotherAccountIsExplained(): void
+    {
+        $client = self::createClient();
+        self::createMember('Atelier', 'louis@example.com');
+        $client->request('GET', '/login');
+
+        $client->request('GET', '/login/check', ['state' => $this->authorizeQuery($client)['state'], 'code' => FakeAccounts::code(['sub' => 'account-2', 'email' => 'louis@example.com'])]);
+        $client->followRedirect();
+
+        self::assertSame('A user already exists with the address “louis@example.com”.', Json::string(self::props($client), 'error'));
+    }
+
+    public function testSigningOutAlsoSignsOutOfTheMossyleafAccount(): void
+    {
+        $client = self::createClient();
+        $client->loginUser(SecurityUser::fromUser(self::createMember()));
+        $client->request('GET', '/settings');
+        $session = Json::decode((string) $client->getCrawler()->filter('#app-session')->text());
+        self::assertSame('https://accounts.test', Json::string($session, 'accountsUrl'));
+
+        $client->request('POST', '/logout', ['_csrf_token' => Json::string($session, 'logoutToken')]);
+
+        self::assertResponseRedirects('https://accounts.test/end-session?client_id=mossytrunk&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2F');
+        $client->jsonRequest('GET', '/api/products');
+        self::assertResponseStatusCodeSame(401);
     }
 
     public function testCrossSiteApiWritesAreRejected(): void
@@ -104,30 +164,28 @@ final class AuthenticationTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
     }
 
-    private function signIn(KernelBrowser $client, string $email, string $password): void
+    /**
+     * @return array<string, string>
+     */
+    private function authorizeQuery(KernelBrowser $client): array
     {
-        $client->request('GET', '/login');
-        $client->request('POST', '/login', ['_csrf_token' => self::props($client)['csrfToken'], 'email' => $email, 'password' => $password]);
+        $location = (string) $client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('https://accounts.test/authorize?', $location);
+        parse_str((string) parse_url($location, \PHP_URL_QUERY), $query);
+
+        $strings = [];
+        foreach ($query as $name => $value) {
+            $strings[(string) $name] = \is_string($value) ? $value : '';
+        }
+
+        return $strings;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @return array<mixed>
+     */
     private static function props(KernelBrowser $client): array
     {
-        $json = $client->getCrawler()->filter('[data-symfony--ux-vue--vue-props-value]')->attr('data-symfony--ux-vue--vue-props-value');
-
-        $props = json_decode((string) $json, true, flags: \JSON_THROW_ON_ERROR);
-        self::assertIsArray($props);
-
-        return array_filter($props, static fn (mixed $key): bool => \is_string($key), \ARRAY_FILTER_USE_KEY);
-    }
-
-    private function linkFromLastEmail(): string
-    {
-        $messages = self::getMailerMessages();
-        $email = end($messages);
-        self::assertInstanceOf(Email::class, $email);
-        self::assertSame(1, preg_match('#https?://[^/]+(/password/set/[0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
-
-        return $matches[1];
+        return Json::decode((string) $client->getCrawler()->filter('[data-symfony--ux-vue--vue-props-value]')->attr('data-symfony--ux-vue--vue-props-value'));
     }
 }

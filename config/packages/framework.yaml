@@ -8,12 +8,6 @@ framework:
 
     csrf_protection: true
 
-    rate_limiter:
-        forgot_password:
-            policy: sliding_window
-            limit: 3
-            interval: '15 minutes'
-
     http_client:
         scoped_clients:
             sumup.client:

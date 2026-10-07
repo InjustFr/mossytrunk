@@ -9,15 +9,10 @@ problem:
     signed_out:
         title: 'Non connecté'
         detail: 'Votre session a expiré, reconnectez-vous.'
-session:
-    expired: 'Votre session a expiré, réessayez.'
 login:
-    bad_credentials: 'Email ou mot de passe incorrect.'
-    too_many_attempts: 'Trop de tentatives : réessayez dans quelques minutes.'
     failed: 'Connexion impossible, réessayez.'
-password:
-    mismatch: 'Les deux mots de passe ne correspondent pas.'
-    saved: 'Mot de passe enregistré : vous pouvez vous connecter.'
+    expired: 'Cette connexion a pris trop de temps ou a été ouverte dans un autre onglet, réessayez.'
+    denied: 'Votre compte mossyleaf n’a pas encore accès à MossyTrunk.'
 order:
     source:
         manual: 'Saisie'

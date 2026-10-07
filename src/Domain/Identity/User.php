@@ -20,8 +20,8 @@ class User
     #[ORM\Column(length: 180, unique: true)]
     private string $email;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $passwordHash = null;
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $accountId = null;
 
     #[ORM\ManyToOne(targetEntity: Workspace::class, fetch: 'EAGER')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
@@ -47,9 +47,12 @@ class User
         $this->workspace = $workspace;
     }
 
-    public static function invite(string $email, Workspace $workspace): self
+    public static function join(string $accountId, string $email, Workspace $workspace): self
     {
-        return new self(new Ulid(), $email, $workspace);
+        $user = new self(new Ulid(), $email, $workspace);
+        $user->linkAccount($accountId);
+
+        return $user;
     }
 
     public static function normalizeEmail(string $email): string
@@ -62,9 +65,14 @@ class User
         return $email;
     }
 
-    public function changePassword(string $passwordHash): void
+    public function linkAccount(string $accountId): void
     {
-        $this->passwordHash = $passwordHash;
+        $this->accountId = $accountId;
+    }
+
+    public function changeEmail(string $email): void
+    {
+        $this->email = self::normalizeEmail($email);
     }
 
     public function speak(Language $language): void
@@ -102,9 +110,9 @@ class User
         return $this->email;
     }
 
-    public function passwordHash(): ?string
+    public function accountId(): ?string
     {
-        return $this->passwordHash;
+        return $this->accountId;
     }
 
     public function workspace(): Workspace

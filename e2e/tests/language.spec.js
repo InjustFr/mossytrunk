@@ -22,12 +22,16 @@ test('the app follows the browser language until a language is chosen, and the c
 test.describe('signed out', () => {
     test.use({ storageState: { cookies: [], origins: [] }, locale: 'en-US' });
 
-    test('an English browser gets the English app', async ({ page }) => {
-        await page.goto('/login');
+    test('an English browser gets the English sign-in page, and a chosen language is kept', async ({ page }) => {
+        await page.goto('/login/check?state=forged&code=forged');
         await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-        await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
+        await expect(page.getByRole('link', { name: 'Sign in with mossyleaf' })).toBeVisible();
 
         await choose(page, page.getByRole('combobox', { name: 'Language' }), 'Français');
-        await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible();
+        await expect(page.locator('input[name="username"]')).toBeVisible();
+
+        await page.goto('/login/check?state=forged&code=forged');
+        await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+        await expect(page.getByRole('link', { name: 'Se connecter avec mossyleaf' })).toBeVisible();
     });
 });

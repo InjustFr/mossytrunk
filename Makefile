@@ -22,8 +22,8 @@ BUILD = docker buildx build --platform $(PLATFORM) --target prod -t $(IMAGE):$(T
 
 .PHONY: up down build install assets assets-e2e db db-test fixtures migration test test-unit test-functional deptrac phpstan cs cs-fix e2e e2e-run qa ci ci-up ci-build ci-bundle ci-unbundle ci-warmup ci-checks ci-e2e image push deploy deploy-files
 
-up: ## Start the stack (app on http://localhost:8080)
-	$(DC) up -d --wait php database node mailpit
+up: ## Start the stack (app on http://localhost:8080, mock mossyleaf accounts on :8092)
+	$(DC) up -d --wait php database node oidc
 
 down:
 	$(DC) down
@@ -79,14 +79,12 @@ phpstan: ## Static analysis (level in phpstan.dist.neon)
 e2e: assets-e2e e2e-run ## Playwright end-to-end tests against a dedicated app container
 
 e2e-run: ## Playwright against already built assets (E2E_ASSETS_DIR, default build-e2e), E2E_LANES tests at a time (1-4)
-	$(DC) --profile e2e up -d --wait php-e2e mailpit
+	$(DC) --profile e2e up -d --wait php-e2e oidc
 	$(EXEC) php-e2e php bin/console cache:clear --env=test
 	$(EXEC) php-e2e curl -sf -X POST http://localhost:2019/frankenphp/workers/restart
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:database:drop --force --if-exists --env=test
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:database:create --env=test
 	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=test
-	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e@mossytrunk.local --workspace=E2E --env=test
-	$(EXEC) -e TEST_TOKEN=1 php-e2e php bin/console app:user:create e2e-reset@mossytrunk.local --workspace=E2E --env=test
 	lane=2; while [ $$lane -le $(E2E_LANES) ]; do \
 		$(EXEC) database psql -U $(POSTGRES_USER) -d postgres -q -c "DROP DATABASE IF EXISTS app_e2e_test$$lane" -c "CREATE DATABASE app_e2e_test$$lane TEMPLATE app_e2e_test1" || exit 1; \
 		lane=$$((lane + 1)); \
@@ -100,7 +98,7 @@ ci: ci-build ## Full suite from a fresh checkout (GitHub Actions builds once in 
 	$(MAKE) ci-e2e
 
 ci-up:
-	$(DC) up -d --wait php database mailpit
+	$(DC) up -d --wait php database oidc
 
 ci-build: ci-up ## Install PHP and JS dependencies and build the production assets
 	$(PHP) composer install --no-interaction --no-progress

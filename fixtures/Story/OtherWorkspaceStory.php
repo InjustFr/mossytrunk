@@ -16,7 +16,7 @@ final class OtherWorkspaceStory extends Story
     public function build(): void
     {
         $workspace = WorkspaceFactory::createOne(['name' => 'Autre atelier']);
-        UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'autre@mossytrunk.local', 'workspace' => $workspace]);
+        UserFactory::createOne(['accountId' => 'autre', 'email' => 'autre@mossytrunk.local', 'workspace' => $workspace]);
 
         $ceramic = ProductTypeFactory::createOne(['workspace' => $workspace, 'name' => 'Céramique', 'code' => 'CER']);
         foreach (['Bol' => 3_500, 'Tasse' => 2_800, 'Vase' => 6_000] as $name => $price) {

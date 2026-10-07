@@ -8,7 +8,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 
 | Page | Covers |
 |---|---|
-| [accounts.md](accounts.md) | Users, workspaces, sign-in, invitation and password reset links |
+| [accounts.md](accounts.md) | Users, workspaces, sign-in with mossyleaf accounts |
 | [products.md](products.md) | Catalogue, variants, the (product, variant) tuple, buying price = last purchase price (0 = never bought) |
 | [channels.md](channels.md) | Sales channels (markets, online shops) with their own prices and orders, main channel = selling price, batch pricing between channels |
 | [supplies.md](supplies.md) | Supplies (packaging, flyers): stocked like products, never sold |
@@ -32,7 +32,7 @@ Module 1 = **Order Management**. This folder is the reference for business rules
 | UI (FR) | Code | Meaning |
 |---|---|---|
 | Espace de travail | `Domain\Identity\Workspace` | One business and all its data |
-| Utilisateur | `Domain\Identity\User` | Person signing in with an email and password |
+| Utilisateur | `Domain\Identity\User` | Person signing in with their mossyleaf account |
 | Produit | `Domain\Product\Product` | Real item sold; unique reference |
 | Type de produit | `Domain\Product\ProductType` | Print, Sticker…; product shown as « {type} {nom} » |
 | Variante | `Product::$variants` (strings) | Colour, size, design…; none = *produit unique* |

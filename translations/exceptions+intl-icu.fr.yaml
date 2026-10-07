@@ -45,10 +45,6 @@ identity:
     invalid_email: 'Adresse email invalide « {email} ».'
     invalid_secret_name: 'Nom de clé invalide « {name} ».'
     invalid_theme_color: 'Couleur invalide « {color} » : utilisez un code hexadécimal comme #5b7f3a.'
-    password_token_already_used: 'Ce lien a déjà été utilisé.'
-    password_token_expired: 'Ce lien a expiré. Demandez-en un nouveau depuis « Mot de passe oublié ? ».'
-    password_too_short: 'Le mot de passe doit contenir au moins {min} caractères.'
-    unknown_password_token: 'Ce lien n''est pas valide.'
 integration:
     account_without_shop: 'Impossible de joindre {service} : ce compte {service} n''a pas de boutique.'
     missing_setting: 'Paramètre manquant « {name, select, merchant_code {Code marchand} api_key {Clé API} keystring {Keystring} shared_secret {Shared secret} other {{name}}} ».'

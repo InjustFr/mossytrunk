@@ -20,7 +20,7 @@ The interface is in French; code, commits and documentation are in English.
 | **Reporting** | Profitability per event, results per month and per year |
 | **Accounting** | URSSAF declarations per month or quarter, CSV export of orders |
 | **Imports** | SumUp card payments and paid Etsy receipts turned into orders |
-| **Workspaces** | Invitation-only accounts, each business sees only its own data, API keys encrypted at rest |
+| **Workspaces** | Sign-in with mossyleaf accounts, each business sees only its own data, API keys encrypted at rest |
 
 Business rules, with where they are modelled and which tests cover them: [`docs/business/`](docs/business/README.md).
 
@@ -40,15 +40,7 @@ make install         # composer + npm, first run only
 make fixtures        # dev database with a season of mock data
 ```
 
-Sign in with `demo@mossytrunk.local` / `mossytrunk` (workspace « Atelier Mousse »). A second workspace, `autre@mossytrunk.local` / `mossytrunk`, shows that data stays isolated.
-
-New users are invited, there is no sign-up page:
-
-```bash
-docker compose exec php php bin/console app:user:create you@example.com --workspace="My shop"
-```
-
-Emails (invitations, password resets) land in Mailpit: http://localhost:8025.
+People sign in with their mossyleaf account (OpenID Connect); in dev a mock accounts server runs on http://localhost:8092. Type the account `demo` (workspace « Atelier Mousse »); a second workspace, account `autre`, shows that data stays isolated. Any other account name with claims `{"email": "you@example.com"}` creates a new user in the `DEFAULT_WORKSPACE`.
 
 SumUp and Etsy keys are entered per workspace in « Paramètres » and stored encrypted with `APP_ENCRYPTION_KEY` (`php bin/console app:encryption:generate-key`).
 

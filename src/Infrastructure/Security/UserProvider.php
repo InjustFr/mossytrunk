@@ -5,29 +5,27 @@ declare(strict_types=1);
 namespace App\Infrastructure\Security;
 
 use App\Domain\Identity\User;
-use App\Domain\Identity\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use Symfony\Component\Uid\Ulid;
 
 /** @implements UserProviderInterface<SecurityUser> */
-final readonly class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
+final readonly class UserProvider implements UserProviderInterface
 {
-    public function __construct(
-        private UserRepository $users,
-        private EntityManagerInterface $entityManager,
-    ) {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
     }
 
     public function loadUserByIdentifier(string $identifier): SecurityUser
     {
-        $user = $this->users->findByEmail($identifier) ?? throw new UserNotFoundException();
+        if (!Ulid::isValid($identifier)) {
+            throw new UserNotFoundException();
+        }
 
-        return SecurityUser::fromUser($user);
+        return $this->load(Ulid::fromString($identifier));
     }
 
     public function refreshUser(UserInterface $user): SecurityUser
@@ -36,9 +34,7 @@ final readonly class UserProvider implements UserProviderInterface, PasswordUpgr
             throw new UnsupportedUserException(\sprintf('Unsupported user "%s".', $user::class));
         }
 
-        $fresh = $this->entityManager->find(User::class, $user->id) ?? throw new UserNotFoundException();
-
-        return SecurityUser::fromUser($fresh);
+        return $this->load($user->id);
     }
 
     public function supportsClass(string $class): bool
@@ -46,13 +42,10 @@ final readonly class UserProvider implements UserProviderInterface, PasswordUpgr
         return SecurityUser::class === $class;
     }
 
-    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
+    private function load(Ulid $id): SecurityUser
     {
-        if (!$user instanceof SecurityUser) {
-            return;
-        }
+        $user = $this->entityManager->find(User::class, $id) ?? throw new UserNotFoundException();
 
-        $this->users->get($user->id)->changePassword($newHashedPassword);
-        $this->entityManager->flush();
+        return SecurityUser::fromUser($user);
     }
 }

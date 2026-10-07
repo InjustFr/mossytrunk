@@ -45,10 +45,6 @@ identity:
     invalid_email: 'Invalid email address “{email}”.'
     invalid_secret_name: 'Invalid key name “{name}”.'
     invalid_theme_color: 'Invalid colour “{color}”: use a hexadecimal code such as #5b7f3a.'
-    password_token_already_used: 'This link has already been used.'
-    password_token_expired: 'This link has expired. Request a new one from “Forgot your password?”.'
-    password_too_short: 'The password must contain at least {min} characters.'
-    unknown_password_token: 'This link is not valid.'
 integration:
     account_without_shop: 'Cannot reach {service}: this {service} account has no shop.'
     missing_setting: 'Missing setting “{name, select, merchant_code {Merchant code} api_key {API key} keystring {Keystring} shared_secret {Shared secret} other {{name}}}”.'

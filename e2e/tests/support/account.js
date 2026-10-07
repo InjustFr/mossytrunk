@@ -1,11 +1,15 @@
+export const E2E_ACCOUNT = 'e2e';
 export const E2E_EMAIL = 'e2e@mossytrunk.local';
-export const RESET_EMAIL = 'e2e-reset@mossytrunk.local';
-export const E2E_PASSWORD = 'mossytrunk-e2e-password';
 export const LANE_SESSIONS = '.auth';
 
-export async function signIn(page, email = E2E_EMAIL, password = E2E_PASSWORD) {
+export async function signInWithAccount(page, account, claims = null) {
+    await page.locator('input[name="username"]').fill(account);
+    if (claims) await page.locator('textarea[name="claims"]').fill(JSON.stringify(claims));
+    await page.getByRole('button', { name: 'Sign-in' }).click();
+}
+
+export async function signIn(page, account = E2E_ACCOUNT, claims = { email: E2E_EMAIL }) {
     await page.goto('/login');
-    await page.getByLabel('Email').fill(email);
-    await page.getByLabel('Mot de passe').fill(password);
-    await page.getByRole('button', { name: 'Se connecter' }).click();
+    await signInWithAccount(page, account, claims);
+    await page.waitForURL(/\/dashboard$/);
 }

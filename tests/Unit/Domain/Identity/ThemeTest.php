@@ -47,7 +47,7 @@ final class ThemeTest extends TestCase
 
     public function testAUserWearsTheThemeTheyChose(): void
     {
-        $user = User::invite('louis@example.com', Workspace::create('Atelier'));
+        $user = User::join('account', 'louis@example.com', Workspace::create('Atelier'));
         self::assertNull($user->theme());
 
         $user->wear(Theme::of('#eef2f5', '#2f6a8f'));

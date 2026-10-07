@@ -13,4 +13,6 @@ interface UserRepository
     public function get(Ulid $id): User;
 
     public function findByEmail(string $email): ?User;
+
+    public function findByAccountId(string $accountId): ?User;
 }

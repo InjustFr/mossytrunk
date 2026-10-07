@@ -115,7 +115,10 @@ onMounted(async () => {
 <template>
     <AppLayout :title="t('settings.title')">
         <div class="settings-page">
-            <p class="settings-page__workspace">{{ t('settings.workspace') }} <strong>{{ session.workspace }}</strong></p>
+            <div class="settings-page__account">
+                <p class="settings-page__workspace">{{ t('settings.workspace') }} <strong>{{ session.workspace }}</strong></p>
+                <BaseButton v-if="session.accountsUrl" :href="session.accountsUrl" variant="secondary">{{ t('settings.manageAccount') }}</BaseButton>
+            </div>
             <BaseCard :title="t('settings.services.title')">
                 <template #actions>
                     <BaseButton v-if="!allAdded" variant="secondary" @click="openAdd"><Plus size="1rem" aria-hidden="true" /> {{ t('settings.services.add') }}</BaseButton>
@@ -167,6 +170,7 @@ onMounted(async () => {
 
 <style scoped>
 .settings-page { display: flex; flex-direction: column; gap: var(--space-4); }
+.settings-page__account { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
 .settings-page__workspace { margin: 0; color: var(--color-muted); }
 .settings-page__intro { margin: 0 0 var(--space-4); color: var(--color-muted); font-size: var(--font-size-md); }
 </style>

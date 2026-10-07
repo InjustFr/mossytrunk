@@ -71,7 +71,7 @@ final class ConventionSeasonStory extends Story
         faker()->seed(2026);
 
         $workspace = WorkspaceFactory::createOne(['name' => 'Atelier Mousse']);
-        UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'demo@mossytrunk.local', 'workspace' => $workspace]);
+        UserFactory::createOne(['accountId' => 'demo', 'email' => 'demo@mossytrunk.local', 'workspace' => $workspace]);
         $this->workspace = $workspace;
         $this->market = $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['workspace' => $workspace, 'main' => true]) ?? throw new \LogicException('The workspace has no main channel.');
 

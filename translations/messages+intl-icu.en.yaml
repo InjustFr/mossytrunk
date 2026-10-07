@@ -9,15 +9,10 @@ problem:
     signed_out:
         title: 'Not signed in'
         detail: 'Your session has expired, please sign in again.'
-session:
-    expired: 'Your session has expired, please try again.'
 login:
-    bad_credentials: 'Incorrect email or password.'
-    too_many_attempts: 'Too many attempts: try again in a few minutes.'
     failed: 'Unable to sign in, please try again.'
-password:
-    mismatch: 'The two passwords do not match.'
-    saved: 'Password saved: you can now sign in.'
+    expired: 'This sign-in took too long or was opened in another tab, please try again.'
+    denied: 'Your mossyleaf account does not have access to MossyTrunk yet.'
 order:
     source:
         manual: 'Manual entry'

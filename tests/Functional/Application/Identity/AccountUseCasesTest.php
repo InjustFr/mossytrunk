@@ -4,160 +4,95 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Application\Identity;
 
-use App\Application\Identity\CreateUser\CreateUser;
-use App\Application\Identity\CreateUser\CreateUserHandler;
-use App\Application\Identity\RequestPasswordReset\RequestPasswordResetHandler;
-use App\Application\Identity\SetPassword\SetPasswordHandler;
-use App\Domain\Identity\Exception\InvalidAccount;
-use App\Domain\Identity\Exception\InvalidPasswordToken;
-use App\Domain\Identity\Exception\PasswordTokenExpired;
-use App\Domain\Identity\Exception\UnknownPasswordToken;
-use App\Domain\Identity\Language;
+use App\Application\Identity\SignIn\SignIn;
+use App\Application\Identity\SignIn\SignInHandler;
+use App\Domain\Identity\Exception\EmailAlreadyUsed;
+use App\Domain\Identity\Exception\InvalidEmail;
 use App\Domain\Identity\User;
 use App\Domain\Identity\UserRepository;
 use App\Domain\Reference\ReferenceFormat;
 use App\Domain\Reference\ReferenceKind;
 use App\Domain\Sales\ChannelKind;
 use App\Domain\Sales\SalesChannel;
-use App\Infrastructure\Security\SecurityUser;
+use App\Tests\Support\ActsAsUser;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
-use Symfony\Component\Clock\Test\ClockSensitiveTrait;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
-use Symfony\Component\Translation\LocaleSwitcher;
 
 final class AccountUseCasesTest extends KernelTestCase
 {
-    use ClockSensitiveTrait;
-    use MailerAssertionsTrait;
+    use ActsAsUser;
 
-    public function testCreatingAUserSendsAnInvitation(): void
+    public function testAFirstSignInOpensTheDefaultWorkspace(): void
     {
-        $user = $this->createUser('Louis@Example.com', 'Atelier');
+        $user = $this->signIn(new SignIn('account-1', 'Louis@Example.com'));
 
-        self::assertSame('louis@example.com', $user->email());
-        self::assertSame('Atelier', $user->workspace()->name());
+        self::assertSame(['account-1', 'louis@example.com', 'Atelier Mousse'], [$user->accountId(), $user->email(), $user->workspace()->name()]);
         $main = self::getContainer()->get('doctrine')->getRepository(SalesChannel::class)->findOneBy(['workspace' => $user->workspace(), 'main' => true]);
         self::assertInstanceOf(SalesChannel::class, $main);
         self::assertSame(ChannelKind::Market, $main->kind());
         self::assertCount(\count(ReferenceKind::cases()), self::getContainer()->get('doctrine')->getRepository(ReferenceFormat::class)->findBy(['workspace' => $user->workspace()]));
-        self::assertNull($user->passwordHash());
-        self::assertEmailCount(1);
-        $email = self::getMailerMessage();
-        self::assertNotNull($email);
-        self::assertEmailAddressContains($email, 'To', 'louis@example.com');
-        self::assertEmailHtmlBodyContains($email, 'Atelier');
     }
 
-    public function testInvitationIsWrittenInTheCurrentLanguage(): void
+    public function testNewAccountsJoinTheExistingDefaultWorkspace(): void
     {
-        self::getContainer()->get(LocaleSwitcher::class)->setLocale('fr');
+        $member = self::createMember('Atelier Mousse');
 
-        $this->createUser('louis@example.com', 'Atelier');
+        $user = $this->signIn(new SignIn('account-1', 'louis@example.com'));
 
-        $email = self::getMailerMessage();
-        self::assertNotNull($email);
-        self::assertEmailHeaderSame($email, 'Subject', 'Bienvenue sur MossyTrunk');
-        self::assertEmailHtmlBodyContains($email, '<html lang="fr">');
-        self::assertEmailHtmlBodyContains($email, 'Choisir mon mot de passe');
+        self::assertTrue($member->workspace()->id()->equals($user->workspace()->id()));
     }
 
-    public function testPasswordResetIsWrittenInTheUsersLanguage(): void
+    public function testAnAccountWithoutEmailCannotJoin(): void
     {
-        self::getContainer()->get(LocaleSwitcher::class)->setLocale('fr');
-        $this->createUser('louis@example.com', 'Atelier')->speak(Language::English);
+        $this->expectExceptionObject(new InvalidEmail(''));
 
-        self::getContainer()->get(RequestPasswordResetHandler::class)('louis@example.com');
-
-        $messages = self::getMailerMessages();
-        $email = end($messages);
-        self::assertInstanceOf(Email::class, $email);
-        self::assertEmailHeaderSame($email, 'Subject', 'Reset your password');
-        self::assertEmailHtmlBodyContains($email, '<html lang="en">');
-        self::assertMatchesRegularExpression('#until \d{2}/\d{2}/\d{4} at \d{2}:\d{2}\.#', (string) $email->getHtmlBody());
+        $this->signIn(new SignIn('account-1', null));
     }
 
-    public function testUsersJoinAnExistingWorkspaceByName(): void
+    public function testAnExistingUserIsLinkedByEmailAndKeepsTheirWorkspace(): void
     {
-        $first = $this->createUser('a@example.com', 'Atelier');
-        $second = $this->createUser('b@example.com', 'Atelier');
+        $existing = self::createMemberFromBeforeAccounts('Autre atelier', 'louis@example.com');
 
-        self::assertTrue($first->workspace()->id()->equals($second->workspace()->id()));
+        $user = $this->signIn(new SignIn('account-1', ' LOUIS@example.com'));
+
+        self::assertSame($existing->id()->toBase32(), $user->id()->toBase32());
+        self::assertSame(['account-1', 'Autre atelier'], [$user->accountId(), $user->workspace()->name()]);
     }
 
-    public function testEmailIsUnique(): void
+    public function testTheAccountIsFoundAgainAfterItsEmailChanges(): void
     {
-        $this->createUser('louis@example.com', 'Atelier');
+        $first = $this->signIn(new SignIn('account-1', 'louis@example.com'));
 
-        $this->expectException(InvalidAccount::class);
-        $this->createUser('LOUIS@example.com', 'Autre');
+        $again = $this->signIn(new SignIn('account-1', 'lou@example.com'));
+
+        self::assertSame($first->id()->toBase32(), $again->id()->toBase32());
+        self::assertSame('lou@example.com', $again->email());
     }
 
-    public function testInvitationLinkSetsThePasswordOnce(): void
+    public function testAnEmailAlreadyLinkedToAnotherAccountIsRefused(): void
     {
-        $this->createUser('louis@example.com', 'Atelier');
-        $token = $this->tokenFromLastEmail();
+        $this->signIn(new SignIn('account-1', 'louis@example.com'));
 
-        $user = self::getContainer()->get(SetPasswordHandler::class)($token, 'correct horse battery');
+        $this->expectExceptionObject(new EmailAlreadyUsed('louis@example.com'));
 
-        self::assertTrue(self::getContainer()->get(PasswordHasherFactoryInterface::class)->getPasswordHasher(SecurityUser::class)->verify((string) $user->passwordHash(), 'correct horse battery'));
-        $this->expectException(InvalidPasswordToken::class);
-        self::getContainer()->get(SetPasswordHandler::class)($token, 'another password');
+        $this->signIn(new SignIn('account-2', 'louis@example.com'));
     }
 
-    public function testPasswordMustBeLongEnough(): void
+    public function testAnAccountCannotTakeTheEmailOfAnotherUser(): void
     {
-        $this->createUser('louis@example.com', 'Atelier');
+        $this->signIn(new SignIn('account-1', 'louis@example.com'));
+        $this->signIn(new SignIn('account-2', 'fern@example.com'));
 
-        $this->expectException(InvalidAccount::class);
-        self::getContainer()->get(SetPasswordHandler::class)($this->tokenFromLastEmail(), 'short');
+        $this->expectExceptionObject(new EmailAlreadyUsed('louis@example.com'));
+
+        $this->signIn(new SignIn('account-2', 'louis@example.com'));
     }
 
-    public function testResetLinkExpiresAfterOneHour(): void
+    private function signIn(SignIn $command): User
     {
-        $clock = self::mockTime('2030-01-01 10:00');
-        $this->createUser('louis@example.com', 'Atelier');
-        self::getContainer()->get(RequestPasswordResetHandler::class)('louis@example.com');
-        $token = $this->tokenFromLastEmail();
+        $user = self::getContainer()->get(SignInHandler::class)($command);
+        self::getContainer()->get(EntityManagerInterface::class)->clear();
 
-        $clock->sleep(3_600);
-
-        $this->expectExceptionObject(new PasswordTokenExpired());
-        self::getContainer()->get(SetPasswordHandler::class)($token, 'correct horse battery');
-    }
-
-    public function testNewLinkRevokesThePreviousOne(): void
-    {
-        $this->createUser('louis@example.com', 'Atelier');
-        $invitation = $this->tokenFromLastEmail();
-
-        self::getContainer()->get(RequestPasswordResetHandler::class)('louis@example.com');
-
-        $this->expectExceptionObject(new UnknownPasswordToken());
-        self::getContainer()->get(SetPasswordHandler::class)($invitation, 'correct horse battery');
-    }
-
-    public function testResetForUnknownEmailSendsNothing(): void
-    {
-        self::getContainer()->get(RequestPasswordResetHandler::class)('nobody@example.com');
-
-        self::assertEmailCount(0);
-        self::assertNull(self::getContainer()->get(UserRepository::class)->findByEmail('nobody@example.com'));
-    }
-
-    private function createUser(string $email, string $workspace): User
-    {
-        return self::getContainer()->get(CreateUserHandler::class)(new CreateUser($email, $workspace));
-    }
-
-    private function tokenFromLastEmail(): string
-    {
-        $messages = self::getMailerMessages();
-        $email = end($messages);
-        self::assertInstanceOf(Email::class, $email);
-        self::assertSame(1, preg_match('#/password/set/([0-9a-f]+)#', (string) $email->getHtmlBody(), $matches));
-
-        return $matches[1];
+        return self::getContainer()->get(UserRepository::class)->get($user->id());
     }
 }

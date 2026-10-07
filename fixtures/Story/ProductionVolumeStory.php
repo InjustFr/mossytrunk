@@ -67,7 +67,7 @@ final class ProductionVolumeStory extends Story
         faker()->seed(75349);
 
         $this->workspace = WorkspaceFactory::createOne(['name' => 'Atelier Volume']);
-        UserFactory::new()->withPassword('mossytrunk')->create(['email' => 'volume@mossytrunk.local', 'workspace' => $this->workspace]);
+        UserFactory::createOne(['accountId' => 'volume', 'email' => 'volume@mossytrunk.local', 'workspace' => $this->workspace]);
         $market = $this->entityManager->getRepository(SalesChannel::class)->findOneBy(['workspace' => $this->workspace, 'main' => true]) ?? throw new \LogicException('The workspace has no main channel.');
         $this->entityManager->persist(SalesChannel::open($this->workspace, 'Boutique en ligne'));
 

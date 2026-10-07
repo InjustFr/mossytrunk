@@ -22,11 +22,21 @@ trait ActsAsUser
             $workspace = Workspace::create($workspaceName);
             $entityManager->persist(SalesChannel::main($workspace, 'Marchés'));
         }
-        $user = User::invite($email ?? \sprintf('%s@mossytrunk.test', new Ulid()), $workspace);
-        $user->changePassword('not-a-real-hash');
+        $id = strtolower((string) new Ulid());
+        $user = User::join($id, $email ?? \sprintf('%s@mossytrunk.test', $id), $workspace);
         $entityManager->persist($workspace);
         $entityManager->persist($user);
         $entityManager->flush();
+
+        return $user;
+    }
+
+    protected static function createMemberFromBeforeAccounts(string $workspaceName, string $email): User
+    {
+        $user = self::createMember($workspaceName, $email);
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->getConnection()->executeStatement('UPDATE app_user SET account_id = NULL WHERE id = ?', [$user->id()->toRfc4122()]);
+        $entityManager->clear();
 
         return $user;
     }

@@ -12,9 +12,10 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      oidc:
+        condition: service_started
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/${POSTGRES_DB:-app}?serverVersion=18&charset=utf8
-      MAILER_DSN: smtp://mailpit:1025
       CADDY_SERVER_EXTRA_DIRECTIVES: 'header /build/* Cache-Control "no-cache"'
     volumes:
       - ./:/app
@@ -40,12 +41,11 @@ services:
       BASE_URL: http://php-e2e
       CI: ${CI:-}
       E2E_LANES: ${E2E_LANES:-1}
-      MAILPIT_URL: http://mailpit:8025
     volumes:
       - ./:/app
     depends_on:
       - php-e2e
-      - mailpit
+      - oidc
 
   php-e2e:
     image: mossytrunk-dev
@@ -56,6 +56,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      oidc:
+        condition: service_started
     environment:
       APP_ENV: test
       APP_DEBUG: 0
@@ -63,15 +65,23 @@ services:
       E2E_ROLLBACK: 1
       FRANKENPHP_LOOP_MAX: 0
       ASSETS_DIR: ${E2E_ASSETS_DIR:-build-e2e}
+      ACCOUNTS_URL: http://oidc:8080/mossyleaf
+      OIDC_CLIENT_SECRET: e2e
+      OIDC_AUTHORIZE_URL: http://oidc:8080/mossyleaf/authorize
+      OIDC_TOKEN_URL: http://oidc:8080/mossyleaf/token
+      OIDC_USERINFO_URL: http://oidc:8080/mossyleaf/userinfo
+      OIDC_LOGOUT_URL: http://oidc:8080/mossyleaf/endsession
+      DEFAULT_WORKSPACE: E2E
       DATABASE_URL: postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-app}@database:5432/app_e2e?serverVersion=18&charset=utf8
-      MAILER_DSN: smtp://mailpit:1025
     volumes:
       - ./:/app
 
-  mailpit:
-    image: axllent/mailpit
+  oidc:
+    image: ghcr.io/navikt/mock-oauth2-server:2.1.10
+    environment:
+      JSON_CONFIG: '{"interactiveLogin": true}'
     ports:
-      - "${MAILPIT_PORT:-8025}:8025"
+      - "${OIDC_PORT:-8092}:8080"
 
   database:
     image: postgres:18-alpine

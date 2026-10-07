@@ -1,21 +1,8 @@
 import fs from 'node:fs';
 import { test as base, expect } from '@playwright/test';
-import { E2E_EMAIL, E2E_PASSWORD, LANE_SESSIONS, signIn } from './account.js';
-import { latestEmailTo, passwordLinkFrom } from './mailpit.js';
+import { LANE_SESSIONS, signIn } from './account.js';
 
 const FIRST_LANE_PORT = 8001;
-
-async function acceptInvitation(page) {
-    await page.goto(await passwordLinkFrom(await latestEmailTo(page.request, E2E_EMAIL)));
-    await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible();
-    await page.getByLabel('Mot de passe').fill(E2E_PASSWORD);
-    await page.getByLabel('Confirmation').fill(E2E_PASSWORD);
-    await page.getByRole('button', { name: 'Enregistrer le mot de passe' }).click();
-    await expect(page.getByText('Mot de passe enregistré')).toBeVisible();
-
-    await signIn(page);
-    await expect(page).toHaveURL(/\/dashboard$/);
-}
 
 export const test = base.extend({
     laneURL: [
@@ -29,7 +16,7 @@ export const test = base.extend({
             const session = `${LANE_SESSIONS}/lane-${workerInfo.parallelIndex + 1}.json`;
             if (!fs.existsSync(session)) {
                 const page = await browser.newPage({ baseURL: laneURL, locale: workerInfo.project.use.locale, storageState: undefined });
-                await acceptInvitation(page);
+                await signIn(page);
                 await page.context().storageState({ path: session });
                 expect((await page.request.post('/_e2e/baseline', { maxRedirects: 0 })).status()).toBe(204);
                 await page.context().close();
