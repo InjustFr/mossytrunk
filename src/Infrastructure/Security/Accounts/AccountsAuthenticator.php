@@ -31,6 +31,7 @@ final class AccountsAuthenticator extends AbstractAuthenticator
         private readonly SignInAttempts $attempts,
         private readonly AccountsClient $accounts,
         private readonly OidcSingleSignOn $singleSignOn,
+        private readonly AccountsSession $session,
         private readonly SignInHandler $signIn,
         private readonly UrlGeneratorInterface $urls,
         private readonly TranslatorInterface $translator,
@@ -53,12 +54,13 @@ final class AccountsAuthenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('login.failed');
         }
 
-        $command = $this->accounts->signIn($code, $verifier, $this->singleSignOn->redirectUri());
+        $signIn = $this->accounts->signIn($code, $verifier, $this->singleSignOn->redirectUri());
         try {
-            $user = ($this->signIn)($command);
+            $user = ($this->signIn)($signIn->command);
         } catch (DomainException $exception) {
             throw new CustomUserMessageAuthenticationException($this->translator->trans($exception->getMessage(), $exception->parameters(), 'exceptions'), previous: $exception);
         }
+        $this->session->remember($signIn->idToken);
 
         return new SelfValidatingPassport(new UserBadge((string) $user->id(), static fn () => SecurityUser::fromUser($user)), [new RememberMeBadge()]);
     }

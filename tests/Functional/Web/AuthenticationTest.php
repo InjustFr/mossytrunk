@@ -138,14 +138,25 @@ final class AuthenticationTest extends WebTestCase
     public function testSigningOutAlsoSignsOutOfTheMossyleafAccount(): void
     {
         $client = self::createClient();
+        $client->request('GET', '/login');
+        $code = FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com']);
+        $client->request('GET', '/login/check', ['state' => $this->authorizeQuery($client)['state'], 'code' => $code]);
+
+        $client->request('POST', '/logout', ['_csrf_token' => $this->logoutToken($client)]);
+
+        self::assertResponseRedirects('https://accounts.test/end-session?client_id=mossytrunk&id_token_hint=id.'.$code.'&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2F');
+        $client->jsonRequest('GET', '/api/products');
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testSigningOutOfASessionWithoutIdTokenOnlyEndsTheMossyleafSession(): void
+    {
+        $client = self::createClient();
         $client->loginUser(SecurityUser::fromUser(self::createMember()));
-        $client->request('GET', '/settings');
-        $session = Json::decode((string) $client->getCrawler()->filter('#app-session')->text());
-        self::assertSame('https://accounts.test', Json::string($session, 'accountsUrl'));
 
-        $client->request('POST', '/logout', ['_csrf_token' => Json::string($session, 'logoutToken')]);
+        $client->request('POST', '/logout', ['_csrf_token' => $this->logoutToken($client)]);
 
-        self::assertResponseRedirects('https://accounts.test/end-session?client_id=mossytrunk&post_logout_redirect_uri=http%3A%2F%2Flocalhost%2F');
+        self::assertResponseRedirects('https://accounts.test/end-session?client_id=mossytrunk');
         $client->jsonRequest('GET', '/api/products');
         self::assertResponseStatusCodeSame(401);
     }
@@ -162,6 +173,15 @@ final class AuthenticationTest extends WebTestCase
 
         $client->jsonRequest('POST', '/api/product-types', ['name' => 'Print'], ['HTTP_SEC_FETCH_SITE' => 'same-origin']);
         self::assertResponseStatusCodeSame(201);
+    }
+
+    private function logoutToken(KernelBrowser $client): string
+    {
+        $client->request('GET', '/settings');
+        $session = Json::decode((string) $client->getCrawler()->filter('#app-session')->text());
+        self::assertSame('https://accounts.test', Json::string($session, 'accountsUrl'));
+
+        return Json::string($session, 'logoutToken');
     }
 
     /**

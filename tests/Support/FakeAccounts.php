@@ -52,7 +52,7 @@ final class FakeAccounts implements HttpClientInterface
             return new JsonMockResponse(['error' => 'invalid_grant'], ['http_code' => 400]);
         }
 
-        return new JsonMockResponse(['access_token' => $code, 'token_type' => 'Bearer']);
+        return new JsonMockResponse(['access_token' => $code, 'id_token' => 'id.'.$code, 'token_type' => 'Bearer']);
     }
 
     /** @param array<string, mixed> $options */

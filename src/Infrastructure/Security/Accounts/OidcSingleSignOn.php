@@ -12,6 +12,7 @@ final readonly class OidcSingleSignOn implements SingleSignOn
     public function __construct(
         private AccountsConfiguration $configuration,
         private SignInAttempts $attempts,
+        private AccountsSession $session,
         private UrlGeneratorInterface $urls,
     ) {
     }
@@ -33,8 +34,14 @@ final readonly class OidcSingleSignOn implements SingleSignOn
 
     public function signOutUrl(): string
     {
+        $idToken = $this->session->idToken();
+        if (null === $idToken) {
+            return self::withQuery($this->configuration->logoutUrl, ['client_id' => $this->configuration->clientId]);
+        }
+
         return self::withQuery($this->configuration->logoutUrl, [
             'client_id' => $this->configuration->clientId,
+            'id_token_hint' => $idToken,
             'post_logout_redirect_uri' => $this->urls->generate('home', [], UrlGeneratorInterface::ABSOLUTE_URL),
         ]);
     }
