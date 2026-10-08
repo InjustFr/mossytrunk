@@ -9,6 +9,8 @@ final readonly class SignIn
     public function __construct(
         public string $accountId,
         public ?string $email,
+        public ?string $name = null,
+        public ?string $workspace = null,
     ) {
     }
 }

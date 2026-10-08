@@ -43,7 +43,7 @@ final readonly class AccountsClient
             throw new CustomUserMessageAuthenticationException('login.failed');
         }
 
-        return new AccountsSignIn(new SignIn($accountId, self::text($claims, 'email')), self::text($tokens, 'id_token'));
+        return new AccountsSignIn(new SignIn($accountId, self::text($claims, 'email'), self::text($claims, 'name'), self::text($claims, 'mossytrunk_workspace')), self::text($tokens, 'id_token'));
     }
 
     /** @param array<mixed> $claims */

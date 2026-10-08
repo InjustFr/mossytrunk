@@ -40,7 +40,7 @@ make install         # composer + npm, first run only
 make fixtures        # dev database with a season of mock data
 ```
 
-People sign in with their mossyleaf account (OpenID Connect); in dev a mock accounts server runs on http://localhost:8092. Type the account `demo` (workspace « Atelier Mousse »); a second workspace, account `autre`, shows that data stays isolated. Any other account name with claims `{"email": "you@example.com"}` creates a new user in the `DEFAULT_WORKSPACE`.
+People sign in with their mossyleaf account (OpenID Connect); in dev a mock accounts server runs on http://localhost:8092. Type the account `demo` (workspace « Atelier Mousse »); a second workspace, account `autre`, shows that data stays isolated. Any other account name with claims `{"email": "you@example.com", "name": "You"}` creates a new user in a workspace of their own; add `"mossytrunk_workspace": "Atelier Mousse"` to join that workspace instead.
 
 SumUp and Etsy keys are entered per workspace in « Paramètres » and stored encrypted with `APP_ENCRYPTION_KEY` (`php bin/console app:encryption:generate-key`).
 

@@ -30,7 +30,6 @@ Fill `.env`:
 | `APP_ENCRYPTION_KEY` | `openssl rand -base64 32` (encrypts the per-workspace API keys, e.g. SumUp, entered in the settings page) |
 | `POSTGRES_PASSWORD` | `openssl rand -hex 24` (`POSTGRES_DB` / `POSTGRES_USER` can stay `app`) |
 | `OIDC_CLIENT_SECRET` | Client secret of the `mossytrunk` application in mossyleaf accounts (`MOSSYTRUNK_CLIENT_SECRET` in its `.env`) |
-| `DEFAULT_WORKSPACE` | Name of the workspace new users join on their first sign-in (the existing workspace's exact name; created if it does not exist) |
 | `ACCOUNTS_URL` | Optional, defaults to `https://accounts.mossyleaf.studio`; the `OIDC_*_URL` endpoints derive from it (override `OIDC_TOKEN_URL`/`OIDC_USERINFO_URL` to reach Authentik through an internal URL) |
 
 Never change `APP_SECRET`, `APP_ENCRYPTION_KEY` or `POSTGRES_PASSWORD` after the first start: sessions, stored API keys and the database depend on them. Keep a copy of `.env` with your backups.
@@ -47,7 +46,7 @@ On every start the app waits for the database, runs pending migrations, warms th
 
 ## Accounts
 
-There is no sign-up, password or invitation in MossyTrunk: people sign in with their mossyleaf account. To let someone in, invite them in mossyleaf accounts with the `mossytrunk` group (`make invite EMAIL=… NAME=… GROUPS=mossytrunk` in `accounts`). Their first sign-in creates their MossyTrunk user in `DEFAULT_WORKSPACE`.
+There is no sign-up, password or invitation in MossyTrunk: people sign in with their mossyleaf account. To let someone in, invite them in mossyleaf accounts with the `mossytrunk` group (`make invite EMAIL=… NAME=… GROUPS=mossytrunk WORKSPACE="Atelier Mousse"` in `accounts`). Their first sign-in creates their MossyTrunk user in the workspace named by `WORKSPACE` (the `mossytrunk_workspace` claim; the workspace is opened if no workspace has that exact name yet). Invited without `WORKSPACE`, they get a new workspace of their own, named after them. The claim only counts on the first sign-in: moving an existing user to another workspace is not possible.
 
 Users created before mossyleaf accounts keep their workspace and all its data: the first time they sign in with an account that has **the same email**, MossyTrunk links it to them. So invite every existing user with the email they already use here (`docker compose exec -T database psql -U app app -c 'select email from app_user where account_id is null'` lists those not linked yet).
 

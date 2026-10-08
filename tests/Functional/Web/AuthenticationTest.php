@@ -62,7 +62,7 @@ final class AuthenticationTest extends WebTestCase
         $client->request('GET', '/login');
         $state = $this->authorizeQuery($client)['state'];
 
-        $client->request('GET', '/login/check', ['state' => $state, 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com'])]);
+        $client->request('GET', '/login/check', ['state' => $state, 'code' => FakeAccounts::code(['sub' => 'account-1', 'email' => 'fern@example.com', 'name' => 'Fern', 'mossytrunk_workspace' => 'Atelier Mousse'])]);
 
         self::assertResponseRedirects('/products');
         $client->jsonRequest('GET', '/api/products');

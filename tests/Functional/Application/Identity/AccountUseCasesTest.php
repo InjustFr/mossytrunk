@@ -22,9 +22,9 @@ final class AccountUseCasesTest extends KernelTestCase
 {
     use ActsAsUser;
 
-    public function testAFirstSignInOpensTheDefaultWorkspace(): void
+    public function testAFirstSignInOpensTheWorkspaceOfTheInvitation(): void
     {
-        $user = $this->signIn(new SignIn('account-1', 'Louis@Example.com'));
+        $user = $this->signIn(new SignIn('account-1', 'Louis@Example.com', 'Louis', ' Atelier Mousse '));
 
         self::assertSame(['account-1', 'louis@example.com', 'Atelier Mousse'], [$user->accountId(), $user->email(), $user->workspace()->name()]);
         $main = self::getContainer()->get('doctrine')->getRepository(SalesChannel::class)->findOneBy(['workspace' => $user->workspace(), 'main' => true]);
@@ -33,13 +33,34 @@ final class AccountUseCasesTest extends KernelTestCase
         self::assertCount(\count(ReferenceKind::cases()), self::getContainer()->get('doctrine')->getRepository(ReferenceFormat::class)->findBy(['workspace' => $user->workspace()]));
     }
 
-    public function testNewAccountsJoinTheExistingDefaultWorkspace(): void
+    public function testNewAccountsJoinTheExistingWorkspaceOfTheirInvitation(): void
     {
         $member = self::createMember('Atelier Mousse');
 
-        $user = $this->signIn(new SignIn('account-1', 'louis@example.com'));
+        $user = $this->signIn(new SignIn('account-1', 'louis@example.com', 'Louis', 'Atelier Mousse'));
 
         self::assertTrue($member->workspace()->id()->equals($user->workspace()->id()));
+    }
+
+    public function testNewAccountsInvitedWithoutAWorkspaceOpenTheirOwn(): void
+    {
+        $member = self::createMember('Atelier Mousse');
+
+        $user = $this->signIn(new SignIn('account-1', 'fern@example.com', 'Fern'));
+
+        self::assertFalse($member->workspace()->id()->equals($user->workspace()->id()));
+        self::assertSame('Fern', $user->workspace()->name());
+        $main = self::getContainer()->get('doctrine')->getRepository(SalesChannel::class)->findOneBy(['workspace' => $user->workspace(), 'main' => true]);
+        self::assertInstanceOf(SalesChannel::class, $main);
+    }
+
+    public function testAnOwnWorkspaceIsNamedAfterTheEmailWithoutANameAndNeverTakesAnExistingOne(): void
+    {
+        self::createMember('fern@example.com');
+        $named = $this->signIn(new SignIn('account-1', 'fern@example.com'));
+        $namesake = $this->signIn(new SignIn('account-2', 'fern2@example.com', 'fern@example.com'));
+
+        self::assertSame(['fern@example.com (2)', 'fern@example.com (3)'], [$named->workspace()->name(), $namesake->workspace()->name()]);
     }
 
     public function testAnAccountWithoutEmailCannotJoin(): void

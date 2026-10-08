@@ -38,10 +38,6 @@ services:
     App\Application\Reference\ReferenceGenerator:
         tags: [{ name: kernel.reset, method: reset }]
 
-    App\Application\Identity\SignIn\SignInHandler:
-        arguments:
-            $defaultWorkspace: '%env(DEFAULT_WORKSPACE)%'
-
     App\Infrastructure\Connector\SumUp\SumUpGateway: '@App\Infrastructure\Connector\SumUp\SumUpApiGateway'
     App\Infrastructure\Connector\Etsy\EtsyGateway: '@App\Infrastructure\Connector\Etsy\EtsyApiGateway'
 

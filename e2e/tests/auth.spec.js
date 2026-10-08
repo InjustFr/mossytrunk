@@ -1,5 +1,5 @@
 import { test, expect } from './support/test.js';
-import { E2E_EMAIL, signIn, signInWithAccount } from './support/account.js';
+import { E2E_EMAIL, E2E_WORKSPACE, signIn, signInWithAccount } from './support/account.js';
 
 test.describe('signed out', () => {
     test.use({ storageState: { cookies: [], origins: [] } });
@@ -13,15 +13,26 @@ test.describe('signed out', () => {
         await expect(page.getByText(E2E_EMAIL)).toBeVisible();
     });
 
-    test('a new mossyleaf account joins the default workspace', async ({ page }) => {
+    test('a new mossyleaf account joins the workspace it was invited to', async ({ page }) => {
         const account = `fern-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
         await page.goto('/login');
-        await signInWithAccount(page, account, { email: `${account}@mossyleaf.test` });
+        await signInWithAccount(page, account, { email: `${account}@mossyleaf.test`, mossytrunk_workspace: E2E_WORKSPACE });
 
         await expect(page).toHaveURL(/\/dashboard$/);
         await expect(page.getByText(`${account}@mossyleaf.test`)).toBeVisible();
-        await expect(page.getByText('E2E', { exact: true })).toBeVisible();
+        await expect(page.getByText(E2E_WORKSPACE, { exact: true })).toBeVisible();
+    });
+
+    test('a new mossyleaf account invited without a workspace gets one of its own', async ({ page }) => {
+        const account = `moss-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+
+        await page.goto('/login');
+        await signInWithAccount(page, account, { email: `${account}@mossyleaf.test`, name: account });
+
+        await expect(page).toHaveURL(/\/dashboard$/);
+        await expect(page.getByText(account, { exact: true })).toBeVisible();
+        await expect(page.getByText(E2E_WORKSPACE, { exact: true })).toHaveCount(0);
     });
 
     test('a failed sign-in explains why and offers to try again', async ({ page }) => {
@@ -52,7 +63,7 @@ test('the sidebar shows the signed-in account', async ({ page }) => {
     await page.goto('/dashboard');
 
     await expect(page.getByText(E2E_EMAIL)).toBeVisible();
-    await expect(page.getByText('E2E', { exact: true })).toBeVisible();
+    await expect(page.getByText(E2E_WORKSPACE, { exact: true })).toBeVisible();
 });
 
 test('the settings link to the mossyleaf account', async ({ page }) => {
