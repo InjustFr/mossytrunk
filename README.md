@@ -4,7 +4,7 @@ Back-office for a small creative business that sells prints, stickers and illust
 
 The interface is in French; code, commits and documentation are in English.
 
-[![Image](https://github.com/InjustFr/mossytrunk/actions/workflows/image.yml/badge.svg)](https://github.com/InjustFr/mossytrunk/actions/workflows/image.yml)
+[![CI](https://github.com/mossyleaf-studio/mossytrunk/actions/workflows/ci.yml/badge.svg)](https://github.com/mossyleaf-studio/mossytrunk/actions/workflows/ci.yml)
 [![Docker Hub](https://img.shields.io/docker/v/injust/mossytrunk?label=docker.io%2Finjust%2Fmossytrunk&sort=date)](https://hub.docker.com/r/injust/mossytrunk)
 
 ## Features
